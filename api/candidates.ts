@@ -5,15 +5,33 @@ export const config = {
   runtime: 'edge',
 };
 
+// Tablo oluşturma sorgusu
+const CREATE_TABLE_QUERY = `
+  CREATE TABLE IF NOT EXISTS candidates (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    branch TEXT,
+    experience_years INTEGER,
+    answers JSONB,
+    status TEXT DEFAULT 'pending',
+    interview_schedule JSONB,
+    report JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`;
+
 export default async function handler(request: Request) {
   const method = request.method;
   const { searchParams } = new URL(request.url);
 
   try {
-    // GET: Tüm adayları listele
+    // Tabloyu her ihtimale karşı kontrol et/oluştur
+    await sql.query(CREATE_TABLE_QUERY);
+
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
-      // Postgres sütun isimlerini (snake_case) frontend tiplerine (camelCase) dönüştür
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name,
@@ -27,10 +45,12 @@ export default async function handler(request: Request) {
         report: row.report,
         timestamp: new Date(row.created_at).getTime()
       }));
-      return new Response(JSON.stringify(candidates), { status: 200 });
+      return new Response(JSON.stringify(candidates), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json' } 
+      });
     }
 
-    // POST: Yeni aday kaydet
     if (method === 'POST') {
       const body = await request.json();
       await sql`
@@ -40,7 +60,6 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ message: 'Success' }), { status: 201 });
     }
 
-    // PATCH: Aday güncelle (Rapor veya Durum)
     if (method === 'PATCH') {
       const body = await request.json();
       if (body.report) {
@@ -65,7 +84,6 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ message: 'Updated' }), { status: 200 });
     }
 
-    // DELETE: Aday sil
     if (method === 'DELETE') {
       const id = searchParams.get('id');
       if (!id) return new Response('ID Required', { status: 400 });
@@ -75,7 +93,14 @@ export default async function handler(request: Request) {
 
     return new Response('Method Not Allowed', { status: 405 });
   } catch (error: any) {
-    console.error('Database Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    console.error('Database Operation Error:', error);
+    // Hata detayını frontend'e döndür (Hata ayıklama için)
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      detail: 'Veritabanı bağlantınızı Vercel Dashboard üzerinden kontrol edin.' 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
