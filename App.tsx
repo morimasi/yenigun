@@ -1,10 +1,36 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CandidateForm from './components/CandidateForm';
 import Dashboard from './components/Dashboard';
 import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 import { GoogleGenAI } from "@google/genai";
+
+// Veri Yönetim Katmanı (API Simulation - Replace with real fetch calls later)
+const api = {
+  getCandidates: async (): Promise<Candidate[]> => {
+    const saved = localStorage.getItem('yeni_gun_candidates');
+    return saved ? JSON.parse(saved) : [];
+  },
+  saveCandidate: async (candidate: Candidate) => {
+    const current = await api.getCandidates();
+    const updated = [candidate, ...current];
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    return updated;
+  },
+  updateCandidate: async (updatedCandidate: Candidate) => {
+    const current = await api.getCandidates();
+    const newList = current.map(c => c.id === updatedCandidate.id ? updatedCandidate : c);
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
+    return newList;
+  },
+  deleteCandidate: async (id: string) => {
+    const current = await api.getCandidates();
+    const newList = current.filter(c => c.id !== id);
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
+    return newList;
+  }
+};
 
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
@@ -14,20 +40,25 @@ const App: React.FC = () => {
   const [chatMessage, setChatMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'ai', text: string}[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'local' | 'cloud'>('local');
 
+  // Load Initial Data
   useEffect(() => {
-    const saved = localStorage.getItem('yeni_gun_candidates');
-    if (saved) setCandidates(JSON.parse(saved));
+    api.getCandidates().then(setCandidates);
+    // Vercel Postgres kontrol simülasyonu
+    if (window.location.hostname !== 'localhost') {
+       // setDbStatus('cloud'); // Real integration would check environment variables
+    }
   }, []);
 
-  const saveCandidates = (newList: Candidate[]) => {
+  const handleUpdateCandidate = async (updated: Candidate) => {
+    const newList = await api.updateCandidate(updated);
     setCandidates(newList);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
   };
 
-  const handleUpdateCandidate = (updated: Candidate) => {
-    const newList = candidates.map(c => c.id === updated.id ? updated : c);
-    saveCandidates(newList);
+  const handleDeleteCandidate = async (id: string) => {
+    const newList = await api.deleteCandidate(id);
+    setCandidates(newList);
   };
 
   const handleAiChat = async () => {
@@ -43,7 +74,7 @@ const App: React.FC = () => {
         model: "gemini-3-flash-preview",
         contents: userMsg,
         config: {
-          systemInstruction: "Sen Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi'nin kurumsal asistanısın. Adaylara kurumun vizyonu, mülakat süreci ve çalışma şartları (genel olarak) hakkında bilgi veriyorsun. Şefkatli, profesyonel ve davetkar ol."
+          systemInstruction: "Sen Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi'nin kurumsal asistanısın. Adaylara kurumun vizyonu, mülakat süreci ve çalışma şartları hakkında bilgi veriyorsun."
         }
       });
       setChatHistory(prev => [...prev, {role: 'ai', text: response.text || 'Anlaşılamadı.'}]);
@@ -62,15 +93,18 @@ const App: React.FC = () => {
       timestamp: Date.now(),
       status: 'pending'
     };
-    const updatedList = [newCandidate, ...candidates];
-    saveCandidates(updatedList);
+    
+    // Immediate save to UI & Storage
+    const updatedList = await api.saveCandidate(newCandidate);
+    setCandidates(updatedList);
+
     try {
       const report = await generateCandidateAnalysis(newCandidate);
-      const listWithReport = updatedList.map(c => c.id === newCandidate.id ? { ...c, report } : c);
-      saveCandidates(listWithReport);
+      const updatedCandidate = { ...newCandidate, report };
+      await handleUpdateCandidate(updatedCandidate);
       setView('admin');
     } catch (error) {
-      alert("AI Analiz sürecinde bir hata oluştu. Veriler kaydedildi ancak rapor henüz hazır değil.");
+      alert("AI Analiz sürecinde bir hata oluştu. Veriler kaydedildi ancak rapor daha sonra oluşturulacak.");
     } finally {
       setIsProcessing(false);
     }
@@ -86,7 +120,13 @@ const App: React.FC = () => {
             </div>
             <div className="hidden md:flex flex-col">
               <span className="text-xl font-black tracking-tight leading-none">YENİ GÜN</span>
-              <span className="text-[10px] font-bold text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-[9px] font-black text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${dbStatus === 'cloud' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                  {dbStatus === 'cloud' ? 'DB Connected' : 'Local Node'}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
@@ -106,7 +146,7 @@ const App: React.FC = () => {
           ) : (
             <Dashboard 
               candidates={candidates} 
-              onDelete={(id) => saveCandidates(candidates.filter(c => c.id !== id))}
+              onDelete={handleDeleteCandidate}
               onUpdate={handleUpdateCandidate}
             />
           )}
@@ -126,7 +166,7 @@ const App: React.FC = () => {
               <button onClick={() => setIsAiChatOpen(false)} className="text-slate-400 hover:text-white"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <div className="flex-1 p-6 overflow-y-auto space-y-4 custom-scrollbar bg-slate-50/50">
-              {chatHistory.length === 0 && <p className="text-xs text-slate-400 text-center mt-20">"Yeni Gün'de kariyer süreci nasıl işliyor?" gibi sorular sorabilirsiniz.</p>}
+              {chatHistory.length === 0 && <p className="text-xs text-slate-400 text-center mt-20">Aday süreci hakkında sorularınızı bekliyorum.</p>}
               {chatHistory.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium ${m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-white border border-slate-100 text-slate-700 shadow-sm'}`}>
@@ -137,7 +177,7 @@ const App: React.FC = () => {
               {isChatLoading && <div className="text-[10px] text-slate-400 animate-pulse font-bold">Analiz ediliyor...</div>}
             </div>
             <div className="p-4 bg-white border-t border-slate-50 flex gap-2">
-              <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAiChat()} placeholder="Sorunuzu yazın..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-xs focus:ring-1 focus:ring-orange-500" />
+              <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAiChat()} placeholder="Sorunuzu yazın..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none" />
               <button onClick={handleAiChat} className="p-2 bg-slate-900 text-white rounded-xl"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg></button>
             </div>
           </div>
@@ -153,7 +193,7 @@ const App: React.FC = () => {
             </div>
             <h3 className="text-2xl font-black text-slate-900">Multimodal Analiz</h3>
             <p className="text-slate-500 mt-4 text-sm font-bold leading-relaxed">
-              Gemini 3.0 Flash, cevaplarınızı ve CV'nizi kurumsal genomumuzla eşleştiriyor.
+              Gemini 3.0 Flash, verilerinizi kurumsal genomumuzla eşleştiriyor.
             </p>
           </div>
         </div>
