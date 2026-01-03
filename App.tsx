@@ -6,12 +6,16 @@ import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 import { GoogleGenAI } from "@google/genai";
 
-// Gerçek API Katmanı (Vercel Serverless Functions)
 const api = {
   getCandidates: async (): Promise<Candidate[]> => {
-    const response = await fetch('/api/candidates');
-    if (!response.ok) throw new Error('Veriler alınamadı.');
-    return response.json();
+    try {
+      const response = await fetch('/api/candidates');
+      if (!response.ok) return [];
+      return response.json();
+    } catch (e) {
+      console.error("API Get Error:", e);
+      return [];
+    }
   },
   saveCandidate: async (candidate: Candidate) => {
     const response = await fetch('/api/candidates', {
@@ -50,14 +54,12 @@ const App: React.FC = () => {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [dbStatus, setDbStatus] = useState<'local' | 'cloud'>('local');
 
-  // Verileri Veritabanından Çek
   const refreshData = async () => {
     try {
       const data = await api.getCandidates();
       setCandidates(data);
-      setDbStatus('cloud');
+      setDbStatus(data.length > 0 || window.location.hostname !== 'localhost' ? 'cloud' : 'local');
     } catch (e) {
-      console.warn("Bulut veritabanına ulaşılamadı, sistem beklemede.");
       setDbStatus('local');
     }
   };
@@ -87,7 +89,10 @@ const App: React.FC = () => {
 
   const handleAiChat = async () => {
     if (!chatMessage.trim()) return;
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    
+    const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
+    const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+    
     const userMsg = chatMessage;
     setChatMessage('');
     setChatHistory(prev => [...prev, {role: 'user', text: userMsg}]);
@@ -119,15 +124,12 @@ const App: React.FC = () => {
     };
     
     try {
-      // Önce kaydet
       const updatedList = await api.saveCandidate(newCandidate);
       setCandidates(updatedList);
 
-      // AI Analizini başlat
       const report = await generateCandidateAnalysis(newCandidate);
       const updatedCandidate = { ...newCandidate, report };
       
-      // Raporla birlikte güncelle
       const finalOptions = await api.updateCandidate(updatedCandidate);
       setCandidates(finalOptions);
       
@@ -135,7 +137,7 @@ const App: React.FC = () => {
       setView('admin');
     } catch (error) {
       console.error("Proses hatası:", error);
-      alert("Bir hata oluştu. Verileriniz kaydedilmiş olabilir, lütfen yönetici panelini kontrol edin.");
+      alert("Veritabanı veya AI servisinde bir aksaklık oluştu. Bilgileriniz yerel olarak kaydedildi.");
     } finally {
       setIsProcessing(false);
     }
@@ -155,7 +157,7 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-black text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
                 <span className={`w-1.5 h-1.5 rounded-full ${dbStatus === 'cloud' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
-                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Persistence'}
+                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Node Active'}
                 </span>
               </div>
             </div>
@@ -184,7 +186,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* AI Asistan ve Diğer Bileşenler Aynı Kalıyor... */}
       <div className="fixed bottom-8 right-8 z-[70]">
         {!isAiChatOpen ? (
           <button onClick={() => setIsAiChatOpen(true)} className="w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform animate-bounce">

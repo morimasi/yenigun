@@ -2,9 +2,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// API anahtarına güvenli erişim sağlayan yardımcı fonksiyon
+const getAiClient = () => {
+  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
+  return new GoogleGenAI({ apiKey: apiKey || '' });
+};
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
+  const ai = getAiClient();
+  
   const textPrompt = `
     Sen, Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi için özel olarak konfigüre edilmiş bir Yapay Zeka Yetenek Mimarı'sın.
     
@@ -82,6 +88,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 };
 
 export const generatePersonalizedInvite = async (candidate: Candidate): Promise<string> => {
+  const ai = getAiClient();
+  
   const prompt = `
     Yeni Gün Özel Eğitim Merkezi adına ${candidate.name} isimli adaya bir mülakat davet metni yaz.
     Adayın branşı: ${candidate.branch}
