@@ -1,34 +1,42 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import CandidateForm from './components/CandidateForm';
 import Dashboard from './components/Dashboard';
 import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 import { GoogleGenAI } from "@google/genai";
 
-// Veri Yönetim Katmanı (API Simulation - Replace with real fetch calls later)
+// Gerçek API Katmanı (Vercel Serverless Functions)
 const api = {
   getCandidates: async (): Promise<Candidate[]> => {
-    const saved = localStorage.getItem('yeni_gun_candidates');
-    return saved ? JSON.parse(saved) : [];
+    const response = await fetch('/api/candidates');
+    if (!response.ok) throw new Error('Veriler alınamadı.');
+    return response.json();
   },
   saveCandidate: async (candidate: Candidate) => {
-    const current = await api.getCandidates();
-    const updated = [candidate, ...current];
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
-    return updated;
+    const response = await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(candidate),
+    });
+    if (!response.ok) throw new Error('Kaydedilemedi.');
+    return api.getCandidates();
   },
   updateCandidate: async (updatedCandidate: Candidate) => {
-    const current = await api.getCandidates();
-    const newList = current.map(c => c.id === updatedCandidate.id ? updatedCandidate : c);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
-    return newList;
+    const response = await fetch('/api/candidates', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedCandidate),
+    });
+    if (!response.ok) throw new Error('Güncellenemedi.');
+    return api.getCandidates();
   },
   deleteCandidate: async (id: string) => {
-    const current = await api.getCandidates();
-    const newList = current.filter(c => c.id !== id);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
-    return newList;
+    const response = await fetch(`/api/candidates?id=${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Silinemedi.');
+    return api.getCandidates();
   }
 };
 
@@ -42,23 +50,39 @@ const App: React.FC = () => {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [dbStatus, setDbStatus] = useState<'local' | 'cloud'>('local');
 
-  // Load Initial Data
-  useEffect(() => {
-    api.getCandidates().then(setCandidates);
-    // Vercel Postgres kontrol simülasyonu
-    if (window.location.hostname !== 'localhost') {
-       // setDbStatus('cloud'); // Real integration would check environment variables
+  // Verileri Veritabanından Çek
+  const refreshData = async () => {
+    try {
+      const data = await api.getCandidates();
+      setCandidates(data);
+      setDbStatus('cloud');
+    } catch (e) {
+      console.warn("Bulut veritabanına ulaşılamadı, sistem beklemede.");
+      setDbStatus('local');
     }
+  };
+
+  useEffect(() => {
+    refreshData();
   }, []);
 
   const handleUpdateCandidate = async (updated: Candidate) => {
-    const newList = await api.updateCandidate(updated);
-    setCandidates(newList);
+    try {
+      const newList = await api.updateCandidate(updated);
+      setCandidates(newList);
+    } catch (e) {
+      alert("Güncelleme hatası: " + e);
+    }
   };
 
   const handleDeleteCandidate = async (id: string) => {
-    const newList = await api.deleteCandidate(id);
-    setCandidates(newList);
+    if (!confirm("Adayı silmek istediğinize emin misiniz?")) return;
+    try {
+      const newList = await api.deleteCandidate(id);
+      setCandidates(newList);
+    } catch (e) {
+      alert("Silme hatası: " + e);
+    }
   };
 
   const handleAiChat = async () => {
@@ -94,17 +118,24 @@ const App: React.FC = () => {
       status: 'pending'
     };
     
-    // Immediate save to UI & Storage
-    const updatedList = await api.saveCandidate(newCandidate);
-    setCandidates(updatedList);
-
     try {
+      // Önce kaydet
+      const updatedList = await api.saveCandidate(newCandidate);
+      setCandidates(updatedList);
+
+      // AI Analizini başlat
       const report = await generateCandidateAnalysis(newCandidate);
       const updatedCandidate = { ...newCandidate, report };
-      await handleUpdateCandidate(updatedCandidate);
+      
+      // Raporla birlikte güncelle
+      const finalOptions = await api.updateCandidate(updatedCandidate);
+      setCandidates(finalOptions);
+      
+      alert("Başvurunuz ve yapay zeka analiziniz başarıyla tamamlandı.");
       setView('admin');
     } catch (error) {
-      alert("AI Analiz sürecinde bir hata oluştu. Veriler kaydedildi ancak rapor daha sonra oluşturulacak.");
+      console.error("Proses hatası:", error);
+      alert("Bir hata oluştu. Verileriniz kaydedilmiş olabilir, lütfen yönetici panelini kontrol edin.");
     } finally {
       setIsProcessing(false);
     }
@@ -124,7 +155,7 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-black text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
                 <span className={`w-1.5 h-1.5 rounded-full ${dbStatus === 'cloud' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
-                  {dbStatus === 'cloud' ? 'DB Connected' : 'Local Node'}
+                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Persistence'}
                 </span>
               </div>
             </div>
@@ -153,7 +184,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* AI Assistant Widget */}
+      {/* AI Asistan ve Diğer Bileşenler Aynı Kalıyor... */}
       <div className="fixed bottom-8 right-8 z-[70]">
         {!isAiChatOpen ? (
           <button onClick={() => setIsAiChatOpen(true)} className="w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform animate-bounce">
@@ -191,9 +222,9 @@ const App: React.FC = () => {
               <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
               <svg className="w-10 h-10 text-orange-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
-            <h3 className="text-2xl font-black text-slate-900">Multimodal Analiz</h3>
+            <h3 className="text-2xl font-black text-slate-900">Kurumsal Belleğe Yazılıyor</h3>
             <p className="text-slate-500 mt-4 text-sm font-bold leading-relaxed">
-              Gemini 3.0 Flash, verilerinizi kurumsal genomumuzla eşleştiriyor.
+              Veritabanı senkronizasyonu ve Gemini 3.0 analiz süreci başlatıldı.
             </p>
           </div>
         </div>
