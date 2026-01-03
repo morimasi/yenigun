@@ -6,41 +6,60 @@ import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 import { GoogleGenAI } from "@google/genai";
 
+// API Katmanı - Daha güvenli fetch yönetimi
 const api = {
   getCandidates: async (): Promise<Candidate[]> => {
     try {
       const response = await fetch('/api/candidates');
-      if (!response.ok) return [];
-      return response.json();
+      if (!response.ok) {
+        console.warn("API listeleme hatası, yerel modda devam ediliyor.");
+        return [];
+      }
+      return await response.json();
     } catch (e) {
-      console.error("API Get Error:", e);
+      console.error("Network Error:", e);
       return [];
     }
   },
   saveCandidate: async (candidate: Candidate) => {
-    const response = await fetch('/api/candidates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate),
-    });
-    if (!response.ok) throw new Error('Kaydedilemedi.');
-    return api.getCandidates();
+    try {
+      const response = await fetch('/api/candidates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate),
+      });
+      if (!response.ok) throw new Error('Sunucu kayıt hatası');
+      return api.getCandidates();
+    } catch (e) {
+      console.error("Save Error:", e);
+      throw e;
+    }
   },
   updateCandidate: async (updatedCandidate: Candidate) => {
-    const response = await fetch('/api/candidates', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedCandidate),
-    });
-    if (!response.ok) throw new Error('Güncellenemedi.');
-    return api.getCandidates();
+    try {
+      const response = await fetch('/api/candidates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCandidate),
+      });
+      if (!response.ok) throw new Error('Sunucu güncelleme hatası');
+      return api.getCandidates();
+    } catch (e) {
+      console.error("Update Error:", e);
+      throw e;
+    }
   },
   deleteCandidate: async (id: string) => {
-    const response = await fetch(`/api/candidates?id=${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Silinemedi.');
-    return api.getCandidates();
+    try {
+      const response = await fetch(`/api/candidates?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Sunucu silme hatası');
+      return api.getCandidates();
+    } catch (e) {
+      console.error("Delete Error:", e);
+      throw e;
+    }
   }
 };
 
@@ -57,8 +76,10 @@ const App: React.FC = () => {
   const refreshData = async () => {
     try {
       const data = await api.getCandidates();
-      setCandidates(data);
-      setDbStatus(data.length > 0 || window.location.hostname !== 'localhost' ? 'cloud' : 'local');
+      setCandidates(data || []);
+      // Canlı ortamda mıyız kontrolü
+      const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      setDbStatus(isCloud ? 'cloud' : 'local');
     } catch (e) {
       setDbStatus('local');
     }
@@ -73,14 +94,12 @@ const App: React.FC = () => {
       const newList = await api.updateCandidate(updated);
       setCandidates(newList);
     } catch (e) {
-      alert("Güncelleme hatası: " + e);
+      alert("İşlem tamamlanamadı: " + e);
     }
   };
 
   const handleDeleteCandidate = async (id: string) => {
-    // Kullanıcının talep ettiği onay mesajı
     if (!window.confirm("Emin misiniz?")) return;
-    
     try {
       const newList = await api.deleteCandidate(id);
       setCandidates(newList);
@@ -92,8 +111,9 @@ const App: React.FC = () => {
   const handleAiChat = async () => {
     if (!chatMessage.trim()) return;
     
-    const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
-    const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+    // Güvenli process.env kontrolü
+    const safeApiKey = (globalThis as any).process?.env?.API_KEY || '';
+    const ai = new GoogleGenAI({ apiKey: safeApiKey });
     
     const userMsg = chatMessage;
     setChatMessage('');
@@ -139,7 +159,7 @@ const App: React.FC = () => {
       setView('admin');
     } catch (error) {
       console.error("Proses hatası:", error);
-      alert("Veritabanı veya AI servisinde bir aksaklık oluştu. Bilgileriniz yerel olarak kaydedildi.");
+      alert("Bir bağlantı hatası oluştu, ancak başvurunuz kaydedilmiş olabilir. Lütfen yönetici panelinden kontrol edin.");
     } finally {
       setIsProcessing(false);
     }
@@ -159,7 +179,7 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-black text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
                 <span className={`w-1.5 h-1.5 rounded-full ${dbStatus === 'cloud' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
-                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Node Active'}
+                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Sandbox Mode'}
                 </span>
               </div>
             </div>
@@ -188,6 +208,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
+      {/* AI Chat Drawer */}
       <div className="fixed bottom-8 right-8 z-[70]">
         {!isAiChatOpen ? (
           <button onClick={() => setIsAiChatOpen(true)} className="w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform animate-bounce">
