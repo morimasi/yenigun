@@ -241,7 +241,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                   >
                     Mülakat İşlemleri
                   </button>
-                  <button onClick={handleDownloadPDF} disabled={isExporting} className="p-4 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-100 transition-all">
+                  <button onClick={handleDownloadPDF} disabled={isExporting} className="p-4 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-100 transition-all" title="PDF Rapor İndir">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   </button>
                   <button 
@@ -253,6 +253,13 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                     title="Adayı Ele"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                  <button 
+                    onClick={() => onDelete?.(selectedCandidate.id)}
+                    className="p-4 bg-slate-100 text-slate-400 hover:bg-rose-600 hover:text-white transition-all rounded-2xl"
+                    title="Adayı Kalıcı Olarak Sil"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
               </div>

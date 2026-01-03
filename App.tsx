@@ -78,7 +78,9 @@ const App: React.FC = () => {
   };
 
   const handleDeleteCandidate = async (id: string) => {
-    if (!confirm("Adayı silmek istediğinize emin misiniz?")) return;
+    // Kullanıcının talep ettiği onay mesajı
+    if (!window.confirm("Emin misiniz?")) return;
+    
     try {
       const newList = await api.deleteCandidate(id);
       setCandidates(newList);
