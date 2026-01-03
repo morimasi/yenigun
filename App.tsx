@@ -6,60 +6,35 @@ import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 import { GoogleGenAI } from "@google/genai";
 
-// API Katmanı - Daha güvenli fetch yönetimi
 const api = {
   getCandidates: async (): Promise<Candidate[]> => {
     try {
       const response = await fetch('/api/candidates');
-      if (!response.ok) {
-        console.warn("API listeleme hatası, yerel modda devam ediliyor.");
-        return [];
-      }
+      if (!response.ok) return [];
       return await response.json();
     } catch (e) {
-      console.error("Network Error:", e);
       return [];
     }
   },
   saveCandidate: async (candidate: Candidate) => {
-    try {
-      const response = await fetch('/api/candidates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(candidate),
-      });
-      if (!response.ok) throw new Error('Sunucu kayıt hatası');
-      return api.getCandidates();
-    } catch (e) {
-      console.error("Save Error:", e);
-      throw e;
-    }
+    const response = await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(candidate),
+    });
+    return api.getCandidates();
   },
   updateCandidate: async (updatedCandidate: Candidate) => {
-    try {
-      const response = await fetch('/api/candidates', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedCandidate),
-      });
-      if (!response.ok) throw new Error('Sunucu güncelleme hatası');
-      return api.getCandidates();
-    } catch (e) {
-      console.error("Update Error:", e);
-      throw e;
-    }
+    await fetch('/api/candidates', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedCandidate),
+    });
+    return api.getCandidates();
   },
   deleteCandidate: async (id: string) => {
-    try {
-      const response = await fetch(`/api/candidates?id=${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Sunucu silme hatası');
-      return api.getCandidates();
-    } catch (e) {
-      console.error("Delete Error:", e);
-      throw e;
-    }
+    await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
+    return api.getCandidates();
   }
 };
 
@@ -71,49 +46,13 @@ const App: React.FC = () => {
   const [chatMessage, setChatMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'ai', text: string}[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [dbStatus, setDbStatus] = useState<'local' | 'cloud'>('local');
-
-  const refreshData = async () => {
-    try {
-      const data = await api.getCandidates();
-      setCandidates(data || []);
-      // Canlı ortamda mıyız kontrolü
-      const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-      setDbStatus(isCloud ? 'cloud' : 'local');
-    } catch (e) {
-      setDbStatus('local');
-    }
-  };
 
   useEffect(() => {
-    refreshData();
+    api.getCandidates().then(setCandidates);
   }, []);
-
-  const handleUpdateCandidate = async (updated: Candidate) => {
-    try {
-      const newList = await api.updateCandidate(updated);
-      setCandidates(newList);
-    } catch (e) {
-      alert("İşlem tamamlanamadı: " + e);
-    }
-  };
-
-  const handleDeleteCandidate = async (id: string) => {
-    if (!window.confirm("Emin misiniz?")) return;
-    try {
-      const newList = await api.deleteCandidate(id);
-      setCandidates(newList);
-    } catch (e) {
-      alert("Silme hatası: " + e);
-    }
-  };
 
   const handleAiChat = async () => {
     if (!chatMessage.trim()) return;
-    
-    // Güvenli process.env kontrolü
-    const safeApiKey = (globalThis as any).process?.env?.API_KEY || '';
-    const ai = new GoogleGenAI({ apiKey: safeApiKey });
     
     const userMsg = chatMessage;
     setChatMessage('');
@@ -121,22 +60,23 @@ const App: React.FC = () => {
     setIsChatLoading(true);
 
     try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: userMsg,
         config: {
-          systemInstruction: "Sen Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi'nin kurumsal asistanısın. Adaylara kurumun vizyonu, mülakat süreci ve çalışma şartları hakkında bilgi veriyorsun."
+          systemInstruction: "Sen Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi'nin kurumsal asistanısın. Adaylara mülakat süreci ve kurum vizyonu hakkında bilgi veriyorsun."
         }
       });
       setChatHistory(prev => [...prev, {role: 'ai', text: response.text || 'Anlaşılamadı.'}]);
     } catch (e) {
-      setChatHistory(prev => [...prev, {role: 'ai', text: 'Üzgünüm, şu an yanıt veremiyorum.'}]);
+      setChatHistory(prev => [...prev, {role: 'ai', text: 'Sistem şu an meşgul, lütfen daha sonra tekrar deneyiniz.'}]);
     } finally {
       setIsChatLoading(false);
     }
   };
 
-  const handleCandidateSubmit = async (data: Omit<Candidate, 'id' | 'timestamp' | 'report' | 'status'>) => {
+  const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
     const newCandidate: Candidate = {
       ...data,
@@ -146,93 +86,71 @@ const App: React.FC = () => {
     };
     
     try {
-      const updatedList = await api.saveCandidate(newCandidate);
-      setCandidates(updatedList);
-
+      await api.saveCandidate(newCandidate);
       const report = await generateCandidateAnalysis(newCandidate);
-      const updatedCandidate = { ...newCandidate, report };
-      
-      const finalOptions = await api.updateCandidate(updatedCandidate);
-      setCandidates(finalOptions);
-      
-      alert("Başvurunuz ve yapay zeka analiziniz başarıyla tamamlandı.");
+      const updated = { ...newCandidate, report };
+      const list = await api.updateCandidate(updated);
+      setCandidates(list);
+      alert("Başvurunuz başarıyla kaydedildi.");
       setView('admin');
     } catch (error) {
-      console.error("Proses hatası:", error);
-      alert("Bir bağlantı hatası oluştu, ancak başvurunuz kaydedilmiş olabilir. Lütfen yönetici panelinden kontrol edin.");
+      alert("Bir hata oluştu, ancak başvurunuz kaydedilmiş olabilir.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 selection:bg-orange-100 selection:text-orange-900">
-      <nav className="bg-white/70 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-[60] transition-all">
+    <div className="min-h-screen bg-[#FDFDFD] text-slate-900">
+      <nav className="bg-white/70 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-[60]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl transition-transform hover:rotate-6">
-              <span className="text-2xl font-black">YG</span>
-            </div>
-            <div className="hidden md:flex flex-col">
-              <span className="text-xl font-black tracking-tight leading-none">YENİ GÜN</span>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[9px] font-black text-orange-600 tracking-[0.2em] uppercase">Ecosystem</span>
-                <span className={`w-1.5 h-1.5 rounded-full ${dbStatus === 'cloud' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
-                  {dbStatus === 'cloud' ? 'Vercel Postgres Connected' : 'Local Sandbox Mode'}
-                </span>
-              </div>
-            </div>
+            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black shadow-lg">YG</div>
+            <span className="text-lg font-black tracking-tight">YENİ GÜN</span>
           </div>
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
-            {['candidate', 'admin'].map((v) => (
-              <button key={v} onClick={() => setView(v as any)} className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${view === v ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
-                {v === 'candidate' ? 'Aday Portalı' : 'Yönetici Paneli'}
-              </button>
-            ))}
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button onClick={() => setView('candidate')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500'}`}>Aday Portalı</button>
+            <button onClick={() => setView('admin')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500'}`}>Yönetici Paneli</button>
           </div>
         </div>
       </nav>
 
-      <main className="py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          {view === 'candidate' ? (
-            <CandidateForm onSubmit={handleCandidateSubmit} />
-          ) : (
-            <Dashboard 
-              candidates={candidates} 
-              onDelete={handleDeleteCandidate}
-              onUpdate={handleUpdateCandidate}
-            />
-          )}
-        </div>
+      <main className="py-10 px-6 max-w-7xl mx-auto">
+        {view === 'candidate' ? (
+          <CandidateForm onSubmit={handleCandidateSubmit} />
+        ) : (
+          <Dashboard 
+            candidates={candidates} 
+            onDelete={(id) => api.deleteCandidate(id).then(setCandidates)}
+            onUpdate={(c) => api.updateCandidate(c).then(setCandidates)}
+          />
+        )}
       </main>
 
-      {/* AI Chat Drawer */}
-      <div className="fixed bottom-8 right-8 z-[70]">
+      {/* AI Asistan Butonu */}
+      <div className="fixed bottom-6 right-6 z-[70]">
         {!isAiChatOpen ? (
-          <button onClick={() => setIsAiChatOpen(true)} className="w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform animate-bounce">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+          <button onClick={() => setIsAiChatOpen(true)} className="w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
           </button>
         ) : (
-          <div className="w-80 md:w-96 h-[500px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-scale-in">
-            <div className="bg-slate-900 p-6 flex justify-between items-center">
-              <span className="text-white font-black text-sm uppercase tracking-widest">YG Asistan</span>
-              <button onClick={() => setIsAiChatOpen(false)} className="text-slate-400 hover:text-white"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+          <div className="w-80 h-[450px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-scale-in">
+            <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
+              <span className="text-xs font-black uppercase tracking-widest">YG Asistan</span>
+              <button onClick={() => setIsAiChatOpen(false)}><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-            <div className="flex-1 p-6 overflow-y-auto space-y-4 custom-scrollbar bg-slate-50/50">
-              {chatHistory.length === 0 && <p className="text-xs text-slate-400 text-center mt-20">Aday süreci hakkında sorularınızı bekliyorum.</p>}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50">
               {chatHistory.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium ${m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-white border border-slate-100 text-slate-700 shadow-sm'}`}>
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-[11px] font-medium ${m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-white border border-slate-100'}`}>
                     {m.text}
                   </div>
                 </div>
               ))}
-              {isChatLoading && <div className="text-[10px] text-slate-400 animate-pulse font-bold">Analiz ediliyor...</div>}
+              {isChatLoading && <div className="text-[9px] text-slate-400 animate-pulse font-bold">Düşünüyor...</div>}
             </div>
-            <div className="p-4 bg-white border-t border-slate-50 flex gap-2">
-              <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAiChat()} placeholder="Sorunuzu yazın..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none" />
+            <div className="p-3 bg-white border-t flex gap-2">
+              <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAiChat()} placeholder="Sorunuz..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-xs outline-none" />
               <button onClick={handleAiChat} className="p-2 bg-slate-900 text-white rounded-xl"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg></button>
             </div>
           </div>
@@ -240,16 +158,11 @@ const App: React.FC = () => {
       </div>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white p-12 rounded-[4rem] shadow-2xl flex flex-col items-center max-w-sm w-full text-center border border-white/20">
-            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-8 relative">
-              <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
-              <svg className="w-10 h-10 text-orange-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <h3 className="text-2xl font-black text-slate-900">Kurumsal Belleğe Yazılıyor</h3>
-            <p className="text-slate-500 mt-4 text-sm font-bold leading-relaxed">
-              Veritabanı senkronizasyonu ve Gemini 3.0 analiz süreci başlatıldı.
-            </p>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+          <div className="bg-white p-10 rounded-[3rem] shadow-2xl flex flex-col items-center text-center">
+            <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <h3 className="text-xl font-black">Başvurunuz Analiz Ediliyor</h3>
+            <p className="text-slate-500 mt-2 text-sm font-bold">Lütfen tarayıcıyı kapatmayınız.</p>
           </div>
         </div>
       )}

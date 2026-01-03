@@ -2,16 +2,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
-// API anahtarına güvenli erişim sağlayan yardımcı fonksiyon
-const getAiClient = () => {
-  // globalThis kullanımı tarayıcıda process hatasını kesin olarak önler
-  const safeProcess = (globalThis as any).process;
-  const apiKey = safeProcess?.env?.API_KEY || '';
-  return new GoogleGenAI({ apiKey: apiKey });
-};
-
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  const ai = getAiClient();
+  // Her çağrıda yeni instance oluşturulması en güvenli yöntemdir (Sistem Kuralı)
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   
   const textPrompt = `
     Sen, Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi için özel olarak konfigüre edilmiş bir Yapay Zeka Yetenek Mimarı'sın.
@@ -73,16 +66,11 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     }
   });
 
-  try {
-    return JSON.parse(response.text || '{}') as AIReport;
-  } catch (e) {
-    console.error("JSON Parse Error", e);
-    throw new Error("Analiz raporu oluşturulurken teknik bir hata oluştu.");
-  }
+  return JSON.parse(response.text || '{}') as AIReport;
 };
 
 export const generatePersonalizedInvite = async (candidate: Candidate): Promise<string> => {
-  const ai = getAiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   
   const prompt = `
     Yeni Gün Özel Eğitim Merkezi adına ${candidate.name} isimli adaya bir mülakat davet metni yaz.
