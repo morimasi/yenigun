@@ -5,12 +5,15 @@ export const config = {
   runtime: 'edge',
 };
 
+/**
+ * Yeni Gün Özel Eğitim - Güvenli Veri API
+ */
 export default async function handler(request: Request) {
   const method = request.method;
   const { searchParams } = new URL(request.url);
 
   try {
-    // Tabloyu her istekte sessizce kontrol et
+    // Veritabanı başlangıç kurulumu (Sessiz kontrol)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -25,7 +28,7 @@ export default async function handler(request: Request) {
         report JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `.catch(e => console.error('Silent Table Check Error:', e));
+    `.catch(e => console.error('DB Init Error:', e));
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
@@ -45,10 +48,7 @@ export default async function handler(request: Request) {
       
       return new Response(JSON.stringify(candidates), { 
         status: 200, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate'
-        } 
+        headers: { 'Content-Type': 'application/json' } 
       });
     }
 
@@ -81,7 +81,7 @@ export default async function handler(request: Request) {
 
     if (method === 'DELETE') {
       const id = searchParams.get('id');
-      if (!id) throw new Error('ID Gerekli');
+      if (!id) throw new Error('Aday ID gerekli.');
       await sql`DELETE FROM candidates WHERE id = ${id}`;
       return new Response(JSON.stringify({ success: true }), { 
         status: 200,
@@ -89,10 +89,14 @@ export default async function handler(request: Request) {
       });
     }
 
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
   } catch (error: any) {
     console.error('API Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { 
+    return new Response(JSON.stringify({ error: error.message || 'Sunucu İç Hatası' }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
