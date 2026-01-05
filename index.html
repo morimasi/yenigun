@@ -29,22 +29,13 @@
             gap: 20px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom scrollbar for better UX */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
     </style>
-    <script>
-        // Kritik: Herhangi bir modül yükleme hatasını yakala
-        window.addEventListener('error', function(e) {
-            if (e.target.tagName === 'SCRIPT') {
-                console.error('Modül Yükleme Hatası:', e.target.src);
-                const loader = document.getElementById('boot-loader');
-                if (loader) {
-                    loader.innerHTML = '<div style="text-align:center;color:red;padding:20px;">' +
-                        '<h2 style="font-weight:800">Sistem Modülü Yüklenemedi</h2>' +
-                        '<p>İnternet bağlantınızı kontrol edin veya sayfayı yenileyin.</p>' +
-                        '</div>';
-                }
-            }
-        }, true);
-    </script>
     <script type="importmap">
 {
   "imports": {
