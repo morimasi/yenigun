@@ -19,14 +19,15 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     Aday kendini "kusursuz, hiç öfkelenmeyen, her zaman etik olan bir melek" gibi gösteriyorsa, bu bir 'RED FLAG' (Tehlike İşareti) olarak değerlendirilmelidir.
     
     ANALİZ KRİTERLERİ:
-    1. Otantisite: Cevaplar insani zaafları kabul ediyor mu yoksa ezberlenmiş "doğru" cevaplar mı?
-    2. Stres Altında Karar: Çocuk-Kurum-Kendi çıkarı çatıştığında hangisini seçiyor?
-    3. Red Flag Tespiti: Agresyon potansiyeli, gizli tükenmişlik veya kurumsal sadakat maskesi altında etik ihlal eğilimi var mı?
-    4. Gelişim Alanı: Aday hatasını itiraf edebiliyor mu?
+    1. Otantisite: Cevaplar insani zaafları (öfke, yorgunluk, hata yapma) kabul ediyor mu yoksa ezberlenmiş "doğru" cevaplar mı?
+    2. Stres Altında Karar: Çocuk-Kurum-Kendi çıkarı çatıştığında hangisini gerçekçi bir şekilde seçiyor?
+    3. Red Flag Tespiti: Agresyon potansiyeli, gizli tükenmişlik (burnout) veya kurumsal sadakat maskesi altında etik ihlal eğilimi var mı?
+    4. Gelişim Alanı: Aday hatasını itiraf edebiliyor mu? Hata itiraf etmeyen adayı "Narsisistik Eğilim" veya "Dürüstlük Eksikliği" ile işaretle.
     
     RAPORLAMA:
     - Skor verirken "fazla mükemmel" cevap verenlerin puanını kır.
-    - SWOT kısmında "Riskler" bölümüne adayın muhtemel maskelerini yaz.
+    - SWOT kısmındaki "Threats" bölümüne adayın muhtemel maskelerini yaz.
+    - Summary kısmında adayın profesyonel duruşu ile gerçek kişiliği arasındaki muhtemel boşluğu (gap) analiz et.
   `;
 
   const textPrompt = `

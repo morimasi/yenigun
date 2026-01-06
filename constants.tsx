@@ -26,6 +26,17 @@ export const MOCK_QUESTIONS = {
         'Müdürü (Tepki almayı göze alarak)', 
         'Bu durumu yönetemem, yardım çağırırım (Yetersizlik itirafı)'
       ] 
+    },
+    {
+      id: 'resource_scarcity',
+      text: 'Kurumda eğitim materyalleri çok kısıtlı ve yeni bütçe yok. Diğer öğretmen arkadaşınız kendi öğrencisi için sizin dolabınızdaki tek set materyali izinsiz almış. Tepkiniz ne olur?',
+      type: 'radio',
+      options: [
+        'Anlayışla karşılar, materyali ona bırakırım (Pasif karakter olasılığı).',
+        'Gidip sertçe geri alırım; benim öğrencimin hakkı önceliklidir.',
+        'Durumu müdüre raporlayarak profesyonel bir sınır çizilmesini isterim.',
+        'Kendi cebimden yeni bir materyal alır, sorunu kimseyle muhatap olmadan çözerim.'
+      ]
     }
   ],
   professional_cases: [
