@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, Branch, GlobalConfig } from '../types';
 import CandidateReport from './CandidateReport';
@@ -11,8 +12,8 @@ declare global {
     openSelectKey: () => Promise<void>;
   }
   interface Window {
-    // Fix: Added readonly to match identical modifiers requirement across potential multiple declarations
-    readonly aistudio: AIStudio;
+    // Fix: Removed readonly to resolve modifier mismatch with other declarations of aistudio
+    aistudio: AIStudio;
   }
 }
 

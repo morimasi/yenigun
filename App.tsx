@@ -20,74 +20,68 @@ const storage = {
   },
 
   async getCandidates(): Promise<Candidate[]> {
-    let finalData: Candidate[] = [];
-    
-    // 1. Önce LocalStorage'dan "Hızlı" yükleme yap
+    // 1. LocalStorage'dan hızlıca oku (UI'da boşluk olmasın)
     const local = localStorage.getItem('yeni_gun_candidates');
-    if (local) finalData = JSON.parse(local);
+    let localData: Candidate[] = local ? JSON.parse(local) : [];
 
-    // 2. Eğer Online isek API'den "Güncel" veriyi çek
+    // 2. API'den taze veriyi çek
     try {
       const response = await fetch('/api/candidates');
       if (response.ok) {
         const remoteData = await response.json();
-        // Uzak veri her zaman önceliklidir, yereli güncelle
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
-        return remoteData;
+        
+        // KRİTİK: Gelen verinin gerçekten bir liste olduğundan emin ol
+        if (Array.isArray(remoteData)) {
+          localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
+          return remoteData;
+        } else if (remoteData.error) {
+          console.error("DB Hatası:", remoteData.error);
+        }
       }
     } catch (e) {
-      console.warn("API'den veri çekilemedi, yerel modda devam ediliyor.");
+      console.warn("API senkronizasyonu başarısız, yerel verilerle devam ediliyor.");
     }
 
-    return finalData;
+    return localData;
   },
 
   async saveCandidate(candidate: Candidate) {
-    // Önce Yerel Kaydet (Hız için)
+    // Cloud kaydı zorunlu kıl (Persistence First)
+    const response = await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(candidate)
+    });
+
+    if (!response.ok) {
+      throw new Error("Bulut kaydı başarısız. Lütfen bağlantınızı kontrol edin.");
+    }
+
+    // Yerel hafızayı güncelle
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
-
-    // Sonra API'ye Gönder (Kalıcılık için)
-    try {
-      await fetch('/api/candidates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(candidate)
-      });
-    } catch (e) {
-      console.error("Bulut kaydı başarısız, veri sadece bu cihazda kalacak.");
-    }
   },
 
   async updateCandidate(candidate: Candidate) {
-    // Önce Yerel Güncelle
-    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-    const updated = current.map((c: Candidate) => c.id === candidate.id ? candidate : c);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    const response = await fetch('/api/candidates', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(candidate)
+    });
 
-    // Sonra API'ye Yama Gönder
-    try {
-      await fetch('/api/candidates', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(candidate)
-      });
-    } catch (e) {
-      console.error("Bulut güncelleme başarısız.");
+    if (response.ok) {
+      const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+      const updated = current.map((c: Candidate) => c.id === candidate.id ? candidate : c);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
     }
   },
 
   async deleteCandidate(id: string) {
-    // Önce Yerel Sil
-    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-    const updated = current.filter((c: Candidate) => c.id !== id);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
-
-    // Sonra API'den Sil
-    try {
-      await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
-    } catch (e) {
-      console.error("Bulut silme işlemi başarısız.");
+    const response = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
+    if (response.ok) {
+      const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+      const updated = current.filter((c: Candidate) => c.id !== id);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
     }
   }
 };
@@ -110,10 +104,10 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
   const loadData = useCallback(async () => {
-    const isOnline = await storage.checkConnection();
-    setConnectionStatus(isOnline ? 'online' : 'offline');
     const data = await storage.getCandidates();
     setCandidates(data);
+    const isOnline = await storage.checkConnection();
+    setConnectionStatus(isOnline ? 'online' : 'offline');
   }, []);
 
   useEffect(() => {
@@ -128,10 +122,12 @@ const App: React.FC = () => {
     
     loadData();
     
-    // Verileri periyodik olarak tazele (Opsiyonel: 30 saniyede bir)
-    const interval = setInterval(loadData, 30000);
+    // Periyodik senkron (Admin açıkken)
+    const interval = setInterval(() => {
+        if(isLoggedIn) loadData();
+    }, 45000);
     return () => clearInterval(interval);
-  }, [loadData]);
+  }, [loadData, isLoggedIn]);
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -143,11 +139,11 @@ const App: React.FC = () => {
     };
 
     try {
-      // Önce veritabanına ve lokale kaydet
+      // Önce buluta kaydet (Emin ol)
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
       
-      // Başvuru sonrası AI Analizi (Arka planda)
+      // AI Analizi
       generateCandidateAnalysis(newCandidate).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report };
@@ -156,10 +152,10 @@ const App: React.FC = () => {
         }
       }).catch(e => console.error("AI Analiz Hatası:", e));
       
-      alert("Başvurunuz başarıyla kaydedildi. Verileriniz güvenle saklanıyor.");
+      alert("Başvurunuz başarıyla bulut sistemine kaydedildi.");
       setView('candidate');
-    } catch (error) {
-      alert("Bir hata oluştu, ancak başvurunuz yerel olarak kaydedilmiş olabilir.");
+    } catch (error: any) {
+      alert("Hata: " + error.message);
     } finally {
       setIsProcessing(false);
     }
@@ -189,7 +185,7 @@ const App: React.FC = () => {
               <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">{config.institutionName.split(' ')[0]}</span>
               <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
                 <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-500 shadow-[0_0_10px_#f97316]'}`}></div>
-                {connectionStatus === 'online' ? 'Veri Tabanı Bağlı' : 'Yerel Veri Modu'}
+                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Yerel Hafıza Modu'}
               </div>
             </div>
           </div>
@@ -238,8 +234,8 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-8">
           <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl max-w-lg animate-bounce-in">
              <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
-             <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Veriler Senkronize Ediliyor</h3>
-             <p className="text-slate-500 text-xl font-medium italic">Bulut veritabanı güncelleniyor...</p>
+             <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Veritabanına Yazılıyor</h3>
+             <p className="text-slate-500 text-xl font-medium italic">Kalıcı kayıt oluşturuluyor...</p>
           </div>
         </div>
       )}

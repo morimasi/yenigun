@@ -26,7 +26,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema kontrolü
+    // Şema güncellemesi: cv_data eklendi
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -43,6 +43,7 @@ export default async function handler(request: Request) {
         admin_notes TEXT,
         interview_schedule JSONB,
         report JSONB,
+        cv_data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `.catch(e => console.warn('Schema check warning:', e.message));
@@ -64,6 +65,7 @@ export default async function handler(request: Request) {
         adminNotes: row.admin_notes,
         interviewSchedule: row.interview_schedule,
         report: row.report,
+        cvData: row.cv_data,
         timestamp: new Date(row.created_at).getTime()
       }));
       return new Response(JSON.stringify(candidates), { status: 200, headers });
@@ -72,17 +74,19 @@ export default async function handler(request: Request) {
     if (method === 'POST') {
       const body = await request.json();
       await sql`
-        INSERT INTO candidates (id, name, email, phone, age, branch, experience_years, previous_institutions, all_trainings, answers, status)
+        INSERT INTO candidates (id, name, email, phone, age, branch, experience_years, previous_institutions, all_trainings, answers, status, cv_data)
         VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, 
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
-          ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status}
+          ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
+          ${JSON.stringify(body.cvData || null)}
         )
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
-          status = EXCLUDED.status;
+          status = EXCLUDED.status,
+          cv_data = EXCLUDED.cv_data;
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
