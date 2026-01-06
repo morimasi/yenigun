@@ -51,33 +51,16 @@ const App: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
-  const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [isKeyLoading, setIsKeyLoading] = useState(false);
-
-  // API Key durumunu kontrol et
-  const checkApiKeyStatus = useCallback(async () => {
-    try {
-      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-        const selected = await window.aistudio.hasSelectedApiKey();
-        setHasApiKey(selected);
-        return selected;
-      }
-    } catch (e) {
-      console.warn("API Key status check failed", e);
-    }
-    return false;
-  }, []);
 
   useEffect(() => {
-    checkApiKeyStatus();
     // Boot loader temizliği
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, [checkApiKeyStatus]);
+  }, []);
 
   const loadData = useCallback(async () => {
     const isOnline = await storage.checkConnection();
@@ -92,32 +75,9 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  // Düğme tıklama işleyicisi (Geliştirilmiş)
-  const handleOpenKeySelector = async () => {
-    setIsKeyLoading(true);
-    try {
-      // window.aistudio nesnesinin hazır olup olmadığını kontrol et
-      if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-        await window.aistudio.openSelectKey();
-        // Talimat Gereği: Başarılı varsay ve devam et
-        setHasApiKey(true);
-        console.log("API Key selector opened successfully.");
-      } else {
-        alert("Sistem henüz hazır değil. Lütfen birkaç saniye sonra tekrar deneyin.");
-        console.error("window.aistudio.openSelectKey is not available.");
-      }
-    } catch (err) {
-      console.error("Error opening key selector:", err);
-      alert("Seçim ekranı açılamadı. Tarayıcı ayarlarınızı kontrol edin.");
-    } finally {
-      setIsKeyLoading(false);
-    }
-  };
-
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
     
-    // Form verilerini hemen kaydet (Analizden bağımsız)
     const newCandidate: Candidate = {
       ...data,
       id: Math.random().toString(36).substr(2, 9),
@@ -126,19 +86,11 @@ const App: React.FC = () => {
     };
 
     try {
+      // Önce yerel/uzak kaydı yap
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
 
-      // API Key kontrolü ve analiz
-      const keySelected = await checkApiKeyStatus();
-      if (!keySelected) {
-        // Anahtar yoksa analiz yapma ama kaydet
-        setIsProcessing(false);
-        alert("Başvurunuz alındı. Analiz, yönetici anahtarını bağladığında tamamlanacaktır.");
-        setView('candidate');
-        return;
-      }
-
+      // Analiz motorunu doğrudan çağır (process.env.API_KEY otomatik kullanılır)
       const report = await generateCandidateAnalysis(newCandidate);
       
       if (report) {
@@ -161,11 +113,10 @@ const App: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error: any) {
       console.error("Submit/Analysis Error:", error);
-      if (error.message?.includes("API_KEY")) {
-        setHasApiKey(false);
-        alert("Analiz motoru hatası: API anahtarınız geçersiz veya eksik. Lütfen yöneticiye başvurun.");
+      if (error.message === "API_KEY_MISSING") {
+        alert("Sistem hatası: API Anahtarı bulunamadı. Lütfen teknik ekibe başvurun.");
       } else {
-        alert("Bir hata oluştu, ancak başvurunuz kaydedildi.");
+        alert("Bir hata oluştu, ancak başvurunuz kaydedildi. Analiz daha sonra tamamlanabilir.");
       }
     } finally {
       setIsProcessing(false);
@@ -217,35 +168,17 @@ const App: React.FC = () => {
              </form>
           </div>
         ) : (
-          <div className="space-y-12">
-            {!hasApiKey && (
-              <div className="bg-orange-600 p-12 rounded-[3.5rem] text-white flex flex-col md:flex-row items-center justify-between shadow-2xl animate-pulse-slow">
-                <div className="mb-6 md:mb-0">
-                  <h4 className="text-2xl font-black uppercase tracking-tighter">AI Motoru Bağlantısı Gerekli</h4>
-                  <p className="opacity-80 font-bold mt-2">Analizlerin çalışması için ücretli projenize ait API anahtarını seçmelisiniz.</p>
-                  <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="text-[10px] font-black uppercase tracking-widest underline mt-4 block opacity-60 hover:opacity-100">Faturalandırma Dökümantasyonu</a>
-                </div>
-                <button 
-                  onClick={handleOpenKeySelector} 
-                  disabled={isKeyLoading}
-                  className={`px-12 py-6 bg-white text-orange-600 rounded-[2rem] font-black uppercase text-xs tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all ${isKeyLoading ? 'opacity-50 cursor-wait' : ''}`}
-                >
-                  {isKeyLoading ? 'Hazırlanıyor...' : 'API ANAHTARINI SEÇ'}
-                </button>
-              </div>
-            )}
-            <Dashboard 
-              candidates={candidates} 
-              onDelete={async (id) => {
-                if (connectionStatus === 'online') await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
-                setCandidates(c => c.filter(x => x.id !== id));
-              }}
-              onUpdate={async (c) => {
-                if (connectionStatus === 'online') await fetch('/api/candidates', { method: 'PATCH', body: JSON.stringify(c) });
-                setCandidates(prev => prev.map(x => x.id === c.id ? c : x));
-              }}
-            />
-          </div>
+          <Dashboard 
+            candidates={candidates} 
+            onDelete={async (id) => {
+              if (connectionStatus === 'online') await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
+              setCandidates(c => c.filter(x => x.id !== id));
+            }}
+            onUpdate={async (c) => {
+              if (connectionStatus === 'online') await fetch('/api/candidates', { method: 'PATCH', body: JSON.stringify(c) });
+              setCandidates(prev => prev.map(x => x.id === c.id ? c : x));
+            }}
+          />
         )}
       </main>
 
