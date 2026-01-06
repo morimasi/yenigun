@@ -3,24 +3,28 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // GoogleGenAI instance'ı doğru parametre yapısıyla ve güncel anahtarla oluşturulur (Sistem Kuralları)
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
+  const systemInstruction = `
+    Sen "Yeni Gün Akademi" için bir Üst Düzey İK Analistisin. 
+    ADAYIN MASKESİNİ DÜŞÜR:
+    1. Sosyal Beğenilirlik Analizi: Adayın cevapları "aşırı mükemmel" mi? Her şeye etik ve kusursuz cevap veriyorsa bunu "Dürüstlük Riski" olarak işaretle.
+    2. Çelişki Yakala: Profesyonel vakalardaki seçimi ile psikolojik profilindeki seçimleri birbiriyle tutarlı mı?
+    3. Red Flag Dedektörü: Gizli agresyon, tükenmişlik eğilimi veya kurumsal sadakatsizlik belirtilerini yakala.
+    4. SWOT Analizinde dürüst ol: "Zayıf Yönler" kısmına adayın saklamaya çalıştığı ama cevaplarından sızan gerçek riskleri yaz.
+  `;
+
   const textPrompt = `
-    Sen, Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi için özel olarak konfigüre edilmiş bir Yapay Zeka Yetenek Mimarı'sın.
-    ANALİZ DERİNLİĞİ:
-    - KRİTİK EŞİK (Red Flags): Adayın etik, çocuk güvenliği veya profesyonel sınırlar konusundaki cevaplarını mikroskobik düzeyde incele. 
-    - KÜLTÜREL DNA: Kurumun "şefkat, veri odaklılık ve sürekli gelişim" ilkelerine uyumu 0-100 arası puanla.
-    - SİNERJİ TAHMİNİ: Bu adayın ekibe katılması durumunda mevcut ekibi nasıl etkileyeceğini analiz et.
-    ADAY VERİLERİ:
-    - İsim: ${candidate.name}
-    - Branş: ${candidate.branch}
-    - Form Cevapları: ${JSON.stringify(candidate.answers)}
+    ADAY: ${candidate.name}
+    BRANŞ: ${candidate.branch}
+    DENEYİM: ${candidate.experienceYears} yıl
+    CEVAPLAR: ${JSON.stringify(candidate.answers)}
+    
+    Lütfen adayın gerçek karakterini, stres altındaki olası tepkilerini ve "maskelenmiş" kişilik özelliklerini analiz et.
   `;
 
   const contents: any[] = [{ text: textPrompt }];
 
-  // cvData artık Candidate tipinde tanımlı olduğu için güvenle kullanılabilir
   if (candidate.cvData) {
     contents.push({
       inlineData: {
@@ -31,10 +35,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   const response = await ai.models.generateContent({
-    // Karmaşık akıl yürütme ve veri analizi gerektiren görevler için Pro model seçildi (Sistem Kuralları)
     model: "gemini-3-pro-preview",
     contents: { parts: contents },
     config: {
+      systemInstruction,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -68,24 +72,5 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     }
   });
 
-  // response.text getter olarak kullanılır, metod olarak çağrılmaz (Sistem Kuralları)
   return JSON.parse(response.text || '{}') as AIReport;
-};
-
-export const generatePersonalizedInvite = async (candidate: Candidate): Promise<string> => {
-  // Her mülakat daveti oluşturulduğunda taze bir instance oluşturulur
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  const prompt = `
-    Yeni Gün Özel Eğitim Merkezi adına ${candidate.name} isimli adaya bir mülakat davet metni yaz.
-    Adayın branşı: ${candidate.branch}
-    AI Analiz özeti: ${candidate.report?.summary}
-  `;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt
-  });
-
-  return response.text || "Davet metni oluşturulamadı.";
 };
