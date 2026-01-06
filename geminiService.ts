@@ -3,16 +3,23 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // CRITICAL: process.env.API_KEY kontrolü. Boşsa SDK hatasını biz yönetelim.
+  const apiKey = process.env.API_KEY;
   
-  // Gemini 3 Flash için optimize edilmiş sistem talimatı
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("API_KEY_MISSING");
+  }
+
+  // Her çağrıda taze instance oluştur (AI Studio gereksinimi)
+  const ai = new GoogleGenAI({ apiKey });
+  
   const systemInstruction = `
     Sen "Yeni Gün Akademi" için Üst Düzey Klinik İK ve Teknik Değerlendirme Uzmanısın. 
     Özel eğitim ve rehabilitasyon alanında (Otizm, ABA, Dil Konuşma, Fizyoterapi) derin uzmanlığa sahipsin.
 
     GÖREVİN:
     Adayın sunduğu verileri ve (varsa) CV dokümanını multimodal bir yaklaşımla analiz et. 
-    Flash modelinin hızını kullanarak keskin, tutarlı ve profesyonel bir rapor oluştur.
+    Gemini 3 Flash modelinin hızını kullanarak keskin, tutarlı ve profesyonel bir rapor oluştur.
 
     KATEGORİK ANALİZ (0-100 Puan):
     1. Mantıksal Keskinlik (Logic): Analitik düşünme.
@@ -20,30 +27,24 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     3. Psikolojik Bütünlük (Psychology): Stres yönetimi ve empati.
     4. Sosyal Diplomasi (Diplomacy): Veli ve ekip iletişimi.
     5. Gelişim Çevikliği (Development): Öğrenmeye açıklık.
-
-    MULTIMODAL DOKÜMAN ANALİZİ:
-    Eğer bir CV dosyası (görsel/PDF) sağlandıysa, formdaki cevaplarla CV'deki tarihleri, sertifikaları ve deneyimleri karşılaştır. 
-    Abartılı veya çelişkili ifadeleri "Tehditler" (Red Flags) kısmında mutlaka belirt.
   `;
 
   const textPrompt = `
     ADAY VERİLERİ:
     İsim: ${candidate.name}
     Branş: ${candidate.branch}
-    Yaş: ${candidate.age}
     Deneyim: ${candidate.experienceYears} yıl
     Eğitimler: ${candidate.allTrainings}
     Kurumlar: ${candidate.previousInstitutions}
     
-    SENARYO CEVAPLARI:
-    ${JSON.stringify(candidate.answers, null, 2)}
+    CEVAPLAR:
+    ${JSON.stringify(candidate.answers)}
     
-    Lütfen bu multimodal veriyi analiz et ve Yeni Gün Akademi standartlarında detaylı bir JSON rapor döndür.
+    Analizini sadece JSON formatında döndür.
   `;
 
   const contents: any[] = [{ text: textPrompt }];
 
-  // Multimodal destek: Doküman verisi ekleniyor
   if (candidate.cvData) {
     contents.push({
       inlineData: {
@@ -53,55 +54,61 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     });
   }
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview", // Kullanıcı isteği üzerine Flash modeline geçildi
-    contents: { parts: contents },
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER },
-          swot: {
-            type: Type.OBJECT,
-            properties: {
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-              threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-          },
-          competencies: {
-            type: Type.ARRAY,
-            items: {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { parts: contents },
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.NUMBER },
+            swot: {
               type: Type.OBJECT,
               properties: {
-                name: { type: Type.STRING },
-                value: { type: Type.NUMBER }
+                strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+                threats: { type: Type.ARRAY, items: { type: Type.STRING } }
               }
-            }
-          },
-          categoricalScores: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                category: { type: Type.STRING },
-                score: { type: Type.NUMBER },
-                average: { type: Type.NUMBER },
-                label: { type: Type.STRING }
+            },
+            competencies: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  value: { type: Type.NUMBER }
+                }
               }
-            }
+            },
+            categoricalScores: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  category: { type: Type.STRING },
+                  score: { type: Type.NUMBER },
+                  average: { type: Type.NUMBER },
+                  label: { type: Type.STRING }
+                }
+              }
+            },
+            summary: { type: Type.STRING },
+            recommendation: { type: Type.STRING }
           },
-          summary: { type: Type.STRING },
-          cvSummary: { type: Type.STRING },
-          recommendation: { type: Type.STRING }
-        },
-        required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
+          required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
+        }
       }
-    }
-  });
+    });
 
-  return JSON.parse(response.text || '{}') as AIReport;
+    return JSON.parse(response.text || '{}') as AIReport;
+  } catch (error: any) {
+    if (error.message?.includes("Requested entity was not found")) {
+      throw new Error("API_KEY_INVALID");
+    }
+    throw error;
+  }
 };

@@ -13,8 +13,6 @@ const storage = {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       }).catch(() => null);
-      
-      // 500 veya ağ hatası durumunda yerel moda geç
       this.isLocalMode = !response || !response.ok;
       return !!(response && response.ok);
     } catch {
@@ -53,24 +51,26 @@ const App: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
-  const [hasApiKey, setHasApiKey] = useState<boolean>(true);
+  const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  const checkApiKey = useCallback(async () => {
+  const checkApiKeyStatus = useCallback(async () => {
     if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
       const selected = await window.aistudio.hasSelectedApiKey();
       setHasApiKey(selected);
+      return selected;
     }
+    return false;
   }, []);
 
   useEffect(() => {
-    checkApiKey();
+    checkApiKeyStatus();
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, [checkApiKey]);
+  }, [checkApiKeyStatus]);
 
   const loadData = useCallback(async () => {
     const isOnline = await storage.checkConnection();
@@ -88,11 +88,24 @@ const App: React.FC = () => {
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
-      setHasApiKey(true); // Seçimden sonra başarılı varsayıyoruz
+      setHasApiKey(true);
+      return true;
     }
+    return false;
   };
 
   const handleCandidateSubmit = async (data: any) => {
+    // Önce anahtar kontrolü
+    const keySelected = await checkApiKeyStatus();
+    if (!keySelected) {
+      const confirmSelect = window.confirm("Yapay zeka analizi için bir API anahtarı seçmeniz gerekiyor. Şimdi seçmek ister misiniz?");
+      if (confirmSelect) {
+        await handleOpenKeySelector();
+      } else {
+        alert("Anahtar seçilmediği için analiz yapılamıyor, ancak verileriniz kaydedilecek.");
+      }
+    }
+
     setIsProcessing(true);
     const newCandidate: Candidate = {
       ...data,
@@ -100,20 +113,19 @@ const App: React.FC = () => {
       timestamp: Date.now(),
       status: 'pending'
     };
+
     try {
-      // Önce yerel kaydet (Garantiye al)
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
 
-      // Yapay Zeka Analizi (Hata alsa bile adayı kaybetmeyelim)
       let report;
       try {
         report = await generateCandidateAnalysis(newCandidate);
-      } catch (aiError) {
+      } catch (aiError: any) {
         console.error("AI Analiz Hatası:", aiError);
-        // Eğer API Key hatasıysa uyaralım
-        if (!hasApiKey) {
-          alert("Sistem yapılandırması (API Key) eksik. Lütfen yönetici ile iletişime geçin.");
+        if (aiError.message === "API_KEY_MISSING" || aiError.message === "API_KEY_INVALID") {
+          setHasApiKey(false);
+          alert("API anahtarınız eksik veya geçersiz. Lütfen yönetici panelinden tekrar seçin.");
         }
       }
 
@@ -132,12 +144,11 @@ const App: React.FC = () => {
         }
       }
       
-      alert("Başvurunuz başarıyla kaydedildi. Akademi kurulumuz değerlendirmeye alacaktır.");
+      alert("Başvurunuz kaydedildi.");
       setView('candidate');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      console.error("Genel Kayıt Hatası:", error);
-      alert("Kayıt sırasında bir hata oluştu, ancak verileriniz yerel hafızaya alınmış olabilir.");
+      console.error("Genel Hata:", error);
     } finally {
       setIsProcessing(false);
     }
@@ -148,7 +159,7 @@ const App: React.FC = () => {
     if (loginForm.username === 'admin' && loginForm.password === 'yenigun2024') {
       setIsLoggedIn(true);
     } else {
-      alert("Geçersiz kimlik bilgileri.");
+      alert("Hatalı giriş.");
     }
   };
 
@@ -163,16 +174,14 @@ const App: React.FC = () => {
             <div>
               <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">YENİ GÜN</span>
               <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
-                <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-orange-500'}`}></div>
-                {connectionStatus === 'online' ? 'Akademi Sunucusu Bağlı' : 'Yerel Veri Modu'}
+                <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
+                {connectionStatus === 'online' ? 'Sunucu Bağlı' : 'Yerel Mod'}
               </div>
             </div>
           </div>
           <div className="flex bg-orange-50/50 p-2 rounded-[2rem] border border-orange-100 shadow-inner">
-            <button onClick={() => setView('candidate')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${view === 'candidate' ? 'bg-white shadow-xl text-orange-600 scale-105' : 'text-slate-500 hover:text-orange-600'}`}>Başvuru Formu</button>
-            <button onClick={() => setView('admin')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${view === 'admin' ? 'bg-white shadow-xl text-orange-600 scale-105' : 'text-slate-500 hover:text-orange-600'}`}>
-              {isLoggedIn ? 'Yönetici Paneli' : 'Giriş Yap'}
-            </button>
+            <button onClick={() => setView('candidate')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all ${view === 'candidate' ? 'bg-white shadow-xl text-orange-600' : 'text-slate-500'}`}>Form</button>
+            <button onClick={() => setView('admin')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all ${view === 'admin' ? 'bg-white shadow-xl text-orange-600' : 'text-slate-500'}`}>Yönetim</button>
           </div>
         </div>
       </nav>
@@ -181,40 +190,23 @@ const App: React.FC = () => {
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : !isLoggedIn ? (
-          <div className="max-w-lg mx-auto mt-10 p-16 bg-white rounded-[4rem] shadow-[0_60px_120px_-30px_rgba(234,88,12,0.2)] border border-orange-100 animate-scale-in relative overflow-hidden">
-             <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-50 rounded-full blur-[80px]"></div>
-             <h3 className="text-4xl font-black text-slate-900 tracking-tighter mb-10 uppercase text-center relative z-10">Güvenli Giriş</h3>
-             <form onSubmit={handleLogin} className="space-y-8 relative z-10">
-                <div className="space-y-3">
-                   <label className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] ml-1 block">Yönetici Kimliği</label>
-                   <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-50 font-bold bg-slate-50/50" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="admin" />
-                </div>
-                <div className="space-y-3">
-                   <label className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] ml-1 block">Erişim Anahtarı</label>
-                   <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-50 font-bold bg-slate-50/50" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
-                </div>
-                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl hover:bg-orange-600 transition-all duration-500 hover:-translate-y-1">Paneli Aç</button>
+          <div className="max-w-lg mx-auto p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100">
+             <h3 className="text-4xl font-black text-slate-900 mb-10 uppercase text-center">Giriş</h3>
+             <form onSubmit={handleLogin} className="space-y-8">
+                <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="admin" />
+                <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
+                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em]">Giriş</button>
              </form>
           </div>
         ) : (
           <div className="space-y-8">
             {!hasApiKey && (
-              <div className="bg-orange-600 p-8 rounded-[2.5rem] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl animate-pulse">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/20 rounded-2xl">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-black uppercase tracking-tight">API Anahtarı Gerekli</h4>
-                    <p className="text-sm font-bold opacity-80">Yapay zeka analizi ve mülakat davetleri için bir API anahtarı seçmelisiniz.</p>
-                  </div>
+              <div className="bg-orange-600 p-8 rounded-[2.5rem] text-white flex items-center justify-between shadow-2xl">
+                <div>
+                  <h4 className="text-xl font-black uppercase">API Anahtarı Seçilmedi</h4>
+                  <p className="opacity-80">Analiz motoru için anahtar bağlamanız gerekiyor.</p>
                 </div>
-                <button 
-                  onClick={handleOpenKeySelector}
-                  className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-transform"
-                >
-                  Anahtar Seç / Bağla
-                </button>
+                <button onClick={handleOpenKeySelector} className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black uppercase text-xs">Anahtar Seç</button>
               </div>
             )}
             <Dashboard 
@@ -233,14 +225,11 @@ const App: React.FC = () => {
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-12">
-          <div className="bg-white p-24 rounded-[5rem] text-center max-w-2xl animate-scale-in border border-orange-100 shadow-[0_0_100px_rgba(234,88,12,0.3)] relative overflow-hidden">
-             <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-orange-50 rounded-full blur-[80px]"></div>
-             <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12 shadow-inner"></div>
-             <h3 className="text-4xl font-black text-slate-900 tracking-tighter mb-6">Analiz Mühürleniyor</h3>
-             <p className="text-slate-500 text-xl font-medium italic leading-relaxed">
-               Yapay zekamız eğitsel verilerinizi akademi kriterleriyle harmanlıyor. Bu işlem birkaç saniye sürebilir...
-             </p>
+        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center">
+          <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl">
+             <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
+             <h3 className="text-4xl font-black text-slate-900 mb-6">Analiz Ediliyor</h3>
+             <p className="text-slate-500 text-xl font-medium italic">Gemini 3 Flash Multimodal devrede...</p>
           </div>
         </div>
       )}
