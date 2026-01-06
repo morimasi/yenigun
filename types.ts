@@ -27,6 +27,7 @@ export interface Candidate {
   answers: Record<string, string | string[]>;
   timestamp: number;
   status: 'pending' | 'scheduled' | 'rejected' | 'completed';
+  adminNotes?: string;
   interviewSchedule?: {
     date: string;
     time: string;

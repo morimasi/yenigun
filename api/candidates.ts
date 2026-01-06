@@ -5,17 +5,11 @@ export const config = {
   runtime: 'edge',
 };
 
-/**
- * Yeni Gün Özel Eğitim - Neon Cloud Veri Katmanı
- * Bu fonksiyon DATABASE_URL (veya POSTGRES_URL) ortam değişkenini otomatik kullanır.
- */
 export default async function handler(request: Request) {
   const method = request.method;
   const { searchParams } = new URL(request.url);
 
   try {
-    // 1. Şema Kontrolü ve Tablo Oluşturma
-    // Bu kısım veritabanı boşsa otomatik tablo oluşturur.
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -26,13 +20,13 @@ export default async function handler(request: Request) {
         experience_years INTEGER,
         answers JSONB,
         status TEXT DEFAULT 'pending',
+        admin_notes TEXT,
         interview_schedule JSONB,
         report JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `.catch(e => console.error('Database Initialization Error:', e));
 
-    // 2. Veri Okuma (GET)
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
       const candidates = rows.map(row => ({
@@ -44,6 +38,7 @@ export default async function handler(request: Request) {
         experienceYears: row.experience_years,
         answers: row.answers,
         status: row.status,
+        adminNotes: row.admin_notes,
         interviewSchedule: row.interview_schedule,
         report: row.report,
         timestamp: new Date(row.created_at).getTime()
@@ -58,11 +53,10 @@ export default async function handler(request: Request) {
       });
     }
 
-    // 3. Yeni Başvuru Kaydı (POST)
     if (method === 'POST') {
       const body = await request.json();
       await sql`
-        INSERT INTO candidates (id, name, email, phone, branch, experience_years, answers, status)
+        INSERT INTO candidates (id, name, email, phone, branch, experience_years, answers, status, admin_notes)
         VALUES (
           ${body.id}, 
           ${body.name}, 
@@ -71,7 +65,8 @@ export default async function handler(request: Request) {
           ${body.branch}, 
           ${body.experienceYears}, 
           ${JSON.stringify(body.answers)}, 
-          ${body.status}
+          ${body.status},
+          ${body.adminNotes || null}
         );
       `;
       return new Response(JSON.stringify({ success: true, message: "Kayıt Buluta Mühürlendi" }), { 
@@ -80,13 +75,14 @@ export default async function handler(request: Request) {
       });
     }
 
-    // 4. Veri Güncelleme (PATCH) - AI Raporu veya Mülakat Planı
     if (method === 'PATCH') {
       const body = await request.json();
       if (body.report) {
         await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, status = ${body.status} WHERE id = ${body.id}`;
       } else if (body.interviewSchedule) {
         await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status} WHERE id = ${body.id}`;
+      } else if (body.adminNotes !== undefined) {
+        await sql`UPDATE candidates SET admin_notes = ${body.adminNotes} WHERE id = ${body.id}`;
       } else {
         await sql`UPDATE candidates SET status = ${body.status} WHERE id = ${body.id}`;
       }
@@ -96,7 +92,6 @@ export default async function handler(request: Request) {
       });
     }
 
-    // 5. Kayıt Silme (DELETE)
     if (method === 'DELETE') {
       const id = searchParams.get('id');
       if (!id) throw new Error('Aday ID gerekli.');

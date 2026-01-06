@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, Branch, UserRole, AdminUser } from '../types';
 import CandidateReport from './CandidateReport';
 import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
@@ -13,12 +13,22 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'candidates' | 'calendar' | 'admin_settings'>('overview');
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
-  const [detailTab, setDetailTab] = useState<'report' | 'answers' | 'scheduling'>('report');
+  const [detailTab, setDetailTab] = useState<'report' | 'answers' | 'scheduling' | 'notes'>('report');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
+  
+  // Local state for notes editing
+  const [localNote, setLocalNote] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedCandidateId), [candidates, selectedCandidateId]);
+
+  useEffect(() => {
+    if (selectedCandidate) {
+      setLocalNote(selectedCandidate.adminNotes || '');
+    }
+  }, [selectedCandidateId, selectedCandidate]);
 
   const filteredCandidates = useMemo(() => {
     return candidates.filter(c => 
@@ -26,6 +36,20 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
       c.branch.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [candidates, searchTerm]);
+
+  const handleSaveNote = async () => {
+    if (!selectedCandidate || !onUpdate) return;
+    setIsSavingNote(true);
+    try {
+      const updatedCandidate = { ...selectedCandidate, adminNotes: localNote };
+      await onUpdate(updatedCandidate);
+      // Brief artificial delay for UI feedback
+      setTimeout(() => setIsSavingNote(false), 500);
+    } catch (error) {
+      console.error("Note save failed", error);
+      setIsSavingNote(false);
+    }
+  };
 
   const handleSyncSimulation = () => {
     setIsSyncing(true);
@@ -176,16 +200,17 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
             <div className="xl:col-span-8">
               {selectedCandidate ? (
                 <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 overflow-hidden min-h-[70vh] flex flex-col animate-scale-in">
-                  <div className="flex bg-slate-50/50 p-3 gap-3 border-b border-slate-100">
+                  <div className="flex bg-slate-50/50 p-3 gap-3 border-b border-slate-100 overflow-x-auto custom-scrollbar">
                     {[
-                      { id: 'report', label: 'Stratejik Analiz' },
+                      { id: 'report', label: 'AI Analizi' },
                       { id: 'answers', label: 'Veri Kayıtları' },
+                      { id: 'notes', label: 'Yönetici Notları' },
                       { id: 'scheduling', label: 'Operasyon' }
                     ].map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => setDetailTab(tab.id as any)}
-                        className={`flex-1 py-5 text-[11px] font-black uppercase tracking-[0.2em] rounded-[1.8rem] transition-all ${
+                        className={`flex-1 min-w-[120px] py-5 text-[11px] font-black uppercase tracking-[0.2em] rounded-[1.8rem] transition-all ${
                           detailTab === tab.id ? 'bg-white text-orange-600 shadow-xl scale-[1.02]' : 'text-slate-400 hover:bg-white/50'
                         }`}
                       >
@@ -230,6 +255,63 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {detailTab === 'notes' && (
+                      <div className="space-y-8 animate-fade-in">
+                        <div className="flex items-center justify-between mb-2">
+                           <div>
+                              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Yönetici Gözlemleri</h3>
+                              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Niteliksel Değerlendirme & Mülakat Notları</p>
+                           </div>
+                           <div className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200">
+                              Gizli Veri
+                           </div>
+                        </div>
+                        
+                        <div className="relative group">
+                           <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-focus-within:opacity-30"></div>
+                           <textarea
+                              className="relative w-full min-h-[400px] p-10 bg-white border-2 border-slate-100 rounded-[2.5rem] outline-none focus:border-orange-500 font-semibold text-slate-700 leading-relaxed shadow-xl transition-all"
+                              placeholder="Adayın mülakat sırasındaki tutumu, teknik sorulara verdiği sözel yanıtlar ve kurumsal kültüre uyumu hakkındaki gözlemlerinizi buraya kaydedin..."
+                              value={localNote}
+                              onChange={(e) => setLocalNote(e.target.value)}
+                           />
+                        </div>
+
+                        <div className="flex justify-end pt-4">
+                           <button
+                              onClick={handleSaveNote}
+                              disabled={isSavingNote}
+                              className={`px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center gap-4 ${
+                                isSavingNote ? 'bg-slate-200 text-slate-400' : 'bg-slate-900 text-white hover:bg-orange-600 shadow-2xl hover:-translate-y-1'
+                              }`}
+                           >
+                              {isSavingNote ? (
+                                <>
+                                   <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                                   Kaydediliyor...
+                                </>
+                              ) : (
+                                <>
+                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                   Notu Mühürle
+                                </>
+                              )}
+                           </button>
+                        </div>
+                        
+                        <div className="p-8 bg-orange-50 rounded-[2rem] border border-orange-100 mt-10">
+                           <div className="flex items-start gap-4">
+                              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-600 shadow-sm shrink-0">
+                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              </div>
+                              <p className="text-xs font-bold text-orange-800 leading-relaxed">
+                                Bu bölümdeki notlar AI tarafından okunmaz; sadece Yeni Gün Akademi yöneticileri arasında stratejik karar verme süreçlerinde kullanılır.
+                              </p>
+                           </div>
+                        </div>
                       </div>
                     )}
 
