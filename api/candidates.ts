@@ -16,8 +16,11 @@ export default async function handler(request: Request) {
         name TEXT NOT NULL,
         email TEXT NOT NULL,
         phone TEXT,
+        age INTEGER,
         branch TEXT,
         experience_years INTEGER,
+        previous_institutions TEXT,
+        all_trainings TEXT,
         answers JSONB,
         status TEXT DEFAULT 'pending',
         admin_notes TEXT,
@@ -34,8 +37,11 @@ export default async function handler(request: Request) {
         name: row.name,
         email: row.email,
         phone: row.phone,
+        age: row.age,
         branch: row.branch,
         experienceYears: row.experience_years,
+        previousInstitutions: row.previous_institutions,
+        allTrainings: row.all_trainings,
         answers: row.answers,
         status: row.status,
         adminNotes: row.admin_notes,
@@ -56,20 +62,23 @@ export default async function handler(request: Request) {
     if (method === 'POST') {
       const body = await request.json();
       await sql`
-        INSERT INTO candidates (id, name, email, phone, branch, experience_years, answers, status, admin_notes)
+        INSERT INTO candidates (id, name, email, phone, age, branch, experience_years, previous_institutions, all_trainings, answers, status, admin_notes)
         VALUES (
           ${body.id}, 
           ${body.name}, 
           ${body.email}, 
           ${body.phone || null}, 
+          ${body.age || 0},
           ${body.branch}, 
           ${body.experienceYears}, 
+          ${body.previousInstitutions || ''},
+          ${body.allTrainings || ''},
           ${JSON.stringify(body.answers)}, 
           ${body.status},
           ${body.adminNotes || null}
         );
       `;
-      return new Response(JSON.stringify({ success: true, message: "Kayıt Buluta Mühürlendi" }), { 
+      return new Response(JSON.stringify({ success: true }), { 
         status: 201,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -107,9 +116,8 @@ export default async function handler(request: Request) {
   } catch (error: any) {
     console.error('API Error:', error);
     return new Response(JSON.stringify({ 
-      error: 'Veritabanı Bağlantı Hatası', 
-      details: error.message,
-      isCloudError: true 
+      error: 'Veritabanı Hatası', 
+      details: error.message
     }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }

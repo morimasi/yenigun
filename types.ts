@@ -22,8 +22,11 @@ export interface Candidate {
   name: string;
   email: string;
   phone?: string;
+  age: number; // YENİ
   branch: Branch;
   experienceYears: number;
+  previousInstitutions: string; // YENİ: Önceki çalıştığı kurumlar
+  allTrainings: string; // YENİ: Aldığı tüm eğitimler
   answers: Record<string, string | string[]>;
   timestamp: number;
   status: 'pending' | 'scheduled' | 'rejected' | 'completed';
@@ -58,8 +61,8 @@ export interface AIReport {
   categoricalScores: {
     category: string;
     score: number;
-    average: number; // Akademi ortalaması/beklentisi
-    label: string; // Örn: "Üst Düzey", "Gelişmeli"
+    average: number;
+    label: string;
   }[];
   summary: string;
   cvSummary?: string;
@@ -71,10 +74,4 @@ export interface FormStep {
   title: string;
   description: string;
   isActive?: boolean;
-}
-
-export interface AdminConfig {
-  activeModules: string[];
-  admins: AdminUser[];
-  systemStatus: 'online' | 'maintenance';
 }
