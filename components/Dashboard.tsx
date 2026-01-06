@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, Branch, UserRole, AdminUser } from '../types';
 import CandidateReport from './CandidateReport';
 import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
+import { generateCandidateAnalysis } from '../geminiService';
 
 interface DashboardProps {
   candidates: Candidate[];
@@ -16,20 +17,11 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
   const [detailTab, setDetailTab] = useState<'report' | 'cv_details' | 'answers' | 'notes'>('report');
   const [searchTerm, setSearchTerm] = useState('');
   const [localNote, setLocalNote] = useState('');
-  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [isAnalysing, setIsAnalysing] = useState(false);
   
-  // Calendar & Email States
-  const [schedulingCandidateId, setSchedulingCandidateId] = useState<string | null>(null);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [lastSentTo, setLastSentTo] = useState('');
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedCandidateId), [candidates, selectedCandidateId]);
 
-  // Soruları ID bazlı hızlıca bulmak için düz bir liste oluşturuyoruz
-  const flatQuestions = useMemo(() => {
-    return Object.values(MOCK_QUESTIONS).flat();
-  }, []);
+  const flatQuestions = useMemo(() => Object.values(MOCK_QUESTIONS).flat(), []);
 
   useEffect(() => {
     if (selectedCandidate) {
@@ -44,101 +36,47 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
     );
   }, [candidates, searchTerm]);
 
+  const handleManualAnalysis = async () => {
+    if (!selectedCandidate || !onUpdate) return;
+    setIsAnalysing(true);
+    try {
+      const report = await generateCandidateAnalysis(selectedCandidate);
+      if (report) {
+        const updated = { ...selectedCandidate, report };
+        await onUpdate(updated);
+        alert("Yapay zeka analizi başarıyla tamamlandı.");
+      }
+    } catch (e: any) {
+      if (e.message === "API_KEY_MISSING") {
+        alert("Lütfen önce API anahtarınızı bağlayın.");
+      } else {
+        alert("Analiz sırasında bir hata oluştu: " + e.message);
+      }
+    } finally {
+      setIsAnalysing(false);
+    }
+  };
+
   const handleSaveNote = async () => {
     if (!selectedCandidate || !onUpdate) return;
-    setIsSavingNote(true);
-    try {
-      const updatedCandidate = { ...selectedCandidate, adminNotes: localNote };
-      await onUpdate(updatedCandidate);
-      setTimeout(() => setIsSavingNote(false), 500);
-    } catch (error) {
-      console.error("Not kaydedilemedi", error);
-      setIsSavingNote(false);
-    }
+    const updatedCandidate = { ...selectedCandidate, adminNotes: localNote };
+    await onUpdate(updatedCandidate);
+    alert("Notlar kaydedildi.");
   };
-
-  const handleScheduleAndSendEmail = async (date: string, time: string) => {
-    if (!schedulingCandidateId || !onUpdate) return;
-    const candidate = candidates.find(c => c.id === schedulingCandidateId);
-    if (!candidate) return;
-
-    setLastSentTo(candidate.email);
-    setIsSendingEmail(true);
-    setEmailStatus('sending');
-    
-    const location = 'Yeni Gün Akademi - Ana Bina / Klinik Birimi';
-    
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: candidate.email,
-          candidateName: candidate.name,
-          date,
-          time,
-          location
-        })
-      });
-
-      if (!response.ok) throw new Error('E-posta servisi yanıt vermedi.');
-
-      const updatedCandidate: Candidate = {
-        ...candidate,
-        status: 'scheduled',
-        interviewSchedule: {
-          date,
-          time,
-          location,
-          method: 'Yüz Yüze'
-        }
-      };
-
-      await onUpdate(updatedCandidate);
-      setEmailStatus('success');
-      
-      setTimeout(() => {
-        setIsSendingEmail(false);
-        setEmailStatus('idle');
-        setSchedulingCandidateId(null);
-      }, 2000);
-
-    } catch (error) {
-      console.error("E-posta gönderim hatası:", error);
-      setEmailStatus('error');
-      setTimeout(() => {
-        setIsSendingEmail(false);
-        setEmailStatus('idle');
-      }, 3000);
-    }
-  };
-
-  const calendarDays = useMemo(() => {
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      days.push(d.toISOString().split('T')[0]);
-    }
-    return days;
-  }, []);
-
-  const timeSlots = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 animate-fade-in min-h-[85vh]">
       <aside className="lg:w-72 space-y-3">
         <div className="p-8 mb-6 bg-slate-900 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-32 h-32 bg-orange-600 rounded-full blur-[60px] opacity-30 group-hover:opacity-50 transition-opacity"></div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Yönetici Paneli</h2>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Panel</h2>
           <p className="text-2xl font-black mt-1 tracking-tighter">Yeni Gün Akademi</p>
         </div>
 
         {[
-          { id: 'overview', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', label: 'Dashboard' },
-          { id: 'candidates', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0', label: 'Aday Havuzu' },
-          { id: 'calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'E-Posta Planlama' }
+          { id: 'overview', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', label: 'Özet' },
+          { id: 'candidates', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0', label: 'Adaylar' },
+          { id: 'calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'Planlama' }
         ].map(item => (
           <button
             key={item.id}
@@ -156,39 +94,16 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
       </aside>
 
       <main className="flex-1 space-y-8">
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col justify-between h-56 transition-all hover:shadow-xl group">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Toplam Aday</span>
-               <div className="text-6xl font-black text-slate-900 tracking-tighter group-hover:text-orange-600 transition-colors">{candidates.length}</div>
-               <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest">Aktif Akış</div>
-            </div>
-            <div className="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl flex flex-col justify-between h-56 text-white relative overflow-hidden">
-               <div className="absolute right-0 top-0 w-32 h-32 bg-orange-600 blur-[80px] opacity-20"></div>
-               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">E-Posta Bekleyen</span>
-               <div className="text-6xl font-black text-orange-600 tracking-tighter">{candidates.filter(c => c.status === 'pending').length}</div>
-               <div className="text-[10px] font-bold text-slate-500 uppercase">Aday Kuyruğu</div>
-            </div>
-            <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col justify-between h-56">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Davet Gönderildi</span>
-               <div className="text-6xl font-black text-slate-900 tracking-tighter">{candidates.filter(c => c.status === 'scheduled').length}</div>
-               <div className="flex items-center gap-2 text-orange-500 font-bold text-xs uppercase tracking-widest">Planlı Görüşmeler</div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'candidates' && (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
             <div className="xl:col-span-4 space-y-4 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
-              <div className="sticky top-0 bg-[#FDFDFD] pb-4 z-10">
-                <input 
-                  type="text" 
-                  placeholder="Aday Havuzunda Ara..."
-                  className="w-full px-8 py-5 bg-white border-2 border-slate-100 rounded-[2rem] text-sm font-bold outline-none shadow-sm focus:border-orange-500 transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+              <input 
+                type="text" 
+                placeholder="İsim veya Branş Ara..."
+                className="w-full px-8 py-5 bg-white border-2 border-slate-100 rounded-[2rem] text-sm font-bold outline-none shadow-sm focus:border-orange-500 mb-4"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               {filteredCandidates.map(c => (
                 <button
                   key={c.id}
@@ -197,13 +112,11 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                     selectedCandidateId === c.id ? 'bg-white border-orange-500 shadow-2xl scale-[1.02] z-10' : 'bg-white border-slate-100 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex justify-between items-start mb-1">
+                  <div className="flex justify-between items-start">
                     <h4 className="font-black text-slate-900 group-hover:text-orange-600 transition-colors text-lg tracking-tight">{c.name}</h4>
-                    {c.status === 'scheduled' ? (
-                      <span className="bg-emerald-100 text-emerald-600 text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest">Mühürlendi</span>
-                    ) : (
-                      <span className="bg-slate-100 text-slate-400 text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest">Bekliyor</span>
-                    )}
+                    <span className={`text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${c.report ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}`}>
+                      {c.report ? 'Analizli' : 'Bekliyor'}
+                    </span>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{c.branch}</p>
                 </button>
@@ -213,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
             <div className="xl:col-span-8">
               {selectedCandidate ? (
                 <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 overflow-hidden min-h-[70vh] flex flex-col animate-scale-in">
-                  <div className="flex bg-slate-50/50 p-3 gap-3 border-b border-slate-100 overflow-x-auto custom-scrollbar">
+                  <div className="flex bg-slate-50/50 p-3 gap-3 border-b border-slate-100 overflow-x-auto">
                     {['report', 'cv_details', 'answers', 'notes'].map(tab => (
                       <button
                         key={tab}
@@ -222,223 +135,88 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                           detailTab === tab ? 'bg-white text-orange-600 shadow-xl' : 'text-slate-400 hover:bg-white/50'
                         }`}
                       >
-                        {tab === 'report' ? 'Yapay Zeka Analizi' : tab === 'cv_details' ? 'Aday Profili' : tab === 'answers' ? 'Yanıtlar' : 'Mülakat Notları'}
+                        {tab === 'report' ? 'Analiz' : tab === 'cv_details' ? 'Profil' : tab === 'answers' ? 'Yanıtlar' : 'Notlar'}
                       </button>
                     ))}
                   </div>
 
                   <div className="p-12 flex-1 overflow-y-auto custom-scrollbar">
-                    {detailTab === 'report' && selectedCandidate.report && <CandidateReport report={selectedCandidate.report} name={selectedCandidate.name} />}
+                    {detailTab === 'report' && (
+                      selectedCandidate.report ? (
+                        <CandidateReport report={selectedCandidate.report} name={selectedCandidate.name} />
+                      ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-center space-y-10 py-20">
+                           <div className="w-40 h-40 bg-orange-50 rounded-full flex items-center justify-center text-orange-600 animate-pulse">
+                              <svg className="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                           </div>
+                           <div className="max-w-md">
+                              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Analiz Hazır Değil</h3>
+                              <p className="text-slate-500 font-bold mb-10 leading-relaxed italic">Bu aday için henüz yapay zeka değerlendirmesi oluşturulmamış veya API anahtarı hatası nedeniyle atlanmış.</p>
+                              <button 
+                                onClick={handleManualAnalysis}
+                                disabled={isAnalysing}
+                                className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] hover:bg-orange-600 shadow-2xl transition-all"
+                              >
+                                {isAnalysing ? 'Analiz Motoru Çalışıyor...' : 'Analizi Şimdi Başlat'}
+                              </button>
+                           </div>
+                        </div>
+                      )
+                    )}
                     {detailTab === 'cv_details' && (
                       <div className="space-y-10 animate-fade-in">
-                        <div className="grid grid-cols-2 gap-8">
-                          <div className="p-8 bg-slate-50 rounded-[2.5rem] space-y-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İletişim Bilgileri</h4>
-                            <p className="font-bold text-slate-900 flex items-center gap-2 text-sm">
-                               <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth={2}/></svg>
-                               {selectedCandidate.email}
-                            </p>
-                            <p className="font-bold text-slate-900 flex items-center gap-2">
-                               <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth={2}/></svg>
-                               {selectedCandidate.phone}
-                            </p>
-                            <p className="font-bold text-slate-900">Yaş: {selectedCandidate.age} | Deneyim: {selectedCandidate.experienceYears} Yıl</p>
-                          </div>
-                          {selectedCandidate.status === 'scheduled' && (
-                           <div className="p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100 flex flex-col justify-center">
-                              <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-2">E-Posta Onaylı</h4>
-                              <p className="text-xl font-black text-slate-900 leading-tight">{selectedCandidate.interviewSchedule?.date}</p>
-                              <p className="text-lg font-bold text-slate-600">{selectedCandidate.interviewSchedule?.time}</p>
-                           </div>
-                          )}
+                        <div className="p-8 bg-slate-50 rounded-[2.5rem] space-y-4">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İletişim</h4>
+                            <p className="font-bold text-slate-900 text-sm">{selectedCandidate.email}</p>
+                            <p className="font-bold text-slate-900 text-sm">{selectedCandidate.phone}</p>
                         </div>
-                        <div className="space-y-6">
-                           <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem]">
-                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Eğitim & Kurum Geçmişi</h4>
-                              <p className="text-slate-800 font-bold leading-relaxed whitespace-pre-wrap">{selectedCandidate.previousInstitutions || 'Veri bulunmuyor.'}</p>
-                           </div>
+                        <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem]">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Geçmiş Deneyimler</h4>
+                            <p className="text-slate-800 font-bold whitespace-pre-wrap">{selectedCandidate.previousInstitutions || 'Kayıt yok.'}</p>
                         </div>
                       </div>
                     )}
                     {detailTab === 'notes' && (
                       <div className="space-y-8 animate-fade-in">
-                        <textarea className="w-full h-80 p-10 bg-white border-2 border-slate-100 rounded-[2.5rem] outline-none focus:border-orange-500 font-semibold text-slate-700 leading-relaxed shadow-xl" placeholder="Aday hakkındaki mülakat notlarınızı buraya kaydedin..." value={localNote} onChange={(e) => setLocalNote(e.target.value)} />
-                        <div className="flex justify-end"><button onClick={handleSaveNote} disabled={isSavingNote} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-orange-600 transition-all">{isSavingNote ? 'Kaydediliyor...' : 'Notları Kaydet'}</button></div>
+                        <textarea className="w-full h-80 p-10 bg-white border-2 border-slate-100 rounded-[2.5rem] outline-none font-semibold text-slate-700 shadow-xl" placeholder="Notlarınızı buraya alın..." value={localNote} onChange={(e) => setLocalNote(e.target.value)} />
+                        <button onClick={handleSaveNote} className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition-all">Kaydet</button>
                       </div>
                     )}
                     {detailTab === 'answers' && (
-                      <div className="space-y-12 animate-fade-in pb-10">
-                        <div className="flex items-center gap-4 mb-4">
-                           <div className="w-1.5 h-10 bg-orange-600 rounded-full"></div>
-                           <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Mülakat Soru & Cevap Dökümü</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 gap-10">
-                          {Object.entries(selectedCandidate.answers).map(([qid, val]) => {
-                            const questionObj = flatQuestions.find(q => q.id === qid);
-                            return (
-                              <div key={qid} className="group relative">
-                                <div className="absolute -left-6 top-0 bottom-0 w-1 bg-slate-100 group-hover:bg-orange-200 transition-colors rounded-full"></div>
-                                <div className="space-y-5">
-                                  <div className="p-8 bg-slate-50/80 rounded-[2.5rem] border border-slate-100 group-hover:bg-white group-hover:shadow-xl group-hover:border-orange-100 transition-all duration-500">
-                                    <div className="flex items-center gap-3 mb-4">
-                                       <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest rounded-lg">Soru / Vaka</span>
-                                       {questionObj?.type === 'radio' && <span className="px-3 py-1 bg-orange-100 text-orange-600 text-[8px] font-black uppercase tracking-widest rounded-lg">Çoktan Seçmeli</span>}
-                                       {questionObj?.type === 'textarea' && <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-lg">Açık Uçlu</span>}
-                                    </div>
-                                    <p className="text-lg font-bold text-slate-800 leading-snug">
-                                      {questionObj ? questionObj.text : `Soru ID: ${qid}`}
-                                    </p>
-                                  </div>
-                                  
-                                  <div className="ml-8 p-8 bg-orange-50/30 rounded-[2.5rem] border border-dashed border-orange-200">
-                                    <div className="flex items-center gap-3 mb-3">
-                                       <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                                       <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Adayın Yanıtı</span>
-                                    </div>
-                                    <p className="text-xl font-black text-slate-900 leading-relaxed italic">
-                                      "{Array.isArray(val) ? val.join(', ') : val}"
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                      <div className="space-y-10 animate-fade-in">
+                        {Object.entries(selectedCandidate.answers).map(([qid, val]) => (
+                          <div key={qid} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Soru ID: {qid}</p>
+                             <p className="text-lg font-black text-slate-900 italic">"{Array.isArray(val) ? val.join(', ') : val}"</p>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="h-full flex items-center justify-center text-slate-200 uppercase font-black tracking-widest text-2xl border-4 border-dashed border-slate-100 rounded-[4rem]">Aday Seçin</div>
+                <div className="h-full flex items-center justify-center text-slate-200 uppercase font-black tracking-widest text-2xl border-4 border-dashed border-slate-100 rounded-[4rem]">Bir Aday Seçin</div>
               )}
             </div>
           </div>
         )}
-
-        {activeTab === 'calendar' && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-100">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-                  <div>
-                    <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">E-Posta Davet Matrisi</h3>
-                    <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-wider">Planlanan her slot için adaya otomatik gerçek onay e-postası gönderilecektir.</p>
-                  </div>
-                  <div className="w-full md:w-auto">
-                     <label className="block text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 ml-1">Mülakat Yapılacak Adayı Seçin</label>
-                     <select 
-                       className="w-full md:w-64 bg-slate-50 border-2 border-slate-100 p-5 rounded-3xl font-black text-xs uppercase tracking-widest outline-none focus:border-orange-500 transition-all"
-                       value={schedulingCandidateId || ''}
-                       onChange={(e) => setSchedulingCandidateId(e.target.value)}
-                     >
-                       <option value="">Aday Seçin...</option>
-                       {candidates.filter(c => c.status === 'pending').map(c => (
-                         <option key={c.id} value={c.id}>{c.name} ({c.branch.split(' ')[0]})</option>
-                       ))}
-                     </select>
-                  </div>
-               </div>
-
-               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                  {calendarDays.map(day => (
-                    <div key={day} className="space-y-4">
-                       <div className="text-center p-5 bg-slate-900 text-white rounded-[2rem] shadow-lg">
-                          <p className="text-[9px] font-black uppercase opacity-50 tracking-widest mb-1">{new Date(day).toLocaleDateString('tr-TR', { weekday: 'long' })}</p>
-                          <p className="text-2xl font-black leading-none">{new Date(day).getDate()}</p>
-                       </div>
-                       <div className="space-y-3">
-                          {timeSlots.map(time => {
-                            const bookedCandidate = candidates.find(c => c.interviewSchedule?.date === day && c.interviewSchedule?.time === time);
-                            const isBooked = !!bookedCandidate;
-                            
-                            return (
-                              <button
-                                key={`${day}-${time}`}
-                                onClick={() => !isBooked && schedulingCandidateId && handleScheduleAndSendEmail(day, time)}
-                                disabled={isBooked || !schedulingCandidateId}
-                                className={`w-full p-5 rounded-[2rem] border-2 transition-all group relative overflow-hidden flex flex-col items-center justify-center min-h-[80px] ${
-                                  isBooked 
-                                  ? 'bg-orange-50 border-orange-200 cursor-not-allowed' 
-                                  : schedulingCandidateId 
-                                    ? 'bg-white border-slate-100 hover:border-orange-500 hover:shadow-xl cursor-pointer hover:-translate-y-1' 
-                                    : 'bg-slate-50 border-slate-100 opacity-50 cursor-default'
-                                }`}
-                              >
-                                <span className={`text-sm font-black ${isBooked ? 'text-orange-600' : 'text-slate-900'}`}>{time}</span>
-                                {isBooked && (
-                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1 truncate w-full text-center px-1">
-                                    {bookedCandidate?.name.split(' ')[0]}
-                                  </span>
-                                )}
-                                {!isBooked && schedulingCandidateId && (
-                                  <div className="absolute inset-0 bg-orange-600 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <svg className="w-5 h-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth={2.5}/></svg>
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Davet Gönder</span>
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
-                       </div>
-                    </div>
-                  ))}
-               </div>
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 group">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Aday Havuzu</span>
+               <div className="text-6xl font-black text-slate-900 tracking-tighter mt-4">{candidates.length}</div>
+            </div>
+            <div className="bg-slate-900 p-10 rounded-[3.5rem] text-white">
+               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Analiz Bekleyen</span>
+               <div className="text-6xl font-black text-orange-600 tracking-tighter mt-4">{candidates.filter(c => !c.report).length}</div>
+            </div>
+            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Analizli Aday</span>
+               <div className="text-6xl font-black text-emerald-600 tracking-tighter mt-4">{candidates.filter(c => c.report).length}</div>
             </div>
           </div>
         )}
       </main>
-
-      {/* E-Posta Gönderim Animasyonu */}
-      {isSendingEmail && (
-        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[300] flex items-center justify-center p-6">
-           <div className="bg-white p-16 rounded-[5rem] text-center max-w-xl animate-scale-in relative overflow-hidden border border-orange-100 shadow-2xl">
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-50 rounded-full blur-[80px]"></div>
-              
-              <div className="relative mb-10">
-                 {emailStatus === 'sending' && (
-                    <div className="w-24 h-24 bg-emerald-500 rounded-[2.5rem] mx-auto flex items-center justify-center text-white animate-bounce shadow-xl">
-                       <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                       </svg>
-                    </div>
-                 )}
-                 {emailStatus === 'success' && (
-                    <div className="w-24 h-24 bg-emerald-600 rounded-full mx-auto flex items-center justify-center text-white shadow-xl scale-110 transition-transform">
-                       <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                       </svg>
-                    </div>
-                 )}
-                 {emailStatus === 'error' && (
-                    <div className="w-24 h-24 bg-rose-600 rounded-full mx-auto flex items-center justify-center text-white shadow-xl">
-                       <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                       </svg>
-                    </div>
-                 )}
-              </div>
-
-              <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase leading-none">
-                 {emailStatus === 'sending' ? 'E-Posta Yola Çıktı' : emailStatus === 'success' ? 'Başarıyla İletildi' : 'Gönderim Başarısız'}
-              </h3>
-              <p className="text-slate-500 font-bold text-lg leading-relaxed mb-4">
-                 {emailStatus === 'sending' ? (
-                    <> <span className="text-orange-600">{lastSentTo}</span> adresine kurumsal mülakat davetiyesi iletiliyor... </>
-                 ) : emailStatus === 'success' ? (
-                    "Adaya tüm mülakat detayları başarıyla ulaştırıldı. Takvim mühürlendi."
-                 ) : (
-                    "E-posta servisine ulaşılamadı. Lütfen internet bağlantınızı veya API ayarlarınızı kontrol edin."
-                 )}
-              </p>
-              
-              {emailStatus === 'sending' && (
-                <div className="mt-10 h-2 w-48 bg-slate-100 rounded-full mx-auto overflow-hidden">
-                   <div className="h-full bg-emerald-500 animate-progress"></div>
-                </div>
-              )}
-           </div>
-        </div>
-      )}
     </div>
   );
 };

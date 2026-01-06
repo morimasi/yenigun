@@ -3,16 +3,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Talimat gereği: Anahtar EXCLUSIVELY process.env.API_KEY'den alınır.
-  // Not: Platform anahtarı bu değişkene enjekte eder.
+  // Vercel veya çalışma ortamındaki API anahtarını al
   const apiKey = process.env.API_KEY;
   
   if (!apiKey) {
-    console.error("SDK Error: process.env.API_KEY is currently empty.");
-    throw new Error("API_KEY_MISSING");
+    throw new Error("API_KEY_NOT_FOUND_IN_ENVIRONMENT");
   }
 
-  // Her çağrıda taze instance (En güncel process.env.API_KEY için)
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
@@ -20,15 +17,15 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     Özel eğitim ve rehabilitasyon alanında (Otizm, ABA, Dil Konuşma, Fizyoterapi) derin uzmanlığa sahipsin.
 
     GÖREVİN:
-    Adayın sunduğu verileri ve (varsa) CV dokümanını multimodal bir yaklaşımla analiz et. 
+    Adayın sunduğu verileri ve (varsa) CV dokümanını analiz et. 
     Keskin, tutarlı ve profesyonel bir rapor oluştur.
 
     KATEGORİK ANALİZ (0-100 Puan):
-    1. Mantıksal Keskinlik (Logic): Analitik düşünme.
-    2. Klinik Etik (Ethics): Mesleki etik duruş.
-    3. Psikolojik Bütünlük (Psychology): Stres yönetimi ve empati.
-    4. Sosyal Diplomasi (Diplomacy): Veli ve ekip iletişimi.
-    5. Gelişim Çevikliği (Development): Öğrenmeye açıklık.
+    1. Mantıksal Keskinlik (Logic)
+    2. Klinik Etik (Ethics)
+    3. Psikolojik Bütünlük (Psychology)
+    4. Sosyal Diplomasi (Diplomacy)
+    5. Gelişim Çevikliği (Development)
   `;
 
   const textPrompt = `
@@ -108,10 +105,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
     return JSON.parse(response.text || '{}') as AIReport;
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    if (error.message?.includes("Requested entity was not found")) {
-      throw new Error("API_KEY_INVALID");
-    }
+    console.error("Gemini API Hatası:", error);
     throw error;
   }
 };
