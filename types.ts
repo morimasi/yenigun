@@ -55,6 +55,12 @@ export interface AIReport {
     name: string;
     value: number;
   }[];
+  categoricalScores: {
+    category: string;
+    score: number;
+    average: number; // Akademi ortalaması/beklentisi
+    label: string; // Örn: "Üst Düzey", "Gelişmeli"
+  }[];
   summary: string;
   cvSummary?: string;
   recommendation: string;

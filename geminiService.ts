@@ -9,28 +9,21 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     Sen "Yeni Gün Akademi" için Üst Düzey Klinik İK ve Teknik Değerlendirme Uzmanısın. 
     Özel eğitim ve rehabilitasyon alanında derin uzmanlığa sahipsin.
 
+    KATEGORİK ANALİZ ZORUNLULUĞU:
+    Adayın performansını şu 5 ana kategoride (0-100 arası) mutlaka puanlamalısın:
+    1. Mantıksal Keskinlik (Logic)
+    2. Klinik Etik (Ethics)
+    3. Psikolojik Bütünlük (Psychology)
+    4. Sosyal Diplomasi (Diplomacy)
+    5. Gelişim Çevikliği (Development)
+
+    Her kategori için "Akademi Ortalaması" (Average) değerini Yeni Gün Akademi'nin yüksek standartlarını baz alarak (genelde 70-80 arası) sen belirle.
+
     ADAYIN MASKESİNİ DÜŞÜR VE DERİN ANALİZ YAP:
-
-    1. ÖZEL EĞİTİM YETKİNLİK ANALİZİ:
-       - CV'de şu kritik sertifikaları ve metotları ara: ABA (Uygulamalı Davranış Analizi), PECS, Floortime, Duyu Bütünleme, ETEÇOM, Denver II, vb.
-       - Adayın çalıştığı tanı gruplarını (OSB, Down Sendromu, CP, Özgül Öğrenme Güçlüğü) ve bu gruplardaki vaka deneyimini süz.
-       - Bilimsel veri temelli eğitim (grafik tutma, veri analizi) konusundaki disiplinini ölç.
-
-    2. CV "RED FLAG" (KRİTİK RİSK) DEDEKTÖRÜ:
-       - Kariyer boşluklarını, çok sık iş değiştirmeyi (kurumsal aidiyet sorunu) ve jenerik/kopyala-yapıştır görev tanımlarını yakala.
-       - CV'deki iddialı yetkinlikler ile "Profesyonel Vakalar" bölümündeki pratik cevaplar arasındaki çelişkileri bul.
-       - Eğitimin sürekliliğine (sürekli gelişim) dair bir iz yoksa bunu zayıf yön olarak işaretle.
-
-    3. SOSYAL BEĞENİLİRLİK (MASKELENME) ANALİZİ:
-       - Adayın cevapları "teorik olarak mükemmel" mi yoksa "otantik ve gerçekçi" mi? 
-       - Eğer cevaplar bir kitaptan alınmış gibi kusursuzsa, adayın stres altında gerçek kişiliğini saklama eğiliminde olduğunu belirt.
-
-    4. PSİKOLOJİK DAYANIKLILIK VE ETİK:
-       - Özel eğitimde tükenmişlik riski yüksektir. Adayın sabır, empati ve sınır yönetimi kapasitesini verilen cevaplardan çıkar.
-       - Kurumsal hiyerarşi ve etik ikilemlere verdiği tepkileri "Yeni Gün Akademi"nin yüksek standartlarıyla (dürüstlük, şeffaflık, çocuk odaklılık) kıyasla.
-
-    SWOT ANALİZİNDE ACIMASIZ VE DÜRÜST OL:
-    - "Tehditler" kısmına adayın kuruma verebileceği olası zararları (veliye yanlış yaklaşım, ekip içi uyumsuzluk, düşük klinik performans) açıkça yaz.
+    1. ÖZEL EĞİTİM YETKİNLİK ANALİZİ: CV'deki metodolojileri ve sertifikaları süz.
+    2. CV RED FLAG DEDEKTÖRÜ: Çelişkileri ve riskleri bul.
+    3. SOSYAL BEĞENİLİRLİK: Cevaplar yapay mı gerçekçi mi?
+    4. SWOT: Tehditler kısmında acımasız ve dürüst ol.
   `;
 
   const textPrompt = `
@@ -39,12 +32,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     Branş: ${candidate.branch}
     Deneyim: ${candidate.experienceYears} yıl
     
-    ADAYIN VERDİĞİ CEVAPLAR (Vaka Analizleri ve Etik İkilemler):
+    CEVAPLAR:
     ${JSON.stringify(candidate.answers, null, 2)}
     
-    GÖREV:
-    Yukarıdaki verileri ve (varsa) ekteki CV dosyasını analiz ederek; adayın klinik becerisini, özel eğitim vizyonunu ve karakter bütünlüğünü raporla. 
-    CV'deki teknik terimleri, sertifikaları ve geçmiş iş tecrübelerini, verdiği vaka cevaplarıyla harmanla.
+    Lütfen bu verileri analiz et ve Yeni Gün Akademi kriterlerine göre kategorik puanları da içeren detaylı raporu JSON formatında döndür.
   `;
 
   const contents: any[] = [{ text: textPrompt }];
@@ -67,14 +58,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          score: { type: Type.NUMBER, description: "100 üzerinden genel profesyonel uygunluk puanı" },
-          swot: {
+          score: { type: Type.NUMBER },
+          swat: {
             type: Type.OBJECT,
             properties: {
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Klinik ve karakter güçleri" },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Gelişim alanları ve kısıtlı yetkinlikler" },
-              opportunities: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Kuruma katabileceği değerler" },
-              threats: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Kritik riskler, davranışsal zaaflar ve red flag'ler" }
+              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+              opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+              threats: { type: Type.ARRAY, items: { type: Type.STRING } }
             }
           },
           competencies: {
@@ -82,16 +73,28 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
             items: {
               type: Type.OBJECT,
               properties: {
-                name: { type: Type.STRING, description: "Yetkinlik adı (örn: Klinik Analiz, Sabır, Kurumsal Sadakat)" },
-                value: { type: Type.NUMBER, description: "100 üzerinden değer" }
+                name: { type: Type.STRING },
+                value: { type: Type.NUMBER }
               }
             }
           },
-          summary: { type: Type.STRING, description: "Adayın profesyonel özeti" },
-          cvSummary: { type: Type.STRING, description: "CV'deki teknik detayların, sertifikaların ve deneyim süresinin analizi" },
-          recommendation: { type: Type.STRING, description: "İşe alım komisyonuna nihai, net ve dürüst tavsiye" }
+          categoricalScores: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                category: { type: Type.STRING },
+                score: { type: Type.NUMBER },
+                average: { type: Type.NUMBER },
+                label: { type: Type.STRING }
+              }
+            }
+          },
+          summary: { type: Type.STRING },
+          cvSummary: { type: Type.STRING },
+          recommendation: { type: Type.STRING }
         },
-        required: ["score", "swot", "competencies", "summary", "recommendation"]
+        required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
       }
     }
   });
