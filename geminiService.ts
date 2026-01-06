@@ -6,7 +6,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   const apiKey = process.env.API_KEY;
   
   if (!apiKey) {
-    throw new Error("API_KEY_NOT_FOUND_IN_ENVIRONMENT");
+    // Uygulama seviyesinde yakalanacak özel bir hata fırlatıyoruz
+    throw new Error("MISSING_API_KEY");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -15,30 +16,22 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     Sen "Yeni Gün Akademi" için Üst Düzey Psikometrik Analiz ve İK Strateji Uzmanısın.
     
     ÖZEL GÖREVİN:
-    Adayın cevaplarındaki "Sosyal Beğenirlik Sapmasını" (Social Desirability Bias) tespit et. 
-    Aday kendini "kusursuz, hiç öfkelenmeyen, her zaman etik olan bir melek" gibi gösteriyorsa, bu bir 'RED FLAG' (Tehlike İşareti) olarak değerlendirilmelidir.
+    Adayın cevaplarındaki "Sosyal Beğenirlik Sapmasını" tespit et. 
+    Aday kendini kusursuz gösteriyorsa bunu RED FLAG olarak işaretle.
     
     ANALİZ KRİTERLERİ:
-    1. Otantisite: Cevaplar insani zaafları (öfke, yorgunluk, hata yapma) kabul ediyor mu yoksa ezberlenmiş "doğru" cevaplar mı?
-    2. Stres Altında Karar: Çocuk-Kurum-Kendi çıkarı çatıştığında hangisini gerçekçi bir şekilde seçiyor?
-    3. Red Flag Tespiti: Agresyon potansiyeli, gizli tükenmişlik (burnout) veya kurumsal sadakat maskesi altında etik ihlal eğilimi var mı?
-    4. Gelişim Alanı: Aday hatasını itiraf edebiliyor mu? Hata itiraf etmeyen adayı "Narsisistik Eğilim" veya "Dürüstlük Eksikliği" ile işaretle.
-    
-    RAPORLAMA:
-    - Skor verirken "fazla mükemmel" cevap verenlerin puanını kır.
-    - SWOT kısmındaki "Threats" bölümüne adayın muhtemel maskelerini yaz.
-    - Summary kısmında adayın profesyonel duruşu ile gerçek kişiliği arasındaki muhtemel boşluğu (gap) analiz et.
+    1. Otantisite: Cevaplar insani zaafları kabul ediyor mu?
+    2. Stres Altında Karar: Çocuk-Kurum-Çıkar dengesi.
+    3. Red Flag Tespiti: Agresyon, tükenmişlik veya dürüstlük maskesi.
+    4. Gelişim Alanı: Özeleştiri kapasitesi.
   `;
 
   const textPrompt = `
-    ADAY PROFİLİ:
-    İsim: ${candidate.name}
-    Branş: ${candidate.branch}
-    Deneyim: ${candidate.experienceYears} yıl
-    Eğitimler: ${candidate.allTrainings}
-    Cevaplar: ${JSON.stringify(candidate.answers)}
-    
-    Lütfen bu verileri analiz et ve profesyonel bir Akademi Değerlendirme Raporu oluştur.
+    ADAY: ${candidate.name}
+    BRANŞ: ${candidate.branch}
+    DENEYİM: ${candidate.experienceYears} yıl
+    EĞİTİMLER: ${candidate.allTrainings}
+    CEVAPLAR: ${JSON.stringify(candidate.answers)}
   `;
 
   const contents: any[] = [{ text: textPrompt }];
@@ -62,14 +55,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Genel uygunluk skoru (0-100)" },
+            score: { type: Type.NUMBER },
             swot: {
               type: Type.OBJECT,
               properties: {
                 strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
                 weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
                 opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-                threats: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Manipülasyon veya karakter riskleri" }
+                threats: { type: Type.ARRAY, items: { type: Type.STRING } }
               }
             },
             competencies: {
@@ -94,8 +87,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                 }
               }
             },
-            summary: { type: Type.STRING, description: "Adayın maskesini düşüren kısa klinik özet" },
-            recommendation: { type: Type.STRING, description: "Mülakatta üzerine gidilmesi gereken zayıf noktalar dahil tavsiye" }
+            summary: { type: Type.STRING },
+            recommendation: { type: Type.STRING }
           },
           required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
         }
@@ -104,7 +97,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
     return JSON.parse(response.text || '{}') as AIReport;
   } catch (error: any) {
-    console.error("Gemini API Hatası:", error);
+    if (error.message?.includes("entity was not found") || error.message?.includes("API key")) {
+      throw new Error("INVALID_API_KEY");
+    }
     throw error;
   }
 };

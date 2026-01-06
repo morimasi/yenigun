@@ -5,6 +5,17 @@ import CandidateReport from './CandidateReport';
 import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
 import { generateCandidateAnalysis } from '../geminiService';
 
+// AIStudio interface and window augmentation fixed to match global types and modifiers
+declare global {
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
+  interface Window {
+    readonly aistudio: AIStudio;
+  }
+}
+
 interface DashboardProps {
   candidates: Candidate[];
   onDelete?: (id: string) => void;
@@ -18,10 +29,9 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
   const [searchTerm, setSearchTerm] = useState('');
   const [localNote, setLocalNote] = useState('');
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [showApiKeyError, setShowApiKeyError] = useState(false);
   
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedCandidateId), [candidates, selectedCandidateId]);
-
-  const flatQuestions = useMemo(() => Object.values(MOCK_QUESTIONS).flat(), []);
 
   useEffect(() => {
     if (selectedCandidate) {
@@ -36,21 +46,33 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
     );
   }, [candidates, searchTerm]);
 
+  const handleOpenKeySelector = async () => {
+    try {
+      await window.aistudio.openSelectKey();
+      setShowApiKeyError(false);
+      // Key seçildikten sonra otomatik tekrar dene
+      if (selectedCandidate) handleManualAnalysis();
+    } catch (e) {
+      console.error("Key selector hatası", e);
+    }
+  };
+
   const handleManualAnalysis = async () => {
     if (!selectedCandidate || !onUpdate) return;
     setIsAnalysing(true);
+    setShowApiKeyError(false);
+
     try {
       const report = await generateCandidateAnalysis(selectedCandidate);
       if (report) {
         const updated = { ...selectedCandidate, report };
         await onUpdate(updated);
-        alert("Yapay zeka analizi başarıyla tamamlandı.");
       }
     } catch (e: any) {
-      if (e.message === "API_KEY_MISSING") {
-        alert("Lütfen önce API anahtarınızı bağlayın.");
+      if (e.message === "MISSING_API_KEY" || e.message === "INVALID_API_KEY") {
+        setShowApiKeyError(true);
       } else {
-        alert("Analiz sırasında bir hata oluştu: " + e.message);
+        alert("Analiz hatası: " + e.message);
       }
     } finally {
       setIsAnalysing(false);
@@ -75,8 +97,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
 
         {[
           { id: 'overview', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', label: 'Özet' },
-          { id: 'candidates', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0', label: 'Adaylar' },
-          { id: 'calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'Planlama' }
+          { id: 'candidates', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0', label: 'Adaylar' }
         ].map(item => (
           <button
             key={item.id}
@@ -145,21 +166,40 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                       selectedCandidate.report ? (
                         <CandidateReport report={selectedCandidate.report} name={selectedCandidate.name} />
                       ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center space-y-10 py-20">
-                           <div className="w-40 h-40 bg-orange-50 rounded-full flex items-center justify-center text-orange-600 animate-pulse">
-                              <svg className="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                           </div>
-                           <div className="max-w-md">
-                              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Analiz Hazır Değil</h3>
-                              <p className="text-slate-500 font-bold mb-10 leading-relaxed italic">Bu aday için henüz yapay zeka değerlendirmesi oluşturulmamış veya API anahtarı hatası nedeniyle atlanmış.</p>
-                              <button 
-                                onClick={handleManualAnalysis}
-                                disabled={isAnalysing}
-                                className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] hover:bg-orange-600 shadow-2xl transition-all"
-                              >
-                                {isAnalysing ? 'Analiz Motoru Çalışıyor...' : 'Analizi Şimdi Başlat'}
-                              </button>
-                           </div>
+                        <div className="h-full flex flex-col items-center justify-center text-center space-y-10 py-10">
+                           {showApiKeyError ? (
+                             <div className="max-w-md animate-bounce-in">
+                               <div className="w-24 h-24 bg-rose-50 rounded-3xl flex items-center justify-center text-rose-600 mx-auto mb-8 shadow-xl shadow-rose-100">
+                                 <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                               </div>
+                               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">API Anahtarı Gerekli</h3>
+                               <p className="text-slate-500 font-bold mb-8 text-sm">Analiz motorunun çalışması için bir Gemini API Anahtarı bağlamanız gerekiyor. Bu anahtarı kurum ayarlarından veya AI Studio üzerinden alabilirsiniz.</p>
+                               <button 
+                                 onClick={handleOpenKeySelector}
+                                 className="w-full py-5 bg-orange-600 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-orange-700 shadow-2xl transition-all"
+                               >
+                                 Anahtarı Şimdi Bağla
+                               </button>
+                               <p className="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest underline cursor-pointer">
+                                 <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer">Anahtar Nasıl Alınır?</a>
+                               </p>
+                             </div>
+                           ) : (
+                             <div className="max-w-md">
+                               <div className="w-24 h-24 bg-orange-50 rounded-3xl flex items-center justify-center text-orange-600 mx-auto mb-8 animate-pulse">
+                                 <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                               </div>
+                               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">Analiz Hazır Değil</h3>
+                               <p className="text-slate-500 font-bold mb-8 text-sm italic">Bu aday için henüz yapay zeka değerlendirmesi oluşturulmamış.</p>
+                               <button 
+                                 onClick={handleManualAnalysis}
+                                 disabled={isAnalysing}
+                                 className="w-full py-5 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-orange-600 shadow-2xl transition-all"
+                               >
+                                 {isAnalysing ? 'Analiz Motoru Çalışıyor...' : 'Analizi Başlat'}
+                               </button>
+                             </div>
+                           )}
                         </div>
                       )
                     )}
@@ -186,7 +226,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                       <div className="space-y-10 animate-fade-in">
                         {Object.entries(selectedCandidate.answers).map(([qid, val]) => (
                           <div key={qid} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
-                             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Soru ID: {qid}</p>
+                             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Senaryo ID: {qid}</p>
                              <p className="text-lg font-black text-slate-900 italic">"{Array.isArray(val) ? val.join(', ') : val}"</p>
                           </div>
                         ))}
