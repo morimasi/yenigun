@@ -5,41 +5,45 @@ import { Candidate, AIReport } from "./types";
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
+  // Gemini 3 Flash için optimize edilmiş sistem talimatı
   const systemInstruction = `
     Sen "Yeni Gün Akademi" için Üst Düzey Klinik İK ve Teknik Değerlendirme Uzmanısın. 
-    Özel eğitim ve rehabilitasyon alanında derin uzmanlığa sahipsin.
+    Özel eğitim ve rehabilitasyon alanında (Otizm, ABA, Dil Konuşma, Fizyoterapi) derin uzmanlığa sahipsin.
 
-    KATEGORİK ANALİZ ZORUNLULUĞU:
-    Adayın performansını şu 5 ana kategoride (0-100 arası) mutlaka puanlamalısın:
-    1. Mantıksal Keskinlik (Logic)
-    2. Klinik Etik (Ethics)
-    3. Psikolojik Bütünlük (Psychology)
-    4. Sosyal Diplomasi (Diplomacy)
-    5. Gelişim Çevikliği (Development)
+    GÖREVİN:
+    Adayın sunduğu verileri ve (varsa) CV dokümanını multimodal bir yaklaşımla analiz et. 
+    Flash modelinin hızını kullanarak keskin, tutarlı ve profesyonel bir rapor oluştur.
 
-    Her kategori için "Akademi Ortalaması" (Average) değerini Yeni Gün Akademi'nin yüksek standartlarını baz alarak (genelde 70-80 arası) sen belirle.
+    KATEGORİK ANALİZ (0-100 Puan):
+    1. Mantıksal Keskinlik (Logic): Analitik düşünme.
+    2. Klinik Etik (Ethics): Mesleki etik duruş.
+    3. Psikolojik Bütünlük (Psychology): Stres yönetimi ve empati.
+    4. Sosyal Diplomasi (Diplomacy): Veli ve ekip iletişimi.
+    5. Gelişim Çevikliği (Development): Öğrenmeye açıklık.
 
-    ADAYIN MASKESİNİ DÜŞÜR VE DERİN ANALİZ YAP:
-    1. ÖZEL EĞİTİM YETKİNLİK ANALİZİ: CV'deki metodolojileri ve sertifikaları süz.
-    2. CV RED FLAG DEDEKTÖRÜ: Çelişkileri ve riskleri bul.
-    3. SOSYAL BEĞENİLİRLİK: Cevaplar yapay mı gerçekçi mi?
-    4. SWOT: Tehditler kısmında acımasız ve dürüst ol.
+    MULTIMODAL DOKÜMAN ANALİZİ:
+    Eğer bir CV dosyası (görsel/PDF) sağlandıysa, formdaki cevaplarla CV'deki tarihleri, sertifikaları ve deneyimleri karşılaştır. 
+    Abartılı veya çelişkili ifadeleri "Tehditler" (Red Flags) kısmında mutlaka belirt.
   `;
 
   const textPrompt = `
-    ADAY PROFİLİ:
+    ADAY VERİLERİ:
     İsim: ${candidate.name}
     Branş: ${candidate.branch}
+    Yaş: ${candidate.age}
     Deneyim: ${candidate.experienceYears} yıl
+    Eğitimler: ${candidate.allTrainings}
+    Kurumlar: ${candidate.previousInstitutions}
     
-    CEVAPLAR:
+    SENARYO CEVAPLARI:
     ${JSON.stringify(candidate.answers, null, 2)}
     
-    Lütfen bu verileri analiz et ve Yeni Gün Akademi kriterlerine göre kategorik puanları da içeren detaylı raporu JSON formatında döndür.
+    Lütfen bu multimodal veriyi analiz et ve Yeni Gün Akademi standartlarında detaylı bir JSON rapor döndür.
   `;
 
   const contents: any[] = [{ text: textPrompt }];
 
+  // Multimodal destek: Doküman verisi ekleniyor
   if (candidate.cvData) {
     contents.push({
       inlineData: {
@@ -50,7 +54,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview", // Kullanıcı isteği üzerine Flash modeline geçildi
     contents: { parts: contents },
     config: {
       systemInstruction,
@@ -59,7 +63,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
         type: Type.OBJECT,
         properties: {
           score: { type: Type.NUMBER },
-          swat: {
+          swot: {
             type: Type.OBJECT,
             properties: {
               strengths: { type: Type.ARRAY, items: { type: Type.STRING } },

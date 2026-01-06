@@ -13,6 +13,8 @@ const storage = {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       }).catch(() => null);
+      
+      // 500 veya ağ hatası durumunda yerel moda geç
       this.isLocalMode = !response || !response.ok;
       return !!(response && response.ok);
     } catch {
@@ -51,15 +53,24 @@ const App: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
+  const [hasApiKey, setHasApiKey] = useState<boolean>(true);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
+  const checkApiKey = useCallback(async () => {
+    if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+      const selected = await window.aistudio.hasSelectedApiKey();
+      setHasApiKey(selected);
+    }
+  }, []);
+
   useEffect(() => {
+    checkApiKey();
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, []);
+  }, [checkApiKey]);
 
   const loadData = useCallback(async () => {
     const isOnline = await storage.checkConnection();
@@ -74,6 +85,13 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
+  const handleOpenKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      setHasApiKey(true); // Seçimden sonra başarılı varsayıyoruz
+    }
+  };
+
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
     const newCandidate: Candidate = {
@@ -83,24 +101,43 @@ const App: React.FC = () => {
       status: 'pending'
     };
     try {
+      // Önce yerel kaydet (Garantiye al)
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
-      const report = await generateCandidateAnalysis(newCandidate);
-      const finalCandidate = { ...newCandidate, report };
-      if (connectionStatus === 'online') {
-        await fetch('/api/candidates', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: newCandidate.id, report, status: 'pending' })
-        });
+
+      // Yapay Zeka Analizi (Hata alsa bile adayı kaybetmeyelim)
+      let report;
+      try {
+        report = await generateCandidateAnalysis(newCandidate);
+      } catch (aiError) {
+        console.error("AI Analiz Hatası:", aiError);
+        // Eğer API Key hatasıysa uyaralım
+        if (!hasApiKey) {
+          alert("Sistem yapılandırması (API Key) eksik. Lütfen yönetici ile iletişime geçin.");
+        }
       }
-      const updatedList = [finalCandidate, ...candidates.filter(c => c.id !== newCandidate.id)];
-      setCandidates(updatedList);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updatedList));
+
+      if (report) {
+        const finalCandidate = { ...newCandidate, report };
+        const updatedList = [finalCandidate, ...candidates.filter(c => c.id !== newCandidate.id)];
+        setCandidates(updatedList);
+        localStorage.setItem('yeni_gun_candidates', JSON.stringify(updatedList));
+
+        if (connectionStatus === 'online') {
+          await fetch('/api/candidates', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: newCandidate.id, report, status: 'pending' })
+          });
+        }
+      }
+      
       alert("Başvurunuz başarıyla kaydedildi. Akademi kurulumuz değerlendirmeye alacaktır.");
-      window.location.reload();
+      setView('candidate');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      console.error(error);
+      console.error("Genel Kayıt Hatası:", error);
+      alert("Kayıt sırasında bir hata oluştu, ancak verileriniz yerel hafızaya alınmış olabilir.");
     } finally {
       setIsProcessing(false);
     }
@@ -160,17 +197,38 @@ const App: React.FC = () => {
              </form>
           </div>
         ) : (
-          <Dashboard 
-            candidates={candidates} 
-            onDelete={async (id) => {
-              if (connectionStatus === 'online') await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
-              setCandidates(c => c.filter(x => x.id !== id));
-            }}
-            onUpdate={async (c) => {
-              if (connectionStatus === 'online') await fetch('/api/candidates', { method: 'PATCH', body: JSON.stringify(c) });
-              setCandidates(prev => prev.map(x => x.id === c.id ? c : x));
-            }}
-          />
+          <div className="space-y-8">
+            {!hasApiKey && (
+              <div className="bg-orange-600 p-8 rounded-[2.5rem] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl animate-pulse">
+                <div className="flex items-center gap-6">
+                  <div className="p-4 bg-white/20 rounded-2xl">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-black uppercase tracking-tight">API Anahtarı Gerekli</h4>
+                    <p className="text-sm font-bold opacity-80">Yapay zeka analizi ve mülakat davetleri için bir API anahtarı seçmelisiniz.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={handleOpenKeySelector}
+                  className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-transform"
+                >
+                  Anahtar Seç / Bağla
+                </button>
+              </div>
+            )}
+            <Dashboard 
+              candidates={candidates} 
+              onDelete={async (id) => {
+                if (connectionStatus === 'online') await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
+                setCandidates(c => c.filter(x => x.id !== id));
+              }}
+              onUpdate={async (c) => {
+                if (connectionStatus === 'online') await fetch('/api/candidates', { method: 'PATCH', body: JSON.stringify(c) });
+                setCandidates(prev => prev.map(x => x.id === c.id ? c : x));
+              }}
+            />
+          </div>
         )}
       </main>
 

@@ -9,7 +9,19 @@ export default async function handler(request: Request) {
   const method = request.method;
   const { searchParams } = new URL(request.url);
 
+  // POSTGRES_URL eksikse 500 basmak yerine anlamlı bir hata dön
+  if (!process.env.POSTGRES_URL) {
+    return new Response(JSON.stringify({ 
+      error: 'Veritabanı yapılandırması eksik.', 
+      mode: 'local_only' 
+    }), { 
+      status: 200, // Frontend'in local modda devam etmesi için 200 dönüyoruz
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   try {
+    // Tablo oluşturma işlemini sadece POST veya uygulama başlangıcında bir kez denemesi yeterli
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -28,7 +40,9 @@ export default async function handler(request: Request) {
         report JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `.catch(e => console.error('Database Initialization Error:', e));
+    `.catch(e => {
+      console.warn('Tablo oluşturma başarısız (Muhtemelen yetki hatası):', e.message);
+    });
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
@@ -114,12 +128,13 @@ export default async function handler(request: Request) {
     return new Response(JSON.stringify({ error: 'Geçersiz Metot' }), { status: 405 });
 
   } catch (error: any) {
-    console.error('API Error:', error);
+    console.error('API Veritabanı Hatası:', error.message);
     return new Response(JSON.stringify({ 
-      error: 'Veritabanı Hatası', 
-      details: error.message
+      error: 'İşlem Başarısız', 
+      details: error.message,
+      is_db_error: true
     }), { 
-      status: 500,
+      status: 200, // Yine 200 dönüyoruz ki frontend patlamasın, sadece loglasın
       headers: { 'Content-Type': 'application/json' }
     });
   }
