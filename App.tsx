@@ -111,49 +111,52 @@ const App: React.FC = () => {
     if (loginForm.username === 'admin' && loginForm.password === 'yenigun2024') {
       setIsLoggedIn(true);
     } else {
-      alert("Geçersiz kullanıcı adı veya şifre.");
+      alert("Geçersiz kimlik bilgileri.");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
-      <nav className="bg-white/95 backdrop-blur-3xl border-b border-slate-100 sticky top-0 z-[60] shadow-sm h-24 flex items-center">
-        <div className="max-w-7xl mx-auto px-8 w-full flex items-center justify-between">
-          <div className="flex items-center space-x-5 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black shadow-xl">YG</div>
+      <div className="fixed top-0 left-0 w-full h-2 bg-orange-600 z-[100]"></div>
+      
+      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] shadow-sm h-28 flex items-center">
+        <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
+          <div className="flex items-center space-x-6 cursor-pointer group" onClick={() => setView('candidate')}>
+            <div className="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center text-white font-black shadow-2xl group-hover:bg-orange-600 transition-colors duration-500">YG</div>
             <div>
-              <span className="text-2xl font-black tracking-tighter uppercase block leading-none text-slate-900">YENİ GÜN</span>
-              <div className="flex items-center gap-2 mt-1.5 uppercase font-black text-[9px] tracking-widest text-slate-400">
-                <div className={`w-2 h-2 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-500'}`}></div>
-                {connectionStatus}
+              <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">YENİ GÜN</span>
+              <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
+                <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-orange-500'}`}></div>
+                {connectionStatus === 'online' ? 'Akademi Sunucusu Bağlı' : 'Yerel Veri Modu'}
               </div>
             </div>
           </div>
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
-            <button onClick={() => setView('candidate')} className={`px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${view === 'candidate' ? 'bg-white shadow-xl text-orange-600' : 'text-slate-500'}`}>Aday Formu</button>
-            <button onClick={() => setView('admin')} className={`px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${view === 'admin' ? 'bg-white shadow-xl text-orange-600' : 'text-slate-500'}`}>
+          <div className="flex bg-orange-50/50 p-2 rounded-[2rem] border border-orange-100 shadow-inner">
+            <button onClick={() => setView('candidate')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${view === 'candidate' ? 'bg-white shadow-xl text-orange-600 scale-105' : 'text-slate-500 hover:text-orange-600'}`}>Başvuru Formu</button>
+            <button onClick={() => setView('admin')} className={`px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${view === 'admin' ? 'bg-white shadow-xl text-orange-600 scale-105' : 'text-slate-500 hover:text-orange-600'}`}>
               {isLoggedIn ? 'Yönetici Paneli' : 'Giriş Yap'}
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="py-12 px-8 max-w-7xl mx-auto min-h-[calc(100vh-6rem)]">
+      <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-7rem)]">
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : !isLoggedIn ? (
-          <div className="max-w-md mx-auto mt-20 p-12 bg-white rounded-[3.5rem] shadow-2xl border border-slate-100 animate-scale-in">
-             <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-8 uppercase text-center">Giriş Yap</h3>
-             <form onSubmit={handleLogin} className="space-y-6">
-                <div>
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Kullanıcı Adı</label>
-                   <input type="text" className="w-full p-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-orange-500 font-bold" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+          <div className="max-w-lg mx-auto mt-10 p-16 bg-white rounded-[4rem] shadow-[0_60px_120px_-30px_rgba(234,88,12,0.2)] border border-orange-100 animate-scale-in relative overflow-hidden">
+             <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-50 rounded-full blur-[80px]"></div>
+             <h3 className="text-4xl font-black text-slate-900 tracking-tighter mb-10 uppercase text-center relative z-10">Güvenli Giriş</h3>
+             <form onSubmit={handleLogin} className="space-y-8 relative z-10">
+                <div className="space-y-3">
+                   <label className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] ml-1 block">Yönetici Kimliği</label>
+                   <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-50 font-bold bg-slate-50/50" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="admin" />
                 </div>
-                <div>
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Şifre</label>
-                   <input type="password" className="w-full p-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-orange-500 font-bold" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+                <div className="space-y-3">
+                   <label className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] ml-1 block">Erişim Anahtarı</label>
+                   <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-50 font-bold bg-slate-50/50" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
                 </div>
-                <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Sisteme Giriş</button>
+                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl hover:bg-orange-600 transition-all duration-500 hover:-translate-y-1">Paneli Aç</button>
              </form>
           </div>
         ) : (
@@ -172,11 +175,14 @@ const App: React.FC = () => {
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-2xl z-[200] flex items-center justify-center p-8">
-          <div className="bg-white p-20 rounded-[4rem] text-center max-w-xl animate-scale-in">
-             <div className="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-10"></div>
-             <h3 className="text-3xl font-black text-slate-900 tracking-tighter">İşleniyor</h3>
-             <p className="text-slate-500 mt-4 text-lg font-medium italic">Veriler mühürleniyor ve akademi kriterleri analiz ediliyor...</p>
+        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-12">
+          <div className="bg-white p-24 rounded-[5rem] text-center max-w-2xl animate-scale-in border border-orange-100 shadow-[0_0_100px_rgba(234,88,12,0.3)] relative overflow-hidden">
+             <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-orange-50 rounded-full blur-[80px]"></div>
+             <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12 shadow-inner"></div>
+             <h3 className="text-4xl font-black text-slate-900 tracking-tighter mb-6">Analiz Mühürleniyor</h3>
+             <p className="text-slate-500 text-xl font-medium italic leading-relaxed">
+               Yapay zekamız eğitsel verilerinizi akademi kriterleriyle harmanlıyor. Bu işlem birkaç saniye sürebilir...
+             </p>
           </div>
         </div>
       )}

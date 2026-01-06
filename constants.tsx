@@ -5,13 +5,13 @@ export const FORM_STEPS: FormStep[] = [
   { 
     id: 'personal', 
     title: 'Eğitsel Vizyon & Uzmanlık Temelleri', 
-    description: 'Özel eğitim yolculuğunuzun ilk adımı: Profesyonel kimliğinizle çocukların dünyasına dokunmaya hazırlanın.' 
+    description: 'Yeni Bir Gün, Yeni Bir Gelecek: Profesyonel kimliğinizle çocukların dünyasına dokunmaya hazırlanın.' 
   },
-  { id: 'logic_literacy', title: 'Akademik Keskinlik', description: 'İleri düzey mantık ve metin analizi' },
-  { id: 'professional_cases', title: 'Klinik Karar Mekanizması', description: 'Etik ikilemler ve kriz anı yönetimi (Gerçekçi vakalar)' },
+  { id: 'logic_literacy', title: 'Bilişsel Keskinlik', description: 'Analitik düşünme ve eğitsel muhakeme kapasitesi' },
+  { id: 'professional_cases', title: 'Klinik Karar Mekanizması', description: 'Etik ikilemler ve kriz anı yönetimi (Gerçekçi Vakalar)' },
   { id: 'psychological_integrity', title: 'Psikolojik Bütünlük', description: 'Stres altında otantik tepkiler ve sınır yönetimi' },
-  { id: 'social_diplomacy', title: 'Kurumsal Diplomasi', description: 'Zorlu veli ve ekip içi çatışma senaryoları' },
-  { id: 'development', title: 'Öğrenme Çevikliği', description: 'Hata kabulü ve gelişim kapasitesi' }
+  { id: 'social_diplomacy', title: 'Kurumsal Diplomasi', description: 'Veli iletişimi ve ekip içi sinerji senaryoları' },
+  { id: 'development', title: 'Gelişim Çevikliği', description: 'Hata kabulü, geri bildirim ve öğrenme kapasitesi' }
 ];
 
 export const MOCK_QUESTIONS = {
