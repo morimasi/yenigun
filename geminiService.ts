@@ -3,14 +3,12 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  const apiKey = process.env.API_KEY;
-  
-  if (!apiKey) {
-    // Uygulama seviyesinde yakalanacak özel bir hata fırlatıyoruz
+  // Always use process.env.API_KEY directly in the constructor as per guidelines.
+  if (!process.env.API_KEY) {
     throw new Error("MISSING_API_KEY");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const systemInstruction = `
     Sen "Yeni Gün Akademi" için Üst Düzey Psikometrik Analiz ve İK Strateji Uzmanısın.
@@ -46,8 +44,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   try {
+    // Upgraded to gemini-3-pro-preview for complex psychometric analysis tasks.
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents: { parts: contents },
       config: {
         systemInstruction,
@@ -95,6 +94,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
+    // Directly accessing .text property as per guidelines.
     return JSON.parse(response.text || '{}') as AIReport;
   } catch (error: any) {
     if (error.message?.includes("entity was not found") || error.message?.includes("API key")) {

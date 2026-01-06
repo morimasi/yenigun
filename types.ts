@@ -17,19 +17,27 @@ export interface AdminUser {
   permissions: string[];
 }
 
+export interface GlobalConfig {
+  institutionName: string;
+  primaryColor: string;
+  aiTone: 'strict' | 'balanced' | 'empathetic';
+  notificationEmail: string;
+  lastUpdated: number;
+}
+
 export interface Candidate {
   id: string;
   name: string;
   email: string;
   phone?: string;
-  age: number; // YENİ
+  age: number;
   branch: Branch;
   experienceYears: number;
-  previousInstitutions: string; // YENİ: Önceki çalıştığı kurumlar
-  allTrainings: string; // YENİ: Aldığı tüm eğitimler
+  previousInstitutions: string;
+  allTrainings: string;
   answers: Record<string, string | string[]>;
   timestamp: number;
-  status: 'pending' | 'scheduled' | 'rejected' | 'completed';
+  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
   adminNotes?: string;
   interviewSchedule?: {
     date: string;
@@ -37,6 +45,7 @@ export interface Candidate {
     location: string;
     method: 'Yüz Yüze' | 'Google Meet' | 'Zoom' | 'Telefon';
     notes?: string;
+    isNotificationSent: boolean;
   };
   report?: AIReport;
   cvData?: {
