@@ -26,6 +26,11 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
 
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedCandidateId), [candidates, selectedCandidateId]);
 
+  // Soruları ID bazlı hızlıca bulmak için düz bir liste oluşturuyoruz
+  const flatQuestions = useMemo(() => {
+    return Object.values(MOCK_QUESTIONS).flat();
+  }, []);
+
   useEffect(() => {
     if (selectedCandidate) {
       setLocalNote(selectedCandidate.adminNotes || '');
@@ -64,7 +69,6 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
     const location = 'Yeni Gün Akademi - Ana Bina / Klinik Birimi';
     
     try {
-      // GERÇEK API ÇAĞRISI
       const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,7 +97,6 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
       await onUpdate(updatedCandidate);
       setEmailStatus('success');
       
-      // Başarı ekranını 2 saniye göster sonra kapat
       setTimeout(() => {
         setIsSendingEmail(false);
         setEmailStatus('idle');
@@ -264,13 +267,44 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                       </div>
                     )}
                     {detailTab === 'answers' && (
-                      <div className="space-y-8 animate-fade-in">
-                        {Object.entries(selectedCandidate.answers).map(([qid, val]) => (
-                          <div key={qid} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
-                             <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Vaka Analizi / Soru</p>
-                             <p className="font-bold text-slate-900">{Array.isArray(val) ? val.join(', ') : val}</p>
-                          </div>
-                        ))}
+                      <div className="space-y-12 animate-fade-in pb-10">
+                        <div className="flex items-center gap-4 mb-4">
+                           <div className="w-1.5 h-10 bg-orange-600 rounded-full"></div>
+                           <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Mülakat Soru & Cevap Dökümü</h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-10">
+                          {Object.entries(selectedCandidate.answers).map(([qid, val]) => {
+                            const questionObj = flatQuestions.find(q => q.id === qid);
+                            return (
+                              <div key={qid} className="group relative">
+                                <div className="absolute -left-6 top-0 bottom-0 w-1 bg-slate-100 group-hover:bg-orange-200 transition-colors rounded-full"></div>
+                                <div className="space-y-5">
+                                  <div className="p-8 bg-slate-50/80 rounded-[2.5rem] border border-slate-100 group-hover:bg-white group-hover:shadow-xl group-hover:border-orange-100 transition-all duration-500">
+                                    <div className="flex items-center gap-3 mb-4">
+                                       <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest rounded-lg">Soru / Vaka</span>
+                                       {questionObj?.type === 'radio' && <span className="px-3 py-1 bg-orange-100 text-orange-600 text-[8px] font-black uppercase tracking-widest rounded-lg">Çoktan Seçmeli</span>}
+                                       {questionObj?.type === 'textarea' && <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-lg">Açık Uçlu</span>}
+                                    </div>
+                                    <p className="text-lg font-bold text-slate-800 leading-snug">
+                                      {questionObj ? questionObj.text : `Soru ID: ${qid}`}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="ml-8 p-8 bg-orange-50/30 rounded-[2.5rem] border border-dashed border-orange-200">
+                                    <div className="flex items-center gap-3 mb-3">
+                                       <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                                       <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Adayın Yanıtı</span>
+                                    </div>
+                                    <p className="text-xl font-black text-slate-900 leading-relaxed italic">
+                                      "{Array.isArray(val) ? val.join(', ') : val}"
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>

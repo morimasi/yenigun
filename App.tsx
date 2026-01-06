@@ -53,18 +53,25 @@ const App: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [isKeyLoading, setIsKeyLoading] = useState(false);
 
+  // API Key durumunu kontrol et
   const checkApiKeyStatus = useCallback(async () => {
-    if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-      const selected = await window.aistudio.hasSelectedApiKey();
-      setHasApiKey(selected);
-      return selected;
+    try {
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        const selected = await window.aistudio.hasSelectedApiKey();
+        setHasApiKey(selected);
+        return selected;
+      }
+    } catch (e) {
+      console.warn("API Key status check failed", e);
     }
     return false;
   }, []);
 
   useEffect(() => {
     checkApiKeyStatus();
+    // Boot loader temizliği
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
@@ -85,28 +92,32 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
+  // Düğme tıklama işleyicisi (Geliştirilmiş)
   const handleOpenKeySelector = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-      await window.aistudio.openSelectKey();
-      setHasApiKey(true);
-      return true;
+    setIsKeyLoading(true);
+    try {
+      // window.aistudio nesnesinin hazır olup olmadığını kontrol et
+      if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+        await window.aistudio.openSelectKey();
+        // Talimat Gereği: Başarılı varsay ve devam et
+        setHasApiKey(true);
+        console.log("API Key selector opened successfully.");
+      } else {
+        alert("Sistem henüz hazır değil. Lütfen birkaç saniye sonra tekrar deneyin.");
+        console.error("window.aistudio.openSelectKey is not available.");
+      }
+    } catch (err) {
+      console.error("Error opening key selector:", err);
+      alert("Seçim ekranı açılamadı. Tarayıcı ayarlarınızı kontrol edin.");
+    } finally {
+      setIsKeyLoading(false);
     }
-    return false;
   };
 
   const handleCandidateSubmit = async (data: any) => {
-    // Önce anahtar kontrolü
-    const keySelected = await checkApiKeyStatus();
-    if (!keySelected) {
-      const confirmSelect = window.confirm("Yapay zeka analizi için bir API anahtarı seçmeniz gerekiyor. Şimdi seçmek ister misiniz?");
-      if (confirmSelect) {
-        await handleOpenKeySelector();
-      } else {
-        alert("Anahtar seçilmediği için analiz yapılamıyor, ancak verileriniz kaydedilecek.");
-      }
-    }
-
     setIsProcessing(true);
+    
+    // Form verilerini hemen kaydet (Analizden bağımsız)
     const newCandidate: Candidate = {
       ...data,
       id: Math.random().toString(36).substr(2, 9),
@@ -118,17 +129,18 @@ const App: React.FC = () => {
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
 
-      let report;
-      try {
-        report = await generateCandidateAnalysis(newCandidate);
-      } catch (aiError: any) {
-        console.error("AI Analiz Hatası:", aiError);
-        if (aiError.message === "API_KEY_MISSING" || aiError.message === "API_KEY_INVALID") {
-          setHasApiKey(false);
-          alert("API anahtarınız eksik veya geçersiz. Lütfen yönetici panelinden tekrar seçin.");
-        }
+      // API Key kontrolü ve analiz
+      const keySelected = await checkApiKeyStatus();
+      if (!keySelected) {
+        // Anahtar yoksa analiz yapma ama kaydet
+        setIsProcessing(false);
+        alert("Başvurunuz alındı. Analiz, yönetici anahtarını bağladığında tamamlanacaktır.");
+        setView('candidate');
+        return;
       }
 
+      const report = await generateCandidateAnalysis(newCandidate);
+      
       if (report) {
         const finalCandidate = { ...newCandidate, report };
         const updatedList = [finalCandidate, ...candidates.filter(c => c.id !== newCandidate.id)];
@@ -144,11 +156,17 @@ const App: React.FC = () => {
         }
       }
       
-      alert("Başvurunuz kaydedildi.");
+      alert("Başvurunuz ve yapay zeka analiziniz başarıyla kaydedildi.");
       setView('candidate');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error("Genel Hata:", error);
+    } catch (error: any) {
+      console.error("Submit/Analysis Error:", error);
+      if (error.message?.includes("API_KEY")) {
+        setHasApiKey(false);
+        alert("Analiz motoru hatası: API anahtarınız geçersiz veya eksik. Lütfen yöneticiye başvurun.");
+      } else {
+        alert("Bir hata oluştu, ancak başvurunuz kaydedildi.");
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -193,20 +211,27 @@ const App: React.FC = () => {
           <div className="max-w-lg mx-auto p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100">
              <h3 className="text-4xl font-black text-slate-900 mb-10 uppercase text-center">Giriş</h3>
              <form onSubmit={handleLogin} className="space-y-8">
-                <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="admin" />
-                <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
-                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em]">Giriş</button>
+                <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none font-bold" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="Kullanıcı Adı" />
+                <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none font-bold" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
+                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] hover:bg-orange-600 transition-all">Giriş</button>
              </form>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-12">
             {!hasApiKey && (
-              <div className="bg-orange-600 p-8 rounded-[2.5rem] text-white flex items-center justify-between shadow-2xl">
-                <div>
-                  <h4 className="text-xl font-black uppercase">API Anahtarı Seçilmedi</h4>
-                  <p className="opacity-80">Analiz motoru için anahtar bağlamanız gerekiyor.</p>
+              <div className="bg-orange-600 p-12 rounded-[3.5rem] text-white flex flex-col md:flex-row items-center justify-between shadow-2xl animate-pulse-slow">
+                <div className="mb-6 md:mb-0">
+                  <h4 className="text-2xl font-black uppercase tracking-tighter">AI Motoru Bağlantısı Gerekli</h4>
+                  <p className="opacity-80 font-bold mt-2">Analizlerin çalışması için ücretli projenize ait API anahtarını seçmelisiniz.</p>
+                  <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="text-[10px] font-black uppercase tracking-widest underline mt-4 block opacity-60 hover:opacity-100">Faturalandırma Dökümantasyonu</a>
                 </div>
-                <button onClick={handleOpenKeySelector} className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black uppercase text-xs">Anahtar Seç</button>
+                <button 
+                  onClick={handleOpenKeySelector} 
+                  disabled={isKeyLoading}
+                  className={`px-12 py-6 bg-white text-orange-600 rounded-[2rem] font-black uppercase text-xs tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all ${isKeyLoading ? 'opacity-50 cursor-wait' : ''}`}
+                >
+                  {isKeyLoading ? 'Hazırlanıyor...' : 'API ANAHTARINI SEÇ'}
+                </button>
               </div>
             )}
             <Dashboard 
@@ -226,10 +251,10 @@ const App: React.FC = () => {
 
       {isProcessing && (
         <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center">
-          <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl">
+          <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl max-w-lg">
              <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
-             <h3 className="text-4xl font-black text-slate-900 mb-6">Analiz Ediliyor</h3>
-             <p className="text-slate-500 text-xl font-medium italic">Gemini 3 Flash Multimodal devrede...</p>
+             <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase">Nöral Analiz</h3>
+             <p className="text-slate-500 text-xl font-medium italic">Gemini 3 Flash Multimodal verileri işliyor. Lütfen sekmeyi kapatmayın...</p>
           </div>
         </div>
       )}
