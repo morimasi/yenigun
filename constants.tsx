@@ -2,7 +2,11 @@
 import { FormStep } from './types';
 
 export const FORM_STEPS: FormStep[] = [
-  { id: 'personal', title: 'Kimlik Katmanı', description: 'Profesyonel kimlik ve branş verileri' },
+  { 
+    id: 'personal', 
+    title: 'Eğitsel Vizyon & Uzmanlık Temelleri', 
+    description: 'Özel eğitim yolculuğunuzun ilk adımı: Profesyonel kimliğinizle çocukların dünyasına dokunmaya hazırlanın.' 
+  },
   { id: 'logic_literacy', title: 'Akademik Keskinlik', description: 'İleri düzey mantık ve metin analizi' },
   { id: 'professional_cases', title: 'Klinik Karar Mekanizması', description: 'Etik ikilemler ve kriz anı yönetimi (Gerçekçi vakalar)' },
   { id: 'psychological_integrity', title: 'Psikolojik Bütünlük', description: 'Stres altında otantik tepkiler ve sınır yönetimi' },
