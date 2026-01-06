@@ -1,49 +1,60 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CandidateForm from './components/CandidateForm';
 import Dashboard from './components/Dashboard';
 import { Candidate } from './types';
 import { generateCandidateAnalysis } from './geminiService';
 
-// Akıllı Veri Yönetim Katmanı
 const storage = {
-  isLocalMode: false,
-  
-  async request(url: string, options?: RequestInit) {
+  isLocalMode: true,
+  async checkConnection() {
     try {
-      const response = await fetch(url, options);
-      if (!response.ok) throw new Error('Network fail');
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) throw new Error('Not JSON');
-      return await response.json();
-    } catch (e) {
-      console.warn("API Error, falling back to LocalStorage:", e);
+      const response = await fetch('/api/candidates', { method: 'HEAD' });
+      this.isLocalMode = !response.ok;
+      return response.ok;
+    } catch {
       this.isLocalMode = true;
-      return null;
+      return false;
     }
   },
-
   async getCandidates(): Promise<Candidate[]> {
-    const data = await this.request('/api/candidates');
-    if (data && Array.isArray(data)) return data;
-    
-    // Fallback: LocalStorage
+    try {
+      const response = await fetch('/api/candidates');
+      if (response.ok) {
+        this.isLocalMode = false;
+        return await response.json();
+      }
+    } catch (e) {
+      console.warn("API Offline, using LocalStorage");
+    }
+    this.isLocalMode = true;
     const local = localStorage.getItem('yeni_gun_candidates');
     return local ? JSON.parse(local) : [];
   },
-
-  async saveCandidates(candidates: Candidate[]) {
-    // Önce LocalStorage'a yaz (Güvenlik için)
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(candidates));
+  async saveCandidate(candidate: Candidate) {
+    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+    const newList = [candidate, ...current];
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(newList));
     
-    // Eğer local mode'da değilsek API'ye de yazmayı dene
     if (!this.isLocalMode) {
-      const latest = candidates[0]; // Genelde tekil işlem yapılır ama basitlik için
       await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(latest)
+        body: JSON.stringify(candidate)
       }).catch(() => { this.isLocalMode = true; });
+    }
+  },
+  async syncLocalToCloud(candidates: Candidate[]) {
+    if (this.isLocalMode) return false;
+    try {
+      await fetch('/api/candidates/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidates)
+      });
+      return true;
+    } catch {
+      return false;
     }
   }
 };
@@ -52,19 +63,21 @@ const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [statusMsg, setStatusMsg] = useState<{type: 'info'|'error', text: string} | null>(null);
+  const [onlineStatus, setOnlineStatus] = useState<'online' | 'offline'>('offline');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    const isOnline = await storage.checkConnection();
+    setOnlineStatus(isOnline ? 'online' : 'offline');
     const data = await storage.getCandidates();
     setCandidates(data);
-    if (storage.isLocalMode) {
-      setStatusMsg({ type: 'info', text: 'Sistem şu an Çevrimdışı/Yerel Modda çalışıyor. Verileriniz bu tarayıcıda saklanmaktadır.' });
-    }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+    // Her 30 saniyede bir bağlantıyı kontrol et
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -76,89 +89,73 @@ const App: React.FC = () => {
     };
     
     try {
-      const updatedList = [newCandidate, ...candidates];
-      setCandidates(updatedList);
-      await storage.saveCandidates(updatedList);
+      // 1. Yerel Kayıt
+      await storage.saveCandidate(newCandidate);
+      setCandidates(prev => [newCandidate, ...prev]);
 
-      // AI Analizini Başlat
+      // 2. AI Analizi
       const report = await generateCandidateAnalysis(newCandidate);
       const finalCandidate = { ...newCandidate, report };
       
-      const finalData = updatedList.map(c => c.id === newCandidate.id ? finalCandidate : c);
-      setCandidates(finalData);
-      await storage.saveCandidates(finalData);
-      
-      alert("Başvurunuz başarıyla alındı ve AI analizi tamamlandı.");
+      // 3. Güncelleme
+      const updatedList = candidates.map(c => c.id === newCandidate.id ? finalCandidate : c);
+      setCandidates(updatedList);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updatedList));
+
+      alert(`Sayın ${newCandidate.name}, bilgileriniz güvenle kaydedildi.`);
       setView('admin');
-    } catch (error: any) {
-      alert("İşlem sırasında bir sorun oluştu, ancak verileriniz yerel olarak kaydedildi.");
+    } catch (error) {
+      console.error("Analysis Error:", error);
+      alert("Bilgileriniz kaydedildi ancak yapay zeka analizi şu an yapılamıyor.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const filtered = candidates.filter(c => c.id !== id);
-    setCandidates(filtered);
-    await storage.saveCandidates(filtered);
-    // API entegrasyonu (Opsiyonel: Silme isteği gönderilebilir)
-    await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }).catch(() => {});
-  };
-
-  const handleUpdate = async (updated: Candidate) => {
-    const list = candidates.map(c => c.id === updated.id ? updated : c);
-    setCandidates(list);
-    await storage.saveCandidates(list);
-    // API entegrasyonu
-    await fetch('/api/candidates', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated)
-    }).catch(() => {});
-  };
-
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900">
-      <nav className="bg-white/70 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-[60]">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div className="min-h-screen bg-[#FDFDFD]">
+      <nav className="bg-white/80 backdrop-blur-2xl border-b border-slate-100 sticky top-0 z-[60] shadow-sm">
+        <div className="max-w-7xl mx-auto px-8 h-24 flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black shadow-lg">YG</div>
-            <span className="text-lg font-black tracking-tight uppercase">YENİ GÜN</span>
+            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black shadow-xl">YG</div>
+            <div>
+              <span className="text-xl font-black tracking-tighter uppercase block leading-none">YENİ GÜN</span>
+              <div className="flex items-center gap-2 mt-1">
+                <div className={`w-2 h-2 rounded-full ${onlineStatus === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-500'}`}></div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  {onlineStatus === 'online' ? 'Bulut Bağlantısı Aktif' : 'Yerel Mod (Offline)'}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
-            <button onClick={() => setView('candidate')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500'}`}>Aday Portalı</button>
-            <button onClick={() => { setView('admin'); loadData(); }} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500'}`}>Yönetici Paneli</button>
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+            <button onClick={() => setView('candidate')} className={`px-6 py-3 rounded-xl text-xs font-black transition-all ${view === 'candidate' ? 'bg-white shadow-lg text-orange-600' : 'text-slate-500'}`}>Aday Formu</button>
+            <button onClick={() => setView('admin')} className={`px-6 py-3 rounded-xl text-xs font-black transition-all ${view === 'admin' ? 'bg-white shadow-lg text-orange-600' : 'text-slate-500'}`}>Yönetici Paneli</button>
           </div>
         </div>
       </nav>
 
-      {statusMsg && (
-        <div className="max-w-7xl mx-auto mt-4 px-6 animate-fade-in">
-          <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border ${statusMsg.type === 'error' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            {statusMsg.text}
-          </div>
-        </div>
-      )}
-
-      <main className="py-10 px-6 max-w-7xl mx-auto">
+      <main className="py-12 px-8 max-w-7xl mx-auto">
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : (
           <Dashboard 
             candidates={candidates} 
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
+            onDelete={(id) => {
+              const filtered = candidates.filter(c => c.id !== id);
+              setCandidates(filtered);
+              localStorage.setItem('yeni_gun_candidates', JSON.stringify(filtered));
+            }}
           />
         )}
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-6 text-center">
-          <div className="bg-white p-10 rounded-[3rem] shadow-2xl animate-scale-in">
-            <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
-            <h3 className="text-xl font-black">AI Analiz Laboratuvarı</h3>
-            <p className="text-slate-500 mt-2 text-sm font-bold">Yapay zeka verileri titizlikle işliyor...</p>
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[200] flex items-center justify-center p-8">
+          <div className="bg-white p-16 rounded-[4rem] shadow-2xl text-center max-w-lg">
+             <div className="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+             <h3 className="text-2xl font-black text-slate-900">Profil Analiz Ediliyor</h3>
+             <p className="text-slate-500 mt-4 font-medium">Lütfen bekleyiniz, yapay zeka uzmanlık verilerinizi işliyor...</p>
           </div>
         </div>
       )}

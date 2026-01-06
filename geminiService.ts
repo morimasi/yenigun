@@ -3,8 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Her çağrıda yeni instance oluşturulması en güvenli yöntemdir (Sistem Kuralı)
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  // GoogleGenAI instance'ı doğru parametre yapısıyla ve güncel anahtarla oluşturulur (Sistem Kuralları)
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const textPrompt = `
     Sen, Yeni Gün Özel Eğitim ve Rehabilitasyon Merkezi için özel olarak konfigüre edilmiş bir Yapay Zeka Yetenek Mimarı'sın.
@@ -20,6 +20,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
   const contents: any[] = [{ text: textPrompt }];
 
+  // cvData artık Candidate tipinde tanımlı olduğu için güvenle kullanılabilir
   if (candidate.cvData) {
     contents.push({
       inlineData: {
@@ -30,7 +31,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    // Karmaşık akıl yürütme ve veri analizi gerektiren görevler için Pro model seçildi (Sistem Kuralları)
+    model: "gemini-3-pro-preview",
     contents: { parts: contents },
     config: {
       responseMimeType: "application/json",
@@ -66,11 +68,13 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     }
   });
 
+  // response.text getter olarak kullanılır, metod olarak çağrılmaz (Sistem Kuralları)
   return JSON.parse(response.text || '{}') as AIReport;
 };
 
 export const generatePersonalizedInvite = async (candidate: Candidate): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  // Her mülakat daveti oluşturulduğunda taze bir instance oluşturulur
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `
     Yeni Gün Özel Eğitim Merkezi adına ${candidate.name} isimli adaya bir mülakat davet metni yaz.
