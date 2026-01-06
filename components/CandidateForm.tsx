@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
 import { Branch, Candidate } from '../types';
 
@@ -9,6 +9,7 @@ interface CandidateFormProps {
 
 const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,14 +26,45 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     return MOCK_QUESTIONS[stepId as keyof typeof MOCK_QUESTIONS] || [];
   }, [currentStep]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Dosya boyutu 5MB'dan küçük olmalıdır.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        setFormData(prev => ({
+          ...prev,
+          cvData: {
+            base64: base64String,
+            mimeType: file.type,
+            fileName: file.name
+          }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleNext = () => {
-    // Mevcut adımdaki tüm soruların cevaplandığını kontrol et
-    const currentQuestionIds = questions.map((q: any) => q.id);
-    const unanswered = currentQuestionIds.filter(id => !formData.answers[id] && id !== 'personal');
+    const stepId = FORM_STEPS[currentStep].id;
     
-    if (currentStep > 0 && unanswered.length > 0) {
-      alert("Lütfen bu aşamadaki tüm senaryoları değerlendiriniz.");
-      return;
+    // Validasyonlar
+    if (stepId === 'personal') {
+      if (!formData.name || !formData.email) {
+        alert("Lütfen temel bilgileri eksiksiz doldurunuz.");
+        return;
+      }
+    } else {
+      const currentQuestionIds = questions.map((q: any) => q.id);
+      const unanswered = currentQuestionIds.filter(id => !formData.answers[id]);
+      if (unanswered.length > 0) {
+        alert("Lütfen bu aşamadaki tüm senaryoları değerlendiriniz.");
+        return;
+      }
     }
 
     if (currentStep < FORM_STEPS.length - 1) {
@@ -66,48 +98,82 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
     if (step.id === 'personal') {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-          <div className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Aday Ad Soyad</label>
-              <input
-                type="text"
-                className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
-                value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                placeholder="Adınız ve Soyadınız"
-              />
+        <div className="space-y-10 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Aday Ad Soyad</label>
+                <input
+                  type="text"
+                  className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
+                  value={formData.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="Adınız ve Soyadınız"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">E-Posta</label>
+                <input
+                  type="email"
+                  className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
+                  value={formData.email}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  placeholder="kurumsal@eposta.com"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">E-Posta</label>
-              <input
-                type="email"
-                className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
-                value={formData.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                placeholder="kurumsal@eposta.com"
-              />
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Branş</label>
+                <select
+                  className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all bg-white"
+                  value={formData.branch}
+                  onChange={(e) => updateField('branch', e.target.value as Branch)}
+                >
+                  {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deneyim (Yıl)</label>
+                <input
+                  type="number"
+                  className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
+                  value={formData.experienceYears}
+                  onChange={(e) => updateField('experienceYears', parseInt(e.target.value) || 0)}
+                />
+              </div>
             </div>
           </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Branş</label>
-              <select
-                className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all bg-white"
-                value={formData.branch}
-                onChange={(e) => updateField('branch', e.target.value as Branch)}
-              >
-                {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deneyim (Yıl)</label>
-              <input
-                type="number"
-                className="w-full rounded-2xl border-2 border-slate-100 p-4 focus:border-orange-500 outline-none font-bold text-slate-800 transition-all"
-                value={formData.experienceYears}
-                onChange={(e) => updateField('experienceYears', parseInt(e.target.value))}
+
+          {/* CV Upload Section */}
+          <div className="pt-6">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 text-center">Özgeçmiş Yükleme (PDF/Görsel)</label>
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className={`w-full border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center transition-all cursor-pointer group ${
+                formData.cvData ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-200 hover:border-orange-400 hover:bg-white'
+              }`}
+            >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept=".pdf,image/*"
               />
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
+                formData.cvData ? 'bg-orange-600 text-white' : 'bg-slate-200 text-slate-400 group-hover:bg-orange-100 group-hover:text-orange-600'
+              }`}>
+                {formData.cvData ? (
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                ) : (
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                )}
+              </div>
+              <p className={`font-black text-sm tracking-tight ${formData.cvData ? 'text-orange-600' : 'text-slate-500'}`}>
+                {formData.cvData ? formData.cvData.fileName : 'CV Dosyasını Seçin veya Buraya Sürükleyin'}
+              </p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Max 5MB • PDF, JPG, PNG</p>
             </div>
           </div>
         </div>
