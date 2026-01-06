@@ -3,14 +3,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // CRITICAL: process.env.API_KEY kontrolü. Boşsa SDK hatasını biz yönetelim.
+  // Talimat gereği: Anahtar EXCLUSIVELY process.env.API_KEY'den alınır.
+  // Not: Platform anahtarı bu değişkene enjekte eder.
   const apiKey = process.env.API_KEY;
   
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+  if (!apiKey) {
+    console.error("SDK Error: process.env.API_KEY is currently empty.");
     throw new Error("API_KEY_MISSING");
   }
 
-  // Her çağrıda taze instance oluştur (AI Studio gereksinimi)
+  // Her çağrıda taze instance (En güncel process.env.API_KEY için)
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
@@ -19,7 +21,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
     GÖREVİN:
     Adayın sunduğu verileri ve (varsa) CV dokümanını multimodal bir yaklaşımla analiz et. 
-    Gemini 3 Flash modelinin hızını kullanarak keskin, tutarlı ve profesyonel bir rapor oluştur.
+    Keskin, tutarlı ve profesyonel bir rapor oluştur.
 
     KATEGORİK ANALİZ (0-100 Puan):
     1. Mantıksal Keskinlik (Logic): Analitik düşünme.
@@ -106,6 +108,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
     return JSON.parse(response.text || '{}') as AIReport;
   } catch (error: any) {
+    console.error("Gemini API Error:", error);
     if (error.message?.includes("Requested entity was not found")) {
       throw new Error("API_KEY_INVALID");
     }

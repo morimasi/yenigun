@@ -52,15 +52,26 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [hasApiKey, setHasApiKey] = useState<boolean>(true); // Varsayılan true, hata alınca false olacak
+
+  const checkKey = useCallback(async () => {
+    if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+      const selected = await window.aistudio.hasSelectedApiKey();
+      setHasApiKey(selected);
+      return selected;
+    }
+    return true; // Nesne yoksa API_KEY enjeksiyonuna güven
+  }, []);
 
   useEffect(() => {
-    // Boot loader temizliği
+    const interval = setInterval(checkKey, 2000);
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, []);
+    return () => clearInterval(interval);
+  }, [checkKey]);
 
   const loadData = useCallback(async () => {
     const isOnline = await storage.checkConnection();
@@ -75,6 +86,15 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
+  const triggerKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      setHasApiKey(true); // Talimat gereği başarılı varsayıyoruz
+    } else {
+      alert("API Seçim Modülü henüz yüklenmedi, lütfen sayfayı yenileyin.");
+    }
+  };
+
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
     
@@ -86,11 +106,9 @@ const App: React.FC = () => {
     };
 
     try {
-      // Önce yerel/uzak kaydı yap
       await storage.saveCandidate(newCandidate);
       setCandidates(prev => [newCandidate, ...prev]);
 
-      // Analiz motorunu doğrudan çağır (process.env.API_KEY otomatik kullanılır)
       const report = await generateCandidateAnalysis(newCandidate);
       
       if (report) {
@@ -113,10 +131,12 @@ const App: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error: any) {
       console.error("Submit/Analysis Error:", error);
-      if (error.message === "API_KEY_MISSING") {
-        alert("Sistem hatası: API Anahtarı bulunamadı. Lütfen teknik ekibe başvurun.");
+      if (error.message === "API_KEY_MISSING" || error.message === "API_KEY_INVALID") {
+        setHasApiKey(false);
+        alert("Yapay zeka motoru için API anahtarı gerekiyor. Lütfen yönetim panelinden anahtarı bağlayın.");
+        setView('admin');
       } else {
-        alert("Bir hata oluştu, ancak başvurunuz kaydedildi. Analiz daha sonra tamamlanabilir.");
+        alert("Başvurunuz kaydedildi ancak analiz servisinde bir aksama oldu.");
       }
     } finally {
       setIsProcessing(false);
@@ -155,16 +175,26 @@ const App: React.FC = () => {
         </div>
       </nav>
 
+      {!hasApiKey && isLoggedIn && (
+        <div className="bg-orange-600 p-8 text-white flex flex-col md:flex-row items-center justify-center gap-6 animate-fade-in relative z-[70]">
+          <div className="text-center md:text-left">
+            <h4 className="font-black uppercase tracking-tighter text-xl">API Bağlantısı Eksik</h4>
+            <p className="font-bold opacity-80 text-sm">Yapay zeka analizleri için anahtarınızı sisteme tanıtmanız gerekmektedir.</p>
+          </div>
+          <button onClick={triggerKeySelector} className="px-12 py-4 bg-white text-orange-600 rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">Anahtarı Şimdi Bağla</button>
+        </div>
+      )}
+
       <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-7rem)]">
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : !isLoggedIn ? (
           <div className="max-w-lg mx-auto p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100">
-             <h3 className="text-4xl font-black text-slate-900 mb-10 uppercase text-center">Giriş</h3>
+             <h3 className="text-4xl font-black text-slate-900 mb-10 uppercase text-center">Yönetici Girişi</h3>
              <form onSubmit={handleLogin} className="space-y-8">
                 <input type="text" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none font-bold" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} placeholder="Kullanıcı Adı" />
                 <input type="password" className="w-full p-6 rounded-3xl border-2 border-orange-50 outline-none font-bold" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} placeholder="••••••••" />
-                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] hover:bg-orange-600 transition-all">Giriş</button>
+                <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] hover:bg-orange-600 transition-all">Giriş Yap</button>
              </form>
           </div>
         ) : (
@@ -187,7 +217,7 @@ const App: React.FC = () => {
           <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl max-w-lg">
              <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
              <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase">Nöral Analiz</h3>
-             <p className="text-slate-500 text-xl font-medium italic">Gemini 3 Flash Multimodal verileri işliyor. Lütfen sekmeyi kapatmayın...</p>
+             <p className="text-slate-500 text-xl font-medium italic">Sistem adayın verilerini Gemini ile işliyor. Lütfen bekleyin...</p>
           </div>
         </div>
       )}
