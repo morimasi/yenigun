@@ -19,6 +19,10 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
   const [syncProgress, setSyncProgress] = useState(0);
   const [localNote, setLocalNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+  
+  // Calendar States
+  const [schedulingCandidateId, setSchedulingCandidateId] = useState<string | null>(null);
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
 
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedCandidateId), [candidates, selectedCandidateId]);
 
@@ -48,20 +52,45 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
     }
   };
 
-  const handleSyncSimulation = () => {
-    setIsSyncing(true);
-    setSyncProgress(0);
-    const interval = setInterval(() => {
-      setSyncProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setIsSyncing(false), 800);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 100);
+  const handleScheduleInterview = async (date: string, time: string) => {
+    if (!schedulingCandidateId || !onUpdate) return;
+    const candidate = candidates.find(c => c.id === schedulingCandidateId);
+    if (!candidate) return;
+
+    setIsSendingNotification(true);
+    
+    // Simulate notification delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const updatedCandidate: Candidate = {
+      ...candidate,
+      status: 'scheduled',
+      interviewSchedule: {
+        date,
+        time,
+        location: 'Yeni Gün Akademi - Ana Bina',
+        method: 'Yüz Yüze'
+      }
+    };
+
+    await onUpdate(updatedCandidate);
+    setIsSendingNotification(false);
+    setSchedulingCandidateId(null);
+    alert(`${candidate.name} için mülakat planlandı ve onay bildirimleri gönderildi.`);
   };
+
+  const calendarDays = useMemo(() => {
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+    return days;
+  }, []);
+
+  const timeSlots = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 animate-fade-in min-h-[85vh]">
@@ -70,9 +99,6 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
           <div className="absolute -right-4 -top-4 w-32 h-32 bg-orange-600 rounded-full blur-[60px] opacity-30 group-hover:opacity-50 transition-opacity"></div>
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Yönetici Paneli</h2>
           <p className="text-2xl font-black mt-1 tracking-tighter">Yeni Gün Akademi</p>
-          <button onClick={handleSyncSimulation} disabled={isSyncing} className="mt-8 w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center gap-3 active:scale-95">
-            {isSyncing ? `Eşitleniyor %${syncProgress}` : 'Bulut Senkronize Et'}
-          </button>
         </div>
 
         {[
@@ -105,16 +131,14 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
             </div>
             <div className="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl flex flex-col justify-between h-56 text-white relative overflow-hidden">
                <div className="absolute right-0 top-0 w-32 h-32 bg-orange-600 blur-[80px] opacity-20"></div>
-               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">AI Analizi Bekleyen</span>
-               <div className="text-6xl font-black text-orange-600 tracking-tighter">{candidates.filter(c => !c.report).length}</div>
-               <div className="text-[10px] font-bold text-slate-500 uppercase">Kuyruk Durumu</div>
+               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Mülakat Bekleyen</span>
+               <div className="text-6xl font-black text-orange-600 tracking-tighter">{candidates.filter(c => c.status === 'pending').length}</div>
+               <div className="text-[10px] font-bold text-slate-500 uppercase">Aday Kuyruğu</div>
             </div>
             <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 flex flex-col justify-between h-56">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Sistem Sağlığı</span>
-               <div className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Optimal</div>
-               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                 <div className="h-full bg-emerald-500" style={{ width: '100%' }}></div>
-               </div>
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Planlanmış</span>
+               <div className="text-6xl font-black text-slate-900 tracking-tighter">{candidates.filter(c => c.status === 'scheduled').length}</div>
+               <div className="flex items-center gap-2 text-orange-500 font-bold text-xs uppercase tracking-widest">Takvim Doluluğu</div>
             </div>
           </div>
         )}
@@ -137,7 +161,10 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                     selectedCandidateId === c.id ? 'bg-white border-orange-500 shadow-2xl scale-[1.02] z-10' : 'bg-white border-slate-100 hover:border-slate-300'
                   }`}
                 >
-                  <h4 className="font-black text-slate-900 group-hover:text-orange-600 transition-colors text-lg tracking-tight">{c.name}</h4>
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-black text-slate-900 group-hover:text-orange-600 transition-colors text-lg tracking-tight">{c.name}</h4>
+                    {c.status === 'scheduled' && <span className="bg-orange-100 text-orange-600 text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest">Planlı</span>}
+                  </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{c.branch}</p>
                 </button>
               ))}
@@ -180,6 +207,18 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
                             )}
                           </div>
                         </div>
+                        {selectedCandidate.status === 'scheduled' && (
+                           <div className="p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100 flex items-center justify-between">
+                              <div>
+                                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-2">Planlanmış Mülakat</h4>
+                                <p className="text-xl font-black text-slate-900">{selectedCandidate.interviewSchedule?.date} | {selectedCandidate.interviewSchedule?.time}</p>
+                                <p className="text-sm font-bold text-slate-500 mt-1">{selectedCandidate.interviewSchedule?.location} ({selectedCandidate.interviewSchedule?.method})</p>
+                              </div>
+                              <div className="p-4 bg-emerald-500 text-white rounded-2xl">
+                                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                              </div>
+                           </div>
+                        )}
                         <div className="space-y-6">
                            <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem]">
                               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Eğitim Geçmişi & Kurumlar</h4>
@@ -216,7 +255,107 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, onDelete, onUpdate })
             </div>
           </div>
         )}
+
+        {activeTab === 'calendar' && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="bg-white p-10 rounded-[3.5rem] shadow-xl border border-slate-100">
+               <div className="flex justify-between items-end mb-10">
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Haftalık Mülakat Matrisi</h3>
+                    <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-wider">Mülakat planlamak için bir aday seçin ve takvimde bir slota tıklayın.</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                     <select 
+                       className="bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl font-black text-xs uppercase tracking-widest outline-none focus:border-orange-500"
+                       value={schedulingCandidateId || ''}
+                       onChange={(e) => setSchedulingCandidateId(e.target.value)}
+                     >
+                       <option value="">Aday Seçin...</option>
+                       {candidates.filter(c => c.status === 'pending').map(c => (
+                         <option key={c.id} value={c.id}>{c.name}</option>
+                       ))}
+                     </select>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-7 gap-4">
+                  {calendarDays.map(day => (
+                    <div key={day} className="space-y-4">
+                       <div className="text-center p-4 bg-slate-900 text-white rounded-2xl">
+                          <p className="text-[10px] font-black uppercase opacity-50">{new Date(day).toLocaleDateString('tr-TR', { weekday: 'short' })}</p>
+                          <p className="text-lg font-black">{new Date(day).getDate()}</p>
+                       </div>
+                       <div className="space-y-3">
+                          {timeSlots.map(time => {
+                            const isBooked = candidates.some(c => c.interviewSchedule?.date === day && c.interviewSchedule?.time === time);
+                            const bookedCandidate = candidates.find(c => c.interviewSchedule?.date === day && c.interviewSchedule?.time === time);
+                            
+                            return (
+                              <button
+                                key={`${day}-${time}`}
+                                onClick={() => !isBooked && schedulingCandidateId && handleScheduleInterview(day, time)}
+                                disabled={isBooked || !schedulingCandidateId}
+                                className={`w-full p-4 rounded-2xl border-2 transition-all group relative overflow-hidden flex flex-col items-center justify-center ${
+                                  isBooked 
+                                  ? 'bg-orange-50 border-orange-200 cursor-not-allowed' 
+                                  : schedulingCandidateId 
+                                    ? 'bg-white border-slate-100 hover:border-orange-500 hover:shadow-lg cursor-pointer' 
+                                    : 'bg-slate-50 border-slate-100 opacity-50 cursor-default'
+                                }`}
+                              >
+                                <span className={`text-[11px] font-black ${isBooked ? 'text-orange-600' : 'text-slate-900'}`}>{time}</span>
+                                {isBooked && (
+                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1 truncate w-full text-center">
+                                    {bookedCandidate?.name.split(' ')[0]}
+                                  </span>
+                                )}
+                                {!isBooked && schedulingCandidateId && (
+                                  <div className="absolute inset-0 bg-orange-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Planla</span>
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Notification Dispatcher Animation */}
+      {isSendingNotification && (
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[300] flex items-center justify-center">
+           <div className="bg-white p-20 rounded-[4rem] text-center max-w-xl animate-scale-in relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-50 rounded-full blur-[80px]"></div>
+              
+              <div className="relative mb-12">
+                 <div className="w-24 h-24 bg-emerald-100 rounded-[2rem] mx-auto flex items-center justify-center text-emerald-600 animate-bounce">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                 </div>
+                 <div className="absolute top-0 right-1/2 translate-x-12 -translate-y-4">
+                    <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-lg">AI</div>
+                 </div>
+              </div>
+
+              <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tighter uppercase">Onay Bildirimleri Gönderiliyor</h3>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">
+                Adaya mülakat detayları e-posta ile iletiliyor ve akademi takvimi güncelleniyor...
+              </p>
+              
+              <div className="mt-12 flex justify-center gap-2">
+                 {[1,2,3].map(i => (
+                   <div key={i} className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}></div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
