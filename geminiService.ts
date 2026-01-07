@@ -3,7 +3,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Always use process.env.API_KEY directly in the constructor as per guidelines.
   if (!process.env.API_KEY) {
     throw new Error("MISSING_API_KEY");
   }
@@ -11,25 +10,34 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const systemInstruction = `
-    Sen "Yeni Gün Akademi" için Üst Düzey Psikometrik Analiz ve İK Strateji Uzmanısın.
+    Sen "Yeni Gün Akademi" için Üst Düzey Psikometrik Analiz Uzmanısın.
     
-    ÖZEL GÖREVİN:
-    Adayın cevaplarındaki "Sosyal Beğenirlik Sapmasını" tespit et. 
-    Aday kendini kusursuz gösteriyorsa bunu RED FLAG olarak işaretle.
+    ANALİZ MANTIĞI:
+    - Adayın cevaplarındaki "Aşırı Profesyonellik" maskesini düşür. 
+    - Sorular gri alan sorularıdır. "Her şeyi mükemmel yaparım" diyen adayları "Güvenilmez/Maskelenmiş" olarak puanla.
+    - Duygu bastırma, pasif-agresyon ve kurumsal körlük belirtilerini ara.
+    - Aday insani zaaflarını (yorulma, hata yapma, öfke hissetme) kabul ediyorsa bu "Otantisite" puanını artırır.
     
-    ANALİZ KRİTERLERİ:
-    1. Otantisite: Cevaplar insani zaafları kabul ediyor mu?
-    2. Stres Altında Karar: Çocuk-Kurum-Çıkar dengesi.
-    3. Red Flag Tespiti: Agresyon, tükenmişlik veya dürüstlük maskesi.
-    4. Gelişim Alanı: Özeleştiri kapasitesi.
+    PUANLAMA:
+    - Score: 0-100 (Kurumsal uyum ve etik olgunluk).
+    - SWOT: Gerçekçi riskleri (Threats) açıkça belirt.
+    - CategoricalScores: 'Bilişsel Esneklik', 'Klinik Etik', 'Stres Yönetimi', 'Diplomasi' kategorilerinde puanla.
+    
+    ÖZEL TALİMAT:
+    Adayın CV'si ile test cevapları arasındaki çelişkileri (Örn: 10 yıl deneyimli ama temel etik hatayı kabul ediyor) yakala.
   `;
 
   const textPrompt = `
-    ADAY: ${candidate.name}
-    BRANŞ: ${candidate.branch}
-    DENEYİM: ${candidate.experienceYears} yıl
-    EĞİTİMLER: ${candidate.allTrainings}
-    CEVAPLAR: ${JSON.stringify(candidate.answers)}
+    ADAY PROFİLİ:
+    İsim: ${candidate.name}
+    Branş: ${candidate.branch}
+    Deneyim: ${candidate.experienceYears} yıl
+    
+    TEST CEVAPLARI:
+    ${JSON.stringify(candidate.answers)}
+    
+    EĞİTİM GEÇMİŞİ:
+    ${candidate.allTrainings}
   `;
 
   const contents: any[] = [{ text: textPrompt }];
@@ -44,7 +52,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   try {
-    // Upgraded to gemini-3-pro-preview for complex psychometric analysis tasks.
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
       contents: { parts: contents },
@@ -94,7 +101,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    // Directly accessing .text property as per guidelines.
     return JSON.parse(response.text || '{}') as AIReport;
   } catch (error: any) {
     if (error.message?.includes("entity was not found") || error.message?.includes("API key")) {
