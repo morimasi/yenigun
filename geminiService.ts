@@ -2,48 +2,51 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
+/**
+ * Gemini 3.0 Pro Preview Multimodal Analiz Motoru.
+ * Adayın CV görsel verilerini ve senaryo cevaplarını kurumsal etik filtresinden geçirir.
+ * Psikometrik analiz karmaşık bir akıl yürütme görevi olduğu için Gemini 3 Pro tercih edilmiştir.
+ */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
   if (!process.env.API_KEY) {
     throw new Error("MISSING_API_KEY");
   }
 
+  // Yeni bir GoogleGenAI örneği oluşturuluyor (En güncel API anahtarı kullanımı için)
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const systemInstruction = `
-    Sen "Yeni Gün Akademi" için Üst Düzey Psikometrik Analiz Uzmanısın.
+    Sen "Yeni Gün Akademi" için tasarlanmış, Gemini 3.0 Pro mimarisiyle çalışan bir Multimodal Psikometrik Analiz Uzmanısın.
     
-    ANALİZ MANTIĞI:
-    - Adayın cevaplarındaki "Aşırı Profesyonellik" maskesini düşür. 
-    - Sorular gri alan sorularıdır. "Her şeyi mükemmel yaparım" diyen adayları "Güvenilmez/Maskelenmiş" olarak puanla.
-    - Duygu bastırma, pasif-agresyon ve kurumsal körlük belirtilerini ara.
-    - Aday insani zaaflarını (yorulma, hata yapma, öfke hissetme) kabul ediyorsa bu "Otantisite" puanını artırır.
+    ANALİZ GÖREVİN:
+    1. GÖRSEL ANALİZ: Ekteki CV dosyasının (eğer varsa) profesyonelliğini, titizliğini ve yapısal düzenini incele.
+    2. METİNSEL ANALİZ: Adayın senaryo sorularına verdiği yanıtları; "Yüksek Çeldiricilik", "Klinik Etik", "Kurumsal Diplomasi" ve "Stres Toleransı" açılarından puanla.
+    3. ÇAPRAZ SORGU (Cross-Check): CV'de iddia edilen deneyim süresi ile sorulardaki "olgunluk" seviyesi uyuşuyor mu? (Örn: 10 yıllık bir uzman kriz anında panik cevabı veriyorsa tutarlılık düşüktür).
+    4. MASKE TESPİTİ: Aday sadece "doğru olanı" mı söylüyor (kitabi bilgi) yoksa sahada "uygulanabilir ve etik" bir çözüm mü sunuyor?
     
-    PUANLAMA:
-    - Score: 0-100 (Kurumsal uyum ve etik olgunluk).
-    - SWOT: Gerçekçi riskleri (Threats) açıkça belirt.
-    - CategoricalScores: 'Bilişsel Esneklik', 'Klinik Etik', 'Stres Yönetimi', 'Diplomasi' kategorilerinde puanla.
-    
-    ÖZEL TALİMAT:
-    Adayın CV'si ile test cevapları arasındaki çelişkileri (Örn: 10 yıl deneyimli ama temel etik hatayı kabul ediyor) yakala.
+    KRİTİK STANDARTLAR:
+    - Kurum, sadece teknik beceriyi değil, duygusal bütünlüğü ve dürüstlüğü arar.
+    - %100 "mükemmel" görünen adayları, "Maskeleme" riski açısından derinlemesine sorgula.
+    - SWOT analizinde "Threats" kısmına mutlaka adayın multimodal çelişkilerini ekle.
   `;
 
-  const textPrompt = `
-    ADAY PROFİLİ:
-    İsim: ${candidate.name}
-    Branş: ${candidate.branch}
-    Deneyim: ${candidate.experienceYears} yıl
-    
-    TEST CEVAPLARI:
-    ${JSON.stringify(candidate.answers)}
-    
-    EĞİTİM GEÇMİŞİ:
-    ${candidate.allTrainings}
-  `;
+  const textPart = {
+    text: `
+      ADAY PROFİLİ VE VERİLERİ:
+      - Branş: ${candidate.branch}
+      - Deneyim: ${candidate.experienceYears} Yıl
+      - Önceki Kurumlar: ${candidate.previousInstitutions}
+      - Test Yanıtları (JSON): ${JSON.stringify(candidate.answers, null, 2)}
+      
+      Adayın beyan ettiği yetkinlikler: ${candidate.allTrainings}
+    `
+  };
 
-  const contents: any[] = [{ text: textPrompt }];
+  const parts: any[] = [textPart];
 
+  // Multimodal destek: Eğer CV görseli/PDF'i varsa analiz parçasına ekle
   if (candidate.cvData) {
-    contents.push({
+    parts.push({
       inlineData: {
         data: candidate.cvData.base64,
         mimeType: candidate.cvData.mimeType
@@ -52,23 +55,26 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   try {
+    // Karmaşık analiz görevleri için Pro model kullanımı tercih edilir.
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: { parts: contents },
+      contents: { parts },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
+        // Derinlemesine karakter ve etik analizi için thinking budget kullanıyoruz.
+        thinkingConfig: { thinkingBudget: 32768 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER },
+            score: { type: Type.NUMBER, description: "0-100 arası genel uygunluk puanı" },
             swot: {
               type: Type.OBJECT,
               properties: {
                 strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
                 weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
                 opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-                threats: { type: Type.ARRAY, items: { type: Type.STRING } }
+                threats: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Multimodal riskler ve etik açmazlar" }
               }
             },
             competencies: {
@@ -93,19 +99,20 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                 }
               }
             },
-            summary: { type: Type.STRING },
-            recommendation: { type: Type.STRING }
+            summary: { type: Type.STRING, description: "Adayın CV ve test karakterinin dürüstlük sentezi" },
+            recommendation: { type: Type.STRING, description: "Mülakat ekibi için stratejik tavsiye" }
           },
           required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
         }
       }
     });
 
-    return JSON.parse(response.text || '{}') as AIReport;
+    // response.text property access (metot değildir)
+    const jsonStr = response.text?.trim() || '{}';
+    return JSON.parse(jsonStr) as AIReport;
   } catch (error: any) {
-    if (error.message?.includes("entity was not found") || error.message?.includes("API key")) {
-      throw new Error("INVALID_API_KEY");
-    }
+    console.error("Gemini 3.0 Pro Error:", error);
+    if (error.message?.includes("API key")) throw new Error("INVALID_API_KEY");
     throw error;
   }
 };

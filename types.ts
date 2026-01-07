@@ -74,7 +74,6 @@ export interface AIReport {
     label: string;
   }[];
   summary: string;
-  cvSummary?: string;
   recommendation: string;
 }
 

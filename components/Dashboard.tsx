@@ -6,14 +6,15 @@ import { generateCandidateAnalysis } from '../geminiService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 
 // AIStudio bridge types
+// Fix: All declarations of 'aistudio' must have identical modifiers.
+// Changing aistudio to optional to avoid conflict with potential internal definitions.
 declare global {
   interface AIStudio {
     hasSelectedApiKey: () => Promise<boolean>;
     openSelectKey: () => Promise<void>;
   }
   interface Window {
-    // Add readonly modifier to match the environment's global declaration
-    readonly aistudio: AIStudio;
+    aistudio?: AIStudio;
   }
 }
 
@@ -29,45 +30,91 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
   const [activeTab, setActiveTab] = useState<'pipeline' | 'calendar' | 'analytics' | 'settings'>('pipeline');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisMessage, setAnalysisMessage] = useState('');
   const [filter, setFilter] = useState({ search: '', branch: 'All', status: 'All' });
   const [showApiKeyError, setShowApiKeyError] = useState(false);
 
   const selectedCandidate = useMemo(() => candidates.find(c => c.id === selectedId), [candidates, selectedId]);
 
-  // Robust Key Selector Bridge
+  const analysisPhases = [
+    "Gemini 3.0 Pro Motoru Başlatılıyor...",
+    "CV Görsel Verileri Multimodal Taramadan Geçiyor...",
+    "Karakter Entegrasyonu Hesaplanıyor...",
+    "Yüksek Çeldiricili Senaryolar Çapraz Sorgulanıyor...",
+    "Etik Tutarlılık ve Maske Analizi Yapılıyor...",
+    "Yeni Gün Akademi Kültür Uyumu Modelleniyor...",
+    "Nihai Multimodal Rapor Oluşturuluyor..."
+  ];
+
+  useEffect(() => {
+    let interval: number;
+    if (isAnalysing) {
+      interval = window.setInterval(() => {
+        setAnalysisProgress(prev => {
+          if (prev < 40) return prev + 4; // Flash daha hızlı başlar
+          if (prev < 80) return prev + 2;
+          if (prev < 98) return prev + 0.5;
+          return prev;
+        });
+        
+        const phaseIndex = Math.min(Math.floor(analysisProgress / 14), analysisPhases.length - 1);
+        setAnalysisMessage(analysisPhases[phaseIndex]);
+      }, 300);
+    } else {
+      setAnalysisProgress(0);
+      setAnalysisMessage('');
+    }
+    return () => clearInterval(interval);
+  }, [isAnalysing, analysisProgress]);
+
   const handleOpenKeySelector = async () => {
     try {
-      // Check if bridge exists
       if (typeof window.aistudio !== 'undefined' && window.aistudio.openSelectKey) {
         await window.aistudio.openSelectKey();
         setShowApiKeyError(false);
-        // If selection triggered, we proceed assuming success (as per guidelines race condition rule)
         if (selectedCandidate) handleManualAnalysis();
       } else {
-        console.error("AI Studio Key Bridge not found in this environment.");
-        alert("API Anahtarı seçiciye şu an ulaşılamıyor. Lütfen platform servislerini kontrol edin.");
+        alert("API Anahtarı seçiciye şu an ulaşılamıyor.");
       }
     } catch (e) {
-      console.error("Key selection failed:", e);
       setShowApiKeyError(true);
     }
   };
 
   const handleManualAnalysis = async () => {
     if (!selectedCandidate) return;
+
+    if (typeof window.aistudio !== 'undefined' && window.aistudio.hasSelectedApiKey) {
+      const hasKey = await window.aistudio.hasSelectedApiKey();
+      if (!hasKey) {
+        setShowApiKeyError(true);
+        return;
+      }
+    }
+
     setIsAnalysing(true);
     setShowApiKeyError(false);
     try {
       const report = await generateCandidateAnalysis(selectedCandidate);
-      onUpdateCandidate({ ...selectedCandidate, report });
+      setAnalysisProgress(100);
+      setTimeout(() => {
+        onUpdateCandidate({ ...selectedCandidate, report });
+        setIsAnalysing(false);
+      }, 600);
     } catch (e: any) {
-      if (e.message === "MISSING_API_KEY" || e.message === "INVALID_API_KEY") {
-        setShowApiKeyError(true);
-      } else {
-        alert("Analiz Motoru Hatası: " + e.message);
-      }
-    } finally {
       setIsAnalysing(false);
+      const errorMsg = e.message || "";
+      if (errorMsg === "MISSING_API_KEY" || errorMsg === "INVALID_API_KEY") {
+        setShowApiKeyError(true);
+      } else if (errorMsg.includes("Requested entity was not found.")) {
+        setShowApiKeyError(true);
+        if (typeof window.aistudio !== 'undefined' && window.aistudio.openSelectKey) {
+          await window.aistudio.openSelectKey();
+        }
+      } else {
+        alert("Analiz Motoru Hatası: " + errorMsg);
+      }
     }
   };
 
@@ -92,16 +139,15 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
 
   return (
     <div className="flex flex-col xl:flex-row gap-10 animate-fade-in pb-20 max-w-[1600px] mx-auto">
-      {/* Avant-Garde Navigation Sidebar */}
       <aside className="xl:w-80 space-y-6">
         <div className="p-10 bg-slate-900 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group border border-slate-800">
           <div className="absolute -right-4 -top-4 w-32 h-32 bg-orange-600 rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-all duration-700"></div>
           <div className="relative z-10">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-orange-500 mb-3 opacity-80">Akademi İşletim Sistemi</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-orange-500 mb-3 opacity-80">Yeni Gün Akademi AI</h2>
             <p className="text-3xl font-black tracking-tighter leading-none">{config.institutionName}</p>
             <div className="mt-6 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Canlı Veri Senkronu</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Gemini 3.0 Pro Multimodal</span>
             </div>
           </div>
         </div>
@@ -109,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
         <nav className="p-3 bg-white/50 backdrop-blur-xl rounded-[3rem] border border-slate-100 shadow-sm space-y-2">
           {[
             { id: 'pipeline', label: 'Aday Havuzu', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-            { id: 'calendar', label: 'Planlama Merkezi', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+            { id: 'calendar', label: 'Planlama Merkezi', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z' },
             { id: 'analytics', label: 'Stratejik Analiz', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
             { id: 'settings', label: 'Kurumsal Ayarlar', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
           ].map(tab => (
@@ -127,11 +173,9 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
         </nav>
       </aside>
 
-      {/* Main Intelligent Workspace */}
       <main className="flex-1 min-w-0">
         {activeTab === 'pipeline' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Intelligent Filtering & List */}
             <div className="lg:col-span-5 space-y-6">
               <div className="bg-white p-8 rounded-[3.5rem] shadow-xl border border-slate-100 flex flex-col gap-6">
                 <div className="relative group">
@@ -208,11 +252,9 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
               </div>
             </div>
 
-            {/* Deep Candidate Detail Panel */}
             <div className="lg:col-span-7 sticky top-32">
               {selectedCandidate ? (
                 <div className="bg-white rounded-[4.5rem] shadow-2xl border border-slate-100 overflow-hidden min-h-[75vh] flex flex-col animate-scale-in">
-                   {/* Actions Header */}
                    <div className="p-10 border-b border-slate-50 flex flex-wrap justify-between items-center gap-6 bg-slate-50/30">
                       <div>
                         <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{selectedCandidate.name}</h3>
@@ -235,7 +277,32 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                    </div>
 
                    <div className="p-12 flex-1 overflow-y-auto custom-scrollbar">
-                      {selectedCandidate.report ? (
+                      {isAnalysing ? (
+                        <div className="h-full flex flex-col items-center justify-center space-y-12 animate-fade-in text-center py-20">
+                           <div className="relative w-48 h-48 flex items-center justify-center">
+                              <svg className="absolute w-full h-full transform -rotate-90">
+                                <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={553} strokeDashoffset={553 - (553 * analysisProgress) / 100} className="text-orange-600 transition-all duration-300 ease-out" />
+                              </svg>
+                              <div className="absolute flex flex-col items-center">
+                                <span className="text-4xl font-black text-slate-900">%{Math.round(analysisProgress)}</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pro Processing</span>
+                              </div>
+                              <div className="absolute inset-0 bg-orange-600/5 rounded-full animate-pulse"></div>
+                           </div>
+                           
+                           <div className="max-w-md space-y-4">
+                              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{analysisMessage}</h3>
+                              <p className="text-slate-400 font-bold italic">Gemini 3.0 Pro Preview multimodal yetenekleri ile CV ve test verilerini sentezliyor...</p>
+                           </div>
+
+                           <div className="flex gap-2">
+                             {[0,1,2].map(i => (
+                               <div key={i} className="w-2 h-2 bg-orange-600 rounded-full animate-bounce" style={{animationDelay: `${i*0.15}s`}}></div>
+                             ))}
+                           </div>
+                        </div>
+                      ) : selectedCandidate.report ? (
                         <CandidateReport report={selectedCandidate.report} name={selectedCandidate.name} />
                       ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center space-y-10 py-10">
@@ -244,29 +311,29 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                                <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-rose-600 mx-auto mb-8 shadow-2xl shadow-rose-100/50">
                                  <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                                </div>
-                               <h3 className="text-2xl font-black text-rose-900 uppercase tracking-tighter mb-4 leading-none">Bağlantı Sorunu</h3>
-                               <p className="text-rose-700/70 font-bold mb-8 text-sm leading-relaxed italic">Yapay zeka motorunu çalıştırmak için Gemini API anahtarınızın seçilmesi gerekiyor.</p>
+                               <h3 className="text-2xl font-black text-rose-900 uppercase tracking-tighter mb-4 leading-none">AI Senkronu Gerekli</h3>
+                               <p className="text-rose-700/70 font-bold mb-8 text-sm leading-relaxed italic">Multimodal analiz motoru için API anahtarınızı bağlamanız gerekiyor.</p>
                                <button 
                                  onClick={handleOpenKeySelector}
-                                 className="w-full py-6 bg-rose-600 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-rose-700 shadow-2xl transition-all hover:scale-[1.02]"
+                                 className="w-full py-6 bg-rose-600 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-rose-700 shadow-2xl transition-all"
                                >
                                  Anahtarı Şimdi Bağla
                                </button>
                              </div>
                            ) : (
-                             <div className="max-w-md">
+                             <div className="max-w-md animate-fade-in">
                                <div className="w-28 h-28 bg-orange-50 rounded-[2.5rem] flex items-center justify-center text-orange-600 mx-auto mb-10 animate-pulse relative">
                                   <div className="absolute inset-0 rounded-[2.5rem] border-4 border-orange-200 animate-ping opacity-20"></div>
                                   <svg className="w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                </div>
-                               <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-4">Profil Analiz Bekliyor</h3>
-                               <p className="text-slate-400 font-bold mb-10 text-base leading-relaxed">Bu adayın profesyonel yetkinlik ve karakter analizi henüz oluşturulmadı.</p>
+                               <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-4">Pro Analiz Hazır</h3>
+                               <p className="text-slate-400 font-bold mb-10 text-base leading-relaxed">Gemini 3.0 Pro Preview ile adayın CV görselini ve test yanıtlarını anında çapraz sorguya alın.</p>
                                <button 
                                  onClick={handleManualAnalysis}
                                  disabled={isAnalysing}
                                  className="w-full py-7 bg-orange-600 text-white rounded-[2.5rem] font-black uppercase tracking-[0.2em] hover:bg-orange-700 shadow-2xl transition-all disabled:opacity-50"
                                >
-                                 {isAnalysing ? 'AI İşlemci Çalışıyor...' : 'Analizi Tetikle'}
+                                 Multimodal Analizi Başlat
                                </button>
                              </div>
                            )}
@@ -279,7 +346,7 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                    <div className="w-32 h-32 bg-slate-100 rounded-full flex items-center justify-center text-slate-200 mb-8 transition-colors group-hover:bg-orange-50 group-hover:text-orange-200">
                       <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                    </div>
-                   <p className="text-slate-200 text-3xl font-black uppercase tracking-[0.3em] text-center max-w-xs group-hover:text-orange-200 transition-colors">Bir Aday Dosyası Açın</p>
+                   <p className="text-slate-200 text-3xl font-black uppercase tracking-[0.3em] text-center max-w-xs group-hover:text-orange-200 transition-colors">Bir Aday Dosyası Seçin</p>
                 </div>
               )}
             </div>
@@ -293,14 +360,9 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                 <h3 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-4">Planlama Merkezi</h3>
                 <p className="text-slate-400 font-bold text-lg italic">Yüz yüze ve online mülakat trafiğini buradan yönetin.</p>
               </div>
-              <div className="flex bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                 <div className="px-6 py-3 bg-white rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest text-slate-900">Günlük Görünüm</div>
-                 <div className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Haftalık</div>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
-               {/* Unscheduled Queue */}
                <div className="xl:col-span-4 space-y-6">
                   <h4 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] ml-2">İşlem Bekleyenler ({candidates.filter(c => c.status === 'pending' && c.report).length})</h4>
                   <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
@@ -321,7 +383,6 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                   </div>
                </div>
 
-               {/* Visual Schedule Timeline */}
                <div className="xl:col-span-8">
                   <div className="p-10 bg-slate-900 rounded-[4rem] text-white h-full relative overflow-hidden">
                      <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600 rounded-full blur-[100px] opacity-10"></div>
@@ -345,10 +406,6 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                                      <span className="text-[9px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-3 py-1.5 rounded-lg">{c.interviewSchedule?.method}</span>
                                   </div>
                                   <p className="text-slate-400 font-bold text-sm">{c.interviewSchedule?.date} • {c.interviewSchedule?.location}</p>
-                                  <div className="mt-6 flex gap-3">
-                                     <button className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Düzenle</button>
-                                     <button className="text-[9px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-400 transition-colors">İptal</button>
-                                  </div>
                                </div>
                             </div>
                           ))
@@ -467,29 +524,12 @@ const Dashboard: React.FC<DashboardProps> = ({ candidates, config, onUpdateCandi
                  </div>
               </div>
 
-              <div className="space-y-4">
-                 <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] ml-2">Bildirim Alıcısı (E-Posta)</label>
-                 <input 
-                    type="email" 
-                    className="w-full bg-slate-50 rounded-[2rem] px-8 py-6 text-lg font-bold outline-none border-2 border-transparent focus:bg-white transition-all shadow-inner"
-                    value={config.notificationEmail}
-                    onChange={e => onUpdateConfig({...config, notificationEmail: e.target.value})}
-                  />
-                  <p className="text-[10px] text-slate-400 font-bold uppercase ml-4">Yeni başvurular ve mülakat onayları bu adrese iletilir.</p>
-              </div>
-
               <div className="pt-10 flex gap-6">
                 <button 
                   onClick={() => alert("Ayarlar senkronize edildi.")}
                   className="flex-1 py-7 bg-slate-900 text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-orange-600 shadow-2xl transition-all hover:-translate-y-1"
                 >
                   Konfigürasyonu Kaydet
-                </button>
-                <button 
-                  onClick={() => { if(confirm('Tüm yerel veriler sıfırlanacak. Emin misiniz?')) localStorage.clear(); window.location.reload(); }}
-                  className="px-10 py-7 bg-rose-50 text-rose-600 rounded-[2.5rem] font-black text-xs uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
-                >
-                  Reset
                 </button>
               </div>
             </div>
