@@ -19,7 +19,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     date: candidate.interviewSchedule?.date || '',
     time: candidate.interviewSchedule?.time || '',
     method: candidate.interviewSchedule?.method || 'Yüz Yüze',
-    location: candidate.interviewSchedule?.location || config.interviewSettings.defaultMeetingLink || 'Yeni Gün Akademi Merkez Ofis'
+    location: candidate.interviewSchedule?.location || config.interviewSettings.defaultMeetingLink || 'Yeni Gün Akademi Merkez Ofis',
+    type: 'Akademik Değerlendirme' // Ek profesyonel ayar
   });
 
   const handleRunAnalysis = async () => {
@@ -30,10 +31,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       const aiReport = await generateCandidateAnalysis(candidate, config);
       const updated = { ...candidate, report: aiReport, algoReport, updated_at: new Date().toISOString() };
       onUpdate(updated);
-      setSuccessStatus("Akademik Analiz Tamamlandı");
+      setSuccessStatus("Stratejik Analiz Raporu Güncellendi");
       setTimeout(() => setSuccessStatus(null), 3000);
     } catch (e: any) {
-      setErrorMessage(e.message || "Motor analizi sırasında hata oluştu.");
+      setErrorMessage(e.message || "Motor analizi başarısız.");
     } finally {
       setIsAnalysing(false);
     }
@@ -41,7 +42,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const handleScheduleInterview = async () => {
     if (!interviewForm.date || !interviewForm.time) {
-      setErrorMessage("Lütfen tarih ve saat verilerini eksiksiz giriniz.");
+      setErrorMessage("Tarih ve saat verileri stratejik planlama için zorunludur.");
       return;
     }
 
@@ -49,7 +50,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     setErrorMessage(null);
 
     try {
-      // 1. E-posta Otomasyonu (API Simulation)
+      // E-posta Otomasyonu (Varsa API tetiklenir)
       let emailSuccess = false;
       if (config.automation.autoEmailOnSchedule) {
         try {
@@ -66,11 +67,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           });
           emailSuccess = emailRes.ok;
         } catch (e) {
-          console.warn("E-posta sunucusu yanıt vermedi.");
+          console.warn("E-posta bildirimi kuyruğa alınamadı.");
         }
       }
 
-      // 2. Aday Statüsünü 'Mülakat Planlandı' olarak güncelle
       const updatedCandidate: Candidate = {
         ...candidate,
         status: 'interview_scheduled',
@@ -83,12 +83,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
       onUpdate(updatedCandidate);
       
-      setSuccessStatus("Randevu Başarıyla Oluşturuldu");
+      setSuccessStatus("Randevu Portala Kaydedildi");
       setIsSchedulingPopupOpen(false);
       setTimeout(() => setSuccessStatus(null), 4000);
 
     } catch (e: any) {
-      setErrorMessage("Kritik hata: " + e.message);
+      setErrorMessage("İşlem hatası: " + e.message);
     } finally {
       setIsScheduling(false);
     }
@@ -101,60 +101,60 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   return (
     <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 h-full flex flex-col overflow-hidden animate-scale-in relative">
       
-      {/* PROFESSIONAL SCHEDULING POPUP (MODAL) */}
+      {/* 1. RANDEVU KOMUTA MERKEZİ (POPUP) */}
       {isSchedulingPopupOpen && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/90 backdrop-blur-2xl flex items-center justify-center p-6 animate-fade-in no-print">
-          <div className="w-full max-w-xl bg-white rounded-[3.5rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] overflow-hidden border border-white/20 animate-scale-in">
+        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-3xl flex items-center justify-center p-4 md:p-10 animate-fade-in no-print">
+          <div className="w-full max-w-2xl bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] overflow-hidden border-8 border-white/20 animate-scale-in">
             <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/40">
               <div>
-                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] border-l-4 border-orange-600 pl-4">Mülakat Planlama</h4>
-                <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Akademik Değerlendirme Oturumu</p>
+                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] border-l-4 border-orange-600 pl-4">Mülakat Stratejisi</h4>
+                <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Zamanlama ve Kanal Yapılandırması</p>
               </div>
               <button 
                 onClick={() => setIsSchedulingPopupOpen(false)} 
-                className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-600 hover:shadow-lg transition-all font-black text-xl"
+                className="w-14 h-14 bg-white rounded-3xl flex items-center justify-center text-slate-300 hover:text-rose-600 hover:shadow-2xl transition-all font-black text-2xl"
               >
                 ×
               </button>
             </div>
             
-            <div className="p-10 space-y-8">
+            <div className="p-12 space-y-10">
               {errorMessage && (
-                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-[10px] font-black text-rose-600 uppercase tracking-widest text-center animate-shake">
+                <div className="p-5 bg-rose-50 border-2 border-rose-100 rounded-3xl text-[10px] font-black text-rose-600 uppercase tracking-widest text-center animate-shake">
                   {errorMessage}
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest ml-1">Tarih</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest ml-1">Mülakat Tarihi</label>
                   <input 
                     type="date" 
-                    className="w-full p-5 rounded-[1.8rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all shadow-inner"
+                    className="w-full p-6 rounded-[2rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all shadow-inner"
                     value={interviewForm.date}
                     onChange={e => setInterviewForm({...interviewForm, date: e.target.value})}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest ml-1">Saat</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest ml-1">Başlangıç Saati</label>
                   <input 
                     type="time" 
-                    className="w-full p-5 rounded-[1.8rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all shadow-inner"
+                    className="w-full p-6 rounded-[2rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all shadow-inner"
                     value={interviewForm.time}
                     onChange={e => setInterviewForm({...interviewForm, time: e.target.value})}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest ml-1">Görüşme Kanalı</label>
-                <div className="grid grid-cols-2 gap-3 bg-slate-50 p-2 rounded-[2rem]">
-                  {['Yüz Yüze', 'Google Meet', 'Zoom', 'Telefon'].map(m => (
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest ml-1">Görüşme Kanalı ve Türü</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-2 rounded-[2.5rem]">
+                  {['Yüz Yüze', 'Meet', 'Zoom', 'Telefon'].map(m => (
                     <button
                       key={m}
                       onClick={() => setInterviewForm({...interviewForm, method: m})}
-                      className={`py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                        interviewForm.method === m ? 'bg-white text-orange-600 shadow-md scale-100' : 'text-slate-400 hover:text-slate-600'
+                      className={`py-5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                        interviewForm.method === m ? 'bg-orange-600 text-white shadow-xl scale-100' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
                       {m}
@@ -163,55 +163,54 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest ml-1">Lojistik Detay / Bağlantı Linki</label>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest ml-1">Lojistik Detay / Toplantı Bağlantısı</label>
                 <textarea 
-                  className="w-full p-6 rounded-[2rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all min-h-[100px] resize-none shadow-inner"
+                  className="w-full p-8 rounded-[2.5rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 transition-all min-h-[120px] resize-none shadow-inner"
                   value={interviewForm.location}
                   onChange={e => setInterviewForm({...interviewForm, location: e.target.value})}
-                  placeholder="Ofis numarası veya toplantı bağlantı adresini buraya ekleyin..."
+                  placeholder="Ofis numarası, bina kat bilgisi veya dijital toplantı linkini buraya ekleyin..."
                 />
               </div>
 
-              <div className="p-6 bg-slate-900 rounded-[2rem] border border-white/5 relative overflow-hidden group">
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.automation.autoEmailOnSchedule ? 'bg-orange-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              <div className="p-8 bg-slate-900 rounded-[3rem] border border-white/5 relative overflow-hidden group">
+                <div className="flex items-center gap-6 relative z-10">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${config.automation.autoEmailOnSchedule ? 'bg-orange-600 text-white shadow-[0_0_30px_rgba(234,88,12,0.4)]' : 'bg-slate-700 text-slate-400'}`}>
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white">Akıllı Bildirim</p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">{config.automation.autoEmailOnSchedule ? 'Adaya resmi davet e-postası iletilecek.' : 'Manuel bilgilendirme seçildi.'}</p>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-white">Akıllı Bildirim Motoru</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{config.automation.autoEmailOnSchedule ? 'Onay sonrası adaya profesyonel davet iletilecek.' : 'Manuel bildirim prosedürü seçildi.'}</p>
                   </div>
                 </div>
-                <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-orange-600/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
               </div>
             </div>
 
-            <div className="p-10 bg-slate-50 border-t border-slate-100 flex gap-4">
+            <div className="p-12 bg-slate-50 border-t border-slate-100 flex gap-6">
               <button 
                 onClick={() => setIsSchedulingPopupOpen(false)} 
-                className="flex-1 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-100 transition-all"
+                className="flex-1 py-6 rounded-3xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-100 transition-all"
               >
-                Vazgeç
+                İptal Et
               </button>
               <button 
                 onClick={handleScheduleInterview}
                 disabled={isScheduling}
-                className="flex-[2] py-5 bg-orange-600 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl shadow-orange-600/30 hover:bg-slate-900 transition-all active:scale-95"
+                className="flex-[2] py-6 bg-slate-900 text-white rounded-[2.2rem] font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl hover:bg-orange-600 transition-all active:scale-95"
               >
-                {isScheduling ? 'İŞLENİYOR...' : 'RANDEVUYU KESİNLEŞTİR'}
+                {isScheduling ? 'RANDEVU İŞLENİYOR...' : 'RANDEVUYU ONAYLA VE KAYDET'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* FULL REPORT MODAL */}
+      {/* 2. RAPOR GÖRÜNTÜLEME PORTALI */}
       {showFullPreview && (
         <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-10 animate-fade-in no-print">
-           <div className="absolute top-8 right-8 flex gap-4">
-              <button onClick={() => window.print()} className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 transition-all">SİSTEMDEN YAZDIR</button>
-              <button onClick={() => setShowFullPreview(false)} className="bg-orange-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl hover:bg-orange-700 transition-all">×</button>
+           <div className="absolute top-10 right-10 flex gap-6">
+              <button onClick={() => window.print()} className="bg-white/10 hover:bg-white/20 text-white px-10 py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest border border-white/20 transition-all backdrop-blur-xl">ARŞİVLE VE YAZDIR</button>
+              <button onClick={() => setShowFullPreview(false)} className="bg-orange-600 text-white w-16 h-16 rounded-3xl flex items-center justify-center font-black text-2xl shadow-2xl hover:bg-orange-700 transition-all">×</button>
            </div>
            <div className="w-full h-full overflow-y-auto custom-scrollbar flex justify-center py-10">
               <div className="transform scale-90 md:scale-100 origin-top">
@@ -221,35 +220,35 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
       )}
 
-      {/* HEADER SECTION */}
-      <div className="p-10 border-b border-slate-50 bg-slate-50/40 flex flex-col xl:flex-row justify-between items-center gap-8 no-print">
-        <div className="flex gap-6 items-center">
-          <div className="w-20 h-20 bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-white text-3xl font-black shadow-2xl relative overflow-hidden group">
+      {/* ÜST PANEL: ADAY KİMLİK VE AKSİYONLAR */}
+      <div className="p-12 border-b border-slate-50 bg-slate-50/40 flex flex-col xl:flex-row justify-between items-center gap-10 no-print">
+        <div className="flex gap-8 items-center">
+          <div className="w-24 h-24 bg-slate-900 rounded-[3rem] flex items-center justify-center text-white text-4xl font-black shadow-2xl relative overflow-hidden group">
             <span className="relative z-10">{candidate.name.charAt(0)}</span>
-            <div className="absolute inset-0 bg-orange-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            <div className="absolute inset-0 bg-orange-600 translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
           </div>
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <StatusBadge status={candidate.status} />
-              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">AKD-{candidate.id.toUpperCase()}</span>
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">AKD-LYK-{candidate.id.toUpperCase()}</span>
             </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tighter mt-2">{candidate.name}</h2>
+            <h2 className="text-5xl font-black text-slate-900 tracking-tighter mt-3">{candidate.name}</h2>
           </div>
         </div>
         
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-4">
           <button 
             onClick={onDelete} 
-            className="p-5 rounded-2xl text-rose-300 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
-            title="Adayı Sil"
+            className="p-6 rounded-3xl text-rose-300 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
+            title="Aday Dosyasını Tamamen Sil"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
           
           {candidate.report && (
             <button 
               onClick={() => setShowFullPreview(true)} 
-              className="px-8 py-5 rounded-[2rem] bg-white border-2 border-slate-200 font-black text-[11px] uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm"
+              className="px-10 py-6 rounded-[2.2rem] bg-white border-2 border-slate-200 font-black text-[11px] uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm"
             >
               GÖRÜNTÜLE
             </button>
@@ -257,7 +256,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
           <button 
             onClick={() => setIsSchedulingPopupOpen(true)}
-            className="px-8 py-5 rounded-[2rem] bg-orange-50 border-2 border-orange-100 font-black text-[11px] uppercase tracking-widest text-orange-600 hover:bg-orange-600 hover:text-white transition-all shadow-xl shadow-orange-600/5 active:scale-95"
+            className="px-10 py-6 rounded-[2.2rem] bg-orange-50 border-2 border-orange-100 font-black text-[11px] uppercase tracking-widest text-orange-600 hover:bg-orange-600 hover:text-white transition-all shadow-xl shadow-orange-600/5 active:scale-95"
           >
             RANDEVU OLUŞTUR
           </button>
@@ -265,66 +264,66 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           <button 
             onClick={handleRunAnalysis} 
             disabled={isAnalysing}
-            className={`px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-widest transition-all ${
+            className={`px-12 py-6 rounded-[2.2rem] font-black text-[11px] uppercase tracking-widest transition-all ${
               isAnalysing ? 'bg-slate-200 animate-pulse text-slate-400' : 'bg-slate-900 text-white shadow-2xl hover:bg-orange-600 hover:-translate-y-1'
             }`}
           >
-            {isAnalysing ? 'MOTOR ANALİZ EDİYOR...' : 'YENİ ANALİZ ÜRET'}
+            {isAnalysing ? 'DİJİTAL ANALİZ YAPILIYOR...' : 'YENİ ANALİZ ÜRET'}
           </button>
         </div>
       </div>
 
-      {/* SCROLLABLE CONTENT */}
-      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-12">
+      {/* ANA İÇERİK AKIŞI */}
+      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-16">
         
         {successStatus && (
-          <div className="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-[2.5rem] flex items-center justify-between gap-4 animate-bounce-y text-emerald-700 font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-500/10">
-            <div className="flex items-center gap-4">
-              <span className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-md">✓</span>
+          <div className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[3rem] flex items-center justify-between gap-6 animate-bounce-y text-emerald-800 font-black text-[12px] uppercase tracking-widest shadow-2xl shadow-emerald-500/10">
+            <div className="flex items-center gap-6">
+              <span className="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg">✓</span>
               <span>{successStatus}</span>
             </div>
           </div>
         )}
 
-        {/* ACTIVE SCHEDULE CARD */}
+        {/* AKTİF RANDEVU KARTI */}
         {candidate.interviewSchedule && (
-          <section className="bg-slate-900 rounded-[3.5rem] p-10 text-white flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden group shadow-2xl">
-            <div className="flex items-center gap-8 relative z-10">
-              <div className="w-20 h-20 bg-orange-600 text-white rounded-[2rem] flex flex-col items-center justify-center shadow-2xl shadow-orange-600/40">
-                 <span className="text-[10px] font-black uppercase opacity-60 leading-none mb-1">{new Date(candidate.interviewSchedule.date).toLocaleDateString('tr-TR', { month: 'short' })}</span>
-                 <span className="text-3xl font-black leading-none">{candidate.interviewSchedule.date.split('-')[2]}</span>
+          <section className="bg-slate-900 rounded-[4rem] p-12 text-white flex flex-col md:flex-row justify-between items-center gap-10 relative overflow-hidden group shadow-2xl">
+            <div className="flex items-center gap-10 relative z-10">
+              <div className="w-24 h-24 bg-orange-600 text-white rounded-[2.5rem] flex flex-col items-center justify-center shadow-2xl shadow-orange-600/40 transform group-hover:rotate-6 transition-transform">
+                 <span className="text-[12px] font-black uppercase opacity-60 leading-none mb-1">{new Date(candidate.interviewSchedule.date).toLocaleDateString('tr-TR', { month: 'short' })}</span>
+                 <span className="text-4xl font-black leading-none">{candidate.interviewSchedule.date.split('-')[2]}</span>
               </div>
               <div>
-                <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-2">Planlı Akademik Mülakat</p>
-                <h4 className="text-3xl font-black tracking-tighter uppercase leading-none">{candidate.interviewSchedule.method} @ {candidate.interviewSchedule.time}</h4>
-                <p className="text-[11px] font-bold text-slate-400 mt-3 truncate max-w-sm">{candidate.interviewSchedule.location}</p>
+                <p className="text-[11px] font-black text-orange-500 uppercase tracking-[0.5em] mb-3">Onaylanmış Akademik Oturum</p>
+                <h4 className="text-4xl font-black tracking-tighter uppercase leading-none">{candidate.interviewSchedule.method} <span className="text-slate-500 mx-3">/</span> {candidate.interviewSchedule.time}</h4>
+                <p className="text-[12px] font-bold text-slate-400 mt-4 truncate max-w-sm italic opacity-80">{candidate.interviewSchedule.location}</p>
               </div>
             </div>
             <button 
               onClick={() => setIsSchedulingPopupOpen(true)} 
-              className="px-10 py-5 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all relative z-10 border border-white/20"
+              className="px-12 py-6 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all relative z-10 border border-white/20"
             >
-              PLANLAMAYI DÜZENLE
+              PLANLAMAYI REVİZE ET
             </button>
-            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-orange-600/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+            <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px] group-hover:scale-150 transition-transform duration-1000"></div>
           </section>
         )}
 
-        {/* WORKFLOW ACTIONS */}
-        <section className="bg-slate-50/50 p-10 rounded-[4rem] border-2 border-slate-50 flex flex-col gap-6">
-           <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Akademik Akış Kontrolü</p>
-           <div className="flex flex-wrap gap-4">
+        {/* AKADEMİK DURUM YÖNETİMİ */}
+        <section className="bg-slate-50/50 p-12 rounded-[4.5rem] border-2 border-slate-50 flex flex-col gap-8">
+           <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] ml-4">Liyakat Havuzu Durum Kontrolü</p>
+           <div className="flex flex-wrap gap-5">
              {[
-               { id: 'pending', label: 'Analiz Havuzu', color: 'bg-white text-slate-900 border-slate-200' },
-               { id: 'rejected', label: 'Kriter Dışı', color: 'bg-rose-50 text-rose-600 border-rose-100' },
-               { id: 'hired', label: 'Kadrolu Uzman', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-               { id: 'withdrawn', label: 'Başvuru İptal', color: 'bg-slate-100 text-slate-500 border-slate-200' }
+               { id: 'pending', label: 'Analiz Kuyruğunda', color: 'bg-white text-slate-900 border-slate-200' },
+               { id: 'rejected', label: 'Elenme Kararı', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+               { id: 'hired', label: 'Kadro Onayı', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+               { id: 'withdrawn', label: 'Aday Feragati', color: 'bg-slate-100 text-slate-500 border-slate-200' }
              ].map(s => (
                <button
                  key={s.id}
                  onClick={() => updateStatus(s.id as any)}
-                 className={`px-10 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
-                   candidate.status === s.id ? s.color + ' shadow-xl ring-4 ring-slate-100/50' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
+                 className={`px-12 py-6 rounded-[2.2rem] text-[11px] font-black uppercase tracking-widest border-2 transition-all ${
+                   candidate.status === s.id ? s.color + ' shadow-2xl ring-8 ring-slate-100/50 scale-105' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
                  }`}
                >
                  {s.label}
@@ -333,30 +332,30 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
            </div>
         </section>
 
-        {/* AI ANALYSIS REPORT COMPONENT */}
+        {/* AI ANALİZ RAPORU BÖLÜMÜ */}
         <section>
           {candidate.report ? (
             <CandidateReport candidate={candidate} report={candidate.report} />
           ) : (
-            <div className="py-32 text-center border-4 border-dashed border-slate-100 rounded-[4rem] bg-slate-50/30">
-               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
-                 <svg className="w-12 h-12 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <div className="py-40 text-center border-4 border-dashed border-slate-100 rounded-[5rem] bg-slate-50/30 group">
+               <div className="w-28 h-28 bg-white rounded-[3rem] flex items-center justify-center mx-auto mb-10 shadow-inner group-hover:scale-110 transition-transform">
+                 <svg className="w-14 h-14 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                </div>
-               <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-sm">Akademik Rapor Analiz Motoru Bekleniyor</p>
-               <button onClick={handleRunAnalysis} className="mt-8 text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline transition-all">Analizi Şimdi Başlat</button>
+               <p className="text-slate-400 font-black uppercase tracking-[0.6em] text-sm">Stratejik Karar Raporu Bulunamadı</p>
+               <button onClick={handleRunAnalysis} className="mt-10 px-12 py-6 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all">Analiz Motorunu Çalıştır</button>
             </div>
           )}
         </section>
 
-        {/* ADMIN PRIVATE NOTES */}
-        <section className="space-y-6 pb-20">
-          <div className="flex items-center gap-6">
-            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] border-l-4 border-orange-600 pl-4">Kurumsal Değerlendirme Kayıtları</h4>
+        {/* YÖNETİCİ ÖZEL NOTLARI */}
+        <section className="space-y-8 pb-24">
+          <div className="flex items-center gap-8">
+            <h4 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.5em] border-l-4 border-orange-600 pl-6">Gizli Kurul Kayıtları</h4>
             <div className="flex-1 h-px bg-slate-100"></div>
           </div>
           <textarea 
-            className="w-full p-12 rounded-[4rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 min-h-[300px] resize-none transition-all shadow-inner text-lg leading-relaxed"
-            placeholder="Adayın mesleki duruşu, kurum kültürüne uyumu ve mülakat gözlemleri hakkında sadece yöneticilerin erişebileceği detaylı notları buraya işleyiniz..."
+            className="w-full p-16 rounded-[4.5rem] bg-slate-50 border-2 border-transparent focus:border-orange-600 outline-none font-bold text-slate-800 min-h-[350px] resize-none transition-all shadow-inner text-xl leading-relaxed"
+            placeholder="Adayın mesleki duruşu, kurum vizyonuna uyumu ve mülakat sırasında gözlemlenen kritik tutumlar hakkında sadece kurul üyelerinin görebileceği notları buraya işleyiniz..."
             value={candidate.adminNotes || ''}
             onChange={e => onUpdate({...candidate, adminNotes: e.target.value})}
           />
