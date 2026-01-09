@@ -8,6 +8,8 @@ export enum Branch {
   OkulOncesi = 'Okul Öncesi Öğretmeni'
 }
 
+export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
+
 export type UserRole = 'superadmin' | 'hr' | 'specialist' | 'viewer';
 
 export interface AdminUser {
@@ -47,6 +49,7 @@ export interface Candidate {
   email: string;
   phone?: string;
   age: number;
+  gender: Gender;
   branch: Branch;
   experienceYears: number;
   previousInstitutions: string;

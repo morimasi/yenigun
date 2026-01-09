@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
-import { Branch, Candidate } from '../types';
+import { Branch, Candidate, Gender } from '../types';
 
 interface CandidateFormProps {
   onSubmit: (candidate: Omit<Candidate, 'id' | 'timestamp' | 'report'>) => void;
@@ -15,6 +15,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     email: '',
     phone: '',
     age: 22,
+    gender: 'Belirtilmemiş' as Gender,
     branch: Branch.OzelEgitim,
     experienceYears: 0,
     previousInstitutions: '',
@@ -119,9 +120,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Yaşınız</label>
+                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Yaş</label>
                   <input
                     type="number"
                     className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
@@ -129,14 +130,20 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                     onChange={(e) => setFormData({...formData, age: parseInt(e.target.value) || 0})}
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mesleki Deneyim (Yıl)</label>
-                  <input
-                    type="number"
-                    className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
-                    value={formData.experienceYears}
-                    onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value) || 0})}
-                  />
+                <div className="col-span-2">
+                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Cinsiyet</label>
+                  <div className="flex bg-orange-50 p-2 rounded-[2rem] border-2 border-orange-100">
+                    {['Kadın', 'Erkek', 'Belirtilmemiş'].map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setFormData({...formData, gender: g as Gender})}
+                        className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${formData.gender === g ? 'bg-orange-600 text-white shadow-lg' : 'text-orange-400 hover:text-orange-600'}`}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -151,30 +158,40 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                   {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <div className="relative">
-                <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 text-center">Özgeçmiş Dokümanı</label>
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`w-full border-4 border-dashed rounded-[3rem] p-10 flex flex-col items-center justify-center transition-all cursor-pointer group ${
-                    formData.cvData ? 'bg-orange-600 border-orange-400 text-white' : 'bg-orange-50 border-orange-200 hover:bg-white hover:border-orange-500'
-                  }`}
-                >
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,image/*" />
-                  <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-lg ${
-                    formData.cvData ? 'bg-white text-orange-600' : 'bg-orange-600 text-white'
-                  }`}>
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                  </div>
-                  <p className="text-[12px] font-black uppercase tracking-widest text-center leading-relaxed">
-                    {formData.cvData ? formData.cvData.fileName : 'CV DOSYASINI BURAYA BIRAKIN'}
-                  </p>
-                  <p className="text-[10px] mt-2 opacity-50 font-bold uppercase">PDF / PNG / JPEG (MAX 5MB)</p>
-                </div>
+              <div>
+                <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mesleki Deneyim (Yıl)</label>
+                <input
+                  type="number"
+                  className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
+                  value={formData.experienceYears}
+                  onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value) || 0})}
+                />
               </div>
             </div>
           </div>
+          
+          <div className="relative">
+            <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 text-center">Özgeçmiş Dokümanı</label>
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className={`w-full border-4 border-dashed rounded-[3rem] p-10 flex flex-col items-center justify-center transition-all cursor-pointer group ${
+                formData.cvData ? 'bg-orange-600 border-orange-400 text-white' : 'bg-orange-50 border-orange-200 hover:bg-white hover:border-orange-500'
+              }`}
+            >
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,image/*" />
+              <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-lg ${
+                formData.cvData ? 'bg-white text-orange-600' : 'bg-orange-600 text-white'
+              }`}>
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+              </div>
+              <p className="text-[12px] font-black uppercase tracking-widest text-center leading-relaxed">
+                {formData.cvData ? formData.cvData.fileName : 'CV DOSYASINI BURAYA BIRAKIN'}
+              </p>
+              <p className="text-[10px] mt-2 opacity-50 font-bold uppercase">PDF / PNG / JPEG (MAX 5MB)</p>
+            </div>
+          </div>
 
-          <div className="space-y-10 pt-4">
+          <div className="space-y-10">
             <div className="relative">
               <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-4 ml-1">Mesleki Geçmiş: Çalışılan Kurumlar ve Görevler</label>
               <textarea
