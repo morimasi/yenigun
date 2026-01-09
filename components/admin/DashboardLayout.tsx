@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
-import Sidebar from './Sidebar';
+import AdminTopNav from './AdminTopNav';
 import PipelineView from './PipelineView';
 import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
@@ -29,14 +29,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-10 animate-fade-in pb-20 max-w-[1600px] mx-auto">
-      <Sidebar 
+    <div className="flex flex-col gap-8 animate-fade-in pb-20 max-w-[1600px] mx-auto w-full">
+      {/* Üst Navigasyon Bloğu */}
+      <AdminTopNav 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         institutionName={props.config.institutionName} 
       />
-      <main className="flex-1 min-w-0">
-        {renderContent()}
+      
+      {/* Ana İçerik Bloğu (Orta) */}
+      <main className="flex-1 w-full min-w-0 px-2 md:px-0">
+        <div className="bg-white/40 backdrop-blur-sm rounded-[4rem] border border-slate-100/50 p-2 md:p-6 shadow-inner min-h-[700px]">
+          {renderContent()}
+        </div>
       </main>
     </div>
   );
