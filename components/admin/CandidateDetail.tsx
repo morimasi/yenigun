@@ -9,6 +9,7 @@ import StatusBadge from './StatusBadge';
 const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
+  const [successStatus, setSuccessStatus] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
 
@@ -28,6 +29,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
       const aiReport = await generateCandidateAnalysis(candidate);
       const updated = { ...candidate, report: aiReport, algoReport, updated_at: new Date().toISOString() };
       onUpdate(updated);
+      setSuccessStatus("Analiz Başarıyla Tamamlandı");
+      setTimeout(() => setSuccessStatus(null), 3000);
     } catch (e: any) {
       setErrorMessage(e.message || "Analiz hatası.");
     } finally {
@@ -43,22 +46,27 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
 
     setIsScheduling(true);
     setErrorMessage(null);
+    setSuccessStatus(null);
 
     try {
-      // 1. E-posta Gönderimi (API)
-      const emailRes = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: candidate.email,
-          candidateName: candidate.name,
-          date: interviewForm.date,
-          time: interviewForm.time,
-          location: interviewForm.location
-        })
-      });
-
-      const emailData = await emailRes.json();
+      // 1. E-posta Gönderimi (API) - E-posta başarısız olsa bile randevu kaydedilmeli
+      let emailSuccess = false;
+      try {
+        const emailRes = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: candidate.email,
+            candidateName: candidate.name,
+            date: interviewForm.date,
+            time: interviewForm.time,
+            location: interviewForm.location
+          })
+        });
+        emailSuccess = emailRes.ok;
+      } catch (e) {
+        console.warn("E-posta gönderimi teknik nedenlerle yapılamadı.");
+      }
 
       // 2. Aday Verisini Güncelle
       const updatedCandidate: Candidate = {
@@ -66,16 +74,17 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
         status: 'interview_scheduled',
         interviewSchedule: {
           ...interviewForm,
-          isNotificationSent: emailRes.ok
+          isNotificationSent: emailSuccess
         },
         updated_at: new Date().toISOString()
       };
 
+      // BU KRİTİK: onUpdate çağrısı artık veritabanında Dynamic Patch tetikleyecek
       onUpdate(updatedCandidate);
       
-      if (!emailRes.ok) {
-        setErrorMessage("Randevu kaydedildi ancak davet e-postası gönderilemedi: " + (emailData.error || "Sunucu hatası"));
-      }
+      setSuccessStatus(emailSuccess ? "Mülakat Planlandı ve Bildirildi" : "Takvime İşlendi (E-posta Hatası)");
+      setTimeout(() => setSuccessStatus(null), 4000);
+
     } catch (e: any) {
       setErrorMessage("İşlem sırasında bir hata oluştu: " + e.message);
     } finally {
@@ -144,6 +153,15 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
         {errorMessage && (
           <div className="p-6 bg-rose-50 border-2 border-rose-100 rounded-3xl flex items-center gap-4 animate-shake text-rose-600 font-bold text-sm">
             <span>⚠️ {errorMessage}</span>
+          </div>
+        )}
+
+        {successStatus && (
+          <div className="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-3xl flex items-center justify-between gap-4 animate-bounce-y text-emerald-700 font-black text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-500/10">
+            <div className="flex items-center gap-4">
+              <span className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center">✓</span>
+              <span>{successStatus}</span>
+            </div>
           </div>
         )}
 

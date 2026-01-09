@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Güncelleme: algo_report ve diğer eksik alanları zorunlu olarak ekle
+    // Şema Güncelleme
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -53,11 +53,6 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `.catch(e => console.error('Schema Sync Error:', e.message));
-
-    // Eksik sütunlar için tekil migrationlar
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`.catch(() => {});
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;`.catch(() => {});
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;`.catch(() => {});
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
@@ -107,20 +102,20 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      if (body.report) {
-        await sql`
-          UPDATE candidates SET 
-            report = ${JSON.stringify(body.report)}, 
-            algo_report = ${JSON.stringify(body.algoReport || null)}, 
-            status = ${body.status}, 
-            updated_at = ${now} 
-          WHERE id = ${body.id}
-        `;
-      } else if (body.interviewSchedule) {
-        await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
-      } else {
-        await sql`UPDATE candidates SET status = ${body.status}, admin_notes = ${body.adminNotes || null}, updated_at = ${now} WHERE id = ${body.id}`;
-      }
+      // Dinamik Güncelleme Sorgusu
+      // Önceki if-else blokları yerine her zaman tüm nesneyi baz alan kapsamlı bir güncelleme yapıyoruz
+      await sql`
+        UPDATE candidates SET 
+          status = ${body.status},
+          admin_notes = ${body.adminNotes || null},
+          report = ${body.report ? JSON.stringify(body.report) : null},
+          algo_report = ${body.algoReport ? JSON.stringify(body.algoReport) : null},
+          interview_schedule = ${body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null},
+          cv_data = ${body.cvData ? JSON.stringify(body.cvData) : null},
+          updated_at = ${now}
+        WHERE id = ${body.id}
+      `;
+
       return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 200, headers });
     }
 
