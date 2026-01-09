@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tablo şemasını ve kolon güncellemesini sağlama al
+    // Şema Güncelleme: algo_report ve diğer eksik alanları zorunlu olarak ekle
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -47,13 +47,15 @@ export default async function handler(request: Request) {
         admin_notes TEXT,
         interview_schedule JSONB,
         report JSONB,
+        algo_report JSONB,
         cv_data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `.catch(e => console.error('Schema Sync Error:', e.message));
 
-    // Migration: Eksik kolonları ekle
+    // Eksik sütunlar için tekil migrationlar
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`.catch(() => {});
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;`.catch(() => {});
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;`.catch(() => {});
 
@@ -75,6 +77,7 @@ export default async function handler(request: Request) {
         adminNotes: row.admin_notes || '',
         interviewSchedule: row.interview_schedule || null,
         report: row.report || null,
+        algoReport: row.algo_report || null,
         cvData: row.cv_data || null,
         timestamp: new Date(row.updated_at || row.created_at).getTime()
       }));
@@ -96,17 +99,6 @@ export default async function handler(request: Request) {
           ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
           ${JSON.stringify(body.cvData || null)}, ${now}
         )
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name,
-          email = EXCLUDED.email,
-          phone = EXCLUDED.phone,
-          age = EXCLUDED.age,
-          gender = EXCLUDED.gender,
-          branch = EXCLUDED.branch,
-          experience_years = EXCLUDED.experience_years,
-          status = EXCLUDED.status,
-          answers = EXCLUDED.answers,
-          updated_at = ${now}
       `;
       return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 201, headers });
     }
@@ -116,7 +108,14 @@ export default async function handler(request: Request) {
       const now = new Date().toISOString();
       
       if (body.report) {
-        await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, algo_report = ${JSON.stringify(body.algoReport || null)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
+        await sql`
+          UPDATE candidates SET 
+            report = ${JSON.stringify(body.report)}, 
+            algo_report = ${JSON.stringify(body.algoReport || null)}, 
+            status = ${body.status}, 
+            updated_at = ${now} 
+          WHERE id = ${body.id}
+        `;
       } else if (body.interviewSchedule) {
         await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
       } else {

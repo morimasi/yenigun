@@ -17,15 +17,35 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [activeTab, setActiveTab] = useState<'analysis' | 'info' | 'admin'>('analysis');
   const [analysisMode, setAnalysisMode] = useState<'hybrid' | 'ai' | 'algo'>('hybrid');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
+    setErrorMessage(null);
     try {
+      // 1. Algoritmik Analiz (Deterministik)
       const algoReport = calculateAlgorithmicAnalysis(candidate);
+      
+      // 2. AI Analiz (Gemini 3 Flash - Multimodal Akademi Modu)
       const aiReport = await generateCandidateAnalysis(candidate);
-      onUpdate({ ...candidate, report: aiReport, algoReport });
-    } catch (e) {
-      alert("Analiz motoru hatası. Gemini API bağlantısını kontrol edin.");
+      
+      // 3. Veritabanı Güncelleme
+      const updatedCandidate = { 
+        ...candidate, 
+        report: aiReport, 
+        algoReport,
+        updated_at: new Date().toISOString()
+      };
+      
+      await onUpdate(updatedCandidate);
+      setAnalysisMode('hybrid');
+    } catch (e: any) {
+      console.error("Analiz Akış Hatası:", e);
+      // Hata mesajını daha anlaşılır kıl
+      const msg = e.message?.includes("fetch") 
+        ? "Gemini API bağlantısı kurulamadı. İnternet bağlantınızı veya API anahtarınızı kontrol edin."
+        : e.message || "Analiz sırasında teknik bir sorun oluştu.";
+      setErrorMessage(msg);
     } finally {
       setIsAnalysing(false);
     }
@@ -119,7 +139,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
               isAnalysing ? 'bg-slate-200 text-slate-500 animate-pulse' : 'bg-orange-600 text-white hover:bg-slate-900'
             }`}
           >
-            {isAnalysing ? 'Analiz Sürüyor...' : 'Motorları Tetikle'}
+            {isAnalysing ? 'Analiz Sürüyor...' : 'Akademi Motoru Tetikle'}
           </button>
           <button 
             onClick={onDelete}
@@ -130,10 +150,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         </div>
       </div>
 
+      {/* Error Message Display */}
+      {errorMessage && (
+        <div className="mx-10 mt-6 p-6 bg-rose-50 border-2 border-rose-100 rounded-3xl flex items-center gap-4 animate-shake">
+          <div className="w-10 h-10 bg-rose-600 rounded-full flex items-center justify-center text-white font-black">!</div>
+          <div className="flex-1">
+             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor Hatası Tespit Edildi</p>
+             <p className="text-xs font-bold text-rose-900 mt-1">{errorMessage}</p>
+          </div>
+          <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-4">KAPAT</button>
+        </div>
+      )}
+
       {/* Tabs Nav */}
       <div className="flex bg-white border-b border-slate-50 px-10 no-print">
         {[
-          { id: 'analysis', label: 'Analiz Raporu' },
+          { id: 'analysis', label: 'Akademik Rapor' },
           { id: 'info', label: 'Başvuru Dosyası' },
           { id: 'admin', label: 'Mülakat & Karar' }
         ].map(tab => (
@@ -160,7 +192,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                     <div className="bg-slate-50 p-2 rounded-2xl flex gap-1 border border-slate-100">
                       {[
                         { id: 'hybrid', label: 'Hibrid Analiz' },
-                        { id: 'ai', label: 'AI Modeli' },
+                        { id: 'ai', label: 'AI Modeli (Flash 3)' },
                         { id: 'algo', label: 'ALGO Modeli' }
                       ].map(mode => (
                         <button
@@ -187,7 +219,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <svg className="w-8 h-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
-                  <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-xs">Derinlemesine Analiz Bekleniyor</p>
+                  <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-xs">Derinlemesine Akademi Analizi Bekleniyor</p>
                   <button onClick={handleRunAnalysis} className="mt-8 text-orange-600 font-black text-[10px] uppercase border-b-2 border-orange-200 pb-1">Motorları Tetikle</button>
                 </div>
               )}
@@ -215,7 +247,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
 
         {activeTab === 'admin' && (
           <div className="space-y-12 animate-fade-in pb-20 no-print">
-             {/* Admin tools content as previously defined */}
              <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
               <section className="space-y-8">
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Statü Yönetimi</h4>
@@ -277,7 +308,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                       type="time" required
                       className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-600 transition-all text-white"
                       value={candidate.interviewSchedule?.time || ''}
-                      onChange={e => onUpdate({...candidate, interviewSchedule: { ...candidate.interviewSchedule!, time: e.target.value, date: candidate.interviewSchedule?.date || '', location: 'Yeni Gün Akademi Merkez Bina', method: 'Yüz Yüze', isNotificationSent: false }})}
+                      onChange={e => onUpdate({...candidate, interviewSchedule: { ...candidate.interviewSchedule!, time: e.target.value, date: candidate.interviewSchedule?.date || '', location: 'Yeni Gün Akademi Merkez Bina', method: 'Yüz Jüzze', isNotificationSent: false }})}
                     />
                   </div>
                   <div className="flex items-end">

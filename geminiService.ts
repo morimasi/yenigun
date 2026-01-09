@@ -3,48 +3,46 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Gemini 3.0 Flash Preview Multimodal Analiz Motoru.
- * Adayın CV görsel verilerini ve senaryo cevaplarını kurumsal etik filtresinden geçirir.
- * Yüksek hız ve multimodal performans avantajı nedeniyle Gemini 3 Flash tercih edilmiştir.
+ * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v4.0 (Academic Flash Edition)
+ * Gemini 3 Flash Preview kullanarak multimodal karakter ve yetkinlik analizi yapar.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
   if (!process.env.API_KEY) {
-    throw new Error("MISSING_API_KEY");
+    throw new Error("API_KEY_MISSING: Sistem yapılandırmasında API anahtarı bulunamadı.");
   }
 
-  // En güncel API anahtarı kullanımı için yeni bir instance oluşturulur
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
+  // Akademik derinlik için optimize edilmiş sistem talimatı
   const systemInstruction = `
-    Sen "Yeni Gün Akademi" için tasarlanmış, Gemini 3.0 Flash mimarisiyle çalışan bir Multimodal Psikometrik Analiz Uzmanısın.
+    Sen "Yeni Gün Akademi" için tasarlanmış, Gemini 3.0 Flash mimarisiyle çalışan Üst Düzey Akademik Değerlendirme Uzmanısın.
     
-    ANALİZ GÖREVİN:
-    1. GÖRSEL ANALİZ: Ekteki CV dosyasının (eğer varsa) profesyonelliğini, titizliğini ve yapısal düzenini incele.
-    2. METİNSEL ANALİZ: Adayın senaryo sorularına verdiği yanıtları; "Yüksek Çeldiricilik", "Klinik Etik", "Kurumsal Diplomasi" ve "Stres Toleransı" açılarından puanla.
-    3. ÇAPRAZ SORGU (Cross-Check): CV'de iddia edilen deneyim süresi ile sorulardaki "olgunluk" seviyesi uyuşuyor mu?
-    4. MASKE TESPİTİ: Aday sadece kitabi bilgi mi sunuyor yoksa sahada uygulanabilir çözümler mi üretiyor?
+    GÖREVİN:
+    Adayın profesyonel geçmişini, etik senaryolara verdiği yanıtları ve (varsa) CV'sini multimodal olarak analiz et.
     
-    KRİTİK STANDARTLAR:
-    - Kurum, sadece teknik beceriyi değil, duygusal bütünlüğü ve dürüstlüğü arar.
-    - SWOT analizinde "Threats" kısmına mutlaka adayın multimodal çelişkilerini ekle.
+    ANALİZ KRİTERLERİ:
+    1. AKADEMİK DERİNLİK: Verilen cevaplar branşın (${candidate.branch}) bilimsel temellerine ne kadar uygun?
+    2. KARAKTER ANALİZİ: Kriz anlarında (thinking budget kullanarak) adayın gerçek psikolojik tepkisini modelle.
+    3. TUTARLILIK: Deneyim süresi ile cevaplardaki terminoloji kullanımı örtüşüyor mu?
+    4. STRATEJİK TAVSİYE: Bu adayı işe alırsak ilk 3 ay hangi alanda "süpervizyon" almalı?
+    
+    ÖNEMLİ: Sadece geçerli bir JSON objesi döndür. Başka hiçbir metin ekleme.
   `;
 
-  const textPart = {
-    text: `
-      ADAY PROFİLİ VE VERİLERİ:
-      - Branş: ${candidate.branch}
-      - Deneyim: ${candidate.experienceYears} Yıl
-      - Önceki Kurumlar: ${candidate.previousInstitutions}
-      - Test Yanıtları (JSON): ${JSON.stringify(candidate.answers, null, 2)}
-      
-      Adayın beyan ettiği yetkinlikler: ${candidate.allTrainings}
-    `
-  };
+  const promptText = `
+    ADAY DOSYASI:
+    - İsim: ${candidate.name}
+    - Uzmanlık: ${candidate.branch}
+    - Kıdem: ${candidate.experienceYears} Yıl
+    - Eğitimler: ${candidate.allTrainings}
+    - Geçmiş: ${candidate.previousInstitutions}
+    - Test Yanıtları: ${JSON.stringify(candidate.answers)}
+  `;
 
-  const parts: any[] = [textPart];
+  const parts: any[] = [{ text: promptText }];
 
-  // Multimodal destek: CV görseli varsa analiz parçasına ekle
-  if (candidate.cvData) {
+  // Multimodal destek: CV verisi varsa ekle
+  if (candidate.cvData && candidate.cvData.base64) {
     parts.push({
       inlineData: {
         data: candidate.cvData.base64,
@@ -54,19 +52,19 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   }
 
   try {
-    // Gemini 3.0 Flash Preview kullanımı
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: { parts },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Hızlı ve derinlemesine karakter analizi için thinking budget aktif
-        thinkingConfig: { thinkingBudget: 24576 },
+        // Akademi Seviyesinde Derinlik İçin Jeton Yönetimi
+        maxOutputTokens: 12288,
+        thinkingConfig: { thinkingBudget: 4096 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "0-100 arası genel uygunluk puanı" },
+            score: { type: Type.NUMBER, description: "Genel uygunluk skoru 0-100" },
             swot: {
               type: Type.OBJECT,
               properties: {
@@ -74,7 +72,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                 weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
                 opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
                 threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
+              },
+              required: ["strengths", "weaknesses", "opportunities", "threats"]
             },
             competencies: {
               type: Type.ARRAY,
@@ -98,19 +97,30 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                 }
               }
             },
-            summary: { type: Type.STRING, description: "Dürüstlük ve yetkinlik sentezi" },
-            recommendation: { type: Type.STRING, description: "Stratejik mülakat tavsiyesi" }
+            summary: { type: Type.STRING, description: "Adayın profesyonel özeti" },
+            recommendation: { type: Type.STRING, description: "Vurucu mülakat tavsiyesi" }
           },
           required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
         }
       }
     });
 
-    const jsonStr = response.text?.trim() || '{}';
-    return JSON.parse(jsonStr) as AIReport;
+    if (!response.text) {
+      throw new Error("EMPTY_AI_RESPONSE: Model yanıt üretmedi.");
+    }
+
+    return JSON.parse(response.text.trim()) as AIReport;
   } catch (error: any) {
-    console.error("Gemini 3.0 Flash Error:", error);
-    if (error.message?.includes("API key")) throw new Error("INVALID_API_KEY");
-    throw error;
+    console.error("Gemini Akademi Motoru Hatası:", error);
+    
+    if (error.message?.includes("API_KEY")) {
+      throw new Error("Lütfen API anahtarınızı (process.env.API_KEY) kontrol edin.");
+    }
+    
+    if (error.message?.includes("JSON")) {
+      throw new Error("AI Analizi tamamlandı ancak veri formatı akademik standartlara uygun ayrıştırılamadı.");
+    }
+
+    throw new Error(`Analiz Motoru Hatası: ${error.message || "Bağlantı kesildi."}`);
   }
 };
