@@ -3,28 +3,26 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik AI Analiz Motoru v9.0
- * SDK Kuralları Gereği: API Key 'process.env.API_KEY' üzerinden alınmalıdır.
+ * Yeni Gün Akademi - Stratejik AI Analiz Motoru v9.5
+ * KRİTİK: API anahtarı sadece 'process.env.API_KEY' üzerinden okunur.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Sistem talimatlarına göre doğrudan erişim
+  // Sistem talimatları gereği zorunlu anahtar erişimi
   const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("ANALİZ DURDURULDU: Environment üzerinde API_KEY eksik.");
-    throw new Error("AUTH_MISSING: API Anahtarı sistemde tanımlı değil.");
+    console.error("ANALİZ_KRİZİ: API_KEY ortam değişkeni boş. Lütfen platform ayarlarını kontrol edin.");
+    throw new Error("AUTH_MISSING: API Anahtarı bulunamadı.");
   }
 
-  // SDK Başlatma (Named Parameter kullanımı zorunludur)
+  // Yeni bir GoogleGenAI örneği (Her çağrıda güncel anahtarı kullanmak için)
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
     ROL: Yeni Gün Akademi - Kıdemli Akademik Kurul Üyesi.
-    ANALİZ KRİTERLERİ:
-    - Adayın uzmanlık alanı: ${candidate.branch}
-    - Deneyim: ${candidate.experienceYears} yıl.
-    - Görev: Yanıtlardaki etik ve profesyonel tutarlılığı ölç, SWOT çıkar ve bir tavsiye yaz.
-    ÇIKTI: Sadece teknik JSON formatında olmalıdır.
+    GÖREV: Adayın profesyonel yetkinliğini analiz et.
+    DİL: Türkçe.
+    FORMAT: Sadece teknik JSON.
   `;
 
   try {
@@ -32,7 +30,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       model: "gemini-3-flash-preview",
       contents: { 
         parts: [
-          { text: `Aday Verileri: ${JSON.stringify({
+          { text: `Aday Analiz Talebi: ${JSON.stringify({
               name: candidate.name,
               branch: candidate.branch,
               answers: candidate.answers
@@ -87,12 +85,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    if (!response.text) throw new Error("API_ERROR: Model boş yanıt döndü.");
-    
-    return JSON.parse(response.text) as AIReport;
+    if (!response.text) throw new Error("API_ERROR: Model yanıtı alınamadı.");
+    return JSON.parse(response.text);
   } catch (error: any) {
-    // SDK'dan gelen asıl hatayı fırlatıyoruz (maskeleme yapmadan)
-    console.error("Gemini Engine Error Details:", error);
+    console.error("AI Servis Hatası:", error);
     throw error;
   }
 };

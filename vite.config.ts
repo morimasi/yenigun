@@ -1,23 +1,21 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  build: {
+    // Kullanıcının talebi üzerine chunk size uyarısı 1000kb (1MB) olarak güncellendi.
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-charts': ['recharts'],
+          'vendor-pdf': ['jspdf', 'html2canvas']
         }
       }
-    };
+    }
+  },
+  define: {
+    // Ortam değişkeninin tarayıcı tarafında erişilebilir olmasını sağlar (Gerekirse)
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
+  }
 });
