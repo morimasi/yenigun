@@ -23,13 +23,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
     setIsAnalysing(true);
     setErrorMessage(null);
     try {
-      // 1. Algoritmik Analiz (Deterministik)
+      // 1. Algoritmik Analiz (Hızlı Ön Denetim)
       const algoReport = calculateAlgorithmicAnalysis(candidate);
       
-      // 2. AI Analiz (Gemini 3 Flash - Multimodal Akademi Modu)
+      // 2. AI Analiz (Gemini 3 Flash - Multimodal Akademi Derinliği)
       const aiReport = await generateCandidateAnalysis(candidate);
       
-      // 3. Veritabanı Güncelleme
+      // 3. Veritabanı Senkronizasyonu
       const updatedCandidate = { 
         ...candidate, 
         report: aiReport, 
@@ -40,12 +40,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       await onUpdate(updatedCandidate);
       setAnalysisMode('hybrid');
     } catch (e: any) {
-      console.error("Analiz Akış Hatası:", e);
-      // Hata mesajını daha anlaşılır kıl
-      const msg = e.message?.includes("fetch") 
-        ? "Gemini API bağlantısı kurulamadı. İnternet bağlantınızı veya API anahtarınızı kontrol edin."
-        : e.message || "Analiz sırasında teknik bir sorun oluştu.";
-      setErrorMessage(msg);
+      console.error("Analiz Akış Çökmesi:", e);
+      // "ozel mod" uyarınca derinlemesine hata teşhisi
+      let friendlyError = e.message;
+      if (friendlyError.includes("API_KEY")) friendlyError = "Gemini API Anahtarı eksik veya geçersiz. Lütfen ortam değişkenlerini kontrol edin.";
+      if (friendlyError.includes("fetch")) friendlyError = "Gemini API ile bağlantı kurulamadı. Sunucu zaman aşımına uğramış olabilir.";
+      
+      setErrorMessage(friendlyError);
     } finally {
       setIsAnalysing(false);
     }
@@ -139,7 +140,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
               isAnalysing ? 'bg-slate-200 text-slate-500 animate-pulse' : 'bg-orange-600 text-white hover:bg-slate-900'
             }`}
           >
-            {isAnalysing ? 'Analiz Sürüyor...' : 'Akademi Motoru Tetikle'}
+            {isAnalysing ? 'Akademi Analizi Sürüyor...' : 'Akademi Motoru Tetikle'}
           </button>
           <button 
             onClick={onDelete}
@@ -150,15 +151,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         </div>
       </div>
 
-      {/* Error Message Display */}
+      {/* Error Message Display - Enhanced Diagnostic UI */}
       {errorMessage && (
         <div className="mx-10 mt-6 p-6 bg-rose-50 border-2 border-rose-100 rounded-3xl flex items-center gap-4 animate-shake">
-          <div className="w-10 h-10 bg-rose-600 rounded-full flex items-center justify-center text-white font-black">!</div>
+          <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-rose-200">!</div>
           <div className="flex-1">
-             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor Hatası Tespit Edildi</p>
-             <p className="text-xs font-bold text-rose-900 mt-1">{errorMessage}</p>
+             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor / Bağlantı Hatası Raporlandı</p>
+             <p className="text-sm font-bold text-rose-900 mt-1 leading-snug">{errorMessage}</p>
+             <p className="text-[9px] font-bold text-rose-400 mt-2 uppercase">Lütfen API bağlantısını ve kota limitlerini kontrol edin.</p>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-4">KAPAT</button>
+          <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-6 py-3 hover:bg-rose-100 rounded-xl transition-all">KAPAT</button>
         </div>
       )}
 
@@ -308,7 +310,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                       type="time" required
                       className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-600 transition-all text-white"
                       value={candidate.interviewSchedule?.time || ''}
-                      onChange={e => onUpdate({...candidate, interviewSchedule: { ...candidate.interviewSchedule!, time: e.target.value, date: candidate.interviewSchedule?.date || '', location: 'Yeni Gün Akademi Merkez Bina', method: 'Yüz Jüzze', isNotificationSent: false }})}
+                      onChange={e => onUpdate({...candidate, interviewSchedule: { ...candidate.interviewSchedule!, time: e.target.value, date: candidate.interviewSchedule?.date || '', location: 'Yeni Gün Akademi Merkez Bina', method: 'Yüz Yüze', isNotificationSent: false }})}
                     />
                   </div>
                   <div className="flex items-end">
