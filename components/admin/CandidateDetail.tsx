@@ -16,12 +16,17 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
     setErrorMessage(null);
 
     try {
-      // 1. Yetki Kontrolü
-      const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-      if (!hasKey && !process.env.API_KEY) {
-        await (window as any).aistudio.openSelectKey();
-        // Anahtar seçildikten sonra localstorage'a yedekleyelim (senkronizasyon için)
-        localStorage.setItem('AISTUDIO_LAST_KEY', 'selected');
+      // 1. Yetki Kontrolü - Safe Check (Kritik Hata Düzeltmesi)
+      const aiStudio = (window as any).aistudio;
+      
+      // Eğer window.aistudio varsa ve anahtar seçilmemişse diyaloğu aç
+      if (aiStudio && typeof aiStudio.hasSelectedApiKey === 'function') {
+        const hasKey = await aiStudio.hasSelectedApiKey();
+        if (!hasKey && !process.env.API_KEY) {
+          await aiStudio.openSelectKey();
+          // Seçim başarılı varsayılıp devam edilir (Race condition önlemi)
+          localStorage.setItem('AISTUDIO_LAST_KEY', 'selected');
+        }
       }
 
       // 2. Analiz Akışı
@@ -40,9 +45,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
       console.error("Akademi Motor Hatası:", e);
       let msg = e.message || "Bilinmeyen bir hata oluştu.";
       
-      if (msg.includes("KEY") || msg.includes("403")) {
-        msg = "API Anahtarı Doğrulanamadı. Lütfen sağ üstteki butondan anahtarınızı tekrar seçin ve projenin 'Faturalandırılabilir' (Paid) olduğundan emin olun.";
+      // Hata mesajını kullanıcı dostu hale getir
+      if (msg.includes("AUTH_MISSING") || msg.includes("403")) {
+        msg = "API Anahtarı bulunamadı veya yetkisiz. Lütfen sistem yöneticisinin Vercel/Environment ayarlarına API_KEY eklediğinden emin olun.";
+      } else if (msg.includes("fetch")) {
+        msg = "Ağ bağlantı hatası veya veritabanı senkronizasyon sorunu.";
       }
+      
       setErrorMessage(msg);
     } finally {
       setIsAnalysing(false);
@@ -77,18 +86,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
           <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg">!</div>
           <div className="flex-1">
              <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Akademi Motor / Teknik Arıza</p>
-             <p className="text-sm font-bold text-rose-900 mt-1">{errorMessage}</p>
+             <p className="text-sm font-bold text-rose-900 mt-1 leading-snug">{errorMessage}</p>
           </div>
-          <button 
-            onClick={() => (window as any).aistudio.openSelectKey()}
-            className="bg-white text-slate-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase border border-slate-200 shadow-sm"
-          >
-            ANAHTAR YENİLE
-          </button>
+          {(window as any).aistudio && (
+            <button 
+              onClick={() => (window as any).aistudio.openSelectKey()}
+              className="bg-white text-slate-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase border border-slate-200 shadow-sm"
+            >
+              ANAHTAR YENİLE
+            </button>
+          )}
         </div>
       )}
 
-      {/* Content */}
+      {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-white">
         {(candidate.report || candidate.algoReport) ? (
           <CandidateReport report={candidate.report} algoReport={candidate.algoReport} candidate={candidate} />

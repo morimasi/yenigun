@@ -3,27 +3,24 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v8.0 (Self-Healing)
- * "ozel" mod: Çok katmanlı yetkilendirme ve hata teşhis katmanı.
+ * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v8.1 (Production/Safe Mode)
+ * "ozel" mod: Hata yakalama ve yetkilendirme katmanları stabilize edildi.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // 1. Dinamik Anahtar Yakalama (Runtime Key Discovery)
+  // 1. Dinamik Anahtar Yakalama (Priority: Process Env -> AI Studio Window -> LocalStorage)
   let apiKey = process.env.API_KEY;
 
-  // Eğer process.env boşsa, AI Studio ortamındaki aktif anahtarı zorla çek
   if (!apiKey || apiKey === "undefined") {
     // @ts-ignore
-    if (typeof window !== 'undefined' && window.aistudio) {
-       // Bu noktada API_KEY enjeksiyonu bekleniyor.
-       apiKey = (window as any)._AI_STUDIO_KEY_ || localStorage.getItem('AISTUDIO_LAST_KEY');
-    }
+    const aiStudioKey = typeof window !== 'undefined' ? (window as any)._AI_STUDIO_KEY_ : null;
+    apiKey = aiStudioKey || localStorage.getItem('AISTUDIO_LAST_KEY');
   }
 
-  if (!apiKey) {
-    throw new Error("AUTH_MISSING: Sistem geçerli bir API anahtarı bulamadı. Lütfen sağ üstteki 'Anahtar Seç' diyaloğunu kullanın.");
+  // ÖNEMLİ: Eğer anahtar hala yoksa, sistemi çökertmek yerine kullanıcıyı bilgilendir
+  if (!apiKey || apiKey === "selected") {
+    throw new Error("AUTH_MISSING: Sistem geçerli bir API anahtarı bulamadı. Vercel üzerindeyseniz Settings -> Environment Variables kısmına API_KEY eklediğinizden emin olun.");
   }
 
-  // 2. AI Instance Kurulumu
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
@@ -96,16 +93,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    if (!response.text) throw new Error("EMPTY_RESPONSE: Model boş yanıt döndürdü.");
+    if (!response.text) throw new Error("EMPTY_RESPONSE: Model yanıt vermedi.");
     
     return JSON.parse(response.text) as AIReport;
   } catch (error: any) {
-    console.error("Gemini Teknik Arıza:", error);
+    console.error("Gemini Engine Error:", error);
     
-    // Vercel/Edge Hata Teşhis Mesajları
-    if (error.message?.includes("Safety")) throw new Error("SAFETY_BLOCK: Adayın yanıtları güvenlik filtresine takıldı.");
-    if (error.message?.includes("403") || error.message?.includes("key")) {
-      throw new Error("KEY_EXPIRED: Mevcut API Anahtarı yetkisiz veya süresi dolmuş. Lütfen mülakatçı anahtarını yenileyin.");
+    if (error.message?.includes("403") || error.message?.includes("API key not valid")) {
+      throw new Error("YETKİSİZ_ANAHTAR: Girdiğiniz API anahtarı geçersiz veya kısıtlı. Lütfen Google AI Studio'dan 'Paid Service' aktif bir anahtar alın.");
     }
     throw error;
   }
