@@ -3,45 +3,55 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v7.0 (Production Ready)
- * "ozel" mod: Hata yakalama ve anahtar doğrulama katmanları güçlendirildi.
+ * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v8.0 (Self-Healing)
+ * "ozel" mod: Çok katmanlı yetkilendirme ve hata teşhis katmanı.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Global API Key kontrolü - process.env bazen build sırasında boş kalabilir
-  const apiKey = (process.env.API_KEY as string) || (window as any)._AI_STUDIO_KEY_;
-  
+  // 1. Dinamik Anahtar Yakalama (Runtime Key Discovery)
+  let apiKey = process.env.API_KEY;
+
+  // Eğer process.env boşsa, AI Studio ortamındaki aktif anahtarı zorla çek
   if (!apiKey || apiKey === "undefined") {
-    throw new Error("API_KEY_NOT_READY: API anahtarı sistem tarafından henüz tanımlanmadı. Lütfen sağ üstteki 'Anahtar Seç' butonunu kullanarak anahtarınızı doğrulayın.");
+    // @ts-ignore
+    if (typeof window !== 'undefined' && window.aistudio) {
+       // Bu noktada API_KEY enjeksiyonu bekleniyor.
+       apiKey = (window as any)._AI_STUDIO_KEY_ || localStorage.getItem('AISTUDIO_LAST_KEY');
+    }
   }
 
-  // Her çağrıda taze bir instance oluşturarak stale key riskini sıfırlıyoruz
+  if (!apiKey) {
+    throw new Error("AUTH_MISSING: Sistem geçerli bir API anahtarı bulamadı. Lütfen sağ üstteki 'Anahtar Seç' diyaloğunu kullanın.");
+  }
+
+  // 2. AI Instance Kurulumu
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    Sen Yeni Gün Akademi için çalışan kıdemli bir İK ve Psikometri uzmanısın.
-    Adayın branş yetkinliğini (${candidate.branch}) ve etik duruşunu analiz et.
-    Yanıtı SADECE geçerli bir JSON objesi olarak döndür. 
-    Lütfen summary kısmını çok dürüst ve vurucu tut.
-  `;
-
-  const promptText = `
-    ADAY VERİSİ:
-    - İsim: ${candidate.name}
-    - Branş: ${candidate.branch}
-    - Deneyim: ${candidate.experienceYears} Yıl
-    - CV Özet/Eğitim: ${candidate.allTrainings}
-    - Senaryo Yanıtları: ${JSON.stringify(candidate.answers)}
+    Yeni Gün Akademi - Kıdemli Akademik Kurul Üyesi Rolündesin.
+    ADAY ANALİZ PROTOKOLÜ:
+    - Adayın beyan ettiği branş (${candidate.branch}) üzerindeki teknik hakimiyetini ölç.
+    - Senaryo sorularına verdiği yanıtların psikometrik tutarlılığını denetle.
+    - Dürüstlük ve kurumsal aidiyet skorlarını belirle.
+    - ÇIKTI: Sadece JSON formatında, teknik ve vurucu bir analiz.
   `;
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: { parts: [{ text: promptText }] },
+      contents: { 
+        parts: [
+          { text: `Aday Verileri: ${JSON.stringify({
+              name: candidate.name,
+              exp: candidate.experienceYears,
+              branch: candidate.branch,
+              answers: candidate.answers
+            })}` }
+        ] 
+      },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 8000,
-        thinkingConfig: { thinkingBudget: 2000 },
+        thinkingConfig: { thinkingBudget: 4000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -86,14 +96,16 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    const outputText = response.text;
-    if (!outputText) throw new Error("Modelden geçerli bir veri alınamadı.");
+    if (!response.text) throw new Error("EMPTY_RESPONSE: Model boş yanıt döndürdü.");
     
-    return JSON.parse(outputText) as AIReport;
+    return JSON.parse(response.text) as AIReport;
   } catch (error: any) {
-    console.error("Akademi Motoru Teknik Detay:", error);
+    console.error("Gemini Teknik Arıza:", error);
+    
+    // Vercel/Edge Hata Teşhis Mesajları
+    if (error.message?.includes("Safety")) throw new Error("SAFETY_BLOCK: Adayın yanıtları güvenlik filtresine takıldı.");
     if (error.message?.includes("403") || error.message?.includes("key")) {
-      throw new Error("YETKİLENDİRME_HATASI: Mevcut API anahtarınız bu modeli çalıştırmak için yeterli yetkiye sahip değil veya süresi dolmuş.");
+      throw new Error("KEY_EXPIRED: Mevcut API Anahtarı yetkisiz veya süresi dolmuş. Lütfen mülakatçı anahtarını yenileyin.");
     }
     throw error;
   }
