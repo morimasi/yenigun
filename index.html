@@ -39,8 +39,20 @@
             body { background: white !important; }
             nav, aside, button, .no-print { display: none !important; }
             #root, main { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
-            .print-container { padding: 40px !important; border: none !important; box-shadow: none !important; }
-            .page-break { page-break-after: always; }
+            .print-container { 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                border: none !important; 
+                box-shadow: none !important;
+                width: 210mm !important;
+            }
+            .page-break { 
+                page-break-before: always !important;
+                margin-top: 20px;
+            }
+            section, .swot-card, .chart-container {
+                page-break-inside: avoid !important;
+            }
         }
     </style>
     <script type="importmap">
