@@ -72,7 +72,8 @@ const App: React.FC = () => {
     await storageService.saveCandidate(newCandidate);
     setCandidates(prev => [newCandidate, ...prev]);
 
-    generateCandidateAnalysis(newCandidate).then(async (report) => {
+    // Güncel config ile analiz başlat
+    generateCandidateAnalysis(newCandidate, config).then(async (report) => {
       if (report) {
         const final = { ...newCandidate, report };
         await storageService.updateCandidate(final);

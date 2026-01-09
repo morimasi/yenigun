@@ -1,11 +1,12 @@
 
 import React, { useState, useMemo } from 'react';
-import { Candidate, Branch, Gender } from '../../types';
+import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
 import StatusBadge from './StatusBadge';
 
 interface PipelineViewProps {
   candidates: Candidate[];
+  config: GlobalConfig;
   onUpdateCandidate: (c: Candidate) => void;
   onDeleteCandidate: (id: string) => void;
 }
@@ -13,7 +14,7 @@ interface PipelineViewProps {
 type SortKey = 'score' | 'age' | 'experience' | 'timestamp' | 'name';
 type SortOrder = 'asc' | 'desc';
 
-const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandidate, onDeleteCandidate }) => {
+const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
@@ -159,6 +160,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
         {selectedCandidate ? (
           <CandidateDetail 
             candidate={selectedCandidate}
+            config={config}
             onUpdate={onUpdateCandidate}
             onDelete={() => { if (confirm('Silmek istediğinize emin misiniz?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
           />

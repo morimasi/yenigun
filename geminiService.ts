@@ -1,11 +1,12 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Candidate, AIReport } from "./types";
+import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v14.0 (OZEL - High Distractor Sensitivity)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v15.0 (OZEL - Deep Tone Sensitivity)
+ * Gemini 3 Pro Preview kullanarak karmaşık muhakeme ve dinamik düşünme bütçesi uygular.
  */
-export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
+export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
@@ -14,54 +15,85 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
 
   const ai = new GoogleGenAI({ apiKey });
   
+  // AI Tonuna göre dinamik Düşünme Bütçesi (Thinking Budget) belirleme
+  const toneSettings = {
+    strict: {
+      budget: 32768,
+      instruction: `
+        TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ.
+        PERSPEKTİF: Adayın her kelimesinde bir tutarsızlık, "CV şişirme" veya "sosyal beğenirlik maskesi" ara. 
+        KURAL: En küçük etik şüpheyi devasa bir risk olarak raporla. Merhamet gösterme; sadece ham liyakat ve kusursuz tutarlılık odaklı ol.
+        HEDEF: Kurumu korumak için en zorlu filtreyi uygula.
+      `
+    },
+    balanced: {
+      budget: 24576,
+      instruction: `
+        TON: DENGELİ, PROFESYONEL, OBJEKTİF.
+        PERSPEKTİF: Adayın güçlü yanlarını ve risklerini eşit ağırlıkta tart. 
+        KURAL: Kanıta dayalı analiz yap. Verilen cevapları mesleki standartlarla kıyasla.
+        HEDEF: Kurumun ihtiyacı olan ideal uzman profilini rasyonel verilerle tespit et.
+      `
+    },
+    empathetic: {
+      budget: 16384,
+      instruction: `
+        TON: GELİŞİM ODAKLI, EMPATİK, KOÇLUK YAKLAŞIMI.
+        PERSPEKTİF: Adayın potansiyeline, öğrenme çevikliğine ve "işlenmemiş elmas" olup olmadığına bak.
+        KURAL: Eksikleri "geliştirilebilir alanlar" olarak kodla. Adayın kuruma katacağı kültürel değeri ve vizyonu ön plana çıkar.
+        HEDEF: Uzun vadeli bağlılık ve gelişim potansiyeli yüksek adayları bul.
+      `
+    }
+  };
+
+  const selectedTone = toneSettings[config.aiTone] || toneSettings.balanced;
+
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Yüksek Kurul Üyesi ve Kıdemli Klinik Süpervizör.
-    GÖREV: Adayın "Liyakat, Pedagojik Derinlik ve Etik Bütünlüğünü" analiz et.
+    ROL: Yeni Gün Akademi Üst Kurul Bilimsel Süpervizörü.
+    GÖREV: Adayın akademik liyakatini ve profesyonel kimliğini analiz et.
     DİL: Türkçe.
     
-    ÖZEL TALİMAT:
-    Sorular "Yüksek Çeldiricili" (High Distractor) olarak kurgulanmıştır. Adayın cevaplarında şu 3 kritik unsuru ara:
-    1. Sosyal Beğenirlik Sapması: Aday sadece "duymak istediğimiz" ideal cevapları mı veriyor (maske)? 
-    2. Klinik Soğukkanlılık: Kriz ve kısıtlı kaynak anlarında rasyonel kalabiliyor mu?
-    3. Etik Katılık vs. Esneklik: Kurum kuralları ile çocuk menfaati arasındaki ince çizgiyi nasıl yönetiyor?
+    ${selectedTone.instruction}
 
-    ANALİZ MATRİSİ (8 TEMEL BOYUT):
-    - Klinik Muhakeme: Gri alanlardaki vaka yönetimi.
-    - Etik Bütünlük: Hediye, kurum dışı ders ve veri dürüstlüğü.
-    - Pedagojik Derinlik: Bilimsel güncelliği takip etme.
-    - Duygusal Dayanıklılık: İkincil travma ve tahammül sınırları.
-    - Kriz Yönetimi: Acil durum ve saldırganlık anlarındaki refleks.
-    - Veli İletişimi: Sınır ihlallerine karşı profesyonel duruş.
-    - Kurumsal Aidiyet: Hiyerarşi ve raporlama dürüstlüğü.
-    - Öğrenme Çevikliği: Özeleştiri kapasitesi ve süpervizyon açıklığı.
+    STRATEJİK AĞIRLIKLAR (Bu oranlara göre skorlama yap):
+    - Etik Bütünlük: %${config.aiWeights.ethics}
+    - Klinik Muhakeme: %${config.aiWeights.clinical}
+    - Deneyim/Donanım: %${config.aiWeights.experience}
+    - Kurumsal Uyum: %${config.aiWeights.fit}
 
-    FORMAT: Kesinlikle geçerli JSON. Puanlamayı yaparken çeldirici cevaplara düşen adayların puanını kır.
+    ANALİZ MATRİSİ:
+    1. Sosyal Beğenirlik Analizi: Aday idealize edilmiş cevaplar mı veriyor? (Ör: "Hiçbirini ihmal etmem" diyenlerin puanını kır).
+    2. Klinik Derinlik: Spesifik metodoloji (ABA, Denver vb.) bilgisi yüzeysel mi yoksa pratik mi?
+    3. Etik Katılık: Kurum etiği ile veli memnuniyeti arasındaki çatışmayı nasıl çözüyor?
+
+    FORMAT: Kesinlikle geçerli JSON.
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents: { 
         parts: [
-          { text: `Aday Profili ve Cevapları: ${JSON.stringify({
+          { text: `Aday Profili: ${JSON.stringify({
               name: candidate.name,
               branch: candidate.branch,
               experience: candidate.experienceYears,
               trainings: candidate.allTrainings,
-              answers: candidate.answers
+              answers: candidate.answers,
+              weights: config.aiWeights
             })}` }
         ] 
       },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: selectedTone.budget },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Genel liyakat skoru" },
-            summary: { type: Type.STRING },
-            recommendation: { type: Type.STRING },
+            score: { type: Type.NUMBER, description: "Genel liyakat skoru (0-100)" },
+            summary: { type: Type.STRING, description: "Kritik icra özeti" },
+            recommendation: { type: Type.STRING, description: "Mülakat kararı ve temel tavsiye" },
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
@@ -84,7 +116,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
             },
             competencies: {
               type: Type.ARRAY,
-              description: "8 Boyutlu Yetkinlik Matrisi",
               items: {
                 type: Type.OBJECT,
                 properties: {
@@ -102,7 +133,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     if (!response.text) throw new Error("Motor yanıt veremedi.");
     return JSON.parse(response.text);
   } catch (error) {
-    console.error("AI Analiz Hatası:", error);
+    console.error("AI Analiz Hatası (Dinamik Ton):", error);
     throw error;
   }
 };

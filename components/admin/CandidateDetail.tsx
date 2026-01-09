@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Candidate } from '../../types';
+import { Candidate, GlobalConfig } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import CandidateReport from '../CandidateReport';
 import StatusBadge from './StatusBadge';
 
-const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, onUpdate, onDelete }) => {
+const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, config, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
@@ -26,7 +26,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
     setErrorMessage(null);
     try {
       const algoReport = calculateAlgorithmicAnalysis(candidate);
-      const aiReport = await generateCandidateAnalysis(candidate);
+      // Güncel config ile analiz başlat
+      const aiReport = await generateCandidateAnalysis(candidate, config);
       const updated = { ...candidate, report: aiReport, algoReport, updated_at: new Date().toISOString() };
       onUpdate(updated);
       setSuccessStatus("Analiz Başarıyla Tamamlandı");
@@ -79,7 +80,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, onUpdate: (c: Candidate)
         updated_at: new Date().toISOString()
       };
 
-      // BU KRİTİK: onUpdate çağrısı artık veritabanında Dynamic Patch tetikleyecek
       onUpdate(updatedCandidate);
       
       setSuccessStatus(emailSuccess ? "Mülakat Planlandı ve Bildirildi" : "Takvime İşlendi (E-posta Hatası)");
