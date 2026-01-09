@@ -66,10 +66,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         throw new Error();
       }
     } catch {
-      alert("E-posta gönderimi sırasında bir hata oluştu. Lütfen servis sağlayıcınızı kontrol edin.");
+      alert("E-posta gönderimi sırasında bir hata oluştu.");
     } finally {
       setIsSendingEmail(false);
     }
+  };
+
+  const addToPlanner = () => {
+    if (!candidate.report && !candidate.algoReport) {
+      alert("Lütfen önce analizi tamamlayınız.");
+      return;
+    }
+    handleStatusChange('interview_scheduled');
+    setActiveTab('admin');
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
   return (
@@ -91,6 +101,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         </div>
         
         <div className="flex gap-3 w-full xl:w-auto">
+          {candidate.report && (
+             <button 
+              onClick={addToPlanner}
+              className="flex-1 xl:flex-none px-8 py-5 rounded-[1.8rem] bg-emerald-600 text-white font-black text-[11px] uppercase tracking-widest transition-all shadow-xl hover:bg-slate-900 hover:-translate-y-1"
+             >
+               Planlayıcıya Ekle
+             </button>
+          )}
           <button 
             onClick={handleRunAnalysis}
             disabled={isAnalysing}
@@ -98,13 +116,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
               isAnalysing ? 'bg-slate-200 text-slate-500 animate-pulse' : 'bg-orange-600 text-white hover:bg-slate-900'
             }`}
           >
-            {isAnalysing ? 'Analiz Ediliyor...' : 'Motorları Çalıştır'}
-          </button>
-          <button 
-            onClick={onDelete}
-            className="p-5 rounded-[1.8rem] bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all border border-rose-100"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            {isAnalysing ? 'Analiz Ediliyor...' : 'Motorları Tetikle'}
           </button>
         </div>
       </div>
@@ -112,9 +124,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       {/* Tabs Nav */}
       <div className="flex bg-white border-b border-slate-50 px-10">
         {[
-          { id: 'analysis', label: 'Stratejik Analiz' },
+          { id: 'analysis', label: 'Derin Analiz Raporu' },
           { id: 'info', label: 'Başvuru Dosyası' },
-          { id: 'admin', label: 'Operasyonel Karar' }
+          { id: 'admin', label: 'Karar & Planlama' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -162,7 +174,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <svg className="w-8 h-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
-                  <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-xs">Analiz Bekleniyor</p>
+                  <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-xs">Derin Analiz Gerekiyor</p>
                   <button onClick={handleRunAnalysis} className="mt-8 text-orange-600 font-black text-[10px] uppercase border-b-2 border-orange-200 pb-1">Motorları Tetikle</button>
                 </div>
               )}
