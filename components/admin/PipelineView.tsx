@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, Branch, Gender } from '../../types';
 import CandidateDetail from './CandidateDetail';
 import StatusBadge from './StatusBadge';
@@ -24,18 +24,18 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
   });
 
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }[]>([
-    { key: 'score', order: 'desc' }
+    { key: 'timestamp', order: 'desc' }
   ]);
+
+  // Arama inputu değiştiğinde anında filtreye yansıt (Throttle/Debounce yerine direkt sync)
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, search: searchInput }));
+  }, [searchInput]);
 
   const selectedCandidate = useMemo(() => 
     candidates.find(c => c.id === selectedId), 
     [candidates, selectedId]
   );
-
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    setFilters(prev => ({ ...prev, search: searchInput }));
-  };
 
   const clearFilters = () => {
     setSearchInput('');
@@ -48,47 +48,43 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
   };
 
   const filteredAndSortedCandidates = useMemo(() => {
-    if (!candidates || !Array.isArray(candidates)) return [];
+    // Veri yoksa boş dön
+    if (!candidates || candidates.length === 0) return [];
 
     let result = candidates.filter(c => {
-      // Güvenli arama kontrolü
-      const candidateName = (c.name || '').toLocaleLowerCase('tr-TR');
-      const searchTerm = (filters.search || '').toLocaleLowerCase('tr-TR');
-      const matchesSearch = searchTerm === '' || candidateName.includes(searchTerm);
+      if (!c) return false;
 
-      const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
-      const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
-      const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
+      // 1. İsim Araması (Safe string matching)
+      const name = (c.name || '').toLocaleLowerCase('tr-TR').trim();
+      const term = (filters.search || '').toLocaleLowerCase('tr-TR').trim();
+      const matchesSearch = term === '' || name.includes(term);
+
+      // 2. Branş Filtresi (Null-safe)
+      const matchesBranch = filters.branches.length === 0 || 
+                            (c.branch && filters.branches.includes(c.branch as any));
+
+      // 3. Statü Filtresi (Null-safe)
+      const matchesStatus = filters.statuses.length === 0 || 
+                            (c.status && filters.statuses.includes(c.status as any));
+
+      // 4. Cinsiyet Filtresi (Null-safe)
+      const matchesGender = filters.genders.length === 0 || 
+                            (c.gender && filters.genders.includes(c.gender as any));
       
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
-    // Çoklu sıralama mantığı
+    // Sıralama
     return result.sort((a, b) => {
       for (const { key, order } of sortConfig) {
         let valA: any, valB: any;
         
         switch (key) {
-          case 'score': 
-            valA = a.report?.score ?? 0; 
-            valB = b.report?.score ?? 0; 
-            break;
-          case 'age': 
-            valA = a.age ?? 0; 
-            valB = b.age ?? 0; 
-            break;
-          case 'experience': 
-            valA = a.experienceYears ?? 0; 
-            valB = b.experienceYears ?? 0; 
-            break;
-          case 'name': 
-            valA = (a.name || '').toLocaleLowerCase('tr-TR'); 
-            valB = (b.name || '').toLocaleLowerCase('tr-TR'); 
-            break;
-          default: 
-            valA = a.timestamp ?? 0; 
-            valB = b.timestamp ?? 0; 
-            break;
+          case 'score': valA = a.report?.score ?? -1; valB = b.report?.score ?? -1; break;
+          case 'age': valA = a.age ?? 0; valB = b.age ?? 0; break;
+          case 'experience': valA = a.experienceYears ?? 0; valB = b.experienceYears ?? 0; break;
+          case 'name': valA = (a.name || '').toLocaleLowerCase('tr-TR'); valB = (b.name || '').toLocaleLowerCase('tr-TR'); break;
+          default: valA = a.timestamp ?? 0; valB = b.timestamp ?? 0; break;
         }
 
         if (valA !== valB) {
@@ -113,174 +109,101 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
   };
 
   const handleSort = (key: SortKey) => {
-    setSortConfig(prev => {
-      const existing = prev.find(s => s.key === key);
-      if (existing) {
-        return [{ key, order: existing.order === 'asc' ? 'desc' : 'asc' }];
-      }
-      return [{ key, order: 'desc' }];
-    });
+    setSortConfig([{ key, order: sortConfig[0]?.order === 'desc' ? 'asc' : 'desc' }]);
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-14rem)]">
-      {/* Sol Panel: Filtreleme Kontrolleri */}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-14rem)] min-h-[600px]">
+      {/* Sol Panel: Filtreleme ve Liste */}
       <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-hidden">
-        <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-slate-100 space-y-6 flex flex-col max-h-full">
-          {/* Arama Alanı ve Butonu */}
-          <form onSubmit={handleSearchSubmit} className="space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <input 
-                  type="text" 
-                  placeholder="İsim ile ara..." 
-                  className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-100 transition-all pl-12"
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                />
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
-              <button 
-                type="submit"
-                className="px-6 bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg"
-              >
-                Ara
-              </button>
-            </div>
-            {(filters.search || filters.branches.length > 0 || filters.statuses.length > 0 || filters.genders.length > 0) && (
-              <button 
-                type="button"
-                onClick={clearFilters}
-                className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all"
-              >
-                Filtreleri Temizle
-              </button>
-            )}
-          </form>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2">
-            {/* Branş Filtresi */}
-            <div>
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-1">Branşlar</h5>
-              <div className="flex flex-wrap gap-2">
-                {Object.values(Branch).map(b => (
-                  <button
-                    key={b}
-                    onClick={() => toggleFilter('branches', b)}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
-                      filters.branches.includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-50 text-slate-500 hover:border-orange-100'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Cinsiyet Filtresi */}
-            <div>
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-1">Cinsiyet</h5>
-              <div className="flex gap-2">
-                {['Kadın', 'Erkek', 'Belirtilmemiş'].map(g => (
-                  <button
-                    key={g}
-                    onClick={() => toggleFilter('genders', g)}
-                    className={`flex-1 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
-                      filters.genders.includes(g as Gender) ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-50 text-slate-500 hover:border-orange-100'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sıralama Seçenekleri */}
-            <div>
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-1">Akıllı Sıralama</h5>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: 'score', label: 'Analiz Puanı' },
-                  { id: 'experience', label: 'Deneyim' },
-                  { id: 'age', label: 'Yaş' },
-                  { id: 'timestamp', label: 'Tarih' }
-                ].map(sort => (
-                  <button
-                    key={sort.id}
-                    onClick={() => handleSort(sort.id as SortKey)}
-                    className={`flex items-center justify-between px-5 py-4 rounded-2xl border-2 transition-all ${
-                      sortConfig[0]?.key === sort.id ? 'bg-orange-50 border-orange-600 text-orange-900' : 'bg-white border-slate-50 text-slate-500 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-widest">{sort.label}</span>
-                    {sortConfig[0]?.key === sort.id && (
-                      <svg className={`w-4 h-4 transform transition-transform ${sortConfig[0].order === 'asc' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Kontrol Paneli */}
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col gap-4">
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Aday ara..." 
+              className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-100 transition-all pl-12"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+            />
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {Object.values(Branch).map(b => (
+              <button
+                key={b}
+                onClick={() => toggleFilter('branches', b)}
+                className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-tighter border-2 transition-all ${
+                  filters.branches.includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-md' : 'bg-white border-slate-50 text-slate-400 hover:border-orange-100'
+                }`}
+              >
+                {b.split(' ')[0]}
+              </button>
+            ))}
+          </div>
+
+          {(searchInput || filters.branches.length > 0 || filters.statuses.length > 0) && (
+            <button 
+              onClick={clearFilters}
+              className="w-full py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg"
+            >
+              Filtreleri Sıfırla
+            </button>
+          )}
         </div>
 
-        {/* Liste Alanı */}
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 pb-20">
-          <div className="flex items-center justify-between px-4 mb-2">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-               {filteredAndSortedCandidates.length} Aday Listeleniyor
+        {/* Aday Listesi */}
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 pb-10">
+          <div className="flex items-center justify-between px-2 mb-2">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+               {filteredAndSortedCandidates.length} Sonuç
              </span>
+             <div className="flex gap-2">
+                <button onClick={() => handleSort('timestamp')} className="text-[9px] font-black text-slate-400 uppercase">Tarih</button>
+                <button onClick={() => handleSort('score')} className="text-[9px] font-black text-slate-400 uppercase">Skor</button>
+             </div>
           </div>
+
           {filteredAndSortedCandidates.length > 0 ? (
             filteredAndSortedCandidates.map(c => (
               <div 
                 key={c.id} 
                 onClick={() => setSelectedId(c.id)}
-                className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden ${
+                className={`group p-5 rounded-[2rem] border-2 transition-all cursor-pointer relative overflow-hidden ${
                   selectedId === c.id 
                   ? 'bg-white border-orange-600 shadow-2xl scale-[1.02]' 
-                  : 'bg-white border-slate-50 hover:border-orange-100 shadow-sm'
+                  : 'bg-white border-slate-50 hover:border-orange-200'
                 }`}
               >
                 <div className="flex justify-between items-center relative z-10">
                   <div className="flex gap-4 items-center flex-1 min-w-0">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-lg ${
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shadow-md ${
                       c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
                     }`}>
                       {c.report ? `${c.report.score}` : '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-slate-900 text-base leading-tight group-hover:text-orange-600 transition-colors truncate uppercase">{c.name || 'İsimsiz Aday'}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.branch || 'Bilinmiyor'}</span>
-                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.experienceYears || 0)} Yıl</span>
-                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.gender || 'B').charAt(0)}</span>
-                      </div>
+                      <h4 className="font-black text-slate-900 text-sm leading-tight truncate uppercase group-hover:text-orange-600 transition-colors">
+                        {c.name || 'İsimsiz Aday'}
+                      </h4>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 truncate">
+                        {c.branch} • {c.experienceYears} Yıl
+                      </p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                     <StatusBadge status={c.status} />
-                     {c.algoReport && c.algoReport.reliabilityIndex < 70 && (
-                        <span className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black rounded border border-rose-100 uppercase">Riskli Veri</span>
-                     )}
-                  </div>
+                  <StatusBadge status={c.status} />
                 </div>
-                {/* Background Score Indicator */}
-                {c.report && (
-                  <div className="absolute left-0 bottom-0 h-1 bg-slate-100 w-full overflow-hidden">
-                     <div 
-                      className={`h-full transition-all duration-1000 ${c.report.score > 75 ? 'bg-emerald-500' : c.report.score > 40 ? 'bg-orange-500' : 'bg-rose-500'}`}
-                      style={{ width: `${c.report.score}%` }}
-                     ></div>
-                  </div>
-                )}
               </div>
             ))
           ) : (
-            <div className="py-20 text-center border-4 border-dashed border-slate-50 rounded-[4rem]">
-              <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-[10px]">Eşleşen aday bulunamadı.</p>
-              <button onClick={clearFilters} className="mt-4 text-orange-600 font-black text-[9px] uppercase border-b border-orange-200">Aramayı Temizle</button>
+            <div className="py-20 text-center border-4 border-dashed border-slate-100 rounded-[3rem] bg-white/50">
+              <p className="text-slate-300 font-black uppercase tracking-[0.3em] text-[10px]">Aday Bulunamadı</p>
+              <button onClick={clearFilters} className="mt-4 px-4 py-2 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-orange-50 hover:text-orange-600 transition-all">
+                Aramayı Temizle
+              </button>
             </div>
           )}
         </div>
@@ -300,12 +223,14 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
             }}
           />
         ) : (
-          <div className="h-full bg-white border-4 border-dashed border-slate-100 rounded-[5rem] flex flex-col items-center justify-center text-center p-20 opacity-40">
-             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          <div className="h-full bg-white border-4 border-dashed border-slate-100 rounded-[4rem] flex flex-col items-center justify-center text-center p-20">
+             <div className="w-20 h-20 bg-orange-50 rounded-[2.5rem] flex items-center justify-center mb-6 rotate-6">
+                <svg className="w-10 h-10 text-orange-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                </svg>
              </div>
-             <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-xs">Aday Havuzu Beklemede</p>
-             <p className="text-slate-300 font-bold text-[10px] mt-4 uppercase">Stratejik analiz için soldan bir aday seçin.</p>
+             <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-xs">Yönetim Paneli</p>
+             <p className="text-slate-300 font-bold text-[10px] mt-4 uppercase leading-relaxed max-w-xs">İncelemek istediğiniz adayı soldaki listeden seçiniz.</p>
           </div>
         )}
       </div>

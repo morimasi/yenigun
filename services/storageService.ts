@@ -1,10 +1,10 @@
 
-import { Candidate, GlobalConfig } from '../types';
+import { Candidate } from '../types';
 
 export const storageService = {
   /**
-   * Konflikt Çözümleyici Gelişmiş Senkronizasyon (LWW - Last Write Wins)
-   * Yerel ve uzak verileri ID bazında karşılaştırır, en yeni zaman damgalı olanı korur.
+   * Konflikt Çözümleyici Gelişmiş Senkronizasyon (Deterministic Merge)
+   * ID bazlı haritalama yaparak hiçbir adayın kaybolmamasını sağlar.
    */
   async getCandidates(): Promise<Candidate[]> {
     const local = localStorage.getItem('yeni_gun_candidates');
@@ -18,35 +18,41 @@ export const storageService = {
         // ID bazlı birleştirme haritası
         const mergedMap = new Map<string, Candidate>();
 
-        // Önce yerel verileri ekle
-        localData.forEach(c => mergedMap.set(c.id, c));
+        // Yerel verileri haritaya ekle
+        localData.forEach(c => {
+          if (c && c.id) mergedMap.set(c.id, c);
+        });
 
-        // Uzak verileri kontrol ederek ekle/güncelle (Timestamp karşılaştırması)
+        // Uzak verileri ekle/güncelle (Uzak veri her zaman otoritedir)
         remoteData.forEach(remote => {
-          const existing = mergedMap.get(remote.id);
-          if (!existing || (remote.timestamp > existing.timestamp)) {
-            mergedMap.set(remote.id, remote);
+          if (remote && remote.id) {
+            const existing = mergedMap.get(remote.id);
+            // Eğer uzak veri daha güncelse veya yerelde yoksa güncelle
+            if (!existing || (remote.timestamp >= (existing.timestamp || 0))) {
+              mergedMap.set(remote.id, remote);
+            }
           }
         });
 
-        const finalData = Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+        const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
         // Yerel belleği en güncel veriyle senkronize et
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
         return finalData;
       }
     } catch (e) {
-      console.warn("Sistem offline: Senkronizasyon atlandı, yerel cache kullanılıyor.");
+      console.warn("API bağlantısı kurulamadı, yerel önbellek kullanılıyor.");
     }
     
-    return localData.sort((a, b) => b.timestamp - a.timestamp);
+    return localData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   },
 
   async saveCandidate(candidate: Candidate) {
-    // Kayıt anında zaman damgasını sabitle
     const candidateWithTime = { ...candidate, timestamp: Date.now() };
     
-    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+    // Önce yerelde güvenli kaydet
+    const local = localStorage.getItem('yeni_gun_candidates');
+    const current = local ? JSON.parse(local) : [];
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
 
     try {
@@ -55,15 +61,6 @@ export const storageService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateWithTime)
       });
-      
-      if (res.ok) {
-        const data = await res.json();
-        // Sunucu tarafından üretilen kesin zaman damgasını al
-        if (data.timestamp) {
-          candidateWithTime.timestamp = data.timestamp;
-          this.updateLocalEntry(candidateWithTime);
-        }
-      }
       return res.ok;
     } catch {
       return false;
@@ -71,41 +68,33 @@ export const storageService = {
   },
 
   async updateCandidate(candidate: Candidate) {
-    // Her güncellemede zaman damgasını yenile
     const updatedCandidate = { ...candidate, timestamp: Date.now() };
-    this.updateLocalEntry(updatedCandidate);
+    
+    // Yerel güncelleme
+    const local = localStorage.getItem('yeni_gun_candidates');
+    if (local) {
+      const current: Candidate[] = JSON.parse(local);
+      const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    }
 
     try {
-      const res = await fetch('/api/candidates', {
+      await fetch('/api/candidates', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCandidate)
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.timestamp) {
-          updatedCandidate.timestamp = data.timestamp;
-          this.updateLocalEntry(updatedCandidate);
-        }
-      }
     } catch (e) {
-      console.error("Bulut senkronizasyonu başarısız, değişiklikler yerel olarak saklandı.");
-    }
-  },
-
-  updateLocalEntry(candidate: Candidate) {
-    const local = localStorage.getItem('yeni_gun_candidates');
-    if (local) {
-      const current: Candidate[] = JSON.parse(local);
-      const updated = current.map(c => c.id === candidate.id ? candidate : c);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+      console.error("Bulut senkronizasyonu başarısız.");
     }
   },
 
   async deleteCandidate(id: string) {
-    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
+    const local = localStorage.getItem('yeni_gun_candidates');
+    if (local) {
+      const current = JSON.parse(local);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
+    }
     try {
       await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
     } catch (e) {}
