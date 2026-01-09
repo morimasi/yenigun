@@ -15,6 +15,7 @@ type SortOrder = 'asc' | 'desc';
 
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandidate, onDeleteCandidate }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
   const [filters, setFilters] = useState({
     search: '',
     branches: [] as string[],
@@ -31,14 +32,29 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
     [candidates, selectedId]
   );
 
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setFilters(prev => ({ ...prev, search: searchInput }));
+  };
+
+  const clearFilters = () => {
+    setSearchInput('');
+    setFilters({
+      search: '',
+      branches: [],
+      statuses: [],
+      genders: []
+    });
+  };
+
   const filteredAndSortedCandidates = useMemo(() => {
-    if (!candidates) return [];
+    if (!candidates || !Array.isArray(candidates)) return [];
 
     let result = candidates.filter(c => {
-      // Defensive string check for search
-      const candidateName = (c.name || '').toLowerCase();
-      const searchTerm = (filters.search || '').toLowerCase();
-      const matchesSearch = candidateName.includes(searchTerm);
+      // Güvenli arama kontrolü
+      const candidateName = (c.name || '').toLocaleLowerCase('tr-TR');
+      const searchTerm = (filters.search || '').toLocaleLowerCase('tr-TR');
+      const matchesSearch = searchTerm === '' || candidateName.includes(searchTerm);
 
       const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
       const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
@@ -47,7 +63,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
-    // Multi-sort logic
+    // Çoklu sıralama mantığı
     return result.sort((a, b) => {
       for (const { key, order } of sortConfig) {
         let valA: any, valB: any;
@@ -66,8 +82,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
             valB = b.experienceYears ?? 0; 
             break;
           case 'name': 
-            valA = (a.name || '').toLowerCase(); 
-            valB = (b.name || '').toLowerCase(); 
+            valA = (a.name || '').toLocaleLowerCase('tr-TR'); 
+            valB = (b.name || '').toLocaleLowerCase('tr-TR'); 
             break;
           default: 
             valA = a.timestamp ?? 0; 
@@ -86,7 +102,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
 
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      const current = prev[category] as any[];
+      const current = (prev as any)[category] as any[];
       return {
         ...prev,
         [category]: current.includes(value) 
@@ -110,17 +126,37 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-14rem)]">
       {/* Sol Panel: Filtreleme Kontrolleri */}
       <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-hidden">
-        <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-slate-100 space-y-8 flex flex-col max-h-full">
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Aday isminde ara..." 
-              className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-100 transition-all pl-14"
-              value={filters.search}
-              onChange={e => setFilters({...filters, search: e.target.value})}
-            />
-            <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          </div>
+        <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-slate-100 space-y-6 flex flex-col max-h-full">
+          {/* Arama Alanı ve Butonu */}
+          <form onSubmit={handleSearchSubmit} className="space-y-4">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input 
+                  type="text" 
+                  placeholder="İsim ile ara..." 
+                  className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-100 transition-all pl-12"
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                />
+                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+              <button 
+                type="submit"
+                className="px-6 bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg"
+              >
+                Ara
+              </button>
+            </div>
+            {(filters.search || filters.branches.length > 0 || filters.statuses.length > 0 || filters.genders.length > 0) && (
+              <button 
+                type="button"
+                onClick={clearFilters}
+                className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all"
+              >
+                Filtreleri Temizle
+              </button>
+            )}
+          </form>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2">
             {/* Branş Filtresi */}
@@ -165,9 +201,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { id: 'score', label: 'Analiz Puanı' },
-                  { id: 'experience', label: 'Deneyim (Yıl)' },
+                  { id: 'experience', label: 'Deneyim' },
                   { id: 'age', label: 'Yaş' },
-                  { id: 'timestamp', label: 'Başvuru Tarihi' }
+                  { id: 'timestamp', label: 'Tarih' }
                 ].map(sort => (
                   <button
                     key={sort.id}
@@ -190,54 +226,63 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
         {/* Liste Alanı */}
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 pb-20">
           <div className="flex items-center justify-between px-4 mb-2">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{filteredAndSortedCandidates.length} Aday Bulundu</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+               {filteredAndSortedCandidates.length} Aday Listeleniyor
+             </span>
           </div>
-          {filteredAndSortedCandidates.map(c => (
-            <div 
-              key={c.id} 
-              onClick={() => setSelectedId(c.id)}
-              className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden ${
-                selectedId === c.id 
-                ? 'bg-white border-orange-600 shadow-2xl scale-[1.02]' 
-                : 'bg-white border-slate-50 hover:border-orange-100 shadow-sm'
-              }`}
-            >
-              <div className="flex justify-between items-center relative z-10">
-                <div className="flex gap-4 items-center flex-1 min-w-0">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-lg ${
-                    c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
-                  }`}>
-                    {c.report ? `${c.report.score}` : '?'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-slate-900 text-base leading-tight group-hover:text-orange-600 transition-colors truncate uppercase">{c.name || 'İsimsiz Aday'}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.branch || 'Branş Belirtilmemiş'}</span>
-                      <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.experienceYears || 0)} Yıl</span>
-                      <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.gender || 'Belirtilmemiş').charAt(0)}</span>
+          {filteredAndSortedCandidates.length > 0 ? (
+            filteredAndSortedCandidates.map(c => (
+              <div 
+                key={c.id} 
+                onClick={() => setSelectedId(c.id)}
+                className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedId === c.id 
+                  ? 'bg-white border-orange-600 shadow-2xl scale-[1.02]' 
+                  : 'bg-white border-slate-50 hover:border-orange-100 shadow-sm'
+                }`}
+              >
+                <div className="flex justify-between items-center relative z-10">
+                  <div className="flex gap-4 items-center flex-1 min-w-0">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-lg ${
+                      c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
+                    }`}>
+                      {c.report ? `${c.report.score}` : '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-black text-slate-900 text-base leading-tight group-hover:text-orange-600 transition-colors truncate uppercase">{c.name || 'İsimsiz Aday'}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.branch || 'Bilinmiyor'}</span>
+                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.experienceYears || 0)} Yıl</span>
+                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.gender || 'B').charAt(0)}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex flex-col items-end gap-2">
+                     <StatusBadge status={c.status} />
+                     {c.algoReport && c.algoReport.reliabilityIndex < 70 && (
+                        <span className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black rounded border border-rose-100 uppercase">Riskli Veri</span>
+                     )}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                   <StatusBadge status={c.status} />
-                   {c.algoReport && c.algoReport.reliabilityIndex < 70 && (
-                      <span className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black rounded border border-rose-100">DÜRÜSTLÜK RİSKİ</span>
-                   )}
-                </div>
+                {/* Background Score Indicator */}
+                {c.report && (
+                  <div className="absolute left-0 bottom-0 h-1 bg-slate-100 w-full overflow-hidden">
+                     <div 
+                      className={`h-full transition-all duration-1000 ${c.report.score > 75 ? 'bg-emerald-500' : c.report.score > 40 ? 'bg-orange-500' : 'bg-rose-500'}`}
+                      style={{ width: `${c.report.score}%` }}
+                     ></div>
+                  </div>
+                )}
               </div>
-              {/* Background Score Indicator */}
-              {c.report && (
-                <div className="absolute left-0 bottom-0 h-1 bg-slate-100 w-full overflow-hidden">
-                   <div 
-                    className={`h-full transition-all duration-1000 ${c.report.score > 75 ? 'bg-emerald-500' : c.report.score > 40 ? 'bg-orange-500' : 'bg-rose-500'}`}
-                    style={{ width: `${c.report.score}%` }}
-                   ></div>
-                </div>
-              )}
+            ))
+          ) : (
+            <div className="py-20 text-center border-4 border-dashed border-slate-50 rounded-[4rem]">
+              <p className="text-slate-300 font-black uppercase tracking-[0.4em] text-[10px]">Eşleşen aday bulunamadı.</p>
+              <button onClick={clearFilters} className="mt-4 text-orange-600 font-black text-[9px] uppercase border-b border-orange-200">Aramayı Temizle</button>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
