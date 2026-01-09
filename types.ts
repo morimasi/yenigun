@@ -27,12 +27,18 @@ export interface GlobalConfig {
 
 export interface AlgorithmicReport {
   overallScore: number;
-  reliabilityIndex: number; // 0-100 (Çelişkili cevap kontrolü)
+  reliabilityIndex: number; 
   ethicsScore: number;
   crisisManagementScore: number;
   experienceWeight: number;
   detectedPatterns: string[];
   riskFlags: string[];
+}
+
+export interface InterviewFocusQuestion {
+  question: string;
+  targetCompetency: string;
+  reason: string;
 }
 
 export interface Candidate {
@@ -56,6 +62,7 @@ export interface Candidate {
     method: 'Yüz Yüze' | 'Google Meet' | 'Zoom' | 'Telefon';
     notes?: string;
     isNotificationSent: boolean;
+    aiFocusQuestions?: InterviewFocusQuestion[];
   };
   report?: AIReport;
   algoReport?: AlgorithmicReport;
