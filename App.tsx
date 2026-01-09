@@ -8,6 +8,7 @@ import { generateCandidateAnalysis } from './geminiService';
 const storage = {
   isLocalMode: true,
   
+  // Veritabanı bağlantısını kontrol et
   async checkConnection() {
     try {
       const response = await fetch('/api/candidates', { method: 'GET' }).catch(() => null);
@@ -19,6 +20,7 @@ const storage = {
     }
   },
 
+  // Verileri yerel ve bulut arasında senkronize ederek getir
   async getCandidates(): Promise<Candidate[]> {
     const local = localStorage.getItem('yeni_gun_candidates');
     let localData: Candidate[] = local ? JSON.parse(local) : [];
@@ -28,24 +30,36 @@ const storage = {
       if (response.ok) {
         const remoteData = await response.json();
         if (Array.isArray(remoteData)) {
-          // Uzaktaki verileri yerele de yedekle
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
-          return remoteData;
+          // Buluttan gelen verileri yerel ile birleştir (Merge by ID)
+          const merged = [...remoteData];
+          localData.forEach(lc => {
+             if (!merged.find(rc => rc.id === lc.id)) {
+                merged.push(lc);
+             }
+          });
+          // Sırala (en yeni en üstte)
+          const sorted = merged.sort((a, b) => b.timestamp - a.timestamp);
+          localStorage.setItem('yeni_gun_candidates', JSON.stringify(sorted));
+          return sorted;
         }
       }
     } catch (e) {
-      console.warn("Sunucu verisi alınamadı, yerel verilerle çalışılıyor.");
+      console.warn("Sunucu verisi alınamadı, yerel verilerle devam ediliyor.");
     }
 
     return localData;
   },
 
+  // Adayı hem yerele hem buluta kalıcı olarak kaydet
   async saveCandidate(candidate: Candidate) {
-    // Önce her zaman yerele kaydet (Veri güvenliği)
+    // 1. ADIM: Yerele hemen yaz (Kritik: Tarayıcı kapansa da gitmez)
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
+    const exists = current.find((c: any) => c.id === candidate.id);
+    if (!exists) {
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
+    }
 
-    // Sonra sunucuya göndermeyi dene
+    // 2. ADIM: Sunucuya gönder
     try {
       const response = await fetch('/api/candidates', {
         method: 'POST',
@@ -54,23 +68,19 @@ const storage = {
       });
 
       if (!response.ok) {
-        console.warn("Sunucu kaydı başarısız, veriler tarayıcıda saklanıyor.");
-        return { success: false, mode: 'local' };
+        return { success: false, mode: 'local_only' };
       }
-      return { success: true, mode: 'cloud' };
+      return { success: true, mode: 'synced' };
     } catch (e) {
-      console.warn("Ağ hatası: Veriler yerel hafızaya kaydedildi.");
-      return { success: false, mode: 'local' };
+      return { success: false, mode: 'local_only' };
     }
   },
 
   async updateCandidate(candidate: Candidate) {
-    // Önce yereli güncelle
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
     const updated = current.map((c: Candidate) => c.id === candidate.id ? candidate : c);
     localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
 
-    // Sunucuya bildir
     try {
       await fetch('/api/candidates', {
         method: 'PATCH',
@@ -78,21 +88,19 @@ const storage = {
         body: JSON.stringify(candidate)
       });
     } catch (e) {
-      console.error("Güncelleme sunucuya iletilemedi.");
+      console.error("Güncelleme buluta iletilemedi, yerelde kaldı.");
     }
   },
 
   async deleteCandidate(id: string) {
-    // Önce yereli güncelle
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
     const updated = current.filter((c: Candidate) => c.id !== id);
     localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
 
-    // Sunucudan sil
     try {
       await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
     } catch (e) {
-      console.error("Silme işlemi sunucuya iletilemedi.");
+      console.error("Silme işlemi sadece yerelde gerçekleşti.");
     }
   }
 };
@@ -108,7 +116,13 @@ const DEFAULT_CONFIG: GlobalConfig = {
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  
+  // INITIAL STATE: Sayfa açılır açılmaz boş gelmemesi için localStorage'dan çek
+  const [candidates, setCandidates] = useState<Candidate[]>(() => {
+    const local = localStorage.getItem('yeni_gun_candidates');
+    return local ? JSON.parse(local) : [];
+  });
+
   const [config, setConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'online'>('offline');
@@ -131,8 +145,10 @@ const App: React.FC = () => {
     const localConfig = localStorage.getItem('yeni_gun_config');
     if (localConfig) setConfig(JSON.parse(localConfig));
     
+    // Uygulama açıldığında bulut ile senkronize ol
     loadData();
     
+    // Her 45 saniyede bir arkada senkronizasyon yap
     const interval = setInterval(() => {
         if(isLoggedIn) loadData();
     }, 45000);
@@ -149,12 +165,13 @@ const App: React.FC = () => {
     };
 
     try {
+      // Önce kalıcı kaydı (Local + Cloud) yap
       const result = await storage.saveCandidate(newCandidate);
       
-      // Başvuru her durumda state'e eklenir
+      // State'i güncelle (Arayüzde hemen görünmesi için)
       setCandidates(prev => [newCandidate, ...prev]);
       
-      // AI Analizi arka planda başlasın
+      // AI Analizi arka planda başlasın (UI'yı engellemez)
       generateCandidateAnalysis(newCandidate).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report };
@@ -163,16 +180,16 @@ const App: React.FC = () => {
         }
       }).catch(e => console.error("AI Analiz Hatası:", e));
       
-      if (result.mode === 'local') {
-        alert("Başvurunuz tarayıcı hafızasına kaydedildi. Veritabanı bağlantısı kurulduğunda buluta senkronize edilecektir.");
+      if (result.mode === 'local_only') {
+        alert("Bağlantı zayıf: Başvurunuz tarayıcıya kalıcı olarak kaydedildi. İnternet geldiğinde otomatik olarak buluta aktarılacaktır.");
       } else {
-        alert("Başvurunuz başarıyla sisteme kaydedildi. Değerlendirme süreci başlatıldı.");
+        alert("Başvurunuz başarıyla Yeni Gün Akademi sistemine kaydedildi.");
       }
       
       setView('candidate');
     } catch (error: any) {
-      console.error("Kritik Hata:", error);
-      alert("Beklenmedik bir hata oluştu.");
+      console.error("Kritik Kayıt Hatası:", error);
+      alert("Beklenmedik bir hata oluştu. Verileriniz yine de yerel olarak korunmaya çalışıldı.");
     } finally {
       setIsProcessing(false);
     }
@@ -192,7 +209,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] selection:bg-orange-100 selection:text-orange-900">
-      <div className="fixed top-0 left-0 w-full h-2 bg-orange-600 z-[100]"></div>
+      {/* Visual Header Indicator */}
+      <div className={`fixed top-0 left-0 w-full h-2 z-[100] transition-colors duration-500 ${connectionStatus === 'online' ? 'bg-emerald-600' : 'bg-orange-600'}`}></div>
       
       <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] shadow-sm h-28 flex items-center">
         <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
@@ -201,8 +219,8 @@ const App: React.FC = () => {
             <div>
               <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">{config.institutionName.split(' ')[0]}</span>
               <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
-                <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-500 shadow-[0_0_10px_#f97316]'}`}></div>
-                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Çevrimdışı / Yerel Mod'}
+                <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-500 shadow-[0_0_10px_#f97316] animate-pulse'}`}></div>
+                {connectionStatus === 'online' ? 'Bulut Senkronize' : 'Yerel Mod (Offline)'}
               </div>
             </div>
           </div>

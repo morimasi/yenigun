@@ -21,16 +21,15 @@ export default async function handler(request: Request) {
     return new Response(null, { status: 204, headers });
   }
 
-  // Kritik: POSTGRES_URL yoksa 500 hatası dönmeli, 200 değil.
   if (!process.env.POSTGRES_URL) {
     return new Response(JSON.stringify({ 
       error: 'DATABASE_NOT_CONFIGURED',
-      message: 'Veritabanı bağlantı adresi (POSTGRES_URL) çevresel değişkenlerde tanımlanmamış.'
+      message: 'POSTGRES_URL bulunamadı.'
     }), { status: 500, headers });
   }
 
   try {
-    // Tablo şemasını kontrol et/oluştur
+    // Tablo şemasını sağlama al
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -50,10 +49,10 @@ export default async function handler(request: Request) {
         cv_data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `.catch(e => console.error('Schema Error:', e.message));
+    `.catch(e => console.error('Schema Sync Error:', e.message));
 
     if (method === 'GET') {
-      const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
+      const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC LIMIT 200;`;
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name,
@@ -78,7 +77,7 @@ export default async function handler(request: Request) {
     if (method === 'POST') {
       const body = await request.json();
       
-      // Kayıt işlemi
+      // UPSERT mantığı (ID varsa güncelle, yoksa ekle)
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, branch, experience_years, 
@@ -90,6 +89,12 @@ export default async function handler(request: Request) {
           ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
           ${JSON.stringify(body.cvData || null)}
         )
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          email = EXCLUDED.email,
+          phone = EXCLUDED.phone,
+          status = EXCLUDED.status,
+          answers = EXCLUDED.answers
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
@@ -108,14 +113,17 @@ export default async function handler(request: Request) {
 
     if (method === 'DELETE') {
       const id = searchParams.get('id');
-      await sql`DELETE FROM candidates WHERE id = ${id}`;
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+      if (id) {
+        await sql`DELETE FROM candidates WHERE id = ${id}`;
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+      }
+      return new Response(JSON.stringify({ error: 'MISSING_ID' }), { status: 400, headers });
     }
 
     return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
 
   } catch (error: any) {
-    console.error('Database Operation Error:', error.message);
+    console.error('Kritik DB Hatası:', error.message);
     return new Response(JSON.stringify({ 
       error: 'DATABASE_ERROR', 
       message: error.message 
