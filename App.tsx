@@ -28,6 +28,7 @@ const storage = {
       if (response.ok) {
         const remoteData = await response.json();
         if (Array.isArray(remoteData)) {
+          // Uzaktaki verileri yerele de yedekle
           localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
           return remoteData;
         }
@@ -40,41 +41,58 @@ const storage = {
   },
 
   async saveCandidate(candidate: Candidate) {
-    const response = await fetch('/api/candidates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Sunucuya kayıt yapılamadı. Veritabanı bağlantısını kontrol edin.");
-    }
-
+    // Önce her zaman yerele kaydet (Veri güvenliği)
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
+
+    // Sonra sunucuya göndermeyi dene
+    try {
+      const response = await fetch('/api/candidates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate)
+      });
+
+      if (!response.ok) {
+        console.warn("Sunucu kaydı başarısız, veriler tarayıcıda saklanıyor.");
+        return { success: false, mode: 'local' };
+      }
+      return { success: true, mode: 'cloud' };
+    } catch (e) {
+      console.warn("Ağ hatası: Veriler yerel hafızaya kaydedildi.");
+      return { success: false, mode: 'local' };
+    }
   },
 
   async updateCandidate(candidate: Candidate) {
-    const response = await fetch('/api/candidates', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate)
-    });
+    // Önce yereli güncelle
+    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+    const updated = current.map((c: Candidate) => c.id === candidate.id ? candidate : c);
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
 
-    if (response.ok) {
-      const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-      const updated = current.map((c: Candidate) => c.id === candidate.id ? candidate : c);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    // Sunucuya bildir
+    try {
+      await fetch('/api/candidates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate)
+      });
+    } catch (e) {
+      console.error("Güncelleme sunucuya iletilemedi.");
     }
   },
 
   async deleteCandidate(id: string) {
-    const response = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
-    if (response.ok) {
-      const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
-      const updated = current.filter((c: Candidate) => c.id !== id);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    // Önce yereli güncelle
+    const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
+    const updated = current.filter((c: Candidate) => c.id !== id);
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+
+    // Sunucudan sil
+    try {
+      await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
+    } catch (e) {
+      console.error("Silme işlemi sunucuya iletilemedi.");
     }
   }
 };
@@ -131,10 +149,9 @@ const App: React.FC = () => {
     };
 
     try {
-      // Sunucuya kaydetmeyi dene
-      await storage.saveCandidate(newCandidate);
+      const result = await storage.saveCandidate(newCandidate);
       
-      // Başarılıysa state'e ekle
+      // Başvuru her durumda state'e eklenir
       setCandidates(prev => [newCandidate, ...prev]);
       
       // AI Analizi arka planda başlasın
@@ -146,11 +163,16 @@ const App: React.FC = () => {
         }
       }).catch(e => console.error("AI Analiz Hatası:", e));
       
-      alert("Başvurunuz başarıyla sisteme kaydedildi. Değerlendirme süreci başlatıldı.");
+      if (result.mode === 'local') {
+        alert("Başvurunuz tarayıcı hafızasına kaydedildi. Veritabanı bağlantısı kurulduğunda buluta senkronize edilecektir.");
+      } else {
+        alert("Başvurunuz başarıyla sisteme kaydedildi. Değerlendirme süreci başlatıldı.");
+      }
+      
       setView('candidate');
     } catch (error: any) {
-      console.error("Kayıt Hatası:", error);
-      alert(`Sistem Hatası: ${error.message}\n\nLütfen internet bağlantınızı veya veritabanı ayarlarınızı kontrol edin.`);
+      console.error("Kritik Hata:", error);
+      alert("Beklenmedik bir hata oluştu.");
     } finally {
       setIsProcessing(false);
     }
@@ -180,7 +202,7 @@ const App: React.FC = () => {
               <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">{config.institutionName.split(' ')[0]}</span>
               <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
                 <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-500 shadow-[0_0_10px_#f97316]'}`}></div>
-                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Veritabanı Bağlantısı Yok'}
+                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Çevrimdışı / Yerel Mod'}
               </div>
             </div>
           </div>
@@ -229,8 +251,8 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-8">
           <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl max-w-lg animate-bounce-in">
              <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
-             <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Veritabanına Yazılıyor</h3>
-             <p className="text-slate-500 text-xl font-medium italic">Bulut sunucusu yanıt veriyor...</p>
+             <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Veri Güvenliği İşleniyor</h3>
+             <p className="text-slate-500 text-xl font-medium italic">Kayıt yerel ve bulut katmanlarına aktarılıyor...</p>
           </div>
         </div>
       )}

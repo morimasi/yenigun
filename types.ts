@@ -25,6 +25,16 @@ export interface GlobalConfig {
   lastUpdated: number;
 }
 
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number; // 0-100 (Çelişkili cevap kontrolü)
+  ethicsScore: number;
+  crisisManagementScore: number;
+  experienceWeight: number;
+  detectedPatterns: string[];
+  riskFlags: string[];
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -48,6 +58,7 @@ export interface Candidate {
     isNotificationSent: boolean;
   };
   report?: AIReport;
+  algoReport?: AlgorithmicReport;
   cvData?: {
     base64: string;
     mimeType: string;
