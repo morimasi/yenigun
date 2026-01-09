@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v12.0 (OZEL)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v13.0 (OZEL)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -15,19 +15,22 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Yüksek Kurul Üyesi ve Klinik Süpervizör.
+    ROL: Yeni Gün Akademi Yüksek Kurul Üyesi ve Kıdemli Klinik Süpervizör.
     GÖREV: Adayın "Liyakat, Pedagojik Derinlik ve Etik Bütünlüğünü" analiz et.
     DİL: Türkçe.
     
-    ANALİZ MATRİSİ:
-    1. Etik Değerler: Mesleki sınırlar ve veli/kurum çıkarları arasındaki denge.
-    2. Pedagoji: Metodolojik hakimiyet (ABA, Floortime vb.) ve çocuk odaklılık.
-    3. Klinik Bilgelik: Kriz anlarında ezberci değil, durumsal çözümler üretme kapasitesi.
-    4. Duygusal Dayanıklılık: Tükenmişlik riski ve öfke kontrolü analizi.
-    5. Kurumsal Uyum: Hiyerarşiye bakış açısı ve profesyonel disiplin.
-    6. Stres Yanıtı: Fiziksel saldırı veya yoğun baskı altındaki refleksler.
+    ANALİZ MATRİSİ (8 TEMEL BOYUT):
+    1. Klinik Muhakeme: Vaka analiz etme ve doğru müdahale seçme yetisi.
+    2. Etik Bütünlük: Mesleki sınırları koruma ve dürüstlük.
+    3. Pedagojik Derinlik: Bilimsel metodoloji hakimiyeti (ABA, Gelişimsel Yaklaşımlar vb.).
+    4. Duygusal Dayanıklılık: Zorlayıcı vakalar karşısında sükunet ve psikolojik sağlamlık.
+    5. Kriz Yönetimi: Fiziksel saldırı veya ani olaylar karşısındaki refleksler.
+    6. Veli İletişimi: Profesyonel sınırları koruyarak aileyle sağlıklı işbirliği kurma.
+    7. Kurumsal Aidiyet: Kurum kültürü, hiyerarşi ve takım çalışmasına yatkınlık.
+    8. Öğrenme Çevikliği: Özeleştiri yapabilme ve yeni tekniklere adaptasyon hızı.
 
-    ÖNEMLİ: Adayın verdiği cevaplardaki "performans kaygısı" (kendini iyi gösterme çabası) ve "gerçek niyet" arasındaki boşluğu yakala.
+    ÖNEMLİ: Adayın verdiği cevaplardaki "sosyal beğenirlik" (kendini olduğundan iyi gösterme) sapmalarını analiz et. 
+    Yetkinlik skorlarını (0-100) bu 8 boyut için kesinlikle sağla.
     FORMAT: Kesinlikle geçerli JSON.
   `;
 
@@ -36,7 +39,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       model: "gemini-3-flash-preview",
       contents: { 
         parts: [
-          { text: `Aday Profili: ${JSON.stringify({
+          { text: `Aday Profili ve Cevapları: ${JSON.stringify({
               name: candidate.name,
               branch: candidate.branch,
               experience: candidate.experienceYears,
@@ -48,11 +51,11 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 15000 },
+        thinkingConfig: { thinkingBudget: 20000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "0-100 arası liyakat puanı" },
+            score: { type: Type.NUMBER, description: "Genel liyakat skoru" },
             summary: { type: Type.STRING },
             recommendation: { type: Type.STRING },
             detailedAnalysis: {
@@ -77,6 +80,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
             },
             competencies: {
               type: Type.ARRAY,
+              description: "8 Boyutlu Yetkinlik Matrisi",
               items: {
                 type: Type.OBJECT,
                 properties: {
