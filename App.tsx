@@ -22,6 +22,12 @@ const DEFAULT_CONFIG: GlobalConfig = {
     requireCvUpload: true,
     allowMultipleApplications: false
   },
+  interviewSettings: {
+    defaultDuration: 45,
+    bufferTime: 15,
+    autoStatusAfterInterview: false,
+    defaultMeetingLink: 'https://meet.google.com/new'
+  },
   notificationEmail: 'info@yenigun.com',
   lastUpdated: Date.now()
 };
@@ -41,7 +47,6 @@ const App: React.FC = () => {
     const localConfig = localStorage.getItem('yeni_gun_config');
     if (localConfig) {
       const parsed = JSON.parse(localConfig);
-      // Eksik alanları varsayılanla tamamla (Migration desteği)
       setConfig({ ...DEFAULT_CONFIG, ...parsed });
     }
   }, []);
@@ -83,7 +88,6 @@ const App: React.FC = () => {
   const handleUpdateConfig = (newConfig: GlobalConfig) => {
     setConfig(newConfig);
     localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
-    // CSS Değişkenlerini güncelle
     document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
   };
 

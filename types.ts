@@ -104,6 +104,12 @@ export interface GlobalConfig {
     requireCvUpload: boolean;
     allowMultipleApplications: boolean;
   };
+  interviewSettings: {
+    defaultDuration: number; // minutes
+    bufferTime: number; // minutes
+    autoStatusAfterInterview: boolean;
+    defaultMeetingLink: string;
+  };
   notificationEmail: string;
   lastUpdated: number;
 }

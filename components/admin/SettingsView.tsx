@@ -22,21 +22,27 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
     });
   };
 
-  // Explicitly casting Object.values to number[] to avoid 'unknown' type error in reduce
+  const handleInterviewSettingChange = (key: keyof GlobalConfig['interviewSettings'], value: any) => {
+    onUpdateConfig({
+      ...config,
+      interviewSettings: { ...config.interviewSettings, [key]: value }
+    });
+  };
+
   const totalWeight = (Object.values(config.aiWeights) as number[]).reduce((a, b) => a + b, 0);
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
       <div className="flex justify-between items-end">
         <div>
-          <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Akademik Komuta Merkezi</h3>
+          <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Akademik Komuta Merkezi</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-2">Sistem Parametreleri ve Kurumsal Filtre Ayarları</p>
         </div>
         <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-orange-600 transition-all">Tümünü Yedekle</button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Sol Sütun: Kurumsal Kimlik */}
+        {/* Sol Sütun: Kurumsal ve Otomasyon */}
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-white p-10 rounded-[3.5rem] shadow-xl border border-slate-100 flex flex-col gap-8">
             <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Kurumsal Kimlik</h4>
@@ -58,22 +64,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                   value={config.notificationEmail} 
                   onChange={e => onUpdateConfig({...config, notificationEmail: e.target.value})}
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Ana Renk</label>
-                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl">
-                    <input type="color" value={config.primaryColor} onChange={e => onUpdateConfig({...config, primaryColor: e.target.value})} className="w-10 h-10 rounded-lg cursor-pointer border-none bg-transparent" />
-                    <span className="text-[10px] font-black uppercase text-slate-500">{config.primaryColor}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Vurgu Renk</label>
-                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl">
-                    <input type="color" value={config.accentColor} onChange={e => onUpdateConfig({...config, accentColor: e.target.value})} className="w-10 h-10 rounded-lg cursor-pointer border-none bg-transparent" />
-                    <span className="text-[10px] font-black uppercase text-slate-500">{config.accentColor}</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -100,8 +90,63 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
           </div>
         </div>
 
-        {/* Orta Sütun: AI Ayarları */}
+        {/* Orta Sütun: AI ve Mülakat Ayarları */}
         <div className="lg:col-span-8 space-y-8">
+          {/* Mülakat Takvimi Ayarları Panel */}
+          <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 relative overflow-hidden">
+             <div className="flex justify-between items-start mb-10">
+                <div>
+                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Mülakat Yönetim Parametreleri</h4>
+                  <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Takvim akışı ve varsayılan operasyonel ayarlar</p>
+                </div>
+             </div>
+             
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-8">
+                   <div className="group">
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Varsayılan Mülakat Süresi (Dakika)</label>
+                      <input 
+                        type="number" 
+                        className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
+                        value={config.interviewSettings.defaultDuration} 
+                        onChange={e => handleInterviewSettingChange('defaultDuration', parseInt(e.target.value))}
+                      />
+                   </div>
+                   <div className="group">
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Hazırlık/Buffer Süresi (Dakika)</label>
+                      <input 
+                        type="number" 
+                        className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
+                        value={config.interviewSettings.bufferTime} 
+                        onChange={e => handleInterviewSettingChange('bufferTime', parseInt(e.target.value))}
+                      />
+                   </div>
+                </div>
+                <div className="space-y-8">
+                   <div className="group">
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Varsayılan Toplantı Linki (Meet/Zoom)</label>
+                      <input 
+                        type="text" 
+                        className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
+                        value={config.interviewSettings.defaultMeetingLink} 
+                        onChange={e => handleInterviewSettingChange('defaultMeetingLink', e.target.value)}
+                        placeholder="https://meet.google.com/..."
+                      />
+                   </div>
+                   <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest block">Otomatik Statü Güncelleme</span>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase">Mülakat bitince 'Değerlendiriliyor'a çek</span>
+                      </div>
+                      <div className={`w-12 h-6 rounded-full relative transition-all cursor-pointer ${config.interviewSettings.autoStatusAfterInterview ? 'bg-orange-600' : 'bg-slate-300'}`} onClick={() => handleInterviewSettingChange('autoStatusAfterInterview', !config.interviewSettings.autoStatusAfterInterview)}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${config.interviewSettings.autoStatusAfterInterview ? 'left-7' : 'left-1'}`}></div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+
+          {/* AI Ağırlıkları Panel */}
           <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 relative">
             <div className="flex justify-between items-start mb-12">
               <div>
@@ -163,21 +208,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100">
-             <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-8">Kritik Sistem Eylemleri</h4>
-             <div className="flex flex-wrap gap-4">
-                <button className="px-10 py-5 bg-rose-50 text-rose-600 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border-2 border-rose-100 hover:bg-rose-600 hover:text-white transition-all">
-                  Tüm Verileri Sıfırla
-                </button>
-                <button className="px-10 py-5 bg-slate-50 text-slate-400 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border-2 border-slate-100 hover:bg-slate-900 hover:text-white transition-all">
-                  Arşivleme Politikası
-                </button>
-                <button className="px-10 py-5 bg-emerald-50 text-emerald-600 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border-2 border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all">
-                  Sistem Sağlığı Raporu
-                </button>
-             </div>
           </div>
         </div>
       </div>
