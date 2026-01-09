@@ -21,12 +21,16 @@ export default async function handler(request: Request) {
     return new Response(null, { status: 204, headers });
   }
 
+  // Kritik: POSTGRES_URL yoksa 500 hatası dönmeli, 200 değil.
   if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ error: 'DATABASE_NOT_CONFIGURED' }), { status: 200, headers });
+    return new Response(JSON.stringify({ 
+      error: 'DATABASE_NOT_CONFIGURED',
+      message: 'Veritabanı bağlantı adresi (POSTGRES_URL) çevresel değişkenlerde tanımlanmamış.'
+    }), { status: 500, headers });
   }
 
   try {
-    // Şema güncellemesi: cv_data eklendi
+    // Tablo şemasını kontrol et/oluştur
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -46,7 +50,7 @@ export default async function handler(request: Request) {
         cv_data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `.catch(e => console.warn('Schema check warning:', e.message));
+    `.catch(e => console.error('Schema Error:', e.message));
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC;`;
@@ -73,20 +77,19 @@ export default async function handler(request: Request) {
 
     if (method === 'POST') {
       const body = await request.json();
+      
+      // Kayıt işlemi
       await sql`
-        INSERT INTO candidates (id, name, email, phone, age, branch, experience_years, previous_institutions, all_trainings, answers, status, cv_data)
+        INSERT INTO candidates (
+          id, name, email, phone, age, branch, experience_years, 
+          previous_institutions, all_trainings, answers, status, cv_data
+        )
         VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, 
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
           ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
           ${JSON.stringify(body.cvData || null)}
         )
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name,
-          email = EXCLUDED.email,
-          phone = EXCLUDED.phone,
-          status = EXCLUDED.status,
-          cv_data = EXCLUDED.cv_data;
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
@@ -113,6 +116,9 @@ export default async function handler(request: Request) {
 
   } catch (error: any) {
     console.error('Database Operation Error:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ 
+      error: 'DATABASE_ERROR', 
+      message: error.message 
+    }), { status: 500, headers });
   }
 }

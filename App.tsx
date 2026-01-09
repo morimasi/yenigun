@@ -20,33 +20,26 @@ const storage = {
   },
 
   async getCandidates(): Promise<Candidate[]> {
-    // 1. LocalStorage'dan hızlıca oku (UI'da boşluk olmasın)
     const local = localStorage.getItem('yeni_gun_candidates');
     let localData: Candidate[] = local ? JSON.parse(local) : [];
 
-    // 2. API'den taze veriyi çek
     try {
       const response = await fetch('/api/candidates');
       if (response.ok) {
         const remoteData = await response.json();
-        
-        // KRİTİK: Gelen verinin gerçekten bir liste olduğundan emin ol
         if (Array.isArray(remoteData)) {
           localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
           return remoteData;
-        } else if (remoteData.error) {
-          console.error("DB Hatası:", remoteData.error);
         }
       }
     } catch (e) {
-      console.warn("API senkronizasyonu başarısız, yerel verilerle devam ediliyor.");
+      console.warn("Sunucu verisi alınamadı, yerel verilerle çalışılıyor.");
     }
 
     return localData;
   },
 
   async saveCandidate(candidate: Candidate) {
-    // Cloud kaydı zorunlu kıl (Persistence First)
     const response = await fetch('/api/candidates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,10 +47,10 @@ const storage = {
     });
 
     if (!response.ok) {
-      throw new Error("Bulut kaydı başarısız. Lütfen bağlantınızı kontrol edin.");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Sunucuya kayıt yapılamadı. Veritabanı bağlantısını kontrol edin.");
     }
 
-    // Yerel hafızayı güncelle
     const current = JSON.parse(localStorage.getItem('yeni_gun_candidates') || '[]');
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
   },
@@ -122,7 +115,6 @@ const App: React.FC = () => {
     
     loadData();
     
-    // Periyodik senkron (Admin açıkken)
     const interval = setInterval(() => {
         if(isLoggedIn) loadData();
     }, 45000);
@@ -139,11 +131,13 @@ const App: React.FC = () => {
     };
 
     try {
-      // Önce buluta kaydet (Emin ol)
+      // Sunucuya kaydetmeyi dene
       await storage.saveCandidate(newCandidate);
+      
+      // Başarılıysa state'e ekle
       setCandidates(prev => [newCandidate, ...prev]);
       
-      // AI Analizi
+      // AI Analizi arka planda başlasın
       generateCandidateAnalysis(newCandidate).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report };
@@ -152,10 +146,11 @@ const App: React.FC = () => {
         }
       }).catch(e => console.error("AI Analiz Hatası:", e));
       
-      alert("Başvurunuz başarıyla bulut sistemine kaydedildi.");
+      alert("Başvurunuz başarıyla sisteme kaydedildi. Değerlendirme süreci başlatıldı.");
       setView('candidate');
     } catch (error: any) {
-      alert("Hata: " + error.message);
+      console.error("Kayıt Hatası:", error);
+      alert(`Sistem Hatası: ${error.message}\n\nLütfen internet bağlantınızı veya veritabanı ayarlarınızı kontrol edin.`);
     } finally {
       setIsProcessing(false);
     }
@@ -185,7 +180,7 @@ const App: React.FC = () => {
               <span className="text-3xl font-black tracking-tighter uppercase block leading-none text-slate-900">{config.institutionName.split(' ')[0]}</span>
               <div className="flex items-center gap-2 mt-2 uppercase font-black text-[10px] tracking-[0.2em] text-slate-400">
                 <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-500 shadow-[0_0_10px_#f97316]'}`}></div>
-                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Yerel Hafıza Modu'}
+                {connectionStatus === 'online' ? 'Bulut Veri Tabanı Aktif' : 'Veritabanı Bağlantısı Yok'}
               </div>
             </div>
           </div>
@@ -235,7 +230,7 @@ const App: React.FC = () => {
           <div className="bg-white p-24 rounded-[5rem] text-center border border-orange-100 shadow-2xl max-w-lg animate-bounce-in">
              <div className="w-28 h-28 border-[12px] border-orange-100 border-t-orange-600 rounded-full animate-spin mx-auto mb-12"></div>
              <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Veritabanına Yazılıyor</h3>
-             <p className="text-slate-500 text-xl font-medium italic">Kalıcı kayıt oluşturuluyor...</p>
+             <p className="text-slate-500 text-xl font-medium italic">Bulut sunucusu yanıt veriyor...</p>
           </div>
         </div>
       )}
