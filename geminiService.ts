@@ -3,42 +3,33 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v5.0 (Academic Flash Edition)
- * "ozel" mod: Gemini 3 Flash Preview ile multimodal akademik ve karakter analizi.
+ * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v6.0 (Academic Flash Stabilized)
+ * "ozel" mod: Gemini 3 Flash Preview ile multimodal analiz.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API_KEY_MISSING: Sistem yapılandırmasında geçerli bir API anahtarı bulunamadı.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Not: process.env.API_KEY kontrolü runtime'da bazen yanıltıcı olduğu için 
+  // doğrudan SDK constructor'ına paslıyoruz.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   
   const systemInstruction = `
     Sen "Yeni Gün Akademi" için tasarlanmış, Gemini 3.0 Flash mimarisiyle çalışan Üst Düzey Akademik Değerlendirme Uzmanısın.
     
-    ANALİZ PROTOKOLÜ (AKADEMİ DERİNLİĞİ):
-    1. MULTIMODAL MUAYENE: Adayın beyan ettiği eğitimler (${candidate.allTrainings}) ile CV dosyasındaki (varsa) görsel düzeni ve profesyonellik seviyesini karşılaştır.
-    2. BİLİŞSEL ANALİZ: Test yanıtlarını, özel eğitim branşının (${candidate.branch}) gerektirdiği etik ve klinik standartlar çerçevesinde değerlendir.
-    3. DÜŞÜNCE BÜTÇESİ KULLANIMI: Adayın yanıtlarında "mükemmeliyetçi maskeleme" yapıp yapmadığını, kriz sorularındaki (prioritization_1 vb.) önceliklendirme mantığını analiz et.
-    4. STRATEJİK ÇIKTI: Adayın sadece zayıf yönlerini değil, kurumun kültürüne katabileceği "fırsatları" da tanımla.
-    
-    ÖNEMLİ: Yanıtın sadece geçerli bir JSON objesi olmalıdır. Jeton sınırlarını (maxOutputTokens) aşmadan kapsamlı bir rapor sun.
+    ANALİZ PROTOKOLÜ:
+    1. Adayın beyanlarını (${candidate.branch}) ve psikometrik yanıtlarını analiz et.
+    2. "Thinking Budget" kullanarak adayın dürüstlük ve kriz yönetimi kapasitesini ölç.
+    3. Yanıtı SADECE saf JSON formatında döndür.
   `;
 
   const promptText = `
     ADAY VERİ SETİ:
     - İsim: ${candidate.name}
-    - Uzmanlık: ${candidate.branch}
+    - Branş: ${candidate.branch}
     - Deneyim: ${candidate.experienceYears} Yıl
-    - Sertifikalar/Eğitimler: ${candidate.allTrainings}
-    - Kariyer Geçmişi: ${candidate.previousInstitutions}
-    - Psikometrik Senaryo Yanıtları: ${JSON.stringify(candidate.answers)}
+    - Yanıtlar: ${JSON.stringify(candidate.answers)}
   `;
 
   const parts: any[] = [{ text: promptText }];
-
-  // Multimodal CV Desteği
-  if (candidate.cvData && candidate.cvData.base64) {
+  if (candidate.cvData?.base64) {
     parts.push({
       inlineData: {
         data: candidate.cvData.base64,
@@ -54,9 +45,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Jeton Yönetimi (Akademik Güvenlik Paketi)
-        maxOutputTokens: 15000,
-        thinkingConfig: { thinkingBudget: 5000 },
+        maxOutputTokens: 12000,
+        thinkingConfig: { thinkingBudget: 4000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -102,13 +92,12 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     });
 
     const outputText = response.text?.trim();
-    if (!outputText) throw new Error("AI_ENGINE_FAILURE: Model boş yanıt döndürdü.");
+    if (!outputText) throw new Error("AI Motoru boş bir yanıt döndürdü.");
     
     return JSON.parse(outputText) as AIReport;
   } catch (error: any) {
-    console.error("Gemini Akademi Analiz Hatası:", error);
-    if (error.message?.includes("fetch")) throw new Error("Gemini API Bağlantı Hatası: Ağ isteği başarısız oldu.");
-    if (error.message?.includes("JSON")) throw new Error("Analiz Motoru Ayrıştırma Hatası: AI çıktısı geçersiz formatta.");
-    throw new Error(`Akademi Analiz Hatası: ${error.message}`);
+    console.error("Gemini Akademi Teknik Hata:", error);
+    // Hatanın ham halini fırlatıyoruz ki UI'da teşhis edilebilsin
+    throw error;
   }
 };

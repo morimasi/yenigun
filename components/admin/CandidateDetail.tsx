@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
 import { Candidate } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import CandidateReport from '../CandidateReport';
 import StatusBadge from './StatusBadge';
+
+// Note: Removed local Window/aistudio declaration as it conflicts with the environment's pre-defined AIStudio global type.
+// We use type assertion (window as any).aistudio to safely access the pre-configured global object.
 
 interface CandidateDetailProps {
   candidate: Candidate;
@@ -22,14 +24,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
     setErrorMessage(null);
+
     try {
-      // 1. Algoritmik Analiz (Hızlı Ön Denetim)
+      // AKADEMİ PROTOKOLÜ: API Anahtarı Kontrolü
+      // Eğer process.env'de anahtar yoksa ve kullanıcı bir anahtar seçmemişse diyaloğu aç
+      const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+      if (!hasKey && !process.env.API_KEY) {
+        setErrorMessage("Analiz için mülakatçı anahtarı gerekiyor. Lütfen anahtar seçin.");
+        await (window as any).aistudio.openSelectKey();
+        // Seçimden sonra devam etmeye çalış (race condition riskine karşı kullanıcıyı bilgilendirerek)
+      }
+
+      // 1. Algoritmik Analiz
       const algoReport = calculateAlgorithmicAnalysis(candidate);
       
-      // 2. AI Analiz (Gemini 3 Flash - Multimodal Akademi Derinliği)
+      // 2. AI Analiz
       const aiReport = await generateCandidateAnalysis(candidate);
       
-      // 3. Veritabanı Senkronizasyonu
+      // 3. Güncelleme
       const updatedCandidate = { 
         ...candidate, 
         report: aiReport, 
@@ -40,13 +52,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       await onUpdate(updatedCandidate);
       setAnalysisMode('hybrid');
     } catch (e: any) {
-      console.error("Analiz Akış Çökmesi:", e);
-      // "ozel mod" uyarınca derinlemesine hata teşhisi
-      let friendlyError = e.message;
-      if (friendlyError.includes("API_KEY")) friendlyError = "Gemini API Anahtarı eksik veya geçersiz. Lütfen ortam değişkenlerini kontrol edin.";
-      if (friendlyError.includes("fetch")) friendlyError = "Gemini API ile bağlantı kurulamadı. Sunucu zaman aşımına uğramış olabilir.";
+      console.error("Mülakat Motoru Hatası:", e);
       
-      setErrorMessage(friendlyError);
+      // Hata teşhisini şeffaflaştır
+      let msg = e.message || "Bilinmeyen bir hata oluştu.";
+      
+      // Eğer API anahtarı hatasıysa ve mülakatçı anahtarı seçilmemişse
+      if (msg.includes("API key not found") || msg.includes("403") || msg.includes("401")) {
+        msg = "Geçersiz veya Eksik API Anahtarı. Lütfen 'Anahtar Seç' diyaloğunu kullanın veya ortam değişkenlerini kontrol edin.";
+        // Otomatik diyaloğu tetikle (Kullanıcı deneyimi için)
+        (window as any).aistudio.openSelectKey();
+      } else if (msg.includes("fetch")) {
+        msg = "Sunucuya ulaşılamıyor. İnternet bağlantınızı veya VPN durumunuzu kontrol edin.";
+      }
+
+      setErrorMessage(msg);
     } finally {
       setIsAnalysing(false);
     }
@@ -140,7 +160,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
               isAnalysing ? 'bg-slate-200 text-slate-500 animate-pulse' : 'bg-orange-600 text-white hover:bg-slate-900'
             }`}
           >
-            {isAnalysing ? 'Akademi Analizi Sürüyor...' : 'Akademi Motoru Tetikle'}
+            {isAnalysing ? 'Analiz Sürüyor...' : 'Akademi Motoru Tetikle'}
           </button>
           <button 
             onClick={onDelete}
@@ -151,16 +171,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         </div>
       </div>
 
-      {/* Error Message Display - Enhanced Diagnostic UI */}
+      {/* Diagnostic Error Banner */}
       {errorMessage && (
         <div className="mx-10 mt-6 p-6 bg-rose-50 border-2 border-rose-100 rounded-3xl flex items-center gap-4 animate-shake">
-          <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-rose-200">!</div>
+          <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg">!</div>
           <div className="flex-1">
-             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor / Bağlantı Hatası Raporlandı</p>
+             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor / Yetkilendirme Hatası</p>
              <p className="text-sm font-bold text-rose-900 mt-1 leading-snug">{errorMessage}</p>
-             <p className="text-[9px] font-bold text-rose-400 mt-2 uppercase">Lütfen API bağlantısını ve kota limitlerini kontrol edin.</p>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-6 py-3 hover:bg-rose-100 rounded-xl transition-all">KAPAT</button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => (window as any).aistudio.openSelectKey()} 
+              className="bg-white text-slate-900 px-4 py-2 rounded-xl text-[9px] font-black uppercase border border-slate-200"
+            >
+              Anahtar Seç
+            </button>
+            <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-4">KAPAT</button>
+          </div>
         </div>
       )}
 
