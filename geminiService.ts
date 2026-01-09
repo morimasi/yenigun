@@ -3,33 +3,42 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v8.1 (Production/Safe Mode)
- * "ozel" mod: Hata yakalama ve yetkilendirme katmanları stabilize edildi.
+ * Yeni Gün Akademi - Stratejik AI Analiz Motoru v8.6 (Environment First)
+ * "ozel" mod: Vercel ortam değişkenleri ve DB senkronizasyonu öncelikli.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // 1. Dinamik Anahtar Yakalama (Priority: Process Env -> AI Studio Window -> LocalStorage)
+  // 1. Dinamik Anahtar Keşfi
+  // Vercel Panelindeki API_KEY en yüksek önceliğe sahiptir.
   let apiKey = process.env.API_KEY;
+  let source = "ENVIRONMENT";
 
   if (!apiKey || apiKey === "undefined") {
-    // @ts-ignore
-    const aiStudioKey = typeof window !== 'undefined' ? (window as any)._AI_STUDIO_KEY_ : null;
-    apiKey = aiStudioKey || localStorage.getItem('AISTUDIO_LAST_KEY');
+    // @ts-ignore - LocalStorage Fallback (Mülakatçı anahtarı)
+    apiKey = localStorage.getItem('AISTUDIO_LAST_KEY');
+    source = "LOCAL_STORAGE";
   }
 
-  // ÖNEMLİ: Eğer anahtar hala yoksa, sistemi çökertmek yerine kullanıcıyı bilgilendir
   if (!apiKey || apiKey === "selected") {
-    throw new Error("AUTH_MISSING: Sistem geçerli bir API anahtarı bulamadı. Vercel üzerindeyseniz Settings -> Environment Variables kısmına API_KEY eklediğinizden emin olun.");
+    // @ts-ignore - Window Injection (AI Studio Sandbox)
+    apiKey = typeof window !== 'undefined' ? (window as any)._AI_STUDIO_KEY_ : null;
+    source = "WINDOW_INJECT";
+  }
+
+  // ÖNEMLİ: Anahtar yoksa mülakat sürecini durdur ve açık hata ver
+  if (!apiKey) {
+    throw new Error(`ANALİZ_DURDU: Gemini API Anahtarı bulunamadı. Lütfen Vercel panelinde 'API_KEY' değişkenini tanımlayın veya AI Studio üzerinden anahtar seçin.`);
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    Yeni Gün Akademi - Kıdemli Akademik Kurul Üyesi Rolündesin.
-    ADAY ANALİZ PROTOKOLÜ:
-    - Adayın beyan ettiği branş (${candidate.branch}) üzerindeki teknik hakimiyetini ölç.
-    - Senaryo sorularına verdiği yanıtların psikometrik tutarlılığını denetle.
-    - Dürüstlük ve kurumsal aidiyet skorlarını belirle.
-    - ÇIKTI: Sadece JSON formatında, teknik ve vurucu bir analiz.
+    ROL: Yeni Gün Akademi - Kıdemli Akademik Kurul Üyesi.
+    GÖREV: Adayın branşı (${candidate.branch}) ve beyanları üzerinden %100 tarafsız analiz yap.
+    ANALİZ PROTOKOLÜ:
+    - Yanıtlardaki etik açıkları ve profesyonel riskleri tespit et.
+    - SWOT analizi oluştur.
+    - Mülakatçı için 2 adet 'stres test' sorusu hazırla.
+    ÇIKTI: Sadece teknik JSON.
   `;
 
   try {
@@ -37,10 +46,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       model: "gemini-3-flash-preview",
       contents: { 
         parts: [
-          { text: `Aday Verileri: ${JSON.stringify({
+          { text: `Aday Veri Paketi [Analiz Başlat]: ${JSON.stringify({
               name: candidate.name,
-              exp: candidate.experienceYears,
               branch: candidate.branch,
+              exp: candidate.experienceYears,
               answers: candidate.answers
             })}` }
         ] 
@@ -93,14 +102,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    if (!response.text) throw new Error("EMPTY_RESPONSE: Model yanıt vermedi.");
+    if (!response.text) throw new Error("API_NO_TEXT: Yanıt metni alınamadı.");
     
     return JSON.parse(response.text) as AIReport;
   } catch (error: any) {
-    console.error("Gemini Engine Error:", error);
+    console.error(`Gemini Engine Failure [Source: ${source}]:`, error);
     
-    if (error.message?.includes("403") || error.message?.includes("API key not valid")) {
-      throw new Error("YETKİSİZ_ANAHTAR: Girdiğiniz API anahtarı geçersiz veya kısıtlı. Lütfen Google AI Studio'dan 'Paid Service' aktif bir anahtar alın.");
+    if (error.message?.includes("403")) {
+      throw new Error(`YETKİ_RETTİ: '${source}' anahtarı bu işlem için yetkisiz. Lütfen faturalandırması aktif bir anahtar kullanın.`);
     }
     throw error;
   }
