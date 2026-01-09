@@ -79,7 +79,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
     }
     handleStatusChange('interview_scheduled');
     setActiveTab('admin');
-    // Scroll to schedule section
     setTimeout(() => {
       const el = document.getElementById('schedule-form');
       el?.scrollIntoView({ behavior: 'smooth' });
@@ -89,7 +88,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
   return (
     <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 h-full flex flex-col overflow-hidden animate-scale-in">
       {/* Header Section */}
-      <div className="p-10 border-b border-slate-50 bg-slate-50/50 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+      <div className="p-10 border-b border-slate-50 bg-slate-50/50 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 no-print">
         <div className="flex gap-6 items-center">
           <div className="w-20 h-20 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white text-2xl font-black shadow-2xl">
             {candidate.name.charAt(0)}
@@ -120,7 +119,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
               isAnalysing ? 'bg-slate-200 text-slate-500 animate-pulse' : 'bg-orange-600 text-white hover:bg-slate-900'
             }`}
           >
-            {isAnalysing ? 'Derin Analiz Sürüyor...' : 'Motorları Çalıştır'}
+            {isAnalysing ? 'Analiz Sürüyor...' : 'Motorları Tetikle'}
           </button>
           <button 
             onClick={onDelete}
@@ -132,11 +131,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       </div>
 
       {/* Tabs Nav */}
-      <div className="flex bg-white border-b border-slate-50 px-10">
+      <div className="flex bg-white border-b border-slate-50 px-10 no-print">
         {[
-          { id: 'analysis', label: 'Stratejik Analiz Raporu' },
+          { id: 'analysis', label: 'Analiz Raporu' },
           { id: 'info', label: 'Başvuru Dosyası' },
-          { id: 'admin', label: 'Operasyonel Karar' }
+          { id: 'admin', label: 'Mülakat & Karar' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -152,17 +151,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-white">
+      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-white print-container">
         {activeTab === 'analysis' && (
           <div className="space-y-12 animate-fade-in">
              {(candidate.report || candidate.algoReport) ? (
                 <div className="space-y-10">
-                  <div className="flex justify-center">
+                  <div className="flex justify-center no-print">
                     <div className="bg-slate-50 p-2 rounded-2xl flex gap-1 border border-slate-100">
                       {[
-                        { id: 'hybrid', label: 'Hibrid Analiz (AI+ALGO)' },
-                        { id: 'ai', label: 'Sadece AI Modeli' },
-                        { id: 'algo', label: 'Sadece ALGO Modeli' }
+                        { id: 'hybrid', label: 'Hibrid Analiz' },
+                        { id: 'ai', label: 'AI Modeli' },
+                        { id: 'algo', label: 'ALGO Modeli' }
                       ].map(mode => (
                         <button
                           key={mode.id}
@@ -179,12 +178,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                   <CandidateReport 
                     report={candidate.report} 
                     algoReport={candidate.algoReport} 
-                    name={candidate.name} 
+                    candidate={candidate} 
                     viewMode={analysisMode}
                   />
                 </div>
               ) : (
-                <div className="py-32 text-center border-4 border-dashed border-slate-50 rounded-[4rem] flex flex-col items-center">
+                <div className="py-32 text-center border-4 border-dashed border-slate-50 rounded-[4rem] flex flex-col items-center no-print">
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <svg className="w-8 h-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
@@ -196,7 +195,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         )}
 
         {activeTab === 'info' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-fade-in no-print">
              <section className="space-y-8">
                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Uzmanlık Profili</h4>
                <div className="bg-slate-50 p-10 rounded-[3rem] space-y-6 border border-slate-100">
@@ -215,8 +214,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         )}
 
         {activeTab === 'admin' && (
-          <div className="space-y-12 animate-fade-in pb-20">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+          <div className="space-y-12 animate-fade-in pb-20 no-print">
+             {/* Admin tools content as previously defined */}
+             <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
               <section className="space-y-8">
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Statü Yönetimi</h4>
                 <div className="grid grid-cols-2 gap-4">
@@ -245,7 +245,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Yönetici Özel Notları</h4>
                 <textarea
                   className="w-full bg-slate-50 rounded-[3rem] p-10 h-64 outline-none border-2 border-transparent focus:border-orange-500 focus:bg-white transition-all font-bold text-slate-800 text-sm shadow-inner"
-                  placeholder="Mülakat öncesi veya sonrası notlarınız..."
+                  placeholder="Mülakat öncesi notlarınız..."
                   value={candidate.adminNotes || ''}
                   onChange={e => onUpdate({ ...candidate, adminNotes: e.target.value })}
                 />
@@ -257,7 +257,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                 <div className="flex justify-between items-center mb-10">
                    <div>
                       <h4 className="text-2xl font-black tracking-tighter mb-2">Resmi Mülakat Planlayıcı</h4>
-                      <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Adaya Profesyonel Davetiye İletimi</p>
+                      <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Profesyonel Davetiye İletimi</p>
                    </div>
                 </div>
                 
@@ -272,7 +272,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Başlangıç Saati</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Saat</label>
                     <input 
                       type="time" required
                       className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-600 transition-all text-white"
@@ -288,7 +288,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
                         isSendingEmail ? 'bg-slate-700 animate-pulse' : 'bg-orange-600 hover:bg-orange-700 hover:-translate-y-1'
                       }`}
                     >
-                      {isSendingEmail ? 'DAVETİYE İŞLENİYOR...' : (candidate.interviewSchedule?.isNotificationSent ? 'DAVETİYEYİ GÜNCELLE' : 'DAVET ET VE KAYDET')}
+                      {isSendingEmail ? 'İŞLENİYOR...' : (candidate.interviewSchedule?.isNotificationSent ? 'DAVETİYEYİ GÜNCELLE' : 'DAVET ET VE KAYDET')}
                     </button>
                   </div>
                 </form>
