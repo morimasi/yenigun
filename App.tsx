@@ -9,7 +9,19 @@ import { generateCandidateAnalysis } from './geminiService';
 const DEFAULT_CONFIG: GlobalConfig = {
   institutionName: 'Yeni Gün Akademi',
   primaryColor: '#ea580c',
+  accentColor: '#0f172a',
   aiTone: 'balanced',
+  aiWeights: {
+    ethics: 40,
+    clinical: 30,
+    experience: 15,
+    fit: 15
+  },
+  automation: {
+    autoEmailOnSchedule: true,
+    requireCvUpload: true,
+    allowMultipleApplications: false
+  },
   notificationEmail: 'info@yenigun.com',
   lastUpdated: Date.now()
 };
@@ -17,10 +29,7 @@ const DEFAULT_CONFIG: GlobalConfig = {
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [candidates, setCandidates] = useState<Candidate[]>(() => {
-    const local = localStorage.getItem('yeni_gun_candidates');
-    return local ? JSON.parse(local) : [];
-  });
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [config, setConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
   const [isProcessing, setIsProcessing] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -28,6 +37,13 @@ const App: React.FC = () => {
   const loadData = useCallback(async () => {
     const data = await storageService.getCandidates();
     setCandidates(data);
+    
+    const localConfig = localStorage.getItem('yeni_gun_config');
+    if (localConfig) {
+      const parsed = JSON.parse(localConfig);
+      // Eksik alanları varsayılanla tamamla (Migration desteği)
+      setConfig({ ...DEFAULT_CONFIG, ...parsed });
+    }
   }, []);
 
   useEffect(() => {
@@ -64,6 +80,13 @@ const App: React.FC = () => {
     setView('candidate');
   };
 
+  const handleUpdateConfig = (newConfig: GlobalConfig) => {
+    setConfig(newConfig);
+    localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
+    // CSS Değişkenlerini güncelle
+    document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
+  };
+
   if (view === 'admin' && !isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-8">
@@ -82,10 +105,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
-      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] h-28 flex items-center">
+      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] h-28 flex items-center no-print">
         <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black">YG</div>
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black" style={{ backgroundColor: config.accentColor }}>YG</div>
             <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
           </div>
           <div className="flex bg-orange-50 p-2 rounded-full border border-orange-100">
@@ -101,7 +124,7 @@ const App: React.FC = () => {
           candidates={candidates} config={config} 
           onUpdateCandidate={c => { storageService.updateCandidate(c); setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); }}
           onDeleteCandidate={id => { storageService.deleteCandidate(id); setCandidates(prev => prev.filter(x => x.id !== id)); }}
-          onUpdateConfig={c => { setConfig(c); localStorage.setItem('yeni_gun_config', JSON.stringify(c)); }}
+          onUpdateConfig={handleUpdateConfig}
         />}
       </main>
 

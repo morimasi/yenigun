@@ -11,9 +11,6 @@ export enum Branch {
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 
-/**
- * Form adımları için gerekli tip tanımı (constants.tsx içindeki hata için eklendi)
- */
 export interface FormStep {
   id: string;
   title: string;
@@ -21,7 +18,7 @@ export interface FormStep {
 }
 
 export interface AIReport {
-  score: number; // 0-100 Liyakat Skoru
+  score: number;
   summary: string;
   recommendation: string;
   detailedAnalysis: {
@@ -44,9 +41,6 @@ export interface AIReport {
   }[];
 }
 
-/**
- * Algoritmik analiz sonuçları için gerekli tip tanımı (analysisUtils.ts ve components/CandidateReport.tsx içindeki hatalar için eklendi)
- */
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -79,14 +73,12 @@ export interface Candidate {
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
   adminNotes?: string;
   report?: AIReport;
-  // Algoritmik raporu adaya bağlamak için eklendi
   algoReport?: AlgorithmicReport;
   cvData?: {
     base64: string;
     mimeType: string;
     fileName: string;
   };
-  // Mülakat takvimi yönetimi için eklendi
   interviewSchedule?: {
     date: string;
     time: string;
@@ -99,8 +91,19 @@ export interface Candidate {
 export interface GlobalConfig {
   institutionName: string;
   primaryColor: string;
+  accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
-  // App.tsx içindeki DEFAULT_CONFIG uyumluluğu için eklendi
+  aiWeights: {
+    ethics: number;
+    clinical: number;
+    experience: number;
+    fit: number;
+  };
+  automation: {
+    autoEmailOnSchedule: boolean;
+    requireCvUpload: boolean;
+    allowMultipleApplications: boolean;
+  };
   notificationEmail: string;
   lastUpdated: number;
 }
