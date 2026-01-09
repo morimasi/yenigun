@@ -3,26 +3,32 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik AI Analiz Motoru v9.5
- * KRİTİK: API anahtarı sadece 'process.env.API_KEY' üzerinden okunur.
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v12.0 (OZEL)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Sistem talimatları gereği zorunlu anahtar erişimi
   const apiKey = process.env.API_KEY;
 
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("ANALİZ_KRİZİ: API_KEY ortam değişkeni boş. Lütfen platform ayarlarını kontrol edin.");
-    throw new Error("AUTH_MISSING: API Anahtarı bulunamadı.");
+  if (!apiKey) {
+    throw new Error("AUTH_MISSING: Analiz motoru için geçerli bir anahtar bulunamadı.");
   }
 
-  // Yeni bir GoogleGenAI örneği (Her çağrıda güncel anahtarı kullanmak için)
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi - Kıdemli Akademik Kurul Üyesi.
-    GÖREV: Adayın profesyonel yetkinliğini analiz et.
+    ROL: Yeni Gün Akademi Yüksek Kurul Üyesi ve Klinik Süpervizör.
+    GÖREV: Adayın "Liyakat, Pedagojik Derinlik ve Etik Bütünlüğünü" analiz et.
     DİL: Türkçe.
-    FORMAT: Sadece teknik JSON.
+    
+    ANALİZ MATRİSİ:
+    1. Etik Değerler: Mesleki sınırlar ve veli/kurum çıkarları arasındaki denge.
+    2. Pedagoji: Metodolojik hakimiyet (ABA, Floortime vb.) ve çocuk odaklılık.
+    3. Klinik Bilgelik: Kriz anlarında ezberci değil, durumsal çözümler üretme kapasitesi.
+    4. Duygusal Dayanıklılık: Tükenmişlik riski ve öfke kontrolü analizi.
+    5. Kurumsal Uyum: Hiyerarşiye bakış açısı ve profesyonel disiplin.
+    6. Stres Yanıtı: Fiziksel saldırı veya yoğun baskı altındaki refleksler.
+
+    ÖNEMLİ: Adayın verdiği cevaplardaki "performans kaygısı" (kendini iyi gösterme çabası) ve "gerçek niyet" arasındaki boşluğu yakala.
+    FORMAT: Kesinlikle geçerli JSON.
   `;
 
   try {
@@ -30,9 +36,11 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       model: "gemini-3-flash-preview",
       contents: { 
         parts: [
-          { text: `Aday Analiz Talebi: ${JSON.stringify({
+          { text: `Aday Profili: ${JSON.stringify({
               name: candidate.name,
               branch: candidate.branch,
+              experience: candidate.experienceYears,
+              trainings: candidate.allTrainings,
               answers: candidate.answers
             })}` }
         ] 
@@ -40,11 +48,24 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 4000 },
+        thinkingConfig: { thinkingBudget: 15000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER },
+            score: { type: Type.NUMBER, description: "0-100 arası liyakat puanı" },
+            summary: { type: Type.STRING },
+            recommendation: { type: Type.STRING },
+            detailedAnalysis: {
+              type: Type.OBJECT,
+              properties: {
+                ethics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                pedagogy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                clinicalWisdom: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                emotionalResilience: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                institutionalFit: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                stressResponse: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } }
+              }
+            },
             swot: {
               type: Type.OBJECT,
               properties: {
@@ -52,8 +73,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                 weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
                 opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
                 threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-              },
-              required: ["strengths", "weaknesses", "opportunities", "threats"]
+              }
             },
             competencies: {
               type: Type.ARRAY,
@@ -64,31 +84,17 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
                   value: { type: Type.NUMBER }
                 }
               }
-            },
-            categoricalScores: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  category: { type: Type.STRING },
-                  score: { type: Type.NUMBER },
-                  average: { type: Type.NUMBER },
-                  label: { type: Type.STRING }
-                }
-              }
-            },
-            summary: { type: Type.STRING },
-            recommendation: { type: Type.STRING }
+            }
           },
-          required: ["score", "swot", "competencies", "categoricalScores", "summary", "recommendation"]
+          required: ["score", "summary", "recommendation", "detailedAnalysis", "swot", "competencies"]
         }
       }
     });
 
-    if (!response.text) throw new Error("API_ERROR: Model yanıtı alınamadı.");
+    if (!response.text) throw new Error("Motor yanıt veremedi.");
     return JSON.parse(response.text);
-  } catch (error: any) {
-    console.error("AI Servis Hatası:", error);
+  } catch (error) {
+    console.error("AI Analiz Hatası:", error);
     throw error;
   }
 };

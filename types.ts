@@ -5,31 +5,51 @@ export enum Branch {
   Fizyoterapist = 'Fizyoterapist',
   Ergoterapist = 'Ergoterapist',
   DilKonusma = 'Dil ve Konuşma Terapisti',
-  OkulOncesi = 'Okul Öncesi Öğretmeni'
+  OkulOncesi = 'Okul Öncesi Öğretmeni',
+  Odyolog = 'Odyolog'
 }
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 
-export type UserRole = 'superadmin' | 'hr' | 'specialist' | 'viewer';
-
-export interface AdminUser {
+/**
+ * Form adımları için gerekli tip tanımı (constants.tsx içindeki hata için eklendi)
+ */
+export interface FormStep {
   id: string;
-  name: string;
-  role: UserRole;
-  permissions: string[];
+  title: string;
+  description: string;
 }
 
-export interface GlobalConfig {
-  institutionName: string;
-  primaryColor: string;
-  aiTone: 'strict' | 'balanced' | 'empathetic';
-  notificationEmail: string;
-  lastUpdated: number;
+export interface AIReport {
+  score: number; // 0-100 Liyakat Skoru
+  summary: string;
+  recommendation: string;
+  detailedAnalysis: {
+    ethics: AnalysisSegment;
+    pedagogy: AnalysisSegment;
+    clinicalWisdom: AnalysisSegment;
+    emotionalResilience: AnalysisSegment;
+    institutionalFit: AnalysisSegment;
+    stressResponse: AnalysisSegment;
+  };
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  competencies: {
+    name: string;
+    value: number;
+  }[];
 }
 
+/**
+ * Algoritmik analiz sonuçları için gerekli tip tanımı (analysisUtils.ts ve components/CandidateReport.tsx içindeki hatalar için eklendi)
+ */
 export interface AlgorithmicReport {
   overallScore: number;
-  reliabilityIndex: number; 
+  reliabilityIndex: number;
   ethicsScore: number;
   crisisManagementScore: number;
   experienceWeight: number;
@@ -37,10 +57,10 @@ export interface AlgorithmicReport {
   riskFlags: string[];
 }
 
-export interface InterviewFocusQuestion {
-  question: string;
-  targetCompetency: string;
-  reason: string;
+export interface AnalysisSegment {
+  score: number;
+  comment: string;
+  keyPoints: string[];
 }
 
 export interface Candidate {
@@ -58,49 +78,29 @@ export interface Candidate {
   timestamp: number;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
   adminNotes?: string;
-  interviewSchedule?: {
-    date: string;
-    time: string;
-    location: string;
-    method: 'Yüz Yüze' | 'Google Meet' | 'Zoom' | 'Telefon';
-    notes?: string;
-    isNotificationSent: boolean;
-    aiFocusQuestions?: InterviewFocusQuestion[];
-  };
   report?: AIReport;
+  // Algoritmik raporu adaya bağlamak için eklendi
   algoReport?: AlgorithmicReport;
   cvData?: {
     base64: string;
     mimeType: string;
     fileName: string;
   };
-}
-
-export interface AIReport {
-  score: number;
-  swot: {
-    strengths: string[];
-    weaknesses: string[];
-    opportunities: string[];
-    threats: string[];
+  // Mülakat takvimi yönetimi için eklendi
+  interviewSchedule?: {
+    date: string;
+    time: string;
+    method: string;
+    location: string;
+    isNotificationSent: boolean;
   };
-  competencies: {
-    name: string;
-    value: number;
-  }[];
-  categoricalScores: {
-    category: string;
-    score: number;
-    average: number;
-    label: string;
-  }[];
-  summary: string;
-  recommendation: string;
 }
 
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
-  isActive?: boolean;
+export interface GlobalConfig {
+  institutionName: string;
+  primaryColor: string;
+  aiTone: 'strict' | 'balanced' | 'empathetic';
+  // App.tsx içindeki DEFAULT_CONFIG uyumluluğu için eklendi
+  notificationEmail: string;
+  lastUpdated: number;
 }
