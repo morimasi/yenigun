@@ -32,11 +32,18 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
   );
 
   const filteredAndSortedCandidates = useMemo(() => {
+    if (!candidates) return [];
+
     let result = candidates.filter(c => {
-      const matchesSearch = c.name.toLowerCase().includes(filters.search.toLowerCase());
-      const matchesBranch = filters.branches.length === 0 || filters.branches.includes(c.branch);
-      const matchesStatus = filters.statuses.length === 0 || filters.statuses.includes(c.status);
+      // Defensive string check for search
+      const candidateName = (c.name || '').toLowerCase();
+      const searchTerm = (filters.search || '').toLowerCase();
+      const matchesSearch = candidateName.includes(searchTerm);
+
+      const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
+      const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
       const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
+      
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
@@ -46,11 +53,26 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
         let valA: any, valB: any;
         
         switch (key) {
-          case 'score': valA = a.report?.score || 0; valB = b.report?.score || 0; break;
-          case 'age': valA = a.age; valB = b.age; break;
-          case 'experience': valA = a.experienceYears; valB = b.experienceYears; break;
-          case 'name': valA = a.name; valB = b.name; break;
-          default: valA = a.timestamp; valB = b.timestamp; break;
+          case 'score': 
+            valA = a.report?.score ?? 0; 
+            valB = b.report?.score ?? 0; 
+            break;
+          case 'age': 
+            valA = a.age ?? 0; 
+            valB = b.age ?? 0; 
+            break;
+          case 'experience': 
+            valA = a.experienceYears ?? 0; 
+            valB = b.experienceYears ?? 0; 
+            break;
+          case 'name': 
+            valA = (a.name || '').toLowerCase(); 
+            valB = (b.name || '').toLowerCase(); 
+            break;
+          default: 
+            valA = a.timestamp ?? 0; 
+            valB = b.timestamp ?? 0; 
+            break;
         }
 
         if (valA !== valB) {
@@ -64,7 +86,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
 
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      const current = prev[category] as string[];
+      const current = prev[category] as any[];
       return {
         ...prev,
         [category]: current.includes(value) 
@@ -188,11 +210,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
                     {c.report ? `${c.report.score}` : '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-slate-900 text-base leading-tight group-hover:text-orange-600 transition-colors truncate uppercase">{c.name}</h4>
+                    <h4 className="font-black text-slate-900 text-base leading-tight group-hover:text-orange-600 transition-colors truncate uppercase">{c.name || 'İsimsiz Aday'}</h4>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.branch}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.branch || 'Branş Belirtilmemiş'}</span>
                       <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.experienceYears} Yıl</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.experienceYears || 0)} Yıl</span>
                       <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.gender || 'Belirtilmemiş').charAt(0)}</span>
                     </div>

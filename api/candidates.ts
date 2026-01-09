@@ -37,6 +37,7 @@ export default async function handler(request: Request) {
         email TEXT NOT NULL,
         phone TEXT,
         age INTEGER,
+        gender TEXT,
         branch TEXT,
         experience_years INTEGER,
         previous_institutions TEXT,
@@ -52,27 +53,29 @@ export default async function handler(request: Request) {
       );
     `.catch(e => console.error('Schema Sync Error:', e.message));
 
-    // updated_at kolonu yoksa ekle (Migration)
+    // Migration: Eksik kolonları ekle
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;`.catch(() => {});
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;`.catch(() => {});
 
     if (method === 'GET') {
-      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 200;`;
+      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
       const candidates = rows.map(row => ({
         id: row.id,
-        name: row.name,
-        email: row.email,
-        phone: row.phone,
-        age: row.age,
-        branch: row.branch,
-        experienceYears: row.experience_years,
-        previousInstitutions: row.previous_institutions,
-        allTrainings: row.all_trainings,
-        answers: row.answers,
-        status: row.status,
-        adminNotes: row.admin_notes,
-        interviewSchedule: row.interview_schedule,
-        report: row.report,
-        cvData: row.cv_data,
+        name: row.name || 'İsimsiz Aday',
+        email: row.email || '',
+        phone: row.phone || '',
+        age: row.age || 0,
+        gender: row.gender || 'Belirtilmemiş',
+        branch: row.branch || '',
+        experienceYears: row.experience_years || 0,
+        previousInstitutions: row.previous_institutions || '',
+        allTrainings: row.all_trainings || '',
+        answers: row.answers || {},
+        status: row.status || 'pending',
+        adminNotes: row.admin_notes || '',
+        interviewSchedule: row.interview_schedule || null,
+        report: row.report || null,
+        cvData: row.cv_data || null,
         timestamp: new Date(row.updated_at || row.created_at).getTime()
       }));
       return new Response(JSON.stringify(candidates), { status: 200, headers });
@@ -84,11 +87,11 @@ export default async function handler(request: Request) {
       
       await sql`
         INSERT INTO candidates (
-          id, name, email, phone, age, branch, experience_years, 
+          id, name, email, phone, age, gender, branch, experience_years, 
           previous_institutions, all_trainings, answers, status, cv_data, updated_at
         )
         VALUES (
-          ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, 
+          ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
           ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
           ${JSON.stringify(body.cvData || null)}, ${now}
@@ -97,6 +100,10 @@ export default async function handler(request: Request) {
           name = EXCLUDED.name,
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
+          age = EXCLUDED.age,
+          gender = EXCLUDED.gender,
+          branch = EXCLUDED.branch,
+          experience_years = EXCLUDED.experience_years,
           status = EXCLUDED.status,
           answers = EXCLUDED.answers,
           updated_at = ${now}
@@ -109,7 +116,7 @@ export default async function handler(request: Request) {
       const now = new Date().toISOString();
       
       if (body.report) {
-        await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
+        await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, algo_report = ${JSON.stringify(body.algoReport || null)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
       } else if (body.interviewSchedule) {
         await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
       } else {
