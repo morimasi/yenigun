@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tablo şemasını sağlama al
+    // Tablo şemasını ve kolon güncellemesini sağlama al
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -47,12 +47,16 @@ export default async function handler(request: Request) {
         interview_schedule JSONB,
         report JSONB,
         cv_data JSONB,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `.catch(e => console.error('Schema Sync Error:', e.message));
 
+    // updated_at kolonu yoksa ekle (Migration)
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;`.catch(() => {});
+
     if (method === 'GET') {
-      const { rows } = await sql`SELECT * FROM candidates ORDER BY created_at DESC LIMIT 200;`;
+      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 200;`;
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name,
@@ -69,46 +73,49 @@ export default async function handler(request: Request) {
         interviewSchedule: row.interview_schedule,
         report: row.report,
         cvData: row.cv_data,
-        timestamp: new Date(row.created_at).getTime()
+        timestamp: new Date(row.updated_at || row.created_at).getTime()
       }));
       return new Response(JSON.stringify(candidates), { status: 200, headers });
     }
 
     if (method === 'POST') {
       const body = await request.json();
+      const now = new Date().toISOString();
       
-      // UPSERT mantığı (ID varsa güncelle, yoksa ekle)
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, branch, experience_years, 
-          previous_institutions, all_trainings, answers, status, cv_data
+          previous_institutions, all_trainings, answers, status, cv_data, updated_at
         )
         VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, 
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
           ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
-          ${JSON.stringify(body.cvData || null)}
+          ${JSON.stringify(body.cvData || null)}, ${now}
         )
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
           status = EXCLUDED.status,
-          answers = EXCLUDED.answers
+          answers = EXCLUDED.answers,
+          updated_at = ${now}
       `;
-      return new Response(JSON.stringify({ success: true }), { status: 201, headers });
+      return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 201, headers });
     }
 
     if (method === 'PATCH') {
       const body = await request.json();
+      const now = new Date().toISOString();
+      
       if (body.report) {
-        await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, status = ${body.status} WHERE id = ${body.id}`;
+        await sql`UPDATE candidates SET report = ${JSON.stringify(body.report)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
       } else if (body.interviewSchedule) {
-        await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status} WHERE id = ${body.id}`;
+        await sql`UPDATE candidates SET interview_schedule = ${JSON.stringify(body.interviewSchedule)}, status = ${body.status}, updated_at = ${now} WHERE id = ${body.id}`;
       } else {
-        await sql`UPDATE candidates SET status = ${body.status}, admin_notes = ${body.adminNotes || null} WHERE id = ${body.id}`;
+        await sql`UPDATE candidates SET status = ${body.status}, admin_notes = ${body.adminNotes || null}, updated_at = ${now} WHERE id = ${body.id}`;
       }
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+      return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 200, headers });
     }
 
     if (method === 'DELETE') {
