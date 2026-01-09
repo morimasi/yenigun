@@ -36,7 +36,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
       const matchesSearch = c.name.toLowerCase().includes(filters.search.toLowerCase());
       const matchesBranch = filters.branches.length === 0 || filters.branches.includes(c.branch);
       const matchesStatus = filters.statuses.length === 0 || filters.statuses.includes(c.status);
-      const matchesGender = filters.genders.length === 0 || filters.genders.includes(c.gender);
+      const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
@@ -194,7 +194,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, onUpdateCandida
                       <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.experienceYears} Yıl</span>
                       <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.gender.charAt(0)}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{(c.gender || 'Belirtilmemiş').charAt(0)}</span>
                     </div>
                   </div>
                 </div>
