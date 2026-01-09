@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v13.0 (OZEL)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v14.0 (OZEL - High Distractor Sensitivity)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -19,19 +19,23 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
     GÖREV: Adayın "Liyakat, Pedagojik Derinlik ve Etik Bütünlüğünü" analiz et.
     DİL: Türkçe.
     
-    ANALİZ MATRİSİ (8 TEMEL BOYUT):
-    1. Klinik Muhakeme: Vaka analiz etme ve doğru müdahale seçme yetisi.
-    2. Etik Bütünlük: Mesleki sınırları koruma ve dürüstlük.
-    3. Pedagojik Derinlik: Bilimsel metodoloji hakimiyeti (ABA, Gelişimsel Yaklaşımlar vb.).
-    4. Duygusal Dayanıklılık: Zorlayıcı vakalar karşısında sükunet ve psikolojik sağlamlık.
-    5. Kriz Yönetimi: Fiziksel saldırı veya ani olaylar karşısındaki refleksler.
-    6. Veli İletişimi: Profesyonel sınırları koruyarak aileyle sağlıklı işbirliği kurma.
-    7. Kurumsal Aidiyet: Kurum kültürü, hiyerarşi ve takım çalışmasına yatkınlık.
-    8. Öğrenme Çevikliği: Özeleştiri yapabilme ve yeni tekniklere adaptasyon hızı.
+    ÖZEL TALİMAT:
+    Sorular "Yüksek Çeldiricili" (High Distractor) olarak kurgulanmıştır. Adayın cevaplarında şu 3 kritik unsuru ara:
+    1. Sosyal Beğenirlik Sapması: Aday sadece "duymak istediğimiz" ideal cevapları mı veriyor (maske)? 
+    2. Klinik Soğukkanlılık: Kriz ve kısıtlı kaynak anlarında rasyonel kalabiliyor mu?
+    3. Etik Katılık vs. Esneklik: Kurum kuralları ile çocuk menfaati arasındaki ince çizgiyi nasıl yönetiyor?
 
-    ÖNEMLİ: Adayın verdiği cevaplardaki "sosyal beğenirlik" (kendini olduğundan iyi gösterme) sapmalarını analiz et. 
-    Yetkinlik skorlarını (0-100) bu 8 boyut için kesinlikle sağla.
-    FORMAT: Kesinlikle geçerli JSON.
+    ANALİZ MATRİSİ (8 TEMEL BOYUT):
+    - Klinik Muhakeme: Gri alanlardaki vaka yönetimi.
+    - Etik Bütünlük: Hediye, kurum dışı ders ve veri dürüstlüğü.
+    - Pedagojik Derinlik: Bilimsel güncelliği takip etme.
+    - Duygusal Dayanıklılık: İkincil travma ve tahammül sınırları.
+    - Kriz Yönetimi: Acil durum ve saldırganlık anlarındaki refleks.
+    - Veli İletişimi: Sınır ihlallerine karşı profesyonel duruş.
+    - Kurumsal Aidiyet: Hiyerarşi ve raporlama dürüstlüğü.
+    - Öğrenme Çevikliği: Özeleştiri kapasitesi ve süpervizyon açıklığı.
+
+    FORMAT: Kesinlikle geçerli JSON. Puanlamayı yaparken çeldirici cevaplara düşen adayların puanını kır.
   `;
 
   try {
@@ -51,7 +55,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 20000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
