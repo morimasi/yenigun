@@ -3,50 +3,45 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport } from "./types";
 
 /**
- * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v6.0 (Academic Flash Stabilized)
- * "ozel" mod: Gemini 3 Flash Preview ile multimodal analiz.
+ * Yeni Gün Akademi - Gelişmiş AI Analiz Motoru v7.0 (Production Ready)
+ * "ozel" mod: Hata yakalama ve anahtar doğrulama katmanları güçlendirildi.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate): Promise<AIReport> => {
-  // Not: process.env.API_KEY kontrolü runtime'da bazen yanıltıcı olduğu için 
-  // doğrudan SDK constructor'ına paslıyoruz.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  // Global API Key kontrolü - process.env bazen build sırasında boş kalabilir
+  const apiKey = (process.env.API_KEY as string) || (window as any)._AI_STUDIO_KEY_;
+  
+  if (!apiKey || apiKey === "undefined") {
+    throw new Error("API_KEY_NOT_READY: API anahtarı sistem tarafından henüz tanımlanmadı. Lütfen sağ üstteki 'Anahtar Seç' butonunu kullanarak anahtarınızı doğrulayın.");
+  }
+
+  // Her çağrıda taze bir instance oluşturarak stale key riskini sıfırlıyoruz
+  const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    Sen "Yeni Gün Akademi" için tasarlanmış, Gemini 3.0 Flash mimarisiyle çalışan Üst Düzey Akademik Değerlendirme Uzmanısın.
-    
-    ANALİZ PROTOKOLÜ:
-    1. Adayın beyanlarını (${candidate.branch}) ve psikometrik yanıtlarını analiz et.
-    2. "Thinking Budget" kullanarak adayın dürüstlük ve kriz yönetimi kapasitesini ölç.
-    3. Yanıtı SADECE saf JSON formatında döndür.
+    Sen Yeni Gün Akademi için çalışan kıdemli bir İK ve Psikometri uzmanısın.
+    Adayın branş yetkinliğini (${candidate.branch}) ve etik duruşunu analiz et.
+    Yanıtı SADECE geçerli bir JSON objesi olarak döndür. 
+    Lütfen summary kısmını çok dürüst ve vurucu tut.
   `;
 
   const promptText = `
-    ADAY VERİ SETİ:
+    ADAY VERİSİ:
     - İsim: ${candidate.name}
     - Branş: ${candidate.branch}
     - Deneyim: ${candidate.experienceYears} Yıl
-    - Yanıtlar: ${JSON.stringify(candidate.answers)}
+    - CV Özet/Eğitim: ${candidate.allTrainings}
+    - Senaryo Yanıtları: ${JSON.stringify(candidate.answers)}
   `;
-
-  const parts: any[] = [{ text: promptText }];
-  if (candidate.cvData?.base64) {
-    parts.push({
-      inlineData: {
-        data: candidate.cvData.base64,
-        mimeType: candidate.cvData.mimeType
-      }
-    });
-  }
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: { parts },
+      contents: { parts: [{ text: promptText }] },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 12000,
-        thinkingConfig: { thinkingBudget: 4000 },
+        maxOutputTokens: 8000,
+        thinkingConfig: { thinkingBudget: 2000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -91,13 +86,15 @@ export const generateCandidateAnalysis = async (candidate: Candidate): Promise<A
       }
     });
 
-    const outputText = response.text?.trim();
-    if (!outputText) throw new Error("AI Motoru boş bir yanıt döndürdü.");
+    const outputText = response.text;
+    if (!outputText) throw new Error("Modelden geçerli bir veri alınamadı.");
     
     return JSON.parse(outputText) as AIReport;
   } catch (error: any) {
-    console.error("Gemini Akademi Teknik Hata:", error);
-    // Hatanın ham halini fırlatıyoruz ki UI'da teşhis edilebilsin
+    console.error("Akademi Motoru Teknik Detay:", error);
+    if (error.message?.includes("403") || error.message?.includes("key")) {
+      throw new Error("YETKİLENDİRME_HATASI: Mevcut API anahtarınız bu modeli çalıştırmak için yeterli yetkiye sahip değil veya süresi dolmuş.");
+    }
     throw error;
   }
 };

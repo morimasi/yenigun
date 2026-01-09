@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Candidate } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import CandidateReport from '../CandidateReport';
 import StatusBadge from './StatusBadge';
-
-// Note: Removed local Window/aistudio declaration as it conflicts with the environment's pre-defined AIStudio global type.
-// We use type assertion (window as any).aistudio to safely access the pre-configured global object.
 
 interface CandidateDetailProps {
   candidate: Candidate;
@@ -21,27 +19,32 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
   const [analysisMode, setAnalysisMode] = useState<'hybrid' | 'ai' | 'algo'>('hybrid');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Chunk Size Warning için teknik not: Bu uyarı Vite build-time uyarısıdır. 
+  // Uygulama çalışma performansını etkilemez ancak büyük kütüphaneleri optimize etmek iyidir.
+
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
     setErrorMessage(null);
 
     try {
-      // AKADEMİ PROTOKOLÜ: API Anahtarı Kontrolü
-      // Eğer process.env'de anahtar yoksa ve kullanıcı bir anahtar seçmemişse diyaloğu aç
+      // 1. Önce API anahtarının fiziksel varlığını kontrol et
       const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+      
       if (!hasKey && !process.env.API_KEY) {
-        setErrorMessage("Analiz için mülakatçı anahtarı gerekiyor. Lütfen anahtar seçin.");
+        // Eğer anahtar yoksa diyaloğu aç ve işlemi duraklat
+        setErrorMessage("Analiz motorunu çalıştırmak için mülakatçı anahtarınızı doğrulamanız gerekmektedir.");
         await (window as any).aistudio.openSelectKey();
-        // Seçimden sonra devam etmeye çalış (race condition riskine karşı kullanıcıyı bilgilendirerek)
+        setIsAnalysing(false);
+        return;
       }
 
-      // 1. Algoritmik Analiz
+      // 2. Algoritmik Analiz (Hızlı ve Lokal)
       const algoReport = calculateAlgorithmicAnalysis(candidate);
       
-      // 2. AI Analiz
+      // 3. AI Analiz (Gemini API üzerinden)
       const aiReport = await generateCandidateAnalysis(candidate);
       
-      // 3. Güncelleme
+      // 4. Başarılı Sonuç
       const updatedCandidate = { 
         ...candidate, 
         report: aiReport, 
@@ -51,19 +54,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
       
       await onUpdate(updatedCandidate);
       setAnalysisMode('hybrid');
+      setErrorMessage(null);
     } catch (e: any) {
-      console.error("Mülakat Motoru Hatası:", e);
+      console.error("Motor Hatası:", e);
       
-      // Hata teşhisini şeffaflaştır
-      let msg = e.message || "Bilinmeyen bir hata oluştu.";
+      let msg = e.message || "Bilinmeyen bir motor hatası oluştu.";
       
-      // Eğer API anahtarı hatasıysa ve mülakatçı anahtarı seçilmemişse
-      if (msg.includes("API key not found") || msg.includes("403") || msg.includes("401")) {
-        msg = "Geçersiz veya Eksik API Anahtarı. Lütfen 'Anahtar Seç' diyaloğunu kullanın veya ortam değişkenlerini kontrol edin.";
-        // Otomatik diyaloğu tetikle (Kullanıcı deneyimi için)
-        (window as any).aistudio.openSelectKey();
+      // Kullanıcının aldığı hatayı spesifik olarak yakalayalım
+      if (msg.includes("API_KEY") || msg.includes("403") || msg.includes("401")) {
+        msg = "API anahtarı doğrulaması başarısız. Lütfen 'Anahtar Seç' butonuna tıklayarak ücretli bir proje anahtarı seçtiğinizden emin olun.";
       } else if (msg.includes("fetch")) {
-        msg = "Sunucuya ulaşılamıyor. İnternet bağlantınızı veya VPN durumunuzu kontrol edin.";
+        msg = "Ağ bağlantı hatası. Lütfen internetinizi kontrol edin.";
       }
 
       setErrorMessage(msg);
@@ -171,22 +172,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidate, onUpdate, 
         </div>
       </div>
 
-      {/* Diagnostic Error Banner */}
+      {/* Diagnostic Error Banner - Proactive Recovery UI */}
       {errorMessage && (
         <div className="mx-10 mt-6 p-6 bg-rose-50 border-2 border-rose-100 rounded-3xl flex items-center gap-4 animate-shake">
-          <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg">!</div>
+          <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-rose-200">!</div>
           <div className="flex-1">
-             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Motor / Yetkilendirme Hatası</p>
+             <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Bağlantı / Yetki Hatası</p>
              <p className="text-sm font-bold text-rose-900 mt-1 leading-snug">{errorMessage}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <button 
               onClick={() => (window as any).aistudio.openSelectKey()} 
-              className="bg-white text-slate-900 px-4 py-2 rounded-xl text-[9px] font-black uppercase border border-slate-200"
+              className="bg-rose-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-lg hover:bg-rose-700 transition-all"
             >
-              Anahtar Seç
+              Anahtar Seç / Yenile
             </button>
-            <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-xs px-4">KAPAT</button>
+            <button onClick={() => setErrorMessage(null)} className="text-rose-400 font-black text-[9px] uppercase hover:text-rose-600">Hatayı Kapat</button>
           </div>
         </div>
       )}
