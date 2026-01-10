@@ -3,8 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v18.0 (MULTIMODAL FLASH ENGINE)
- * Sadece Gemini 3 Flash Preview kullanarak hızlı ve derinlemesine multimodal analiz sağlar.
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v19.0 (ACADEMIC FOCUS)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -15,19 +14,18 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
   const ai = new GoogleGenAI({ apiKey });
   
-  // Gemini 3 Flash için optimize edilmiş düşünme bütçeleri (Max: 24576)
   const toneSettings = {
     strict: {
       budget: 24576,
-      baseInstruction: "TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ. PERSPEKTİF: CV şişirme ve maskeleme belirtilerini bir dedektif titizliğiyle yakala."
+      baseInstruction: "TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ. PERSPEKTİF: CV şişirme ve müfredat bilgisindeki yüzeyselliği yakala."
     },
     balanced: {
       budget: 16384,
-      baseInstruction: "TON: DENGELİ, PROFESYONEL, OBJEKTİF. PERSPEKTİF: Güçlü yanlar ve riskleri bilimsel bir objektiflikle tart."
+      baseInstruction: "TON: DENGELİ, PROFESYONEL, OBJEKTİF. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu dengeli tart."
     },
     empathetic: {
       budget: 8192,
-      baseInstruction: "TON: GELİŞİM ODAKLI, EMPATİK. PERSPEKTİF: Potansiyel, öğrenme çevikliği ve kültürel değerlere odaklan."
+      baseInstruction: "TON: GELİŞİM ODAKLI, EMPATİK. PERSPEKTİF: Potansiyel ve öğretme heyecanına odaklan."
     }
   };
 
@@ -35,25 +33,22 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const persona = config.aiPersona || { skepticism: 50, empathy: 50, formality: 70 };
 
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Üst Kurul Bilimsel Süpervizörü.
-    GÖREV: Adayın akademik liyakatini, klinik derinliğini ve profesyonel kimliğini analiz et.
+    ROL: Yeni Gün Akademi Üst Kurul Bilimsel Süpervizörü ve Müfredat Denetçisi.
+    GÖREV: Adayın akademik liyakatini (özellikle 1-4. sınıf müfredat bilgisini), klinik derinliğini ve profesyonel kimliğini analiz et.
     DİL: Türkçe.
-    MODEL KARAKTERİ: Multimodal Flash (Hızlı, Çevik, Korelasyonel).
     
-    ${selectedTone.baseInstruction}
+    ÖZEL KRİTER: Adayın Türkçe, Matematik ve Hayat Bilgisi konularındaki basitleştirme (özel eğitime uyarlama) becerisini titizlikle değerlendir. Hatalı akademik bilgi içeren veya öğretim stratejisi zayıf olan adayları puanlamada cezalandır.
 
     PERSONA KALİBRASYONU (0-100 Ölçeğinde):
-    - Şüphecilik Seviyesi: %${persona.skepticism} (Cevaplardaki tutarsızlıklara odaklanma şiddeti)
-    - Empati Derinliği: %${persona.empathy} (Adayın insani ve duygusal potansiyelini değerlendirme hassasiyeti)
-    - Resmiyet Ölçeği: %${persona.formality} (Raporun dilindeki akademik ve kurumsal ciddiyet seviyesi)
+    - Şüphecilik Seviyesi: %${persona.skepticism}
+    - Empati Derinliği: %${persona.empathy}
+    - Resmiyet Ölçeği: %${persona.formality}
 
     STRATEJİK AĞIRLIKLAR:
     - Etik Bütünlük: %${config.aiWeights.ethics}
-    - Klinik Muhakeme: %${config.aiWeights.clinical}
+    - Klinik Muhakeme ve Müfredat Bilgisi: %${config.aiWeights.clinical}
     - Deneyim/Donanım: %${config.aiWeights.experience}
     - Kurumsal Uyum: %${config.aiWeights.fit}
-
-    ÖNEMLİ: Analiz dilini seçilen persona metriklerine göre şekillendir. Gemini 3 Flash multimodal yeteneklerini kullanarak hem CV verilerini hem de senaryo yanıtlarını çapraz kontrol et.
 
     FORMAT: Kesinlikle geçerli JSON.
   `;
@@ -61,7 +56,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Profili ve Yanıtları: ${JSON.stringify({
+        { text: `Aday Profili ve Yanıtları (Müfredat Soruları Dahil): ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
             experience: candidate.experienceYears,
@@ -72,7 +67,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       ] 
     };
 
-    // Eğer CV verisi varsa multimodal olarak ekle
     if (candidate.cvData) {
       contents.parts.push({
         inlineData: {
@@ -83,7 +77,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Kullanıcı talebi üzerine sadece Flash modeli
+      model: "gemini-3-flash-preview",
       contents,
       config: {
         systemInstruction,
@@ -94,7 +88,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           properties: {
             score: { type: Type.NUMBER, description: "Genel liyakat katsayısı (0-100)" },
             summary: { type: Type.STRING, description: "Kritik stratejik icra özeti" },
-            recommendation: { type: Type.STRING, description: "Mülakat kararı ve temel yönetim tavsiyesi" },
+            recommendation: { type: Type.STRING, description: "Mülakat kararı ve akademik yetkinlik notu" },
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
@@ -134,7 +128,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     if (!response.text) throw new Error("AI Engine yanıt üretemedi.");
     return JSON.parse(response.text);
   } catch (error) {
-    console.error("Flash Persona Analiz Hatası:", error);
+    console.error("Flash Academic Engine Hatası:", error);
     throw error;
   }
 };

@@ -7,6 +7,11 @@ export const FORM_STEPS: FormStep[] = [
     title: 'Akademik Kimlik', 
     description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz. Lütfen sadece klinik deneyimlerinize odaklanın.' 
   },
+  { 
+    id: 'academic_proficiency', 
+    title: 'İlkokul Akademik Yetkinlik', 
+    description: '1-4. Sınıf seviyesindeki temel müfredat bilgisi ve bu bilginin özel eğitimde aktarım stratejileri.' 
+  },
   { id: 'logic_literacy', title: 'Operasyonel Zeka', description: 'Karmaşık kriz anlarında mantıksal önceliklendirme kapasitesi.' },
   { id: 'professional_cases', title: 'Etik İkilemler', description: 'Profesyonel ahlak ile kurumsal gerçeklik arasındaki denge.' },
   { id: 'psychological_integrity', title: 'Psikolojik Sınırlar', description: 'Tükenmişlik ve duygusal düzenleme analizi.' },
@@ -14,6 +19,101 @@ export const FORM_STEPS: FormStep[] = [
 ];
 
 export const MOCK_QUESTIONS = {
+  academic_proficiency: [
+    // --- AKADEMİK İÇERİK SORULARI (1-4 SINIF) ---
+    {
+      id: 'math_logic_1',
+      text: 'Matematik (1-2. Sınıf): "15 - 7 = ?" işlemini parmak hesabı dışında yapamayan ve onluk bozma mantığını kavrayamayan bir öğrenciye "Onluk Bloklar" dışında hangi somutlaştırma tekniğini kullanırsınız?',
+      type: 'textarea'
+    },
+    {
+      id: 'turkish_literacy_1',
+      text: 'Türkçe (2-3. Sınıf): Bir metnin "Ana Fikri" ile "Konusu" arasındaki farkı anlamakta zorlanan dislektik bir öğrenciye bu ayrımı en basit hangi görselleştirme tekniğiyle anlatırsınız?',
+      type: 'radio',
+      options: [
+        'Zihin haritası kullanarak (Merkez: Konu, Oklar: Detaylar).',
+        'Tanım ezberleterek (Sürekli tekrar yöntemi).',
+        'Metni beş kez yüksek sesle okutarak.',
+        'Önceki yılların sınav sorularını çözdürerek.'
+      ]
+    },
+    {
+      id: 'social_science_1',
+      text: 'Hayat Bilgisi (1-4. Sınıf): Geri dönüşüm (Cam, Kağıt, Plastik) kavramını zihinsel yetersizliği olan bir öğrenciye öğretirken hangi duyusal yöntemi önceliklendirirsiniz?',
+      type: 'radio',
+      options: [
+        'Sadece video izleterek görsel pekiştirme.',
+        'Dokunarak ayrıştırma (Gerçek materyallerle istasyon çalışması).',
+        'Konuyla ilgili şarkı besteleyerek işitsel bellek oluşturma.',
+        'Ders kitabındaki boyama etkinliklerini yaparak.'
+      ]
+    },
+    {
+      id: 'math_place_value',
+      text: 'Matematik (3. Sınıf): 348 sayısında 4 rakamının "basamak değeri" ile "sayı değeri" arasındaki farkı anlamayan öğrenciye "para modelleri" (100 TL, 10 TL, 1 TL) üzerinden nasıl bir müdahale yaparsınız?',
+      type: 'textarea'
+    },
+    {
+      id: 'turkish_context_clues',
+      text: 'Türkçe (4. Sınıf): "Yüz" kelimesinin eş sesli (sayı, çehre, yüzmek) anlamlarını ayıramayan bir öğrenciye "Bağlamdan Anlam Çıkarma" becerisini kazandırmak için hangi yöntemi seçersiniz?',
+      type: 'radio',
+      options: [
+        'Cümle kartları ve görsel eşleme (Görsel Destekli Bağlam).',
+        'Sözlükten tanımları defterine yazdırma.',
+        'Kelimeleri onar kez cümle içinde kullandırtma.',
+        'Sadece test soruları üzerinden pekiştirme.'
+      ]
+    },
+    {
+      id: 'social_economic_literacy',
+      text: 'Hayat Bilgisi (2-3. Sınıf): "İstek" ve "İhtiyaç" kavramlarını sürekli karıştıran ve dürtü kontrolü zayıf bir öğrenciye "Alışveriş Listesi" oyununu nasıl adapte edersiniz?',
+      type: 'textarea'
+    },
+    {
+      id: 'general_culture_ataturk',
+      text: 'Genel Kültür / Sosyal Bilgiler: Kurtuluş Savaşı ve Atatürk İlkeleri gibi soyut tarihsel kavramları, zaman algısı gelişmemiş bir öğrenciye "Zaman Şeridi" (Timeline) üzerinde nasıl somutlaştırırsınız?',
+      type: 'textarea'
+    },
+    
+    // --- ÖĞRETİM METODOLOJİSİ VE SUNUM BECERİLERİ SORULARI ---
+    {
+      id: 'pedagogy_scaffolding',
+      text: 'Dersi Sunma: Karmaşık bir yönergeyi (Örn: "Kitabının 25. sayfasını aç, 3. soruyu oku ve altını çiz") işlemleme hızı düşük bir öğrenciye sunarken izleyeceğiniz "Yönerge Analizi" basamakları nelerdir?',
+      type: 'textarea'
+    },
+    {
+      id: 'pedagogy_multisensory',
+      text: 'Öğretim Stratejisi: "Okuma-Yazmaya Hazırlık" aşamasında sesleri (fonemleri) hissettirirken "VAKT" (Görsel-İşitsel-Kinestetik-Dokunsal) yöntemini bir ders saati içinde nasıl kurgularsınız?',
+      type: 'radio',
+      options: [
+        'Sesi kum havuzunda yazdırma ve eş zamanlı telaffuz (Çok duyulu yaklaşım).',
+        'Sadece akıllı tahtadan harfin yazılışını izletme.',
+        'Harfin çalışma sayfasındaki noktalarını birleştirme.',
+        'Harfi bakarak deftere beş satır kopyalama.'
+      ]
+    },
+    {
+      id: 'pedagogy_errorless',
+      text: 'Hata Ayıklama: Bir matematik kavramını (Örn: Ritmik sayma) "Hatasız Öğretim" (Errorless Learning) yöntemiyle sunarken, öğrencinin yanlış yapmasına fırsat vermeden nasıl bir ipucu (Prompt) hiyerarşisi izlersiniz?',
+      type: 'textarea'
+    },
+    {
+      id: 'pedagogy_abstraction',
+      text: 'Somuttan Soyuta Geçiş: Kesirler (1/2, 1/4) konusunu anlatırken; nesne (elma), resim (daire grafiği) ve sembol (1/2 yazısı) arasındaki geçişte öğrencinin takılmaması için hangi "köprü kurma" stratejisini kullanırsınız?',
+      type: 'radio',
+      options: [
+        'CRA (Concrete-Representational-Abstract) modelini sırasıyla uygulama.',
+        'Önce sembolü ezberletip sonra somut örneğe geçme.',
+        'Sadece somut materyalde kalıp sembole hiç geçmeme.',
+        'Doğrudan test çözdürerek pratik yapma.'
+      ]
+    },
+    {
+      id: 'pedagogy_motivation',
+      text: 'Dersi Başlatma ve Dikkat: Akademik olarak zorlandığı için dersi reddeden bir öğrenciye, 4. sınıf sosyal bilgiler konusunu "İlgi Temelli Öğretim" ile nasıl cazip hale getirirsiniz?',
+      type: 'textarea'
+    }
+  ],
   logic_literacy: [
     { 
       id: 'prioritization_1', 
@@ -23,7 +123,7 @@ export const MOCK_QUESTIONS = {
         'Müdürü (İdari iş bekleyebilir).', 
         'Veliyi (Duygusal destek ertelenebilir).', 
         'Öğrenciyi (Güvenliyse kısa süre bekletilebilir).', 
-        'Hepsini aynı anda yönetirim (Performans maskesi).'
+        'Hepsini aynı anda yönetirim (Performans maskesi)'
       ] 
     },
     {
@@ -35,39 +135,6 @@ export const MOCK_QUESTIONS = {
         'Tekniği bırakırım ve bildiğim gibi yaparım (Gizli inisiyatif).',
         'Aileye verilerle tekniğin zararlarını anlatır, alternatif bir yol haritası sunarım.',
         'Kurum yönetimine durumu bildirip onların karar vermesini beklerim.'
-      ]
-    },
-    {
-      id: 'emergency_evac',
-      text: 'Bir deprem tatbikatı sırasında ağır otizmli bir öğrenciniz öfke nöbetine girdi ve yere yattı. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'Sakinleşene kadar beklerim, can güvenliği nöbet bittikten sonra gelir.',
-        'Öğrenciyi zorla da olsa binadan çıkarırım; fiziksel güvenlik klinik konfordan üstündür.',
-        'Diğer öğrencileri tahliye edip onun yanında kalırım.',
-        'Yardım çağırırım ve o gelene kadar kriz yönetimi protokolünü uygularım.'
-      ]
-    },
-    {
-      id: 'report_pressure',
-      text: 'Müdürünüz, bir öğrencinin gelişimini olduğundan çok daha iyi gösteren bir rapor yazmanızı istedi. Tavrınız?',
-      type: 'radio',
-      options: [
-        'İşimi kaybetmemek için istenen şekilde düzenlerim.',
-        'Verileri manipüle etmeden, sadece olumlu yönleri vurgulayarak yazarım.',
-        'Kesinlikle reddederim ve gerekirse istifa ederim.',
-        'Müdürle görüşüp bilimsel gerçeklerin kurum itibarını koruyacağını anlatırım.'
-      ]
-    },
-    {
-      id: 'resource_conflict',
-      text: 'Kısıtlı bir materyal bütçesi var. Birinci aday öğrenci çok hızlı gelişiyor, ikinci aday öğrenci ise çok yavaş. Bütçeyi kime ayırırsınız?',
-      type: 'radio',
-      options: [
-        'Hızlı gelişene; başarıyı maksimize etmek için.',
-        'Yavaş gelişene; geride kalmaması için.',
-        'Eşit bölerim; adalet her şeydir.',
-        'Materyali kurumun ortak havuzuna alıp herkesin dönüşümlü kullanmasını sağlarım.'
       ]
     }
   ],
@@ -82,50 +149,6 @@ export const MOCK_QUESTIONS = {
         'Derhal hem aileye hem yönetime raporlarım; etik dürüstlük her şeydir.',
         'Çocuğun o günkü huysuzluğunu bahane ederek olayı yumuşatırım.'
       ]
-    },
-    {
-      id: 'parent_bribe',
-      text: 'Bir veli, çocuğuna ekstra zaman ayırmanız karşılığında kurumun ihtiyacı olan pahalı bir eğitim materyalini bağışlamak istiyor. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'Kabul ederim, kurumun materyale ihtiyacı var ve herkes faydalanacak.',
-        'Reddederim ve bu teklifi etik ihlal olarak yönetime bildiririm.',
-        'Veliyi kırmadan, bağışı yapabileceğini ama bunun seansları etkilemeyeceğini söylerim.',
-        'Kurum müdürüne danışırım, kararı ona bırakırım.'
-      ]
-    },
-    {
-      id: 'outside_tutoring',
-      text: 'Kurumunuzda eğitim alan bir öğrencinin ailesi, akşamları evde de ücretli özel ders vermenizi istiyor. Yaklaşımınız?',
-      type: 'radio',
-      options: [
-        'Ek gelir için kabul ederim, çocuk için de süreklilik olur.',
-        'Kurumun bilgisi dahilinde ve mesai saatleri dışında olduğu için yaparım.',
-        'Profesyonel sınırları ve kurum etiğini korumak adına kesinlikle reddederim.',
-        'Bir başka arkadaşıma yönlendiririm, o da beni kendi öğrencisine yönlendirir.'
-      ]
-    },
-    {
-      id: 'social_media',
-      text: 'Başarılı bir seansın ardından veli, çocuğun videosunu sosyal medyada paylaşmanız için ısrarla izin veriyor. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'Veli izni olduğu için kurumun reklamı adına paylaşırım.',
-        'Yüzünü kapatarak veya anonimleştirerek paylaşırım.',
-        'Etik kurallar ve çocuğun gelecekteki mahremiyeti için reddederim.',
-        'Sadece kurumun resmi hesabından paylaşılmasına izin veririm.'
-      ]
-    },
-    {
-      id: 'diagnosis_clash',
-      text: 'Doktorun koyduğu tanının yanlış olduğunu ve çocuğun aslında farklı bir spektrumda olduğunu düşünüyorsunuz. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'Kendi gözlemime göre program hazırlarım, tanıyı önemsemem.',
-        'Veliye doktorun hatalı olduğunu açıkça söylerim.',
-        'Bilimsel verilerimle bir rapor hazırlayıp aileyi tekrar değerlendirmeye yönlendiririm.',
-        'Kurum psikoloğu ile görüşüp durumu sessizce izlerim.'
-      ]
     }
   ],
   psychological_integrity: [
@@ -139,50 +162,6 @@ export const MOCK_QUESTIONS = {
         '"Bu çocukla bağım koptu, bir başkası devralmalı" (Kaçınma).',
         '"Bu davranışın işlevini bulup müdahale planımı güncellemeliyim" (Klinik soğukkanlılık).'
       ]
-    },
-    {
-      id: 'secondary_trauma',
-      text: 'Bir veli seans öncesi size uğradığı aile içi şiddeti detaylarıyla anlattı. Seansa nasıl girersiniz?',
-      type: 'radio',
-      options: [
-        'Duygularımı bastırır, hiçbir şey olmamış gibi seansa odaklanırım.',
-        'Çok etkilenmişsem seansı iptal ederim veya kısa keserim.',
-        'Veliye destek olduktan sonra, profesyonel rolüme geçmek için kısa bir mola verip seansa girerim.',
-        'Seans sırasında velinin anlattıklarını düşünürüm, odağım dağılır.'
-      ]
-    },
-    {
-      id: 'burnout_signal',
-      text: 'Sabahları kuruma gelirken "Yine mi aynı vakalar?" diye düşündüğünüzü fark ettiniz. İlk aksiyonunuz?',
-      type: 'radio',
-      options: [
-        'Tatile çıkarım veya izin alırım.',
-        'Bunun geçici bir dönem olduğunu düşünüp çalışmaya devam ederim.',
-        'Süpervizyon alırım ve vaka yükümü/metodolojimi gözden geçiririm.',
-        'Branş değişikliği yapmayı düşünürüm.'
-      ]
-    },
-    {
-      id: 'parent_transference',
-      text: 'Bir veli size karşı aşırı bir duygusal yakınlık veya hayranlık geliştirdi. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'İletişimi tamamen keserim.',
-        'Bu güveni kullanarak çocuğun programına daha çok uymalarını sağlarım.',
-        'Profesyonel sınırları hatılatır, gerekirse vakayı bir başka uzmana devrederim.',
-        'Görmezden gelirim, sonuçta eğitim süreci devam ediyor.'
-      ]
-    },
-    {
-      id: 'peer_burnout',
-      text: 'Çok yakın bir mesai arkadaşınızın çocuklara karşı tahammülsüzleştiğini ve sesini yükselttiğini gördünüz. Ne yaparsınız?',
-      type: 'radio',
-      options: [
-        'Arkadaşım olduğu için görmezden gelirim.',
-        'Onunla baş başa konuşup dinlenmesi gerektiğini söylerim.',
-        'Kurum yönetimine bildiririm; çocuk güvenliği arkadaşlıktan önce gelir.',
-        'Aynı durumda ben olsam ne yapardım diye düşünür, bir şey yapmam.'
-      ]
     }
   ],
   development: [
@@ -194,27 +173,6 @@ export const MOCK_QUESTIONS = {
     {
       id: 'scientific_update',
       text: 'Son bir yıl içerisinde kendi branşınızda okuduğunuz en önemli bilimsel makale veya teknik gelişme nedir? Pratiğinizi nasıl değiştirdi?',
-      type: 'textarea'
-    },
-    {
-      id: 'supervision_need',
-      text: 'Hangi vaka türlerinde kendinizi "yetersiz" hissediyorsunuz ve bu alanda ne yapmayı planlıyorsunuz?',
-      type: 'textarea'
-    },
-    {
-      id: 'feedback_response',
-      text: 'Kurum müdürünün bir seansınızdan sonra yaptığı sert eleştiriye (haksız olduğunu düşünseniz bile) ilk tepkiniz ne olur?',
-      type: 'radio',
-      options: [
-        'Savunmaya geçerim ve neden yanıldığını anlatırım.',
-        'Sessiz kalır ama içten içe müdüre bilenirim.',
-        'Eleştiriyi not alırım, üzerinde düşünür ve bir sonraki seansta deneme yapıp geri bildirim veririm.',
-        'İstifa etmeyi düşünürüm.'
-      ]
-    },
-    {
-      id: 'five_year_vision',
-      text: 'Bundan 5 yıl sonra, bir uzman olarak Yeni Gün Akademi\'ye ne katmış olmayı hedefliyorsunuz? (Somut bir proje/alan belirtin)',
       type: 'textarea'
     }
   ]
