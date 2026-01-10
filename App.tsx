@@ -11,6 +11,11 @@ const DEFAULT_CONFIG: GlobalConfig = {
   primaryColor: '#ea580c',
   accentColor: '#0f172a',
   aiTone: 'balanced',
+  aiPersona: {
+    skepticism: 50,
+    empathy: 50,
+    formality: 70
+  },
   aiWeights: {
     ethics: 40,
     clinical: 30,

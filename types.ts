@@ -93,6 +93,11 @@ export interface GlobalConfig {
   primaryColor: string;
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
+  aiPersona: {
+    skepticism: number; // 0-100
+    empathy: number;    // 0-100
+    formality: number;  // 0-100
+  };
   aiWeights: {
     ethics: number;
     clinical: number;

@@ -15,6 +15,13 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
     });
   };
 
+  const handlePersonaChange = (key: keyof GlobalConfig['aiPersona'], value: number) => {
+    onUpdateConfig({
+      ...config,
+      aiPersona: { ...config.aiPersona, [key]: value }
+    });
+  };
+
   const handleAutomationToggle = (key: keyof GlobalConfig['automation']) => {
     onUpdateConfig({
       ...config,
@@ -146,7 +153,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
              </div>
           </div>
 
-          {/* AI Ağırlıkları Panel */}
+          {/* AI Ağırlıkları ve Persona Panel */}
           <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 relative">
             <div className="flex justify-between items-start mb-12">
               <div>
@@ -159,7 +166,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {/* Karar Ağırlıkları */}
               <div className="space-y-10">
+                <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Stratejik Karar Ağırlıkları</h5>
                 {[
                   { id: 'ethics', label: 'Etik Bütünlük Ağırlığı', desc: 'Sınır ihlali ve dürüstlük denetimi.' },
                   { id: 'clinical', label: 'Klinik Muhakeme Ağırlığı', desc: 'Vaka yönetimi ve metodolojik derinlik.' },
@@ -184,27 +193,57 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                 ))}
               </div>
 
-              <div className="space-y-8 bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
-                <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Analiz Üretim Tonu</h5>
-                <div className="flex flex-col gap-4">
-                  {[
-                    { id: 'strict', label: 'Rijit / Sorgulayıcı', desc: 'Risk odaklı, en küçük açığı dahi raporlar.' },
-                    { id: 'balanced', label: 'Dengeli / Objektif', desc: 'Yetenek ve riskleri eşit oranda tartar.' },
-                    { id: 'empathetic', label: 'Gelişim Odaklı', desc: 'Potansiyele odaklanır, yapıcı eleştiri sunar.' }
-                  ].map(t => (
-                    <button
-                      key={t.id}
-                      onClick={() => onUpdateConfig({...config, aiTone: t.id as any})}
-                      className={`text-left p-6 rounded-[2rem] border-2 transition-all ${
-                        config.aiTone === t.id 
-                        ? 'bg-white border-orange-600 shadow-xl' 
-                        : 'bg-transparent border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${config.aiTone === t.id ? 'text-orange-600' : 'text-slate-400'}`}>{t.label}</p>
-                      <p className="text-[9px] font-bold text-slate-600 uppercase">{t.desc}</p>
-                    </button>
-                  ))}
+              {/* Persona ve Karakter İnce Ayarları */}
+              <div className="space-y-10">
+                <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 mb-8">
+                  <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Analiz Üretim Tonu</h5>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { id: 'strict', label: 'Rijit / Sorgulayıcı', desc: 'Risk odaklı, en küçük açığı dahi raporlar.' },
+                      { id: 'balanced', label: 'Dengeli / Objektif', desc: 'Yetenek ve riskleri eşit oranda tartar.' },
+                      { id: 'empathetic', label: 'Gelişim Odaklı', desc: 'Potansiyele odaklanır, yapıcı eleştiri sunar.' }
+                    ].map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => onUpdateConfig({...config, aiTone: t.id as any})}
+                        className={`text-left p-6 rounded-[2rem] border-2 transition-all ${
+                          config.aiTone === t.id 
+                          ? 'bg-white border-orange-600 shadow-xl' 
+                          : 'bg-transparent border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${config.aiTone === t.id ? 'text-orange-600' : 'text-slate-400'}`}>{t.label}</p>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase">{t.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-orange-50/50 p-10 rounded-[3rem] border border-orange-100">
+                  <h5 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-8">Karakter İnce Ayarları (Persona)</h5>
+                  <div className="space-y-8">
+                    {[
+                      { id: 'skepticism', label: 'Şüphecilik Seviyesi', desc: 'Tutarsızlık yakalama şiddeti.' },
+                      { id: 'empathy', label: 'Empati Derinliği', desc: 'İnsani potansiyel hassasiyeti.' },
+                      { id: 'formality', label: 'Resmiyet Ölçeği', desc: 'Terminolojik ağırlık ve ciddiyet.' }
+                    ].map(p => (
+                      <div key={p.id} className="space-y-3">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{p.label}</p>
+                            <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">{p.desc}</p>
+                          </div>
+                          <span className="text-xl font-black text-orange-600">%{config.aiPersona[p.id as keyof typeof config.aiPersona]}</span>
+                        </div>
+                        <input 
+                          type="range" min="0" max="100" 
+                          value={config.aiPersona[p.id as keyof typeof config.aiPersona]} 
+                          onChange={e => handlePersonaChange(p.id as any, parseInt(e.target.value))}
+                          className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-orange-600"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,8 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v16.0 (OZEL - Deep Tone Sensitivity)
- * Gemini 3 Pro Preview kullanarak karmaşık muhakeme ve dinamik düşünme bütçesi uygular.
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v18.0 (MULTIMODAL FLASH ENGINE)
+ * Sadece Gemini 3 Flash Preview kullanarak hızlı ve derinlemesine multimodal analiz sağlar.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -15,78 +15,76 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
   const ai = new GoogleGenAI({ apiKey });
   
-  // AI Tonuna göre dinamik Düşünme Bütçesi ve Talimat Seti
+  // Gemini 3 Flash için optimize edilmiş düşünme bütçeleri (Max: 24576)
   const toneSettings = {
     strict: {
-      budget: 32768, // Maksimum derinlik
-      instruction: `
-        TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ.
-        PERSPEKTİF: Adayın her cümlesinde bir tutarsızlık, "CV şişirme" veya "sosyal beğenirlik maskesi" ara. 
-        KARAKTER: Bir adli tıp uzmanı titizliğiyle, adayın etik boşluklarını ve klinik yetersizliklerini raporla. 
-        KURAL: Merhamet gösterme; sadece ham liyakat, veri tutarlılığı ve kusursuz profesyonel ahlak odaklı ol.
-        HEDEF: Kurumu en küçük riskten korumak için en sert filtreyi uygula.
-      `
+      budget: 24576,
+      baseInstruction: "TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ. PERSPEKTİF: CV şişirme ve maskeleme belirtilerini bir dedektif titizliğiyle yakala."
     },
     balanced: {
-      budget: 24576,
-      instruction: `
-        TON: DENGELİ, PROFESYONEL, OBJEKTİF.
-        PERSPEKTİF: Adayın güçlü yanlarını ve risklerini eşit ağırlıkta tart. 
-        KARAKTER: Objektif bir bilim insanı yaklaşımıyla, cevapları mesleki standartlar ve Yeni Gün Akademi kültürüyle kıyasla.
-        KURAL: Kanıta dayalı analiz yap. Adayın "gerçek" yetkinliği ile "algılanan" yetkinliği arasındaki farkı raporla.
-        HEDEF: Kurumun ihtiyacı olan ideal uzman profilini rasyonel verilerle tespit et.
-      `
+      budget: 16384,
+      baseInstruction: "TON: DENGELİ, PROFESYONEL, OBJEKTİF. PERSPEKTİF: Güçlü yanlar ve riskleri bilimsel bir objektiflikle tart."
     },
     empathetic: {
-      budget: 16384,
-      instruction: `
-        TON: GELİŞİM ODAKLI, EMPATİK, KOÇLUK YAKLAŞIMI.
-        PERSPEKTİF: Adayın potansiyeline, öğrenme çevikliğine ve "işlenmemiş elmas" olup olmadığına odaklan.
-        KARAKTER: Bir mentor gözüyle, adayın eksiklerini "geliştirilebilir alanlar" olarak kodla ve kuruma katacağı kültürel değeri analiz et.
-        KURAL: Duygusal zekayı (EQ) ve uzun vadeli bağlılık potansiyelini ön planda tut.
-        HEDEF: Gelişime açık, kurum vizyonuna tutkuyla bağlanacak adayları tespit et.
-      `
+      budget: 8192,
+      baseInstruction: "TON: GELİŞİM ODAKLI, EMPATİK. PERSPEKTİF: Potansiyel, öğrenme çevikliği ve kültürel değerlere odaklan."
     }
   };
 
   const selectedTone = toneSettings[config.aiTone] || toneSettings.balanced;
+  const persona = config.aiPersona || { skepticism: 50, empathy: 50, formality: 70 };
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Üst Kurul Bilimsel Süpervizörü.
     GÖREV: Adayın akademik liyakatini, klinik derinliğini ve profesyonel kimliğini analiz et.
     DİL: Türkçe.
+    MODEL KARAKTERİ: Multimodal Flash (Hızlı, Çevik, Korelasyonel).
     
-    ${selectedTone.instruction}
+    ${selectedTone.baseInstruction}
 
-    STRATEJİK AĞIRLIKLAR (Bu oranlara göre skorlama yap):
-    - Etik Bütünlük (Sınırlar ve Dürüstlük): %${config.aiWeights.ethics}
-    - Klinik Muhakeme (Vaka Yönetimi): %${config.aiWeights.clinical}
-    - Deneyim/Donanım (Geçmiş ve Sertifikasyon): %${config.aiWeights.experience}
-    - Kurumsal Uyum (Kültür ve Hiyerarşi): %${config.aiWeights.fit}
+    PERSONA KALİBRASYONU (0-100 Ölçeğinde):
+    - Şüphecilik Seviyesi: %${persona.skepticism} (Cevaplardaki tutarsızlıklara odaklanma şiddeti)
+    - Empati Derinliği: %${persona.empathy} (Adayın insani ve duygusal potansiyelini değerlendirme hassasiyeti)
+    - Resmiyet Ölçeği: %${persona.formality} (Raporun dilindeki akademik ve kurumsal ciddiyet seviyesi)
 
-    ANALİZ MATRİSİ:
-    1. Sosyal Beğenirlik Denetimi: Aday "mükemmel" görünmeye mi çalışıyor? İdealize edilmiş cevaplardaki mantık hatalarını bul.
-    2. Klinik Derinlik Analizi: Metodoloji bilgisi (ABA, Denver, Floortime vb.) sadece terimsel mi yoksa uygulama tecrübesi mi içeriyor?
-    3. Stres ve Kriz Refleksi: Baskı altındaki önceliklendirme kapasitesi kurum güvenliğiyle örtüşüyor mu?
+    STRATEJİK AĞIRLIKLAR:
+    - Etik Bütünlük: %${config.aiWeights.ethics}
+    - Klinik Muhakeme: %${config.aiWeights.clinical}
+    - Deneyim/Donanım: %${config.aiWeights.experience}
+    - Kurumsal Uyum: %${config.aiWeights.fit}
+
+    ÖNEMLİ: Analiz dilini seçilen persona metriklerine göre şekillendir. Gemini 3 Flash multimodal yeteneklerini kullanarak hem CV verilerini hem de senaryo yanıtlarını çapraz kontrol et.
 
     FORMAT: Kesinlikle geçerli JSON.
   `;
 
   try {
+    const contents: any = { 
+      parts: [
+        { text: `Aday Profili ve Yanıtları: ${JSON.stringify({
+            name: candidate.name,
+            branch: candidate.branch,
+            experience: candidate.experienceYears,
+            trainings: candidate.allTrainings,
+            answers: candidate.answers,
+            weights: config.aiWeights
+          })}` }
+      ] 
+    };
+
+    // Eğer CV verisi varsa multimodal olarak ekle
+    if (candidate.cvData) {
+      contents.parts.push({
+        inlineData: {
+          mimeType: candidate.cvData.mimeType,
+          data: candidate.cvData.base64
+        }
+      });
+    }
+
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: { 
-        parts: [
-          { text: `Aday Profili ve Yanıtları: ${JSON.stringify({
-              name: candidate.name,
-              branch: candidate.branch,
-              experience: candidate.experienceYears,
-              trainings: candidate.allTrainings,
-              answers: candidate.answers,
-              weights: config.aiWeights
-            })}` }
-        ] 
-      },
+      model: "gemini-3-flash-preview", // Kullanıcı talebi üzerine sadece Flash modeli
+      contents,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -136,7 +134,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     if (!response.text) throw new Error("AI Engine yanıt üretemedi.");
     return JSON.parse(response.text);
   } catch (error) {
-    console.error("Dinamik Ton Analiz Hatası:", error);
+    console.error("Flash Persona Analiz Hatası:", error);
     throw error;
   }
 };
