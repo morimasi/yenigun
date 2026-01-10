@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v19.0 (ACADEMIC FOCUS)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v21.0 (ACADEMIC & PEDAGOGY FOCUS)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -17,38 +17,32 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const toneSettings = {
     strict: {
       budget: 24576,
-      baseInstruction: "TON: RIJIT, SORGULAYICI, SÜPER-DENETÇİ. PERSPEKTİF: CV şişirme ve müfredat bilgisindeki yüzeyselliği yakala."
+      baseInstruction: "TON: RIJIT, SORGULAYICI, AKADEMIK DENETÇI. PERSPEKTİF: Müfredat bilgisindeki en ufak tutarsızlığı yakala."
     },
     balanced: {
       budget: 16384,
-      baseInstruction: "TON: DENGELİ, PROFESYONEL, OBJEKTİF. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu dengeli tart."
+      baseInstruction: "TON: PROFESYONEL, DENGELİ. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu tart."
     },
     empathetic: {
       budget: 8192,
-      baseInstruction: "TON: GELİŞİM ODAKLI, EMPATİK. PERSPEKTİF: Potansiyel ve öğretme heyecanına odaklan."
+      baseInstruction: "TON: GELİŞİM ODAKLI. PERSPEKTİF: Potansiyele odaklan."
     }
   };
 
   const selectedTone = toneSettings[config.aiTone] || toneSettings.balanced;
-  const persona = config.aiPersona || { skepticism: 50, empathy: 50, formality: 70 };
 
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Üst Kurul Bilimsel Süpervizörü ve Müfredat Denetçisi.
-    GÖREV: Adayın akademik liyakatini (özellikle 1-4. sınıf müfredat bilgisini), klinik derinliğini ve profesyonel kimliğini analiz et.
+    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
+    GÖREV: Adayın 1-4. sınıf seviyesindeki müfredat hakimiyetini, ders sunum becerilerini (pedagoji) ve özel eğitim uyarlama (modifikasyon) kabiliyetini analiz et.
     DİL: Türkçe.
     
-    ÖZEL KRİTER: Adayın Türkçe, Matematik ve Hayat Bilgisi konularındaki basitleştirme (özel eğitime uyarlama) becerisini titizlikle değerlendir. Hatalı akademik bilgi içeren veya öğretim stratejisi zayıf olan adayları puanlamada cezalandır.
+    ANALİZ KRİTERLERİ (KRİTİK):
+    1. AKADEMİK DOĞRULUK: Matematik, Türkçe ve Hayat Bilgisi sorularına verdiği yanıtların bilimsel ve müfredat doğruluğunu kontrol et.
+    2. PEDAGOJİK SUNUM: Karmaşık konuları (Kesirler, Eş Sesli Kelimeler vb.) somutlaştırma ve öğrenciye aktarma becerisini puanla. 
+    3. ÖZEL EĞİTİM UYARLAMASI: VAKT, CRA, Hata Ayıklama gibi teknikleri doğru bağlamda kullanıp kullanmadığını denetle.
+    4. ETİK & PROFESYONELLİK: Klinik vakalardaki etik duruşunu ölç.
 
-    PERSONA KALİBRASYONU (0-100 Ölçeğinde):
-    - Şüphecilik Seviyesi: %${persona.skepticism}
-    - Empati Derinliği: %${persona.empathy}
-    - Resmiyet Ölçeği: %${persona.formality}
-
-    STRATEJİK AĞIRLIKLAR:
-    - Etik Bütünlük: %${config.aiWeights.ethics}
-    - Klinik Muhakeme ve Müfredat Bilgisi: %${config.aiWeights.clinical}
-    - Deneyim/Donanım: %${config.aiWeights.experience}
-    - Kurumsal Uyum: %${config.aiWeights.fit}
+    Adayın 'academic_proficiency' altındaki yanıtları, liyakat skorunun en az %40'ını belirlemelidir. Hatalı pedagojik yaklaşım sergileyen adayları 'Red' tavsiyesiyle işaretle.
 
     FORMAT: Kesinlikle geçerli JSON.
   `;
@@ -56,12 +50,11 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Profili ve Yanıtları (Müfredat Soruları Dahil): ${JSON.stringify({
+        { text: `Aday Verileri ve Akademik Yanıtlar: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
+            answers: candidate.answers, // Burası tüm yeni akademik soruları içerir
             experience: candidate.experienceYears,
-            trainings: candidate.allTrainings,
-            answers: candidate.answers,
             weights: config.aiWeights
           })}` }
       ] 
@@ -86,9 +79,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Genel liyakat katsayısı (0-100)" },
-            summary: { type: Type.STRING, description: "Kritik stratejik icra özeti" },
-            recommendation: { type: Type.STRING, description: "Mülakat kararı ve akademik yetkinlik notu" },
+            score: { type: Type.NUMBER, description: "Genel liyakat puanı (0-100)" },
+            summary: { type: Type.STRING, description: "Stratejik akademik özet" },
+            recommendation: { type: Type.STRING, description: "Karar ve geliştirme önerisi" },
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
@@ -125,10 +118,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       }
     });
 
-    if (!response.text) throw new Error("AI Engine yanıt üretemedi.");
-    return JSON.parse(response.text);
+    return JSON.parse(response.text || "{}");
   } catch (error) {
-    console.error("Flash Academic Engine Hatası:", error);
+    console.error("AI Engine Academic Analysis Error:", error);
     throw error;
   }
 };
