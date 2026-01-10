@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Güncelleme
+    // Şema Kurulumu (Trigger kısmı uygulama tarafında her istekte çalıştırılmaz, sadece tablo kontrol edilir)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -52,7 +52,7 @@ export default async function handler(request: Request) {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `.catch(e => console.error('Schema Sync Error:', e.message));
+    `;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
@@ -102,16 +102,14 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      // Dinamik Güncelleme Sorgusu
-      // Önceki if-else blokları yerine her zaman tüm nesneyi baz alan kapsamlı bir güncelleme yapıyoruz
       await sql`
         UPDATE candidates SET 
           status = ${body.status},
-          admin_notes = ${body.adminNotes || null},
+          admin_notes = ${body.admin_notes || null},
           report = ${body.report ? JSON.stringify(body.report) : null},
-          algo_report = ${body.algoReport ? JSON.stringify(body.algoReport) : null},
-          interview_schedule = ${body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null},
-          cv_data = ${body.cvData ? JSON.stringify(body.cvData) : null},
+          algo_report = ${body.algo_report ? JSON.stringify(body.algo_report) : null},
+          interview_schedule = ${body.interview_schedule ? JSON.stringify(body.interview_schedule) : null},
+          cv_data = ${body.cv_data ? JSON.stringify(body.cv_data) : null},
           updated_at = ${now}
         WHERE id = ${body.id}
       `;
@@ -131,10 +129,7 @@ export default async function handler(request: Request) {
     return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
 
   } catch (error: any) {
-    console.error('Kritik DB Hatası:', error.message);
-    return new Response(JSON.stringify({ 
-      error: 'DATABASE_ERROR', 
-      message: error.message 
-    }), { status: 500, headers });
+    console.error('DB Error:', error.message);
+    return new Response(JSON.stringify({ error: 'DATABASE_ERROR', message: error.message }), { status: 500, headers });
   }
 }
