@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useRef } from 'react';
-import { FORM_STEPS, MOCK_QUESTIONS } from '../constants';
+import { FORM_STEPS, MOCK_QUESTIONS, CERTIFICATION_LIST } from '../constants';
 import { Branch, Candidate, Gender } from '../types';
 
 interface CandidateFormProps {
@@ -10,6 +10,7 @@ interface CandidateFormProps {
 const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [otherTrainings, setOtherTrainings] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,7 +20,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     branch: Branch.OzelEgitim,
     experienceYears: 0,
     previousInstitutions: '',
-    allTrainings: '',
+    allTrainings: [] as string[],
     cvData: undefined as Candidate['cvData'] | undefined,
     answers: {} as Record<string, string | string[]>,
     status: 'pending' as const
@@ -31,6 +32,15 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     const stepId = FORM_STEPS[currentStep].id;
     return MOCK_QUESTIONS[stepId as keyof typeof MOCK_QUESTIONS] || [];
   }, [currentStep]);
+
+  const toggleTraining = (training: string) => {
+    setFormData(prev => ({
+      ...prev,
+      allTrainings: prev.allTrainings.includes(training)
+        ? prev.allTrainings.filter(t => t !== training)
+        : [...prev.allTrainings, training]
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,7 +82,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      onSubmit(formData);
+      const finalData = {
+        ...formData,
+        allTrainings: otherTrainings.trim() 
+          ? [...formData.allTrainings, `DİĞER: ${otherTrainings.trim()}`] 
+          : formData.allTrainings
+      };
+      onSubmit(finalData as any);
     }
   };
 
@@ -201,14 +217,39 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                 placeholder="Örn: X Rehabilitasyon Merkezi (2018-2022) - Özel Eğitim Uzmanı..."
               />
             </div>
+
+            {/* YAPILANDIRILMIŞ EĞİTİM SEÇİMİ */}
             <div className="relative">
-              <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-4 ml-1">Eğitsel Donanım: Alınan Sertifikalar ve Teknik Eğitimler</label>
-              <textarea
-                className="w-full rounded-[2.5rem] border-2 border-orange-100 p-8 h-40 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all resize-none bg-orange-50/20"
-                value={formData.allTrainings}
-                onChange={(e) => setFormData({...formData, allTrainings: e.target.value})}
-                placeholder="Örn: ABA Programı, PECS, Floortime 101, Denver II Gelişimsel Tarama Testi..."
-              />
+              <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-6 ml-1 text-center">Eğitsel Donanım: Sertifikalar ve Teknik Eğitimler</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {CERTIFICATION_LIST.map((cert) => (
+                  <button
+                    key={cert}
+                    type="button"
+                    onClick={() => toggleTraining(cert)}
+                    className={`p-4 rounded-2xl border-2 transition-all text-left text-[10px] font-black uppercase tracking-tight flex items-center gap-3 ${
+                      formData.allTrainings.includes(cert)
+                        ? 'bg-orange-600 border-orange-600 text-white shadow-lg'
+                        : 'bg-white border-orange-100 text-slate-500 hover:border-orange-300 hover:bg-orange-50'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${formData.allTrainings.includes(cert) ? 'border-white bg-white/20' : 'border-orange-200'}`}>
+                      {formData.allTrainings.includes(cert) && <div className="w-1.5 h-1.5 bg-white rounded-full m-auto mt-0.5" />}
+                    </div>
+                    {cert}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-8">
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-4 italic">Diğer Sertifika ve Eğitimleriniz</label>
+                <input
+                  type="text"
+                  className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
+                  value={otherTrainings}
+                  onChange={(e) => setOtherTrainings(e.target.value)}
+                  placeholder="Listede olmayan diğer eğitimlerinizi virgülle ayırarak yazınız..."
+                />
+              </div>
             </div>
           </div>
         </div>

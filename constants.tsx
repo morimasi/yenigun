@@ -18,9 +18,29 @@ export const FORM_STEPS: FormStep[] = [
   { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki hataların analizi ve gelişim dürüstlüğü.' }
 ];
 
+export const CERTIFICATION_LIST = [
+  "ABA (Uygulamalı Davranış Analizi)",
+  "PECS (Resim Değiş Tokuşuna Dayalı İletişim Sistemi)",
+  "DIR Floortime",
+  "Denver II Gelişimsel Tarama Testi",
+  "WISC-IV / WISC-V Zeka Testleri",
+  "ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale)",
+  "Prep (Disleksi Müdahale Programı)",
+  "GOBDO-2-TV (Otistik Bozukluk Derecelendirme Ölçeği)",
+  "Pass Teorisi ve CAS Testi",
+  "Duyu Bütünleme Eğitimi (Sensory Integration)",
+  "Artikülasyon ve Fonolojik Bozukluklar Eğitimi",
+  "Disleksi Eğitmenliği Sertifikası",
+  "Akıl ve Zeka Oyunları Eğitmenliği",
+  "Robotik Kodlama (Özel Eğitim Uyarlamalı)",
+  "Özel Eğitimde Drama Eğitmenliği",
+  "Montessori Eğitmenliği",
+  "Oyun Terapisi"
+];
+
 export const MOCK_QUESTIONS = {
+  // ... (Daha önceki sorular aynen kalır, sadece referans için kesilmiştir)
   academic_proficiency: [
-    // --- AKADEMİK İÇERİK SORULARI (1-4 SINIF) ---
     {
       id: 'math_logic_1',
       text: 'Matematik (1-2. Sınıf): "15 - 7 = ?" işlemini parmak hesabı dışında yapamayan ve onluk bozma mantığını kavrayamayan bir öğrenciye "Onluk Bloklar" dışında hangi somutlaştırma tekniğini kullanırsınız?',
@@ -74,8 +94,6 @@ export const MOCK_QUESTIONS = {
       text: 'Genel Kültür / Sosyal Bilgiler: Kurtuluş Savaşı ve Atatürk İlkeleri gibi soyut tarihsel kavramları, zaman algısı gelişmemiş bir öğrenciye "Zaman Şeridi" (Timeline) üzerinde nasıl somutlaştırırsınız?',
       type: 'textarea'
     },
-    
-    // --- ÖĞRETİM METODOLOJİSİ VE SUNUM BECERİLERİ SORULARI ---
     {
       id: 'pedagogy_scaffolding',
       text: 'Dersi Sunma: Karmaşık bir yönergeyi (Örn: "Kitabının 25. sayfasını aç, 3. soruyu oku ve altını çiz") işlemleme hızı düşük bir öğrenciye sunarken izleyeceğiniz "Yönerge Analizi" basamakları nelerdir?',

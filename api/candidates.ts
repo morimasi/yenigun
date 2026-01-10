@@ -1,3 +1,4 @@
+
 import { sql } from '@vercel/postgres';
 
 export const config = {
@@ -28,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Kurulumu - Hata önleyici yapı ile her istekte güvenli kontrol
+    // Şema Kurulumu - all_trainings JSONB olarak güncellendi
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -40,7 +41,7 @@ export default async function handler(request: Request) {
         branch TEXT,
         experience_years INTEGER,
         previous_institutions TEXT,
-        all_trainings TEXT,
+        all_trainings JSONB DEFAULT '[]'::jsonb,
         answers JSONB,
         status TEXT DEFAULT 'pending',
         admin_notes TEXT,
@@ -52,9 +53,6 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
-    // Trigger hatasını önlemek için kod tarafında trigger kurmaya çalışmıyoruz, 
-    // Sadece manuel SQL ile bir kez kurulması yeterli.
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
@@ -68,7 +66,7 @@ export default async function handler(request: Request) {
         branch: row.branch || '',
         experienceYears: row.experience_years || 0,
         previousInstitutions: row.previous_institutions || '',
-        allTrainings: row.all_trainings || '',
+        allTrainings: row.all_trainings || [],
         answers: row.answers || {},
         status: row.status || 'pending',
         adminNotes: row.admin_notes || '',
@@ -93,7 +91,7 @@ export default async function handler(request: Request) {
         VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
-          ${body.allTrainings}, ${JSON.stringify(body.answers)}, ${body.status},
+          ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers)}, ${body.status},
           ${JSON.stringify(body.cvData || null)}, ${now}
         )
       `;

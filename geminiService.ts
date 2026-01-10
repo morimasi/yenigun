@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v21.0 (ACADEMIC & PEDAGOGY FOCUS)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v21.2 (CERTIFICATION ENHANCED)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -33,16 +33,16 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
-    GÖREV: Adayın 1-4. sınıf seviyesindeki müfredat hakimiyetini, ders sunum becerilerini (pedagoji) ve özel eğitim uyarlama (modifikasyon) kabiliyetini analiz et.
+    GÖREV: Adayın akademik yetkinliğini, pedagojik sunum becerilerini ve sahip olduğu teknik sertifikaların kalitesini analiz et.
     DİL: Türkçe.
     
     ANALİZ KRİTERLERİ (KRİTİK):
-    1. AKADEMİK DOĞRULUK: Matematik, Türkçe ve Hayat Bilgisi sorularına verdiği yanıtların bilimsel ve müfredat doğruluğunu kontrol et.
-    2. PEDAGOJİK SUNUM: Karmaşık konuları (Kesirler, Eş Sesli Kelimeler vb.) somutlaştırma ve öğrenciye aktarma becerisini puanla. 
-    3. ÖZEL EĞİTİM UYARLAMASI: VAKT, CRA, Hata Ayıklama gibi teknikleri doğru bağlamda kullanıp kullanmadığını denetle.
-    4. ETİK & PROFESYONELLİK: Klinik vakalardaki etik duruşunu ölç.
+    1. SERTİFİKA VE TEKNİK DONANIM: Adayın seçtiği 'allTrainings' listesindeki tekniklerin (ABA, Floortime vb.) branşıyla (branch) olan uyumunu ve klinik derinliğini değerlendir. Bu sertifikaların kurum vizyonuna katkısını puanla.
+    2. AKADEMİK DOĞRULUK: Matematik, Türkçe ve Hayat Bilgisi sorularına verdiği yanıtların bilimsel doğruluğunu kontrol et.
+    3. PEDAGOJİK SUNUM: Karmaşık konuları somutlaştırma ve özel eğitim uyarlama kabiliyetini ölç.
+    4. ETİK & PROFESYONELLİK: Klinik vakalardaki etik duruşunu denetle.
 
-    Adayın 'academic_proficiency' altındaki yanıtları, liyakat skorunun en az %40'ını belirlemelidir. Hatalı pedagojik yaklaşım sergileyen adayları 'Red' tavsiyesiyle işaretle.
+    Eğitim listesi ('allTrainings') ve akademik yanıtlar, liyakat skorunun temel taşlarıdır.
 
     FORMAT: Kesinlikle geçerli JSON.
   `;
@@ -50,11 +50,12 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Verileri ve Akademik Yanıtlar: ${JSON.stringify({
+        { text: `Aday Verileri: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
-            answers: candidate.answers, // Burası tüm yeni akademik soruları içerir
             experience: candidate.experienceYears,
+            allTrainings: candidate.allTrainings, // Yapılandırılmış liste
+            answers: candidate.answers,
             weights: config.aiWeights
           })}` }
       ] 
@@ -80,7 +81,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           type: Type.OBJECT,
           properties: {
             score: { type: Type.NUMBER, description: "Genel liyakat puanı (0-100)" },
-            summary: { type: Type.STRING, description: "Stratejik akademik özet" },
+            summary: { type: Type.STRING, description: "Stratejik akademik ve teknik özet" },
             recommendation: { type: Type.STRING, description: "Karar ve geliştirme önerisi" },
             detailedAnalysis: {
               type: Type.OBJECT,
@@ -120,7 +121,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
     return JSON.parse(response.text || "{}");
   } catch (error) {
-    console.error("AI Engine Academic Analysis Error:", error);
+    console.error("AI Engine Analysis Error:", error);
     throw error;
   }
 };
