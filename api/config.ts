@@ -24,10 +24,10 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tek satırlık konfigürasyon tablosu
+    // Singleton tablosu kurulumu
     await sql`
       CREATE TABLE IF NOT EXISTS system_config (
-        id INTEGER PRIMARY KEY DEFAULT 1,
+        id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
         data JSONB NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );

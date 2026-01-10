@@ -1,4 +1,3 @@
-
 import { sql } from '@vercel/postgres';
 
 export const config = {
@@ -29,7 +28,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Kurulumu (Trigger kısmı uygulama tarafında her istekte çalıştırılmaz, sadece tablo kontrol edilir)
+    // Şema Kurulumu - Hata önleyici yapı ile her istekte güvenli kontrol
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -45,14 +44,17 @@ export default async function handler(request: Request) {
         answers JSONB,
         status TEXT DEFAULT 'pending',
         admin_notes TEXT,
-        interview_schedule JSONB,
         report JSONB,
         algo_report JSONB,
+        interview_schedule JSONB,
         cv_data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Trigger hatasını önlemek için kod tarafında trigger kurmaya çalışmıyoruz, 
+    // Sadece manuel SQL ile bir kez kurulması yeterli.
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
