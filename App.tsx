@@ -46,13 +46,21 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
   const loadData = useCallback(async () => {
+    // Adayları yükle
     const data = await storageService.getCandidates();
     setCandidates(data);
     
-    const localConfig = localStorage.getItem('yeni_gun_config');
-    if (localConfig) {
-      const parsed = JSON.parse(localConfig);
-      setConfig({ ...DEFAULT_CONFIG, ...parsed });
+    // Konfigürasyonu DB'den yükle (En güncel otorite)
+    const remoteConfig = await storageService.getConfig();
+    if (remoteConfig) {
+      setConfig(remoteConfig);
+      document.documentElement.style.setProperty('--primary-color', remoteConfig.primaryColor);
+    } else {
+      // DB boşsa yerelden, yerel de boşsa varsayılandan al
+      const localConfig = localStorage.getItem('yeni_gun_config');
+      if (localConfig) {
+        setConfig(JSON.parse(localConfig));
+      }
     }
   }, []);
 
@@ -91,10 +99,19 @@ const App: React.FC = () => {
     setView('candidate');
   };
 
-  const handleUpdateConfig = (newConfig: GlobalConfig) => {
+  const handleUpdateConfig = async (newConfig: GlobalConfig) => {
+    // 1. React State'i hemen güncelle (Anlık UI tepkisi)
     setConfig(newConfig);
+    
+    // 2. Yerel belleği güncelle
     localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
     document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
+    
+    // 3. Veritabanına kalıcı olarak işle (Sadece "Kaydet" tetiklendiğinde SettingsView'dan çağrılır)
+    const success = await storageService.saveConfig(newConfig);
+    if (success) {
+      console.log("Konfigürasyon DB ile senkronize edildi.");
+    }
   };
 
   if (view === 'admin' && !isLoggedIn) {

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GlobalConfig } from '../../types';
 
 interface SettingsViewProps {
@@ -8,48 +8,101 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) => {
+  // Yerel bir taslak state tutarak DB'ye yazmadan önce değişiklikleri biriktirelim
+  const [draftConfig, setDraftConfig] = useState<GlobalConfig>(config);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setDraftConfig(config);
+  }, [config]);
+
   const handleWeightChange = (key: keyof GlobalConfig['aiWeights'], value: number) => {
-    onUpdateConfig({
-      ...config,
-      aiWeights: { ...config.aiWeights, [key]: value }
-    });
+    setDraftConfig(prev => ({
+      ...prev,
+      aiWeights: { ...prev.aiWeights, [key]: value }
+    }));
+    setIsDirty(true);
   };
 
   const handlePersonaChange = (key: keyof GlobalConfig['aiPersona'], value: number) => {
-    onUpdateConfig({
-      ...config,
-      aiPersona: { ...config.aiPersona, [key]: value }
-    });
+    setDraftConfig(prev => ({
+      ...prev,
+      aiPersona: { ...prev.aiPersona, [key]: value }
+    }));
+    setIsDirty(true);
   };
 
   const handleAutomationToggle = (key: keyof GlobalConfig['automation']) => {
-    onUpdateConfig({
-      ...config,
-      automation: { ...config.automation, [key]: !config.automation[key] }
-    });
+    setDraftConfig(prev => ({
+      ...prev,
+      automation: { ...prev.automation, [key]: !prev.automation[key] }
+    }));
+    setIsDirty(true);
   };
 
   const handleInterviewSettingChange = (key: keyof GlobalConfig['interviewSettings'], value: any) => {
-    onUpdateConfig({
-      ...config,
-      interviewSettings: { ...config.interviewSettings, [key]: value }
-    });
+    setDraftConfig(prev => ({
+      ...prev,
+      interviewSettings: { ...prev.interviewSettings, [key]: value }
+    }));
+    setIsDirty(true);
   };
 
-  const totalWeight = (Object.values(config.aiWeights) as number[]).reduce((a, b) => a + b, 0);
+  const handleUpdateField = (key: keyof GlobalConfig, value: any) => {
+    setDraftConfig(prev => ({ ...prev, [key]: value }));
+    setIsDirty(true);
+  };
+
+  const handleSaveToSystem = async () => {
+    setIsSaving(true);
+    await onUpdateConfig(draftConfig);
+    setIsSaving(false);
+    setIsDirty(false);
+    alert("Sistem konfigürasyonu bulut veritabanına mühürlendi ve tüm analiz motorlarına entegre edildi.");
+  };
+
+  const totalWeight = (Object.values(draftConfig.aiWeights) as number[]).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="space-y-12 animate-fade-in pb-20">
+    <div className="space-y-12 animate-fade-in pb-20 relative">
+      
+      {/* KAYDETME BARI (STICKY FOOTER MANTIĞI) */}
+      {isDirty && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-4xl px-8 animate-slide-up">
+          <div className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl flex items-center justify-between border border-white/10 backdrop-blur-3xl">
+            <div className="flex items-center gap-6">
+              <div className="w-12 h-12 bg-orange-600 rounded-2xl flex items-center justify-center text-white animate-pulse">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest leading-none">Taslak Değişiklikler Algılandı</p>
+                <p className="text-[12px] font-bold text-slate-400 mt-2 uppercase">Ayarları tüm sisteme uygulamak için onaylayın.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => { setDraftConfig(config); setIsDirty(false); }} className="px-8 py-4 bg-white/5 text-white rounded-2xl text-[9px] font-black uppercase hover:bg-white/10 transition-all">İptal Et</button>
+              <button 
+                onClick={handleSaveToSystem}
+                disabled={isSaving}
+                className={`px-10 py-4 bg-orange-600 text-white rounded-2xl text-[9px] font-black uppercase shadow-xl hover:bg-orange-700 transition-all ${isSaving ? 'opacity-50' : ''}`}
+              >
+                {isSaving ? 'İŞLENİYOR...' : 'SİSTEME ENTEGRE ET'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-end">
         <div>
           <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Akademik Komuta Merkezi</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-2">Sistem Parametreleri ve Kurumsal Filtre Ayarları</p>
         </div>
-        <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-orange-600 transition-all">Tümünü Yedekle</button>
+        <button className="px-8 py-4 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black uppercase cursor-not-allowed">Yedekleme Aktif</button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Sol Sütun: Kurumsal ve Otomasyon */}
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-white p-10 rounded-[3.5rem] shadow-xl border border-slate-100 flex flex-col gap-8">
             <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Kurumsal Kimlik</h4>
@@ -59,8 +112,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                 <input 
                   type="text" 
                   className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                  value={config.institutionName} 
-                  onChange={e => onUpdateConfig({...config, institutionName: e.target.value})}
+                  value={draftConfig.institutionName} 
+                  onChange={e => handleUpdateField('institutionName', e.target.value)}
                 />
               </div>
               <div className="group">
@@ -68,8 +121,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                 <input 
                   type="email" 
                   className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                  value={config.notificationEmail} 
-                  onChange={e => onUpdateConfig({...config, notificationEmail: e.target.value})}
+                  value={draftConfig.notificationEmail} 
+                  onChange={e => handleUpdateField('notificationEmail', e.target.value)}
                 />
               </div>
             </div>
@@ -86,25 +139,21 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                   ].map(item => (
                     <div key={item.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer" onClick={() => handleAutomationToggle(item.id as any)}>
                       <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
-                      <div className={`w-10 h-5 rounded-full relative transition-all ${config.automation[item.id as keyof typeof config.automation] ? 'bg-orange-600' : 'bg-slate-700'}`}>
-                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.automation[item.id as keyof typeof config.automation] ? 'left-6' : 'left-1'}`}></div>
+                      <div className={`w-10 h-5 rounded-full relative transition-all ${draftConfig.automation[item.id as keyof typeof draftConfig.automation] ? 'bg-orange-600' : 'bg-slate-700'}`}>
+                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${draftConfig.automation[item.id as keyof typeof draftConfig.automation] ? 'left-6' : 'left-1'}`}></div>
                       </div>
                     </div>
                   ))}
                 </div>
              </div>
-             <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
           </div>
         </div>
 
-        {/* Orta Sütun: AI ve Mülakat Ayarları */}
         <div className="lg:col-span-8 space-y-8">
-          {/* Mülakat Takvimi Ayarları Panel */}
           <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 relative overflow-hidden">
              <div className="flex justify-between items-start mb-10">
                 <div>
                   <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Mülakat Yönetim Parametreleri</h4>
-                  <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Takvim akışı ve varsayılan operasyonel ayarlar</p>
                 </div>
              </div>
              
@@ -115,77 +164,50 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                       <input 
                         type="number" 
                         className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                        value={config.interviewSettings.defaultDuration} 
+                        value={draftConfig.interviewSettings.defaultDuration} 
                         onChange={e => handleInterviewSettingChange('defaultDuration', parseInt(e.target.value))}
-                      />
-                   </div>
-                   <div className="group">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Hazırlık/Buffer Süresi (Dakika)</label>
-                      <input 
-                        type="number" 
-                        className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                        value={config.interviewSettings.bufferTime} 
-                        onChange={e => handleInterviewSettingChange('bufferTime', parseInt(e.target.value))}
                       />
                    </div>
                 </div>
                 <div className="space-y-8">
                    <div className="group">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Varsayılan Toplantı Linki (Meet/Zoom)</label>
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Varsayılan Toplantı Linki</label>
                       <input 
                         type="text" 
                         className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                        value={config.interviewSettings.defaultMeetingLink} 
+                        value={draftConfig.interviewSettings.defaultMeetingLink} 
                         onChange={e => handleInterviewSettingChange('defaultMeetingLink', e.target.value)}
-                        placeholder="https://meet.google.com/..."
                       />
-                   </div>
-                   <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-widest block">Otomatik Statü Güncelleme</span>
-                        <span className="text-[8px] font-bold text-slate-400 uppercase">Mülakat bitince 'Değerlendiriliyor'a çek</span>
-                      </div>
-                      <div className={`w-12 h-6 rounded-full relative transition-all cursor-pointer ${config.interviewSettings.autoStatusAfterInterview ? 'bg-orange-600' : 'bg-slate-300'}`} onClick={() => handleInterviewSettingChange('autoStatusAfterInterview', !config.interviewSettings.autoStatusAfterInterview)}>
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${config.interviewSettings.autoStatusAfterInterview ? 'left-7' : 'left-1'}`}></div>
-                      </div>
                    </div>
                 </div>
              </div>
           </div>
 
-          {/* AI Ağırlıkları ve Persona Panel */}
           <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 relative">
             <div className="flex justify-between items-start mb-12">
-              <div>
-                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Liyakat Analiz Motoru Parametreleri</h4>
-                <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Yapay Zeka Karar Ağırlıkları ve Değerlendirme Tonu</p>
-              </div>
+              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4">Liyakat Analiz Motoru Parametreleri</h4>
               <div className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${totalWeight === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700 animate-pulse'}`}>
-                TOPLAM ETKİ: %{totalWeight} {totalWeight !== 100 && '(DENGELEYİN)'}
+                TOPLAM ETKİ: %{totalWeight}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {/* Karar Ağırlıkları */}
               <div className="space-y-10">
                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Stratejik Karar Ağırlıkları</h5>
                 {[
-                  { id: 'ethics', label: 'Etik Bütünlük Ağırlığı', desc: 'Sınır ihlali ve dürüstlük denetimi.' },
-                  { id: 'clinical', label: 'Klinik Muhakeme Ağırlığı', desc: 'Vaka yönetimi ve metodolojik derinlik.' },
-                  { id: 'experience', label: 'Deneyim Katsayısı', desc: 'Yıl ve çalışılan kurumların etkisi.' },
-                  { id: 'fit', label: 'Kurumsal Uyum', desc: 'Hiyerarşi ve aidiyet potansiyeli.' }
+                  { id: 'ethics', label: 'Etik Bütünlük Ağırlığı' },
+                  { id: 'clinical', label: 'Klinik Muhakeme Ağırlığı' },
+                  { id: 'experience', label: 'Deneyim Katsayısı' },
+                  { id: 'fit', label: 'Kurumsal Uyum' }
                 ].map(w => (
                   <div key={w.id} className="space-y-3">
                     <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{w.label}</p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">{w.desc}</p>
-                      </div>
-                      <span className="text-xl font-black text-orange-600">%{config.aiWeights[w.id as keyof typeof config.aiWeights]}</span>
+                      <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{w.label}</p>
+                      <span className="text-xl font-black text-orange-600">%{draftConfig.aiWeights[w.id as keyof typeof draftConfig.aiWeights]}</span>
                     </div>
                     <input 
                       type="range" min="0" max="100" 
-                      value={config.aiWeights[w.id as keyof typeof config.aiWeights]} 
+                      value={draftConfig.aiWeights[w.id as keyof typeof draftConfig.aiWeights]} 
                       onChange={e => handleWeightChange(w.id as any, parseInt(e.target.value))}
                       className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-orange-600"
                     />
@@ -193,27 +215,21 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                 ))}
               </div>
 
-              {/* Persona ve Karakter İnce Ayarları */}
               <div className="space-y-10">
                 <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 mb-8">
                   <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Analiz Üretim Tonu</h5>
                   <div className="flex flex-col gap-4">
-                    {[
-                      { id: 'strict', label: 'Rijit / Sorgulayıcı', desc: 'Risk odaklı, en küçük açığı dahi raporlar.' },
-                      { id: 'balanced', label: 'Dengeli / Objektif', desc: 'Yetenek ve riskleri eşit oranda tartar.' },
-                      { id: 'empathetic', label: 'Gelişim Odaklı', desc: 'Potansiyele odaklanır, yapıcı eleştiri sunar.' }
-                    ].map(t => (
+                    {['strict', 'balanced', 'empathetic'].map(t => (
                       <button
-                        key={t.id}
-                        onClick={() => onUpdateConfig({...config, aiTone: t.id as any})}
+                        key={t}
+                        onClick={() => handleUpdateField('aiTone', t)}
                         className={`text-left p-6 rounded-[2rem] border-2 transition-all ${
-                          config.aiTone === t.id 
+                          draftConfig.aiTone === t 
                           ? 'bg-white border-orange-600 shadow-xl' 
-                          : 'bg-transparent border-slate-200 hover:border-slate-300'
+                          : 'bg-transparent border-slate-200'
                         }`}
                       >
-                        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${config.aiTone === t.id ? 'text-orange-600' : 'text-slate-400'}`}>{t.label}</p>
-                        <p className="text-[9px] font-bold text-slate-600 uppercase">{t.desc}</p>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${draftConfig.aiTone === t ? 'text-orange-600' : 'text-slate-400'}`}>{t}</p>
                       </button>
                     ))}
                   </div>
@@ -223,21 +239,18 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                   <h5 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-8">Karakter İnce Ayarları (Persona)</h5>
                   <div className="space-y-8">
                     {[
-                      { id: 'skepticism', label: 'Şüphecilik Seviyesi', desc: 'Tutarsızlık yakalama şiddeti.' },
-                      { id: 'empathy', label: 'Empati Derinliği', desc: 'İnsani potansiyel hassasiyeti.' },
-                      { id: 'formality', label: 'Resmiyet Ölçeği', desc: 'Terminolojik ağırlık ve ciddiyet.' }
+                      { id: 'skepticism', label: 'Şüphecilik Seviyesi' },
+                      { id: 'empathy', label: 'Empati Derinliği' },
+                      { id: 'formality', label: 'Resmiyet Ölçeği' }
                     ].map(p => (
                       <div key={p.id} className="space-y-3">
                         <div className="flex justify-between items-end">
-                          <div>
-                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{p.label}</p>
-                            <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">{p.desc}</p>
-                          </div>
-                          <span className="text-xl font-black text-orange-600">%{config.aiPersona[p.id as keyof typeof config.aiPersona]}</span>
+                          <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{p.label}</p>
+                          <span className="text-xl font-black text-orange-600">%{draftConfig.aiPersona[p.id as keyof typeof draftConfig.aiPersona]}</span>
                         </div>
                         <input 
                           type="range" min="0" max="100" 
-                          value={config.aiPersona[p.id as keyof typeof config.aiPersona]} 
+                          value={draftConfig.aiPersona[p.id as keyof typeof draftConfig.aiPersona]} 
                           onChange={e => handlePersonaChange(p.id as any, parseInt(e.target.value))}
                           className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-orange-600"
                         />

@@ -1,11 +1,7 @@
 
-import { Candidate } from '../types';
+import { Candidate, GlobalConfig } from '../types';
 
 export const storageService = {
-  /**
-   * Konflikt Çözümleyici Gelişmiş Senkronizasyon (Deterministic Merge)
-   * ID bazlı haritalama yaparak hiçbir adayın kaybolmamasını sağlar.
-   */
   async getCandidates(): Promise<Candidate[]> {
     const local = localStorage.getItem('yeni_gun_candidates');
     const localData: Candidate[] = local ? JSON.parse(local) : [];
@@ -14,47 +10,31 @@ export const storageService = {
       const response = await fetch('/api/candidates');
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
-        
-        // ID bazlı birleştirme haritası
         const mergedMap = new Map<string, Candidate>();
-
-        // Yerel verileri haritaya ekle
-        localData.forEach(c => {
-          if (c && c.id) mergedMap.set(c.id, c);
-        });
-
-        // Uzak verileri ekle/güncelle (Uzak veri her zaman otoritedir)
+        localData.forEach(c => { if (c && c.id) mergedMap.set(c.id, c); });
         remoteData.forEach(remote => {
           if (remote && remote.id) {
             const existing = mergedMap.get(remote.id);
-            // Eğer uzak veri daha güncelse veya yerelde yoksa güncelle
             if (!existing || (remote.timestamp >= (existing.timestamp || 0))) {
               mergedMap.set(remote.id, remote);
             }
           }
         });
-
         const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        // Yerel belleği en güncel veriyle senkronize et
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
         return finalData;
       }
     } catch (e) {
       console.warn("API bağlantısı kurulamadı, yerel önbellek kullanılıyor.");
     }
-    
     return localData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   },
 
   async saveCandidate(candidate: Candidate) {
     const candidateWithTime = { ...candidate, timestamp: Date.now() };
-    
-    // Önce yerelde güvenli kaydet
     const local = localStorage.getItem('yeni_gun_candidates');
     const current = local ? JSON.parse(local) : [];
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
-
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST',
@@ -62,31 +42,24 @@ export const storageService = {
         body: JSON.stringify(candidateWithTime)
       });
       return res.ok;
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   },
 
   async updateCandidate(candidate: Candidate) {
     const updatedCandidate = { ...candidate, timestamp: Date.now() };
-    
-    // Yerel güncelleme
     const local = localStorage.getItem('yeni_gun_candidates');
     if (local) {
       const current: Candidate[] = JSON.parse(local);
       const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
     }
-
     try {
       await fetch('/api/candidates', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCandidate)
       });
-    } catch (e) {
-      console.error("Bulut senkronizasyonu başarısız.");
-    }
+    } catch (e) { console.error("Bulut senkronizasyonu başarısız."); }
   },
 
   async deleteCandidate(id: string) {
@@ -95,8 +68,32 @@ export const storageService = {
       const current = JSON.parse(local);
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
     }
+    try { await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); } catch (e) {}
+  },
+
+  // SİSTEM KONFİGÜRASYON SERVİSLERİ
+  async getConfig(): Promise<GlobalConfig | null> {
     try {
-      await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' });
-    } catch (e) {}
+      const res = await fetch('/api/config');
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+    } catch (e) { console.error("Konfigürasyon yükleme hatası."); }
+    return null;
+  },
+
+  async saveConfig(config: GlobalConfig): Promise<boolean> {
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+      return res.ok;
+    } catch (e) {
+      console.error("Konfigürasyon kaydetme hatası.");
+      return false;
+    }
   }
 };
