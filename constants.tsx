@@ -39,16 +39,21 @@ export const CERTIFICATION_LIST = [
 ];
 
 export const MOCK_QUESTIONS = {
-  // ... (Daha önceki sorular aynen kalır, sadece referans için kesilmiştir)
   academic_proficiency: [
     {
       id: 'math_logic_1',
-      text: 'Matematik (1-2. Sınıf): "15 - 7 = ?" işlemini parmak hesabı dışında yapamayan ve onluk bozma mantığını kavrayamayan bir öğrenciye "Onluk Bloklar" dışında hangi somutlaştırma tekniğini kullanırsınız?',
-      type: 'textarea'
+      text: 'Matematik (1-2. Sınıf): "15 - 7 = ?" işlemini onluk bozma mantığını kavrayamayan bir öğrenciye hangi stratejiyle öğretirsiniz?',
+      type: 'radio',
+      options: [
+        'Geriye ritmik sayma yaptırarak (Parmak hesabı pekiştirme).',
+        '10\'a tamamlama stratejisi: "7\'yi 10\'a tamamlamak için kaç lazım? 15\'ten önce 5 çıkarıp 10\'a ulaşalım" (Parçalama yöntemi).',
+        'Sadece sayı doğrusu üzerinde zıplayarak (Görsel ezber).',
+        'İşlemi alt alta yazıp onluk bozmayı kural olarak ezberleterek.'
+      ]
     },
     {
       id: 'turkish_literacy_1',
-      text: 'Türkçe (2-3. Sınıf): Bir metnin "Ana Fikri" ile "Konusu" arasındaki farkı anlamakta zorlanan dislektik bir öğrenciye bu ayrımı en basit hangi görselleştirme tekniğiyle anlatırsınız?',
+      text: 'Türkçe (2-3. Sınıf): Bir metnin "Ana Fikri" ile "Konusu" arasındaki farkı anlamakta zorlanan dislektik bir öğrenciye bu ayrımı nasıl anlatırsınız?',
       type: 'radio',
       options: [
         'Zihin haritası kullanarak (Merkez: Konu, Oklar: Detaylar).',
@@ -59,7 +64,7 @@ export const MOCK_QUESTIONS = {
     },
     {
       id: 'social_science_1',
-      text: 'Hayat Bilgisi (1-4. Sınıf): Geri dönüşüm (Cam, Kağıt, Plastik) kavramını zihinsel yetersizliği olan bir öğrenciye öğretirken hangi duyusal yöntemi önceliklendirirsiniz?',
+      text: 'Hayat Bilgisi (1-4. Sınıf): Geri dönüşüm kavramını zihinsel yetersizliği olan bir öğrenciye öğretirken hangi duyusal yöntemi önceliklendirirsiniz?',
       type: 'radio',
       options: [
         'Sadece video izleterek görsel pekiştirme.',
@@ -70,12 +75,18 @@ export const MOCK_QUESTIONS = {
     },
     {
       id: 'math_place_value',
-      text: 'Matematik (3. Sınıf): 348 sayısında 4 rakamının "basamak değeri" ile "sayı değeri" arasındaki farkı anlamayan öğrenciye "para modelleri" (100 TL, 10 TL, 1 TL) üzerinden nasıl bir müdahale yaparsınız?',
-      type: 'textarea'
+      text: 'Matematik (3. Sınıf): 348 sayısında 4 rakamının "basamak değeri" (40) ile "sayı değeri" (4) arasındaki farkı en iyi nasıl somutlaştırırsınız?',
+      type: 'radio',
+      options: [
+        'Para modelleri (4 tane 10 TL ile 4 tane 1 TL karşılaştırması).',
+        'Rakamların altına ok çıkarıp değerlerini yazdırarak.',
+        'Abaküs üzerinde boncuk saydırarak.',
+        'Sayıyı defalarca basamak tablosuna yerleştirerek.'
+      ]
     },
     {
       id: 'turkish_context_clues',
-      text: 'Türkçe (4. Sınıf): "Yüz" kelimesinin eş sesli (sayı, çehre, yüzmek) anlamlarını ayıramayan bir öğrenciye "Bağlamdan Anlam Çıkarma" becerisini kazandırmak için hangi yöntemi seçersiniz?',
+      text: 'Türkçe (4. Sınıf): "Yüz" kelimesinin eş sesli anlamlarını ayıramayan bir öğrenciye hangi yöntemi seçersiniz?',
       type: 'radio',
       options: [
         'Cümle kartları ve görsel eşleme (Görsel Destekli Bağlam).',
@@ -86,22 +97,40 @@ export const MOCK_QUESTIONS = {
     },
     {
       id: 'social_economic_literacy',
-      text: 'Hayat Bilgisi (2-3. Sınıf): "İstek" ve "İhtiyaç" kavramlarını sürekli karıştıran ve dürtü kontrolü zayıf bir öğrenciye "Alışveriş Listesi" oyununu nasıl adapte edersiniz?',
-      type: 'textarea'
+      text: 'Hayat Bilgisi (2-3. Sınıf): "İstek" ve "İhtiyaç" kavramlarını sürekli karıştıran bir öğrenciye "Alışveriş Listesi" oyununu nasıl adapte edersiniz?',
+      type: 'radio',
+      options: [
+        'Önce hayatta kalmak için gerekenleri (Su, yemek) işaretleyip geri kalanları eleyerek.',
+        'İstediği her şeyi sepete attırıp sonra parası yetmeyince çıkarttırarak.',
+        'Kavramların sözlük anlamlarını ezberleterek.',
+        'Market broşürlerinden beğendiklerini kestirerek.'
+      ]
     },
     {
       id: 'general_culture_ataturk',
-      text: 'Genel Kültür / Sosyal Bilgiler: Kurtuluş Savaşı ve Atatürk İlkeleri gibi soyut tarihsel kavramları, zaman algısı gelişmemiş bir öğrenciye "Zaman Şeridi" (Timeline) üzerinde nasıl somutlaştırırsınız?',
-      type: 'textarea'
+      text: 'Genel Kültür / Sosyal Bilgiler: Zaman algısı gelişmemiş bir öğrenciye tarihsel olayları nasıl somutlaştırırsınız?',
+      type: 'radio',
+      options: [
+        'Olayları resimli kartlarla bir ipin üzerine kronolojik asarak (Zaman Şeridi).',
+        'Sadece tarihleri ezberletip sınav yaparak.',
+        'Olayların uzun metinlerini okutarak.',
+        'Konuyla ilgili belgesel izleterek.'
+      ]
     },
     {
       id: 'pedagogy_scaffolding',
-      text: 'Dersi Sunma: Karmaşık bir yönergeyi (Örn: "Kitabının 25. sayfasını aç, 3. soruyu oku ve altını çiz") işlemleme hızı düşük bir öğrenciye sunarken izleyeceğiniz "Yönerge Analizi" basamakları nelerdir?',
-      type: 'textarea'
+      text: 'Dersi Sunma: Karmaşık bir yönergeyi ("Kitabının 25. sayfasını aç, 3. soruyu oku") işlemleme hızı düşük bir öğrenciye sunarken hangisini yaparsınız?',
+      type: 'radio',
+      options: [
+        'Yönergeyi tek tek parçalara bölüp her adım sonrası onay alarak (Chaining).',
+        'Yönergeyi daha yüksek sesle tekrarlayarak.',
+        'Yönergeyi tahtaya yazıp beklemesini isteyerek.',
+        'Öğrencinin yerine işlemi yaparak zaman kazanmak.'
+      ]
     },
     {
       id: 'pedagogy_multisensory',
-      text: 'Öğretim Stratejisi: "Okuma-Yazmaya Hazırlık" aşamasında sesleri (fonemleri) hissettirirken "VAKT" (Görsel-İşitsel-Kinestetik-Dokunsal) yöntemini bir ders saati içinde nasıl kurgularsınız?',
+      text: 'Öğretim Stratejisi: "Okuma-Yazmaya Hazırlık" aşamasında "VAKT" yöntemini nasıl kurgularsınız?',
       type: 'radio',
       options: [
         'Sesi kum havuzunda yazdırma ve eş zamanlı telaffuz (Çok duyulu yaklaşım).',
@@ -112,12 +141,18 @@ export const MOCK_QUESTIONS = {
     },
     {
       id: 'pedagogy_errorless',
-      text: 'Hata Ayıklama: Bir matematik kavramını (Örn: Ritmik sayma) "Hatasız Öğretim" (Errorless Learning) yöntemiyle sunarken, öğrencinin yanlış yapmasına fırsat vermeden nasıl bir ipucu (Prompt) hiyerarşisi izlersiniz?',
-      type: 'textarea'
+      text: 'Hata Ayıklama: Bir matematik kavramını "Hatasız Öğretim" (Errorless Learning) ile sunarken ipucu (Prompt) hiyerarşiniz nasıl olmalıdır?',
+      type: 'radio',
+      options: [
+        'En yoğun ipucundan (Fiziksel) başlayıp ipucunu kademeli olarak silikleştirerek (Most-to-Least).',
+        'Öğrencinin hata yapmasını bekleyip sonra düzeltme vererek.',
+        'Hiç ipucu vermeden öğrencinin kendi kendine bulmasını sağlayarak.',
+        'Sadece sözel ipucu kullanarak.'
+      ]
     },
     {
       id: 'pedagogy_abstraction',
-      text: 'Somuttan Soyuta Geçiş: Kesirler (1/2, 1/4) konusunu anlatırken; nesne (elma), resim (daire grafiği) ve sembol (1/2 yazısı) arasındaki geçişte öğrencinin takılmaması için hangi "köprü kurma" stratejisini kullanırsınız?',
+      text: 'Somuttan Soyuta Geçiş: Kesirler (1/2, 1/4) konusunu anlatırken hangi köprü stratejisini kullanırsınız?',
       type: 'radio',
       options: [
         'CRA (Concrete-Representational-Abstract) modelini sırasıyla uygulama.',
@@ -128,25 +163,31 @@ export const MOCK_QUESTIONS = {
     },
     {
       id: 'pedagogy_motivation',
-      text: 'Dersi Başlatma ve Dikkat: Akademik olarak zorlandığı için dersi reddeden bir öğrenciye, 4. sınıf sosyal bilgiler konusunu "İlgi Temelli Öğretim" ile nasıl cazip hale getirirsiniz?',
-      type: 'textarea'
+      text: 'Dersi Başlatma ve Dikkat: Akademik olarak zorlandığı için dersi reddeden bir öğrenciye nasıl yaklaşırsınız?',
+      type: 'radio',
+      options: [
+        'Öğrencinin özel ilgisini (örn: arabalar) akademik konuya (örn: matematik) entegre ederek.',
+        'Dersi yapmazsa molaya çıkamayacağını söyleyerek (Ceza odaklı).',
+        'Öğrenci hazır olana kadar dersi iptal ederek.',
+        'Zorla masada oturtup otorite kurarak.'
+      ]
     }
   ],
   logic_literacy: [
     { 
       id: 'prioritization_1', 
-      text: 'Yoğun bir günde: 1) Bir öğrenci krizde, 2) Bir veli odanızda ağlıyor, 3) Kurum müdürü acil rapor bekliyor. Sadece birine tam odaklanabilirsiniz. Hangi sırayla "ihmal" edersiniz?', 
+      text: 'Yoğun bir günde öncelik sıralamanız nasıl olur?', 
       type: 'radio', 
       options: [
-        'Müdürü (İdari iş bekleyebilir).', 
-        'Veliyi (Duygusal destek ertelenebilir).', 
-        'Öğrenciyi (Güvenliyse kısa süre bekletilebilir).', 
-        'Hepsini aynı anda yönetirim (Performans maskesi)'
+        '1) Krizdeki öğrenci, 2) Veli desteği, 3) İdari raporlar.', 
+        '1) İdari raporlar, 2) Krizdeki öğrenci, 3) Veli desteği.', 
+        '1) Veli desteği, 2) İdari raporlar, 3) Krizdeki öğrenci.', 
+        'Hepsini aynı anda hatasız yönetirim.'
       ] 
     },
     {
       id: 'method_clash',
-      text: 'Uyguladığınız teknik (ör: ABA) çocukta direnç yarattı ama aile bu tekniği kesin istiyor. Yaklaşımınız?',
+      text: 'Uyguladığınız teknik çocukta direnç yarattı ama aile kesin istiyor. Yaklaşımınız?',
       type: 'radio',
       options: [
         'Ailenin isteğine uyarım; sonuçta ödemeyi onlar yapıyor.',
@@ -159,7 +200,7 @@ export const MOCK_QUESTIONS = {
   professional_cases: [
     {
       id: 'clinical_error',
-      text: 'Seans sırasında çocuğun güvenliğini (hafifçe) riske atan bir hata yaptınız ama kimse görmedi. Tavrınız?',
+      text: 'Seans sırasında çocuğun güvenliğini hafifçe riske atan bir hata yaptınız. Tavrınız?',
       type: 'radio',
       options: [
         'Gelecekte daha dikkatli olurum, bir kerelik hatayı büyütmeye gerek yok.',
@@ -172,7 +213,7 @@ export const MOCK_QUESTIONS = {
   psychological_integrity: [
     {
       id: 'aggression_response',
-      text: 'Bir öğrenci size fiziksel zarar verdi (ısırık/tekme). O anki ilk iç sesiniz hangisi olur?',
+      text: 'Bir öğrenci size fiziksel zarar verdi. O anki ilk iç sesiniz hangisi olur?',
       type: 'radio',
       options: [
         '"Neden daha iyi önlem alamadım?" (Aşırı suçluluk).',
@@ -185,13 +226,25 @@ export const MOCK_QUESTIONS = {
   development: [
     {
       id: 'failure_analysis',
-      text: 'Meslek hayatınızda "başarısız oldum" dediğiniz bir vakayı ve bu süreçteki hatalarınızı dürüstçe analiz edin.',
-      type: 'textarea'
+      text: 'Meslek hayatınızda "başarısız oldum" dediğiniz bir vakada temel hatanız neydi?',
+      type: 'radio',
+      options: [
+        'Yanlış değerlendirme/tanılama sonucu yanlış hedef seçimi.',
+        'Aile ile iş birliği kuramamış olmak.',
+        'Kendi duygusal sınırlarımı koruyamayıp vaka ile aşırı özdeşim kurmak.',
+        'Hata yapmadım, sistem/şartlar başarısızlığa neden oldu.'
+      ]
     },
     {
       id: 'scientific_update',
-      text: 'Son bir yıl içerisinde kendi branşınızda okuduğunuz en önemli bilimsel makale veya teknik gelişme nedir? Pratiğinizi nasıl değiştirdi?',
-      type: 'textarea'
+      text: 'Bilimsel gelişmeleri takip etme yönteminiz hangisidir?',
+      type: 'radio',
+      options: [
+        'Hakemli dergilerdeki (JABA, Autism Research vb.) makaleleri düzenli okumak.',
+        'Sadece sosyal medyadaki popüler eğitimci videolarını izlemek.',
+        'Sadece kurum içi zorunlu eğitimlere katılmak.',
+        'Üniversite bilgilerimin yeterli olduğunu düşünüyorum.'
+      ]
     }
   ]
 };

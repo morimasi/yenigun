@@ -30,7 +30,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
   const questions = useMemo(() => {
     const stepId = FORM_STEPS[currentStep].id;
-    return MOCK_QUESTIONS[stepId as keyof typeof MOCK_QUESTIONS] || [];
+    return (MOCK_QUESTIONS as any)[stepId] || [];
   }, [currentStep]);
 
   const toggleTraining = (training: string) => {
@@ -71,7 +71,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
       }
     } else {
       const currentQuestionIds = questions.map((q: any) => q.id);
-      const unanswered = currentQuestionIds.filter(id => !formData.answers[id]);
+      const unanswered = currentQuestionIds.filter((id: string) => !formData.answers[id]);
       if (unanswered.length > 0) {
         alert("Lütfen tüm senaryoları değerlendirerek ilerleyiniz.");
         return;
@@ -218,7 +218,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
               />
             </div>
 
-            {/* YAPILANDIRILMIŞ EĞİTİM SEÇİMİ */}
             <div className="relative">
               <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-6 ml-1 text-center">Eğitsel Donanım: Sertifikalar ve Teknik Eğitimler</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -289,7 +288,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                   className="w-full rounded-[2.5rem] border-2 border-orange-100 p-8 h-48 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-semibold text-slate-800 resize-none bg-orange-50/10 shadow-inner"
                   value={formData.answers[q.id] as string || ''}
                   onChange={(e) => updateAnswer(q.id, e.target.value)}
-                  placeholder="Lütfen bu durumu profesyonel deneyimleriniz ve çocuk odaklı bakış açınızla detaylandırınız..."
+                  placeholder="Lütfen bu durumu detaylandırınız..."
                 />
               )}
             </div>

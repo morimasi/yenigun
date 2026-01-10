@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Kurulumu - all_trainings JSONB olarak güncellendi
+    // Şema Kurulumu - v22.2 (GIN Index optimizations)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -53,6 +53,9 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Opsiyonel: GIN indeksi ekleme (Yanıtlar üzerinden AI dışı deterministik sorgular için)
+    // await sql`CREATE INDEX IF NOT EXISTS idx_candidates_answers ON candidates USING GIN (answers);`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
