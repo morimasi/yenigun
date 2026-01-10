@@ -59,7 +59,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     date: candidate.interviewSchedule?.date || '',
     time: candidate.interviewSchedule?.time || '',
     method: candidate.interviewSchedule?.method || 'Yüz Yüze',
-    location: candidate.interviewSchedule?.location || config.interviewSettings.defaultMeetingLink || 'Yeni Gün Akademi Merkez Ofis',
+    location: candidate.interviewSchedule?.location || config?.interviewSettings?.defaultMeetingLink || 'Yeni Gün Akademi Merkez Ofis',
     type: 'Akademik Değerlendirme'
   });
 
@@ -90,7 +90,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       const updatedCandidate: Candidate = {
         ...candidate,
         status: 'interview_scheduled',
-        interviewSchedule: { ...interviewForm, isNotificationSent: config.automation.autoEmailOnSchedule },
+        interviewSchedule: { ...interviewForm, isNotificationSent: config?.automation?.autoEmailOnSchedule ?? true },
         updated_at: new Date().toISOString()
       };
       onUpdate(updatedCandidate);

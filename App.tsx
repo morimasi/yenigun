@@ -51,16 +51,34 @@ const App: React.FC = () => {
     setCandidates(data);
     
     // Konfigürasyonu DB'den yükle (En güncel otorite)
-    const remoteConfig = await storageService.getConfig();
-    if (remoteConfig) {
-      setConfig(remoteConfig);
-      document.documentElement.style.setProperty('--primary-color', remoteConfig.primaryColor);
-    } else {
-      // DB boşsa yerelden, yerel de boşsa varsayılandan al
-      const localConfig = localStorage.getItem('yeni_gun_config');
-      if (localConfig) {
-        setConfig(JSON.parse(localConfig));
+    try {
+      const remoteConfig = await storageService.getConfig();
+      
+      let finalConfig = DEFAULT_CONFIG;
+      const localConfigStr = localStorage.getItem('yeni_gun_config');
+      
+      if (localConfigStr) {
+        try {
+          finalConfig = { ...finalConfig, ...JSON.parse(localConfigStr) };
+        } catch (e) { console.error("Local config parse error"); }
       }
+
+      if (remoteConfig) {
+        // Derin birleştirme: nested nesnelerin kaybolmaması için
+        finalConfig = {
+          ...finalConfig,
+          ...remoteConfig,
+          aiPersona: { ...finalConfig.aiPersona, ...(remoteConfig.aiPersona || {}) },
+          aiWeights: { ...finalConfig.aiWeights, ...(remoteConfig.aiWeights || {}) },
+          automation: { ...finalConfig.automation, ...(remoteConfig.automation || {}) },
+          interviewSettings: { ...finalConfig.interviewSettings, ...(remoteConfig.interviewSettings || {}) }
+        };
+      }
+
+      setConfig(finalConfig);
+      document.documentElement.style.setProperty('--primary-color', finalConfig.primaryColor);
+    } catch (error) {
+      console.error("Config loading failed:", error);
     }
   }, []);
 
@@ -100,14 +118,10 @@ const App: React.FC = () => {
   };
 
   const handleUpdateConfig = async (newConfig: GlobalConfig) => {
-    // 1. React State'i hemen güncelle (Anlık UI tepkisi)
     setConfig(newConfig);
-    
-    // 2. Yerel belleği güncelle
     localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
     document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
     
-    // 3. Veritabanına kalıcı olarak işle (Sadece "Kaydet" tetiklendiğinde SettingsView'dan çağrılır)
     const success = await storageService.saveConfig(newConfig);
     if (success) {
       console.log("Konfigürasyon DB ile senkronize edildi.");
