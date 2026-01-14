@@ -40,136 +40,143 @@ export const CERTIFICATION_LIST = [
 
 export const MOCK_QUESTIONS = {
   academic_proficiency: [
+    // --- MATEMATİK (3 YENİ + MEVCUTLAR) ---
     {
-      id: 'math_logic_1',
-      text: 'Matematik (1-2. Sınıf): "15 - 7 = ?" işlemini onluk bozma mantığını kavrayamayan bir öğrenciye hangi stratejiyle öğretirsiniz?',
+      id: 'math_app_multiplication',
+      text: 'Matematik (2. Sınıf): Çarpma işlemini sadece "ardışık toplama" (2+2+2=6) olarak gören ama 2x3 sembolizasyonuna geçemeyen öğrenciye nasıl bir "köprü" kurarsınız?',
       type: 'radio',
       options: [
-        'Geriye ritmik sayma yaptırarak (Parmak hesabı pekiştirme).',
-        '10\'a tamamlama stratejisi: "7\'yi 10\'a tamamlamak için kaç lazım? 15\'ten önce 5 çıkarıp 10\'a ulaşalım" (Parçalama yöntemi).',
-        'Sadece sayı doğrusu üzerinde zıplayarak (Görsel ezber).',
-        'İşlemi alt alta yazıp onluk bozmayı kural olarak ezberleterek.'
+        'Sayı doğrusunda ileriye doğru ikişer zıplayarak ritmik sayma yaptırmak.',
+        'Nesne gruplarını (örn: her tabakta 2 elma) önce fiziksel, sonra "grup sayısı x gruptaki nesne" şeklinde etiketleyerek somutlaştırmak.',
+        'Çarpım tablosunu tekerleme şeklinde ezberleterek dile yerleştirmek.',
+        'Sadece işlem kağıtları üzerinden bol tekrar yaptırmak.'
       ]
     },
     {
-      id: 'turkish_literacy_1',
-      text: 'Türkçe (2-3. Sınıf): Bir metnin "Ana Fikri" ile "Konusu" arasındaki farkı anlamakta zorlanan dislektik bir öğrenciye bu ayrımı nasıl anlatırsınız?',
+      id: 'math_app_money',
+      text: 'Matematik (3. Sınıf): "100 TL ile markete giden biri 35 TL\'lik ürün alırsa kaç TL kalır?" sorusunda zihinden çıkarma yapamayan öğrenciye hangi "stratejik parça" yöntemini sunarsınız?',
       type: 'radio',
       options: [
-        'Zihin haritası kullanarak (Merkez: Konu, Oklar: Detaylar).',
-        'Tanım ezberleterek (Sürekli tekrar yöntemi).',
-        'Metni beş kez yüksek sesle okutarak.',
-        'Önceki yılların sınav sorularını çözdürerek.'
+        'Alt alta yazıp komşudan onluk bozma kuralını hatırlatmak.',
+        'Önce 30 TL çıkarıp 70\'e ulaşmak, sonra 5 TL daha çıkarıp 65 sonucuna "atlamalı" ulaşmak.',
+        'Bozuk paraları (10, 5, 1 TL) kullanarak masada fiziksel eksiltme yapmak.',
+        'Parmaklarıyla 35 saydırarak geriye doğru tek tek saydırmak.'
       ]
     },
     {
-      id: 'social_science_1',
-      text: 'Hayat Bilgisi (1-4. Sınıf): Geri dönüşüm kavramını zihinsel yetersizliği olan bir öğrenciye öğretirken hangi duyusal yöntemi önceliklendirirsiniz?',
+      id: 'math_app_fractions',
+      text: 'Matematik (4. Sınıf): Kesirlerde 1/2\'nin 1/4\'ten büyük olduğunu anlamayan ("4 sayısı 2\'den büyüktür" diyen) öğrenciye kavramsal yanılgıyı nasıl giderirsiniz?',
       type: 'radio',
       options: [
-        'Sadece video izleterek görsel pekiştirme.',
-        'Dokunarak ayrıştırma (Gerçek materyallerle istasyon çalışması).',
-        'Konuyla ilgili şarkı besteleyerek işitsel bellek oluşturma.',
-        'Ders kitabındaki boyama etkinliklerini yaparak.'
+        'Payda büyüdükçe parçanın küçüldüğü kuralını defterine 10 kez yazdırmak.',
+        'Aynı boyuttaki iki somut bütünün (örn: oyun hamuru) birini 2, diğerini 4 parçaya bölüp parçaları fiziksel üst üste koymak.',
+        'Sayı doğrusunda 1/2 ve 1/4 noktalarını işaretleyip sıfıra yakınlığı ölçmek.',
+        'Pasta grafiklerini boyatarak görsel farkı izletmek.'
+      ]
+    },
+
+    // --- TÜRKÇE (3 YENİ + MEVCUTLAR) ---
+    {
+      id: 'turk_app_phonics',
+      text: 'Türkçe (1. Sınıf): "K-A-L-E-M" seslerini ayrı ayrı tanıyan ama birleştirip "KALEM" diyemeyen (blending sorunu) öğrenciye müdahale basamağınız ne olur?',
+      type: 'radio',
+      options: [
+        'Sesi uzatarak söylemek: "KKKAAAAALLLLEEEEMMMM" şeklinde sesleri birbirine akıtarak model olmak.',
+        'Hece tablosundan "KA-LE" hecesini 20 kez tekrarlatmak.',
+        'Harf kartlarını masaya dizip her harfe dokunarak ses çıkarmasını istemek.',
+        'Kelimenin resmini gösterip harfleri bakarak yazmasını sağlamak.'
       ]
     },
     {
-      id: 'math_place_value',
-      text: 'Matematik (3. Sınıf): 348 sayısında 4 rakamının "basamak değeri" (40) ile "sayı değeri" (4) arasındaki farkı en iyi nasıl somutlaştırırsınız?',
+      id: 'turk_app_semantics',
+      text: 'Türkçe (3. Sınıf): Metindeki "Neden-Sonuç" ilişkisini (örn: "Yağmur yağdığı için ıslandı") kuramayan öğrenciye hangi görsel ipucunu (visual prompt) verirsiniz?',
       type: 'radio',
       options: [
-        'Para modelleri (4 tane 10 TL ile 4 tane 1 TL karşılaştırması).',
-        'Rakamların altına ok çıkarıp değerlerini yazdırarak.',
-        'Abaküs üzerinde boncuk saydırarak.',
-        'Sayıyı defalarca basamak tablosuna yerleştirerek.'
+        '"Çünkü" ve "Bu yüzden" kelimelerini farklı renklerle boyatıp bağlaç bulmacası çözdürmek.',
+        '"Olay ne?" ve "Sebebi ne?" sorularını içeren bir ok diyagramı (Görsel Akış Şeması) üzerinden çalışmak.',
+        'Metni beş kez yüksek sesle okutup nedenini sormak.',
+        'Metni özetletip ana fikri bulmasını istemek.'
       ]
     },
     {
-      id: 'turkish_context_clues',
-      text: 'Türkçe (4. Sınıf): "Yüz" kelimesinin eş sesli anlamlarını ayıramayan bir öğrenciye hangi yöntemi seçersiniz?',
+      id: 'turk_app_fluency',
+      text: 'Türkçe (4. Sınıf): Okuma hızı normal olmasına rağmen okuduğunu anlamayan (hiperleksi eğilimli) öğrenciye seans içinde hangi "aktif izleme" stratejisini uygularsınız?',
       type: 'radio',
       options: [
-        'Cümle kartları ve görsel eşleme (Görsel Destekli Bağlam).',
-        'Sözlükten tanımları defterine yazdırma.',
-        'Kelimeleri onar kez cümle içinde kullandırtma.',
-        'Sadece test soruları üzerinden pekiştirme.'
+        'Her cümle sonunda "Burada kim, ne yaptı?" diye durup kısa notlar (SQ3R modifiyeli) aldırmak.',
+        'Okuma hızını kasten yavaşlatıp heceletmek.',
+        'Metindeki bilinmeyen kelimelerin altını çizdirip sözlük çalışması yapmak.',
+        'Okuma bittikten sonra 10 soruluk bir test çözdürmek.'
+      ]
+    },
+
+    // --- SOSYAL / HAYAT BİLGİSİ (3 YENİ) ---
+    {
+      id: 'soc_app_spatial',
+      text: 'Hayat Bilgisi (1-2. Sınıf): "Kroki" kavramını (kuş bakışı görünüm) anlayamayan öğrenciye "somutlaştırma merdiveni" basamağınız ne olur?',
+      type: 'radio',
+      options: [
+        'Lego veya oyuncak kutularla masada sınıfın maketini yapıp, yukarıdan fotoğrafını çekerek krokisiyle eşleştirmek.',
+        'Kurşun kalemle deftere bir dikdörtgen çizip içine "Sıra, Masa" yazdırmak.',
+        'Sınıfın krokisini hazır kağıtta boyatmak.',
+        'Okulun bahçesine çıkıp binaları uzaktan izletmek.'
       ]
     },
     {
-      id: 'social_economic_literacy',
-      text: 'Hayat Bilgisi (2-3. Sınıf): "İstek" ve "İhtiyaç" kavramlarını sürekli karıştıran bir öğrenciye "Alışveriş Listesi" oyununu nasıl adapte edersiniz?',
+      id: 'soc_app_rights',
+      text: 'Hayat Bilgisi (3. Sınıf): "Sorumluluk" ve "Hak" ayrımını yapamayan ("Odamı toplamak benim hakkım" diyen) öğrenciye davranışçı bir yaklaşımla nasıl farkındalık kazandırırsınız?',
       type: 'radio',
       options: [
-        'Önce hayatta kalmak için gerekenleri (Su, yemek) işaretleyip geri kalanları eleyerek.',
-        'İstediği her şeyi sepete attırıp sonra parası yetmeyince çıkarttırarak.',
-        'Kavramların sözlük anlamlarını ezberleterek.',
-        'Market broşürlerinden beğendiklerini kestirerek.'
+        'Hakları (Alınanlar) ve Sorumlulukları (Verilenler) olarak iki sepete kart eşleme oyunu kurgulamak.',
+        'Sorumluluklarını yerine getirmediğinde haklarından mahrum bırakma (Token Economy) uygulamak.',
+        'Çocuk Hakları Sözleşmesi maddelerini okuyup tartıştırmak.',
+        'Anne ve babasının görevlerini listelemesini istemek.'
       ]
     },
     {
-      id: 'general_culture_ataturk',
-      text: 'Genel Kültür / Sosyal Bilgiler: Zaman algısı gelişmemiş bir öğrenciye tarihsel olayları nasıl somutlaştırırsınız?',
+      id: 'soc_app_environment',
+      text: 'Sosyal Bilgiler (4. Sınıf): "Doğal Afetler" (Deprem/Sel) konusunu kaygı düzeyi yüksek (DEHB/Otizm) bir öğrenciye güvenli bir şekilde nasıl sunarsınız?',
       type: 'radio',
       options: [
-        'Olayları resimli kartlarla bir ipin üzerine kronolojik asarak (Zaman Şeridi).',
-        'Sadece tarihleri ezberletip sınav yaparak.',
-        'Olayların uzun metinlerini okutarak.',
-        'Konuyla ilgili belgesel izleterek.'
+        'Korkutucu videolar yerine, sadece "Çök-Kapan-Tutun" gibi fiziksel rutinleri oyunlaştırarak ve sosyal öykü kullanarak.',
+        'Deprem anı simülasyon videolarını izleterek ciddiyeti kavramasını sağlamak.',
+        'Konuyu hiç işlemeyip sadece test çözdürerek geçiştirmek.',
+        'Afet çantasındaki malzemeleri ezberleterek.'
+      ]
+    },
+
+    // --- DİL VE İLETİŞİM (3 YENİ) ---
+    {
+      id: 'lang_app_pragmatics',
+      text: 'Dil ve İletişim: Bir öğrenci sosyal ortamda sürekli "Lafı ağzından alıyor" veya "Sırasını beklemeden konuşuyor" ise hangi pragmatik beceri çalışmasını önceliklendirirsiniz?',
+      type: 'radio',
+      options: [
+        '"Sıra bende / Sıra sende" görsel kartlarını kullanarak karşılıklı sohbet oyunları (Turn-taking).',
+        'Konuştuğunda ağzını kapatması için fiziksel ipucu vermek.',
+        'Sessiz durduğu her dakika için ödül vermek.',
+        'Grup derslerinde en sona bırakarak beklemesini öğretmek.'
       ]
     },
     {
-      id: 'pedagogy_scaffolding',
-      text: 'Dersi Sunma: Karmaşık bir yönergeyi ("Kitabının 25. sayfasını aç, 3. soruyu oku") işlemleme hızı düşük bir öğrenciye sunarken hangisini yaparsınız?',
+      id: 'lang_app_receptive',
+      text: 'Dil ve İletişim: Alıcı dili zayıf olan bir öğrenciye "Masadaki kırmızı kalemi al ve çantana koy" yönergesini verirken hangisini yaparsınız?',
       type: 'radio',
       options: [
-        'Yönergeyi tek tek parçalara bölüp her adım sonrası onay alarak (Chaining).',
-        'Yönergeyi daha yüksek sesle tekrarlayarak.',
-        'Yönergeyi tahtaya yazıp beklemesini isteyerek.',
-        'Öğrencinin yerine işlemi yaparak zaman kazanmak.'
+        'Yönergeyi parçalara bölüp ("Kalemi al" -> Bekle -> "Çantaya koy") her adımda görsel destek sunmak.',
+        'Yönergeyi daha yavaş ve tane tane 3 kez tekrarlamak.',
+        'Kalemi gösterip "Bunu koy" diyerek tek aşamaya indirmek.',
+        'Öğrencinin elinden tutup işlemi fiziksel yardım ile (Full Physical Prompt) yaptırmak.'
       ]
     },
     {
-      id: 'pedagogy_multisensory',
-      text: 'Öğretim Stratejisi: "Okuma-Yazmaya Hazırlık" aşamasında "VAKT" yöntemini nasıl kurgularsınız?',
+      id: 'lang_app_aac',
+      text: 'Dil ve İletişim: Hiç konuşmayan (non-verbal) 5 yaşındaki bir öğrenci için ilk iletişim hedefiniz ne olmalıdır?',
       type: 'radio',
       options: [
-        'Sesi kum havuzunda yazdırma ve eş zamanlı telaffuz (Çok duyulu yaklaşım).',
-        'Sadece akıllı tahtadan harfin yazılışını izletme.',
-        'Harfin çalışma sayfasındaki noktalarını birleştirme.',
-        'Harfi bakarak deftere beş satır kopyalama.'
-      ]
-    },
-    {
-      id: 'pedagogy_errorless',
-      text: 'Hata Ayıklama: Bir matematik kavramını "Hatasız Öğretim" (Errorless Learning) ile sunarken ipucu (Prompt) hiyerarşiniz nasıl olmalıdır?',
-      type: 'radio',
-      options: [
-        'En yoğun ipucundan (Fiziksel) başlayıp ipucunu kademeli olarak silikleştirerek (Most-to-Least).',
-        'Öğrencinin hata yapmasını bekleyip sonra düzeltme vererek.',
-        'Hiç ipucu vermeden öğrencinin kendi kendine bulmasını sağlayarak.',
-        'Sadece sözel ipucu kullanarak.'
-      ]
-    },
-    {
-      id: 'pedagogy_abstraction',
-      text: 'Somuttan Soyuta Geçiş: Kesirler (1/2, 1/4) konusunu anlatırken hangi köprü stratejisini kullanırsınız?',
-      type: 'radio',
-      options: [
-        'CRA (Concrete-Representational-Abstract) modelini sırasıyla uygulama.',
-        'Önce sembolü ezberletip sonra somut örneğe geçme.',
-        'Sadece somut materyalde kalıp sembole hiç geçmeme.',
-        'Doğrudan test çözdürerek pratik yapma.'
-      ]
-    },
-    {
-      id: 'pedagogy_motivation',
-      text: 'Dersi Başlatma ve Dikkat: Akademik olarak zorlandığı için dersi reddeden bir öğrenciye nasıl yaklaşırsınız?',
-      type: 'radio',
-      options: [
-        'Öğrencinin özel ilgisini (örn: arabalar) akademik konuya (örn: matematik) entegre ederek.',
-        'Dersi yapmazsa molaya çıkamayacağını söyleyerek (Ceza odaklı).',
-        'Öğrenci hazır olana kadar dersi iptal ederek.',
-        'Zorla masada oturtup otorite kurarak.'
+        'İsteklerini ifade edebilmesi için "İşaret etme" veya "PECS/Görsel Takas" gibi fonksiyonel bir sistem kurmak.',
+        'Zorlayarak "Anne, Su" gibi kelimeleri söyletmeye çalışmak.',
+        'Sadece ses taklitleri (Oral Motor) üzerine yoğunlaşmak.',
+        'Öğrencinin ne istediğini tahmin ederek her şeyi önüne koymak.'
       ]
     }
   ],
@@ -225,14 +232,14 @@ export const MOCK_QUESTIONS = {
   ],
   development: [
     {
-      id: 'failure_analysis',
-      text: 'Meslek hayatınızda "başarısız oldum" dediğiniz bir vakada temel hatanız neydi?',
+      id: 'failure_analysis_multi',
+      text: 'Öğrenci başarısızlığında kendi metodolojinizi nasıl revize edersiniz?',
       type: 'radio',
       options: [
-        'Yanlış değerlendirme/tanılama sonucu yanlış hedef seçimi.',
-        'Aile ile iş birliği kuramamış olmak.',
-        'Kendi duygusal sınırlarımı koruyamayıp vaka ile aşırı özdeşim kurmak.',
-        'Hata yapmadım, sistem/şartlar başarısızlığa neden oldu.'
+        'Veri toplama formlarımı (ABC kaydı vb.) analiz edip, öğretim basamaklarını küçülterek yeniden planlarım.',
+        'Öğrencinin potansiyelinin bu kadar olduğuna kanaat getirip mevcut seviyeyi korumaya çalışırım.',
+        'Kullandığım tekniği tamamen değiştirip popüler başka bir yönteme geçerim.',
+        'Ailenin evde çalışmadığını varsayarak sorumluluğu onlara aktarırım.'
       ]
     },
     {

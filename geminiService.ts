@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v21.2 (CERTIFICATION ENHANCED)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v22.0 (ENHANCED ACADEMIC ANALYSIS)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -17,7 +17,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const toneSettings = {
     strict: {
       budget: 24576,
-      baseInstruction: "TON: RIJIT, SORGULAYICI, AKADEMIK DENETÇI. PERSPEKTİF: Müfredat bilgisindeki en ufak tutarsızlığı yakala."
+      baseInstruction: "TON: RIJIT, SORGULAYICI, AKADEMIK DENETÇI. PERSPEKTİF: Müfredat bilgisindeki ve uygulama stratejisindeki en ufak tutarsızlığı yakala."
     },
     balanced: {
       budget: 16384,
@@ -33,16 +33,16 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
-    GÖREV: Adayın akademik yetkinliğini, pedagojik sunum becerilerini ve sahip olduğu teknik sertifikaların kalitesini analiz et.
+    GÖREV: Adayın akademik yetkinliğini, pedagojik uygulama becerilerini ve sahip olduğu teknik sertifikaların kalitesini analiz et.
     DİL: Türkçe.
     
     ANALİZ KRİTERLERİ (KRİTİK):
-    1. SERTİFİKA VE TEKNİK DONANIM: Adayın seçtiği 'allTrainings' listesindeki tekniklerin (ABA, Floortime vb.) branşıyla (branch) olan uyumunu ve klinik derinliğini değerlendir. Bu sertifikaların kurum vizyonuna katkısını puanla.
-    2. AKADEMİK DOĞRULUK: Matematik, Türkçe ve Hayat Bilgisi sorularına verdiği yanıtların bilimsel doğruluğunu kontrol et.
-    3. PEDAGOJİK SUNUM: Karmaşık konuları somutlaştırma ve özel eğitim uyarlama kabiliyetini ölç.
-    4. ETİK & PROFESYONELLİK: Klinik vakalardaki etik duruşunu denetle.
+    1. AKADEMİK UYGULAMA ANALİZİ: Adayın Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini derinlemesine incele. Doğru şıkkın yanı sıra seçilen yanlış şıkların (çeldiricilerin) niteliğini de analiz et. Yüzeysel veya kuralcı (ezberci) yaklaşımları tespit et.
+    2. SERTİFİKA VE TEKNİK DONANIM: Adayın seçtiği 'allTrainings' listesindeki tekniklerin branşıyla uyumunu değerlendir. 
+    3. PEDAGOJİK SOMUTLAŞTIRMA: Soyut kavramları özel gereksinimli çocuklara aktarma metodolojisindeki yaratıcılığı ve bilimsel dayanağı ölç.
+    4. KLİNİK MUHAKEME: Kriz anları ve etik ikilemlerdeki soğukkanlı ve çocuk merkezli duruşu puanla.
 
-    Eğitim listesi ('allTrainings') ve akademik yanıtlar, liyakat skorunun temel taşlarıdır.
+    Özellikle akademik sorularda "uygulama odaklı" şıkların seçilip seçilmediği liyakat puanının temelidir.
 
     FORMAT: Kesinlikle geçerli JSON.
   `;
@@ -54,7 +54,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             name: candidate.name,
             branch: candidate.branch,
             experience: candidate.experienceYears,
-            allTrainings: candidate.allTrainings, // Yapılandırılmış liste
+            allTrainings: candidate.allTrainings,
             answers: candidate.answers,
             weights: config.aiWeights
           })}` }
