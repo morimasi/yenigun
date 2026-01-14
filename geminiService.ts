@@ -3,54 +3,55 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v22.0 (ENHANCED ACADEMIC ANALYSIS)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v23.0 (PRO REASONING ENGINE)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
-    throw new Error("AUTH_MISSING: Analiz motoru için geçerli bir anahtar bulunamadı.");
+    throw new Error("AUTH_MISSING: Analiz motoru için geçerli bir API anahtarı bulunamadı.");
   }
 
+  // Aday analizleri karmaşık muhakeme gerektirdiği için gemini-3-pro-preview kullanılması uygundur.
   const ai = new GoogleGenAI({ apiKey });
   
   const toneSettings = {
     strict: {
-      budget: 24576,
-      baseInstruction: "TON: RIJIT, SORGULAYICI, AKADEMIK DENETÇI. PERSPEKTİF: Müfredat bilgisindeki ve uygulama stratejisindeki en ufak tutarsızlığı yakala."
+      budget: 32768,
+      baseInstruction: "TON: RİJİT, SORGULAYICI, AKADEMİK DENETÇİ. PERSPEKTİF: Müfredat bilgisindeki ve uygulama stratejisindeki en ufak tutarsızlığı yakala. Standartların altındaysa tolerans gösterme."
     },
     balanced: {
-      budget: 16384,
-      baseInstruction: "TON: PROFESYONEL, DENGELİ. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu tart."
+      budget: 32768,
+      baseInstruction: "TON: PROFESYONEL, DENGELİ, NESNEL. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu objektif verilerle tart."
     },
     empathetic: {
-      budget: 8192,
-      baseInstruction: "TON: GELİŞİM ODAKLI. PERSPEKTİF: Potansiyele odaklan."
+      budget: 24576,
+      baseInstruction: "TON: GELİŞİM ODAKLI, YAPICI. PERSPEKTİF: Mevcut eksiğinden ziyade gelişim potansiyeline ve kurum kültürüne uyumuna odaklan."
     }
   };
 
   const selectedTone = toneSettings[config.aiTone] || toneSettings.balanced;
 
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
+    ROL: Yeni Gün Akademi Akademik Denetleme ve Liyakat Kurulu Başkanı.
     GÖREV: Adayın akademik yetkinliğini, pedagojik uygulama becerilerini ve sahip olduğu teknik sertifikaların kalitesini analiz et.
     DİL: Türkçe.
     
-    ANALİZ KRİTERLERİ (KRİTİK):
-    1. AKADEMİK UYGULAMA ANALİZİ: Adayın Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini derinlemesine incele. Doğru şıkkın yanı sıra seçilen yanlış şıkların (çeldiricilerin) niteliğini de analiz et. Yüzeysel veya kuralcı (ezberci) yaklaşımları tespit et.
-    2. SERTİFİKA VE TEKNİK DONANIM: Adayın seçtiği 'allTrainings' listesindeki tekniklerin branşıyla uyumunu değerlendir. 
-    3. PEDAGOJİK SOMUTLAŞTIRMA: Soyut kavramları özel gereksinimli çocuklara aktarma metodolojisindeki yaratıcılığı ve bilimsel dayanağı ölç.
-    4. KLİNİK MUHAKEME: Kriz anları ve etik ikilemlerdeki soğukkanlı ve çocuk merkezli duruşu puanla.
+    ANALİZ KURALLARI:
+    1. AKADEMİK DERİNLİK: Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini klinik düzeyde incele. Yanlış şıklardaki çeldiriciler üzerinden adayın "ezberci" mi yoksa "kavramsal" mı düşündüğünü belirle.
+    2. SERTİFİKA VALIDASYONU: 'allTrainings' listesindeki eğitimlerin branşla uyumunu denetle (Örn: Bir Psikoloğun ABA bilmesi değerlidir, ancak temel test eğitimlerinin eksikliği risktir).
+    3. KRİZ VE ETİK: Senaryolara verilen cevaplardaki "soğukkanlılık" ve "kurum aidiyeti" düzeyini ölç.
+    4. GELİŞİM ÖNERİSİ: Aday işe alınırsa hangi alanlarda "supervision" alması gerektiğini belirt.
 
-    Özellikle akademik sorularda "uygulama odaklı" şıkların seçilip seçilmediği liyakat puanının temelidir.
-
-    FORMAT: Kesinlikle geçerli JSON.
+    ${selectedTone.baseInstruction}
+    
+    FORMAT: Kesinlikle geçerli JSON döndür.
   `;
 
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Verileri: ${JSON.stringify({
+        { text: `Aday Profili ve Verileri: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
             experience: candidate.experienceYears,
@@ -61,6 +62,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       ] 
     };
 
+    // CV verisi varsa analiz kapsamına ekle
     if (candidate.cvData) {
       contents.parts.push({
         inlineData: {
@@ -71,7 +73,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents,
       config: {
         systemInstruction,
@@ -80,9 +82,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Genel liyakat puanı (0-100)" },
-            summary: { type: Type.STRING, description: "Stratejik akademik ve teknik özet" },
-            recommendation: { type: Type.STRING, description: "Karar ve geliştirme önerisi" },
+            score: { type: Type.NUMBER, description: "0-100 arası liyakat puanı" },
+            summary: { type: Type.STRING, description: "Yönetici özeti (Kompakt ve profesyonel)" },
+            recommendation: { type: Type.STRING, description: "Nihai karar tavsiyesi" },
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
@@ -119,9 +121,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       }
     });
 
-    return JSON.parse(response.text || "{}");
-  } catch (error) {
-    console.error("AI Engine Analysis Error:", error);
-    throw error;
+    const result = JSON.parse(response.text || "{}");
+    return result;
+  } catch (error: any) {
+    console.error("AI Engine Error:", error);
+    throw new Error(`AI_ANALYSIS_FAILED: ${error.message}`);
   }
 };
