@@ -29,7 +29,6 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Şema Kurulumu - v22.2 (GIN Index optimizations)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -53,9 +52,6 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
-    // Opsiyonel: GIN indeksi ekleme (Yanıtlar üzerinden AI dışı deterministik sorgular için)
-    // await sql`CREATE INDEX IF NOT EXISTS idx_candidates_answers ON candidates USING GIN (answers);`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
@@ -105,14 +101,15 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
+      // Frontend'den gelen camelCase verileri SQL'deki snake_case sütunlara eşliyoruz
       await sql`
         UPDATE candidates SET 
           status = ${body.status},
-          admin_notes = ${body.admin_notes || null},
+          admin_notes = ${body.adminNotes || null},
           report = ${body.report ? JSON.stringify(body.report) : null},
-          algo_report = ${body.algo_report ? JSON.stringify(body.algo_report) : null},
-          interview_schedule = ${body.interview_schedule ? JSON.stringify(body.interview_schedule) : null},
-          cv_data = ${body.cv_data ? JSON.stringify(body.cv_data) : null},
+          algo_report = ${body.algoReport ? JSON.stringify(body.algoReport) : null},
+          interview_schedule = ${body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null},
+          cv_data = ${body.cvData ? JSON.stringify(body.cvData) : null},
           updated_at = ${now}
         WHERE id = ${body.id}
       `;
