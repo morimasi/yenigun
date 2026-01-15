@@ -55,6 +55,8 @@ export interface AnalysisSegment {
   score: number;
   comment: string;
   keyPoints: string[];
+  shortTermImpact: string;
+  longTermImplication: string;
 }
 
 export interface Candidate {
@@ -67,7 +69,7 @@ export interface Candidate {
   branch: Branch;
   experienceYears: number;
   previousInstitutions: string;
-  allTrainings: string;
+  allTrainings: string[];
   answers: Record<string, string | string[]>;
   timestamp: number;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';

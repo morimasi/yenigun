@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v23.0 (PRO REASONING ENGINE)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v24.0 (DEEP INSIGHT ENGINE)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -12,7 +12,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     throw new Error("AUTH_MISSING: Analiz motoru için geçerli bir API anahtarı bulunamadı.");
   }
 
-  // Aday analizleri karmaşık muhakeme gerektirdiği için gemini-3-pro-preview kullanılması uygundur.
   const ai = new GoogleGenAI({ apiKey });
   
   const toneSettings = {
@@ -38,15 +37,28 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     DİL: Türkçe.
     
     ANALİZ KURALLARI:
-    1. AKADEMİK DERİNLİK: Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini klinik düzeyde incele. Yanlış şıklardaki çeldiriciler üzerinden adayın "ezberci" mi yoksa "kavramsal" mı düşündüğünü belirle.
-    2. SERTİFİKA VALIDASYONU: 'allTrainings' listesindeki eğitimlerin branşla uyumunu denetle (Örn: Bir Psikoloğun ABA bilmesi değerlidir, ancak temel test eğitimlerinin eksikliği risktir).
-    3. KRİZ VE ETİK: Senaryolara verilen cevaplardaki "soğukkanlılık" ve "kurum aidiyeti" düzeyini ölç.
+    1. AKADEMİK DERİNLİK: Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini klinik düzeyde incele.
+    2. ETKİ ANALİZİ: Her değerlendirme alanı için adayın bu özelliğinin kurum üzerindeki "Kısa Vadeli Etki" (shortTermImpact) ve "Uzun Vadeli Sonuç" (longTermImplication) tahminlerini yap.
+    3. SERTİFİKA VALIDASYONU: 'allTrainings' listesindeki eğitimlerin branşla uyumunu denetle.
     4. GELİŞİM ÖNERİSİ: Aday işe alınırsa hangi alanlarda "supervision" alması gerektiğini belirt.
 
     ${selectedTone.baseInstruction}
     
     FORMAT: Kesinlikle geçerli JSON döndür.
   `;
+
+  // Segment şeması tanımı (Tekrarı önlemek için)
+  const segmentSchema = {
+    type: Type.OBJECT,
+    properties: {
+      score: { type: Type.NUMBER },
+      comment: { type: Type.STRING },
+      keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+      shortTermImpact: { type: Type.STRING, description: "İlk 3 ayda sınıfa ve kuruma yansıyacak doğrudan etki." },
+      longTermImplication: { type: Type.STRING, description: "1 yıl sonunda adayın mesleki evrimi ve kurumsal risk/fayda projeksiyonu." }
+    },
+    required: ["score", "comment", "keyPoints", "shortTermImpact", "longTermImplication"]
+  };
 
   try {
     const contents: any = { 
@@ -62,7 +74,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       ] 
     };
 
-    // CV verisi varsa analiz kapsamına ekle
     if (candidate.cvData) {
       contents.parts.push({
         inlineData: {
@@ -82,18 +93,18 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "0-100 arası liyakat puanı" },
-            summary: { type: Type.STRING, description: "Yönetici özeti (Kompakt ve profesyonel)" },
-            recommendation: { type: Type.STRING, description: "Nihai karar tavsiyesi" },
+            score: { type: Type.NUMBER },
+            summary: { type: Type.STRING },
+            recommendation: { type: Type.STRING },
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
-                ethics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-                pedagogy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-                clinicalWisdom: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-                emotionalResilience: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-                institutionalFit: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-                stressResponse: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } }
+                ethics: segmentSchema,
+                pedagogy: segmentSchema,
+                clinicalWisdom: segmentSchema,
+                emotionalResilience: segmentSchema,
+                institutionalFit: segmentSchema,
+                stressResponse: segmentSchema
               }
             },
             swot: {
@@ -121,8 +132,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       }
     });
 
-    const result = JSON.parse(response.text || "{}");
-    return result;
+    return JSON.parse(response.text || "{}");
   } catch (error: any) {
     console.error("AI Engine Error:", error);
     throw new Error(`AI_ANALYSIS_FAILED: ${error.message}`);

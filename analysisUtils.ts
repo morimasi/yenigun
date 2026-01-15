@@ -14,11 +14,15 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
 
   const answers = candidate.answers;
   const exp = candidate.experienceYears || 0;
-  const trainings = candidate.allTrainings?.toLowerCase() || '';
+  
+  // allTrainings bir array olduğu için önce birleştiriyoruz
+  const trainingsStr = Array.isArray(candidate.allTrainings) 
+    ? candidate.allTrainings.join(' ').toLowerCase() 
+    : String(candidate.allTrainings || '').toLowerCase();
   
   // 1. DÜRÜSTLÜK & MANTIK DENETİMİ (CV CROSS-CHECK)
   const advancedKeywords = ['aba', 'denver', 'wisc', 'floortime', 'disleksi', 'otizm', 'pecs'];
-  const trainingCount = advancedKeywords.filter(kw => trainings.includes(kw)).length;
+  const trainingCount = advancedKeywords.filter(kw => trainingsStr.includes(kw)).length;
 
   // Tutarsızlık: Düşük deneyime rağmen çok fazla ileri düzey eğitim beyanı
   if (exp < 2 && trainingCount > 4) {
@@ -43,8 +47,8 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   }
 
   // 3. ETİK SINIRLAR
-  const bribeAns = answers['parent_bribe'] as string;
-  if (bribeAns?.includes('yönetime bildiririm')) {
+  const bribeAns = answers['clinical_error'] as string; // Soru ID'si güncellendi
+  if (bribeAns?.includes('Derhal hem aileye hem yönetime')) {
     ethicsPoints += 50;
     patterns.push("Yüksek Kurumsal Aidiyet");
   } else {
@@ -53,7 +57,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   }
 
   // 4. BRANŞ SPESİFİK ANALİZ
-  if (candidate.branch === Branch.OzelEgitim && !trainings.includes('otizm') && !trainings.includes('aba')) {
+  if (candidate.branch === Branch.OzelEgitim && !trainingsStr.includes('otizm') && !trainingsStr.includes('aba')) {
     riskFlags.push("Branş Eksikliği: Özel eğitim branşında temel kabul edilen metodolojik (ABA/Otizm) donanım eksiği.");
   }
 
