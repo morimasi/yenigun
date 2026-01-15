@@ -98,6 +98,28 @@ export const MOCK_QUESTIONS = {
         'Kural Hatırlatıcı: "Küçükten büyük çıkmaz" cümlesini her işlemde sesli tekrar ettirip (Self-Monitoring) yaptırmak.'
       ]
     },
+    {
+      id: 'math_adv_spatial',
+      text: 'Geometri: Uzamsal algı (Spatial Processing) güçlüğü olan bir öğrenci, 3D şekillerin açınımını kağıt üzerinde canlandıramıyor. Müdahalede "en etkili" teknoloji/yöntem kombinasyonunuz nedir?',
+      type: 'radio',
+      options: [
+        'Dokunsal-Kinestetik: Şekilleri fiziksel olarak kartonlardan kestirip birleştirme-açma egzersizlerini eşzamanlı sözel betimleme ile yapmak.',
+        'Dijital Modelleme: Tablet üzerinden 3D modelleri 360 derece döndürerek izletmek ve zihinsel rotasyon testi yapmak.',
+        'Görsel İpucu: Şeklin her yüzünü farklı renge boyayıp sadece renkler üzerinden eşleştirme yaptırmak.',
+        'Ezber Stratejisi: Küpün 6 yüzü, silindirin 3 yüzü olduğu bilgisini ritmik olarak tekrarlatıp tanımasını sağlamak.'
+      ]
+    },
+    {
+      id: 'math_adv_logic_ef',
+      text: 'Yürütücü İşlev (Executive Function) bozukluğu olan öğrenci, çok adımlı matematik problemlerinde "gereksiz bilgiyi" (distractor info) ayıklayamıyor. Sistematik çözüm stratejiniz?',
+      type: 'radio',
+      options: [
+        'Veri Ayıklama: Metni bölümlere ayırıp sadece "sayısal verileri" yuvarlak içine aldırarak "İşlem kutusuna" taşıma algoritmasını öğretmek.',
+        'Metni Basitleştirme: Problemi siz okuyup gereksiz kısımları atarak sadece çözmesi gereken rakamları sunmak.',
+        'Görsel İşaretleme: Önemli kelimelerin (toplam, fark, her biri) altını çizdirip işlem sembolüyle eşleştirtmek.',
+        'Hızlandırma: Problem çözme süresini kısıtlayarak öğrencinin sezgisel olarak sonuca odaklanmasını sağlamak.'
+      ]
+    },
 
     // --- TÜRKÇE / OKUMA-YAZMA (CLINICAL LEVEL) ---
     {
@@ -120,6 +142,28 @@ export const MOCK_QUESTIONS = {
         'Soru-Cevap: Metinle ilgili "Kim, Nerede, Ne zaman" gibi 5N1K sorularını içeren standart bir test uygulamak.',
         'Özetleme: Metni kendi cümleleriyle 3 cümlede anlatmasını isteyip anahtar kelimelerin altını çizdirmek.',
         'Semantik Analiz: Metindeki bilinmeyen kelimeleri bulup sözlükten anlamlarını eşleştirerek kelime hazinesini genişletmek.'
+      ]
+    },
+    {
+      id: 'turk_adv_phonology',
+      text: 'Fonolojik Farkındalık: "Kelime içinden ses çıkarma/ekleme" (Phoneme Elision) aşamasında takılan ağır disleksi tanılı öğrenciye "K-İ-T-A-P" kelimesinden "K" sesini attığınızda ne kalır sorusuna doğru yanıt veremiyor. Müdahale basamağınız?',
+      type: 'radio',
+      options: [
+        'Görsel Bloklama: Her sesi bir renkli blokla temsil edip, baştaki bloğu fiziksel olarak masadan çekerek kalan sesleri sesletmesini istemek.',
+        'Sözel Tekrar: Kelimeyi defalarca heceleyerek "Kitap, İtap, İtap" diye doğruyu duyana kadar tekrar etmek.',
+        'Analoji: Benzer kelimelerle (Kap-Ap, Kas-As) bir tekerleme oluşturup işitsel aşinalık kazandırmak.',
+        'Yazılı Destek: Kelimeyi tahtaya yazıp ilk harfinin üzerini çarpı ile kapatarak okumasını söylemek.'
+      ]
+    },
+    {
+      id: 'turk_adv_graphomotor',
+      text: 'Yazı-Motor Entegrasyonu: Harfleri ters yazma veya satır çizgisini takip edememe (Dysgraphia) durumunda, görsel geri bildirim yerine "proprioseptif" (vücut pozisyon duyusu) geri bildirimi nasıl önceliklendirirsiniz?',
+      type: 'radio',
+      options: [
+        'Ağırlaştırılmış Kalem/Bileklik: Yazım sırasında elin ve bileğin konumunu daha net hissettirecek materyaller kullanarak motor planlamayı desteklemek.',
+        'Işıklı Tahta: Işıkla parlayan bir yüzeyde harflerin üzerinden geçerek görsel odaklanmayı en üst seviyeye çıkarmak.',
+        'Kopyalama: İyi yazılmış bir metnin üzerinden defalarca "iz sürme" (tracing) yaptırarak kas hafızası oluşturmak.',
+        'Sözlü Komut: Harfin her hamlesini (Yukarı çık, aşağı in, yuvarla) yüksek sesle söyleyerek yazdırmak.'
       ]
     },
 
@@ -146,6 +190,28 @@ export const MOCK_QUESTIONS = {
         'Sakinleştirme: Davranış başladığında çocuğu güvenli bir alana alıp sakinleşene kadar beklemek (Time-out).'
       ]
     },
+    {
+      id: 'lang_adv_receptive',
+      text: 'Alıcı Dil: Karmaşık yönergeleri ("Montunu asmadan önce ellerini yıka ve sonra kitabını al") yerine getiremeyen bir öğrenciye yönergeyi nasıl "modifiye" edersiniz?',
+      type: 'radio',
+      options: [
+        'Parçalara Bölme ve Görselleştirme: Yönergeyi 3 ayrı kısa cümleye bölüp, her adım tamamlandığında bir sonraki basamağa geçmek ve görsel akış şeması kullanmak.',
+        'Tekrar Ettirme: Yönergeyi verdikten sonra öğrencinin aynısını sesli olarak tekrar etmesini isteyip (Echolalic check) yaptırmak.',
+        'Fiziksel Yardım: Yönergeyi söylerken öğrenciyi kollarından tutup doğru yöne yönlendirerek (Physical Prompting) yaptırmak.',
+        'Kısa Form: Sadece "Yıka, As, Al" diyerek fiil odaklı, bağlamsız komutlar vermek.'
+      ]
+    },
+    {
+      id: 'lang_adv_echolalia',
+      text: 'Ekolali Yönetimi: Öğrenci sorulan her soruya soruyu aynen tekrarlayarak cevap veriyor (Anında ekolali). Bu tekrarları "işlevsel iletişime" dönüştürme stratejiniz?',
+      type: 'radio',
+      options: [
+        'İpucu Silikleştirme: Soruyu sorduktan hemen sonra cevabın baş harfini veya ilk hecesini fısıldayarak (Phonemic Prompt) doğru cevabı tetiklemek.',
+        'Görmezden Gelme: Tekrar ettiğinde tepki vermeyip, sadece doğru kelimeyi söylediğinde pekiştireç sunmak.',
+        'Ketleme: Tekrar etmeye başladığı an elinizle "dur" işareti yapıp sessiz kalmasını sağlamak.',
+        'Eşleme: Sorduğunuz sorunun resimli kartını gösterip, kartı eline verdiğinde cevaplamasını beklemek.'
+      ]
+    },
 
     // --- SOSYAL / HAYAT BİLGİSİ (CLINICAL LEVEL) ---
     {
@@ -157,6 +223,28 @@ export const MOCK_QUESTIONS = {
         'Mantıksal Çıkarım: "Senin oyuncağın kırılsaydı sen de üzülürdün" diyerek empatiyi kendi üzerinden kurmasını istemek.',
         'Drama: Sınıf içinde olayı canlandırıp öğrenciye "Üzgün" rolünü vererek hissetmesini sağlamak.',
         'Görsel Semboller: Arkadaşının yanına bir "Üzgün Surat" emojisi koyup nedenini sözlü olarak açıklamak.'
+      ]
+    },
+    {
+      id: 'soc_adv_regulation',
+      text: 'Duygu Düzenleme: Bir hayal kırıklığı anında (örn: oyunu kaybetmek) ağlama krizine giren bir öğrenciye "Bilişsel Yeniden Yapılandırma" (Cognitive Reappraisal) nasıl öğretilir?',
+      type: 'radio',
+      options: [
+        'Duygu Termometresi: Kayıp anındaki öfkesini 1-10 arası puanlatıp, "Bu olay gerçekten 10 puanlık mı?" sorgusuyla durumun vahametini yeniden değerlendirtmek.',
+        'Sakinleşme Köşesi: Hiç konuşmadan çocuğu minderli bir alana alıp kendi kendine sakinleşene kadar (Self-regulation) bekletmek.',
+        'Ödül Sistemi: Ağlamadığı her kayıp anı için "yıldız" verip, yıldızlar birikince ödül sunmak.',
+        'Dikkat Dağıtma: Ağlamaya başladığı an sevdiği bir videoyu açıp odağını başka yöne kaydırmak.'
+      ]
+    },
+    {
+      id: 'soc_adv_authority',
+      text: 'Sosyal Hiyerarşi: Öğrenci, okul müdürü ile sınıf arkadaşına aynı (laubali) üslupla hitap ediyor. "Sosyal Bağlam" farkındalığını geliştirmek için en "yapılandırılmış" müdahale hangisidir?',
+      type: 'radio',
+      options: [
+        'Video Modelleme: Farklı otoritelerle yapılan doğru ve yanlış iletişim örneklerini izletip, aradaki farkları (ses tonu, kelime seçimi) tabloya döktürmek.',
+        'Sözel Uyarı: Müdürün yanına her gittiğinde "Lütfen kibar konuş" diye önceden hatırlatma yapmak.',
+        'Cezalandırma: Yanlış hitap ettiğinde müdürün odasından çıkartıp "Doğru söyleyene kadar giremezsin" demek.',
+        'Sosyal Beceri Grubu: Arkadaşlarıyla drama yaparken birinin müdür rolüne girmesini sağlayıp prova yaptırmak.'
       ]
     }
   ],
@@ -182,6 +270,28 @@ export const MOCK_QUESTIONS = {
         'Duygusal Yaklaşım: Hemen seansı bitirip çocuğu oyun odasına götürürüm, güven bağı sarsılmamalı.',
         'Uzlaşma: 5 dakika daha devam eder, ağlama dinmezse ara veririm.'
       ]
+    },
+    {
+      id: 'logic_resource',
+      text: 'Kısıtlı Kaynak: Seans için gereken kritik bir materyali başka bir öğretmen almış ve seansınızın başlamasına 1 dakika var. Öğrenciniz ise materyal değişikliğine karşı aşırı dirençli (Otistik şemalar). Çözümünüz?',
+      type: 'radio',
+      options: [
+        'Görsel Hazırlık: Öğrenciye materyalin "mola" verdiğini gösteren bir kart sunup, alternatif (ikinci en sevdiği) materyale geçişi yapılandırılmış bir "bekleme" egzersiziyle yönetmek.',
+        'Hızlı Müdahale: Diğer öğretmenin odasına gidip materyali zorla geri almak, seans akışını bozmamak.',
+        'Serbest Zaman: Materyal gelene kadar öğrenciyi serbest bırakıp odada kendi kendine vakit geçirmesini izlemek.',
+        'Rüşvet: Materyal yokluğunu telafi etmek için normalde vermediğiniz bir yiyecek pekiştireci sunmak.'
+      ]
+    },
+    {
+      id: 'logic_policy',
+      text: 'Veli Talebi: Bir veli, BEP (Bireyselleştirilmiş Eğitim Planı) dışına çıkmanızı ve çocuğuna okul ödevlerini yaptırmanızı istiyor. Aksi takdirde şikayet edeceğini söylüyor. Profesyonel duruşunuz?',
+      type: 'radio',
+      options: [
+        'Eğitsel Savunuculuk: Veliyi görüşmeye alıp BEP hedeflerinin hayati önemini verilerle açıklamak, akademik ödevlerin seansın terapötik amacını nasıl zedeleyeceğini net bir dille belirtmek.',
+        'Esneklik: Velinin gönlünü almak için seansın son 10 dakikasını ödevlere ayırmayı teklif etmek.',
+        'Yönetime Sevk: Hiç muhatap olmadan veliyi kurum müdürüne yönlendirip kararı onlara bırakmak.',
+        'Gizli Kabul: Kimseye söylemeden ödevleri yaptırıp veliyle arayı iyi tutmak.'
+      ]
     }
   ],
   professional_cases: [
@@ -194,6 +304,41 @@ export const MOCK_QUESTIONS = {
         'Sessiz Düzeltme: Planı hemen günceller ve öğrenciyi doğru beceriye yönlendiririm, vakit kaybetmem.',
         'Sorumluluk Paylaşımı: Diğer uzmanların da kontrol etmediğini belirterek ortak bir hata analizi toplantısı isterim.',
         'Görmezden Gelme: Zaten öğrenci bir şeyler öğrenmiştir, yeni hedeflere odaklanırım.'
+      ]
+    },
+    {
+      id: 'peer_review',
+      text: 'Bir meslektaşınızın seans sırasında öğrenciye karşı bilimsel dayanağı olmayan (örn: bağırma, korkutma) bir yöntem uyguladığını gördünüz. İlk adımınız?',
+      type: 'radio',
+      options: [
+        'Doğrudan İletişim: Meslektaşınızı seans sonrası uygun bir dille duruma dair gözleminizle yüzleştirmek ve kurumun bilimsel standartlarını hatırlatmak.',
+        'Gizli Rapor: Hemen kurum müdürüne gidip durumu anlatmak ve meslektaşınızın uyarılmasını sağlamak.',
+        'Sosyal Medya/Gıybet: Diğer öğretmenlerle bu durumu paylaşıp bir kamuoyu oluşturmak.',
+        'Müdahale Etmeme: "Her yiğidin bir yoğurt yiyişi vardır" deyip kendi işine bakmak.'
+      ]
+    },
+    {
+      id: 'confidentiality_issue',
+      text: 'Gizlilik: Bir öğrencinin yakın bir akrabası (örn: teyzesi), ailenin haberi olmadan sizi arayıp çocuğun gelişimi ve tanısı hakkında bilgi istiyor. Yanıtınız?',
+      type: 'radio',
+      options: [
+        'Etik Sınır: Bilgi paylaşımının sadece yasal velilerle yapılabileceğini kibarca belirtip, ailenin onayı olmadan hiçbir veri aktarmamak.',
+        'Kısa Bilgi: "Genel olarak iyi gidiyor" diyerek detay vermeden merakını gidermek.',
+        'Tam Şeffaflık: Akraba olduğu için güvenip tüm raporları ve gözlemleri anlatmak.',
+        'Geri Arama: Aileyi arayıp "Teyzeniz aradı, anlatayım mı?" diye sormak.'
+      ]
+    }
+  ],
+  professional_cases_extra: [
+    {
+      id: 'dual_relationship',
+      text: 'Çift Taraflı İlişki: Bir veliniz, size kendi iş yerinde bir indirim veya özel bir avantaj teklif etti. Bu durumun seans tarafsızlığını bozmaması için ne yaparsınız?',
+      type: 'radio',
+      options: [
+        'Red ve Açıklama: Teklifi profesyonel sınırlar gereği kabul edemeyeceğinizi belirterek, bunun etik bir gereklilik olduğunu veliye izah etmek.',
+        'Kabul ve Gizlilik: Teklifi kabul edip seanslarda bu durumu hiç açmamak.',
+        'Hediye Olarak Görme: Küçük bir jest olarak görüp teşekkür ederek kabul etmek.',
+        'Takas: Siz de ona ek bir seans vererek durumu eşitlemek.'
       ]
     }
   ],
@@ -208,6 +353,28 @@ export const MOCK_QUESTIONS = {
         'Cezalandırma: Seansı hemen bitirir ve "Bunu yaptığın için ders bitti" diyerek odadan çıkarım.',
         'Duygusal Tepki: Ağladığımı gösteririm ki arkadaşının canının yandığını (Empati) fark etsin.'
       ]
+    },
+    {
+      id: 'failure_burnout',
+      text: 'Tükenmişlik: 1 yıldır çalıştığınız bir öğrenci hiçbir hedefi geçemedi ve her seansta aynı döngüyü yaşıyorsunuz. Motivasyonunuzu nasıl korursunuz?',
+      type: 'radio',
+      options: [
+        'Süpervizyon Almak: Kendi yetersizlik hissimi ve vaka analizini bir üst uzmanla/psikologla paylaşıp müdahale planını radikal bir şekilde revize etmek.',
+        'Kabullenme: "Bu çocuğun kapasitesi bu kadar" diyerek beklentilerimi en dibe çekmek.',
+        'Vaka Değişimi: Kurumdan bu öğrenciyi bırakıp daha "kolay" bir öğrenci vermelerini istemek.',
+        'Suçlama: Sorunun ailede veya çocukta olduğunu düşünerek vicdanımı rahatlatmak.'
+      ]
+    },
+    {
+      id: 'work_life_boundary',
+      text: 'İş-Özel Hayat Dengi: Bir veli, gece saat 23:00\'te size WhatsApp üzerinden uzun bir ses kaydı atarak çocuğunun o anki bir davranış problemine müdahale etmenizi istiyor. Tepkiniz?',
+      type: 'radio',
+      options: [
+        'Sınır Belirleme: Mesajı o an görmezden gelip, sabah mesai saatinde "Acil durumlar için şu protokolü izleyelim, akşam 19:00 sonrası iletişim kuramıyorum" diyerek sınır çizmek.',
+        'Anında Yanıt: Veli mağdur olmasın diye hemen cevap verip yarım saat telefonda destek olmak.',
+        'Kısa Cevap: "Yarın konuşuruz" diyip geçiştirmek.',
+        'Görüldü Atma: Mesajı okuyup hiç cevap vermemek ve mülakatta bu durumu şikayet etmek.'
+      ]
     }
   ],
   development: [
@@ -220,6 +387,28 @@ export const MOCK_QUESTIONS = {
         'Kapasite Kabulü: Öğrencinin bilişsel kapasitesinin bu hedef için henüz erken olduğunu varsayıp hedefi askıya alırım.',
         'Materyal Değişimi: Kullandığım kartların rengini veya boyutunu değiştirip tekrar denerim.',
         'Ev Programı: Sorunun evdeki genelleyici eksikliğinden kaynaklandığını düşünür, aileye ödev veririm.'
+      ]
+    },
+    {
+      id: 'supervision_feedback',
+      text: 'Geri Bildirim: Akademik kurul, bir seansınızı izledi ve uyguladığınız yöntemin (örn: pekiştirme zamanlaması) hatalı olduğuna dair sert bir eleştiri yaptı. Reaksiyonunuz?',
+      type: 'radio',
+      options: [
+        'Gelişim Odaklılık: Eleştiriyi verilerle analiz eder, hatamı kabul edip kurulun önerdiği protokolü bir sonraki seansta uygulamak için rehberlik isterim.',
+        'Savunma: Eleştirinin haksız olduğunu, öğrenciyi en iyi sizin tanıdığınızı ve yöntemin doğru olduğunu iddia etmek.',
+        'Pasif Agresif: "Tamam" diyip yine bildiğini okumak.',
+        'Duygusal Kırılma: Eleştiriyi kişisel bir saldırı olarak görüp meslekten soğumak.'
+      ]
+    },
+    {
+      id: 'lifelong_learning_ai',
+      text: 'Teknoloji: Özel eğitimde Yapay Zeka (AI) destekli analiz araçlarının kullanımı hakkında ne düşünüyorsunuz?',
+      type: 'radio',
+      options: [
+        'Entegrasyon: İnsan dokunuşunu ve klinik sağduyuyu koruyarak, verilerin objektif analizi ve hata payının düşürülmesi için bu araçları bir "asistan" olarak kullanmaya hazırım.',
+        'Reddetme: Yapay zeka bu çocukların ruhundan anlamaz, tamamen mekanik bir süreçtir, karşıyım.',
+        'Korku: Yakında öğretmenlerin yerini alacağını düşünüp bu teknolojilerden uzak durmayı tercih ederim.',
+        'Kaygısızlık: Benim için fark etmez, kurum ne derse onu yaparım.'
       ]
     }
   ]
