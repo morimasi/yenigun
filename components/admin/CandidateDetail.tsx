@@ -5,6 +5,7 @@ import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import StatusBadge from './StatusBadge';
 import { ReportCustomizationOptions } from '../CandidateReport';
+import { exportService } from '../../services/exportService';
 
 const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ title, data, color }) => (
   <div className="flex flex-col gap-3 py-5 border-b border-slate-50 last:border-0 group hover:bg-slate-50/50 px-4 -mx-4 rounded-xl transition-all">
@@ -46,6 +47,7 @@ const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ 
 
 const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, config, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   
@@ -86,6 +88,21 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!candidate.report) {
+      alert("PDF indirmeden önce lütfen adayın akademik analizini (AI Analiz) tamamlayın.");
+      return;
+    }
+    setIsExporting(true);
+    try {
+      await exportService.exportSingleCandidatePDF(candidate, reportOptions);
+    } catch (error: any) {
+      alert(`PDF Üretim Hatası: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const toggleOption = (key: keyof ReportCustomizationOptions) => {
     setReportOptions(prev => ({ ...prev, [key]: !prev[key] }));
   };
@@ -119,10 +136,22 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#F8FAFC]">
         {/* Rapor Özelleştirme Paneli */}
         <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm no-print">
-          <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-            <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-            PDF RAPOR KONFİGÜRASYONU
-          </h4>
+          <div className="flex justify-between items-center mb-6">
+            <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+              PDF RAPOR KONFİGÜRASYONU
+            </h4>
+            
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isExporting}
+              className={`flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/20 hover:bg-orange-700 transition-all active:scale-95 ${isExporting ? 'opacity-50 cursor-wait' : ''}`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              {isExporting ? 'PDF ÜRETİLİYOR...' : 'PDF OLARAK İNDİR'}
+            </button>
+          </div>
+          
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
              {[
                { key: 'showPersonalDetails', label: 'Kişisel Veri' },
@@ -137,7 +166,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                  onClick={() => toggleOption(opt.key as any)}
                  className={`py-3 rounded-xl text-[8px] font-black uppercase tracking-tight border-2 transition-all ${
                    reportOptions[opt.key as keyof ReportCustomizationOptions] 
-                   ? 'bg-orange-600 border-orange-600 text-white shadow-md' 
+                   ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
                    : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
                  }`}
                >

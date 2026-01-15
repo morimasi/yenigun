@@ -175,7 +175,7 @@ const CandidateReport: React.FC<CandidateReportProps> = ({ report, candidate, op
       {/* SECTION IV: SWOT & COMPETENCY */}
       <div className="grid grid-cols-2 gap-10 mb-12 break-inside-avoid">
         {options.showCompetencyMap && report && (
-          <div className="h-[300px] bg-slate-50 border-2 border-slate-100 rounded-3xl p-6 relative">
+          <div className="h-[300px] bg-white border-2 border-slate-100 rounded-3xl p-6 relative">
             <h4 className="text-[8px] font-black text-slate-900 uppercase tracking-widest text-center mb-4">Yetkinlik Haritası</h4>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={report.competencies}>
@@ -194,14 +194,22 @@ const CandidateReport: React.FC<CandidateReportProps> = ({ report, candidate, op
                 {report.recommendation}
               </p>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                  <span className="text-[7px] font-black text-emerald-700 uppercase block">En Güçlü Yan</span>
-                  <p className="text-[9px] font-bold text-emerald-800">{report.swot.strengths[0]}</p>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                  <span className="text-[7px] font-black text-emerald-700 uppercase block mb-2">Güçlü Yönler (Stratejik)</span>
+                  <ul className="space-y-1">
+                    {report.swot.strengths.map((s, i) => (
+                      <li key={i} className="text-[9px] font-bold text-emerald-800 leading-tight">• {s}</li>
+                    ))}
+                  </ul>
                </div>
-               <div className="p-3 bg-rose-50 rounded-xl border border-rose-100">
-                  <span className="text-[7px] font-black text-rose-700 uppercase block">Kritik Risk</span>
-                  <p className="text-[9px] font-bold text-rose-800">{report.swot.weaknesses[0]}</p>
+               <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                  <span className="text-[7px] font-black text-rose-700 uppercase block mb-2">Kritik Risk Alanları</span>
+                  <ul className="space-y-1">
+                    {report.swot.weaknesses.map((w, i) => (
+                      <li key={i} className="text-[9px] font-bold text-rose-800 leading-tight">• {w}</li>
+                    ))}
+                  </ul>
                </div>
             </div>
           </div>
