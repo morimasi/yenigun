@@ -8,11 +8,12 @@ import ReactDOM from 'react-dom/client';
 import CandidateReport, { ReportCustomizationOptions } from '../components/CandidateReport';
 
 /**
- * Yeni Gün Akademi - Gelişmiş Arşivleme ve PDF Üretim Servisi v3.0
+ * Yeni Gün Akademi - Gelişmiş Arşivleme ve PDF Üretim Servisi v3.5
+ * Profesyonel baskı kalitesi ve toplu işlem optimizasyonu.
  */
 export const exportService = {
   /**
-   * Tek bir aday için konfigürasyona göre PDF indirir.
+   * Tek bir aday için mevcut konfigürasyona göre PDF indirir.
    */
   async exportSingleCandidatePDF(candidate: Candidate, options: ReportCustomizationOptions): Promise<void> {
     const exportRoot = this._createTempContainer();
@@ -25,24 +26,24 @@ export const exportService = {
         options: options
       }));
       
-      // Render ve Recharts grafiklerinin yüklenmesi için bekle
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Render, grafikler ve AI analiz verilerinin DOM'a tam yerleşmesi için bekle
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(exportRoot, {
-        scale: 2,
+        scale: 2, // 300 DPI eşdeğeri keskinlik
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 794 // A4 96dpi approx
+        width: 794 // A4 96dpi standart genişlik
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
       pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeight);
-      pdf.save(`${candidate.name.replace(/\s+/g, '_')}_Akademik_Rapor.pdf`);
+      pdf.save(`${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Akademik_Analiz_Raporu.pdf`);
 
     } finally {
       reactRoot.unmount();
@@ -51,30 +52,45 @@ export const exportService = {
   },
 
   /**
-   * Tüm adayları mevcut veya standart konfigürasyona göre ZIP içinde PDF olarak aktarır.
+   * Tüm adayları 'Tam Kapsamlı' (Full) konfigürasyona göre ZIP içinde PDF olarak aktarır.
    */
   async exportAllCandidatesAsZip(candidates: Candidate[], onProgress?: (p: number) => void): Promise<void> {
     const zip = new JSZip();
-    const folderName = `YeniGun_Akademi_Arsiv_${new Date().toISOString().split('T')[0]}`;
+    const folderName = `YeniGun_Akademi_Tam_Arsiv_${new Date().toISOString().split('T')[0]}`;
     const rootFolder = zip.folder(folderName);
 
-    if (!rootFolder) throw new Error("ZIP klasörü oluşturulamadı.");
+    if (!rootFolder) throw new Error("ZIP katmanı başlatılamadı.");
 
     const exportRoot = this._createTempContainer();
     const reactRoot = ReactDOM.createRoot(exportRoot);
+
+    // Toplu indirme için "FULL" konfigürasyon
+    const fullOptions: ReportCustomizationOptions = {
+      showPersonalDetails: true,
+      showAcademicBackground: true,
+      showAIAnalysis: true,
+      showSWOT: true,
+      showCompetencyMap: true,
+      showInterviewNotes: true,
+      headerTitle: 'Kurumsal Arşiv: Tam Liyakat Dosyası'
+    };
 
     try {
       for (let i = 0; i < candidates.length; i++) {
         const candidate = candidates[i];
         if (onProgress) onProgress(Math.round(((i + 1) / candidates.length) * 100));
 
+        // Analizi olmayan adaylar için PDF üretilmez (veya boş rapor üretilir)
+        if (!candidate.report) continue;
+
         reactRoot.render(React.createElement(CandidateReport, { 
           candidate: candidate, 
-          report: candidate.report 
-          // Toplu aktarımda varsayılan olarak "Tam Rapor" (Full) kullanılır
+          report: candidate.report,
+          options: fullOptions
         }));
         
-        await new Promise(resolve => setTimeout(resolve, 600));
+        // İşlemci yüküne göre bekleme süresi
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         const canvas = await html2canvas(exportRoot, {
           scale: 2,
@@ -86,14 +102,14 @@ export const exportService = {
 
         if (canvas.width === 0 || canvas.height === 0) continue;
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.90);
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
         const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
         pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeight);
         
-        const fileName = `${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Analiz.pdf`;
+        const fileName = `${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Full_Rapor.pdf`;
         const pdfBlob = pdf.output('blob');
         rootFolder.file(fileName, pdfBlob);
       }
@@ -114,10 +130,11 @@ export const exportService = {
   _createTempContainer() {
     const container = document.createElement('div');
     container.style.position = 'fixed';
-    container.style.left = '-10000px';
+    container.style.left = '-20000px'; // Görüş alanının çok dışında
     container.style.top = '0';
     container.style.width = '794px';
     container.style.backgroundColor = '#ffffff';
+    container.style.zIndex = '-9999';
     document.body.appendChild(container);
     return container;
   },
