@@ -24,7 +24,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Singleton tablosu kurulumu
+    // Singleton tablosu kurulumu: Sadece tek bir satıra (id=1) izin verir.
     await sql`
       CREATE TABLE IF NOT EXISTS system_config (
         id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -53,6 +53,7 @@ export default async function handler(request: Request) {
 
     return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+    console.error('Config API Error:', error.message);
+    return new Response(JSON.stringify({ error: 'DATABASE_ERROR', message: error.message }), { status: 500, headers });
   }
 }

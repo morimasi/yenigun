@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v24.0 (DEEP INSIGHT ENGINE)
+ * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v25.0 (CLINICAL REASONING FOCUS)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
@@ -17,15 +17,21 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const toneSettings = {
     strict: {
       budget: 32768,
-      baseInstruction: "TON: RİJİT, SORGULAYICI, AKADEMİK DENETÇİ. PERSPEKTİF: Müfredat bilgisindeki ve uygulama stratejisindeki en ufak tutarsızlığı yakala. Standartların altındaysa tolerans gösterme."
+      baseInstruction: `TON: RİJİT, SORGULAYICI, AKADEMİK DENETÇİ. 
+        PERSPEKTİF: Adayın seçenekler arasındaki 'yüzeysel' (textbook) olanı mı yoksa 'klinik olarak doğru' olanı mı seçtiğini analiz et. 
+        Müfredat bilgisini özel eğitim teknikleriyle sentezleyemeyen adaylara tolerans gösterme. 
+        Çeldiricilere düşen adayları 'Kritik Risk' olarak işaretle.`
     },
     balanced: {
       budget: 32768,
-      baseInstruction: "TON: PROFESYONEL, DENGELİ, NESNEL. PERSPEKTİF: Akademik donanım ve klinik sağduyuyu objektif verilerle tart."
+      baseInstruction: `TON: PROFESYONEL, DENGELİ, NESNEL. 
+        PERSPEKTİF: Akademik donanım ve klinik sağduyuyu objektif verilerle tart. 
+        Adayın yanlış seçeneklerdeki 'yaygın pedagojik hataları' benimseyip benimsemediğini kontrol et.`
     },
     empathetic: {
       budget: 24576,
-      baseInstruction: "TON: GELİŞİM ODAKLI, YAPICI. PERSPEKTİF: Mevcut eksiğinden ziyade gelişim potansiyeline ve kurum kültürüne uyumuna odaklan."
+      baseInstruction: `TON: GELİŞİM ODAKLI, YAPICI. 
+        PERSPEKTİF: Adayın mevcut klinik eksiğinden ziyade, doğru muhakeme yolundaki çabasını ve kurumsal kültüre uyum potansiyelini değerlendir.`
     }
   };
 
@@ -33,21 +39,20 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Akademik Denetleme ve Liyakat Kurulu Başkanı.
-    GÖREV: Adayın akademik yetkinliğini, pedagojik uygulama becerilerini ve sahip olduğu teknik sertifikaların kalitesini analiz et.
+    GÖREV: Adayın 'academic_proficiency' bölümündeki yüksek zorluk seviyeli klinik senaryolara verdiği yanıtları analiz et.
     DİL: Türkçe.
     
-    ANALİZ KURALLARI:
-    1. AKADEMİK DERİNLİK: Matematik, Türkçe, Sosyal ve Dil alanlarındaki 'answers' verisini klinik düzeyde incele.
-    2. ETKİ ANALİZİ: Her değerlendirme alanı için adayın bu özelliğinin kurum üzerindeki "Kısa Vadeli Etki" (shortTermImpact) ve "Uzun Vadeli Sonuç" (longTermImplication) tahminlerini yap.
-    3. SERTİFİKA VALIDASYONU: 'allTrainings' listesindeki eğitimlerin branşla uyumunu denetle.
-    4. GELİŞİM ÖNERİSİ: Aday işe alınırsa hangi alanlarda "supervision" alması gerektiğini belirt.
+    ÖZEL TALİMAT:
+    1. KLİNİK MUHAKEME ANALİZİ: Sorular 'yaygın ama hatalı uygulama' çeldiricileri içerir. Adayın bu çeldiricilere yönelmesi, teorik bilgisinin pratikle uyuşmadığını gösterir.
+    2. RED FLAG TESPİTİ: Davranışçı yaklaşımlarda (ABA) 'söndürme' yerine 'ceza' eğilimi gösteren, akademik problemlerde 'somutlaştırma' yerine 'ezber' öneren adayları düşük puanla değerlendir.
+    3. SERTİFİKA VE YANIT TUTARLILIĞI: Aday 'ABA Sertifikası' beyan edip ilgili soruda 'Davranışsal Söndürme' yerine 'Sakinleştirme/Bekleme' seçmişse bunu 'Liyakat Tutarsızlığı' olarak rapora ekle.
+    4. ETKİ ANALİZİ: Her değerlendirme alanı için adayın bu özelliğinin kurum üzerindeki "Kısa Vadeli Etki" ve "Uzun Vadeli Sonuç" tahminlerini yap.
 
     ${selectedTone.baseInstruction}
     
     FORMAT: Kesinlikle geçerli JSON döndür.
   `;
 
-  // Segment şeması tanımı (Tekrarı önlemek için)
   const segmentSchema = {
     type: Type.OBJECT,
     properties: {

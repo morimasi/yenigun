@@ -9,8 +9,8 @@ export const FORM_STEPS: FormStep[] = [
   },
   { 
     id: 'academic_proficiency', 
-    title: 'İlkokul Akademik Yetkinlik', 
-    description: '1-4. Sınıf seviyesindeki temel müfredat bilgisi ve bu bilginin özel eğitimde aktarım stratejileri.' 
+    title: 'Klinik Uygulama Profili', 
+    description: 'Müfredat bilgisinin özel eğitim müdahale teknikleriyle sentezi: Yüksek zorluk seviyeli uygulama senaryoları.' 
   },
   { id: 'logic_literacy', title: 'Operasyonel Zeka', description: 'Karmaşık kriz anlarında mantıksal önceliklendirme kapasitesi.' },
   { id: 'professional_cases', title: 'Etik İkilemler', description: 'Profesyonel ahlak ile kurumsal gerçeklik arasındaki denge.' },
@@ -75,217 +75,151 @@ export const CERTIFICATION_LIST = [
 
 export const MOCK_QUESTIONS = {
   academic_proficiency: [
-    // --- MATEMATİK ---
+    // --- MATEMATİK (CLINICAL LEVEL) ---
     {
-      id: 'math_app_multiplication',
-      text: 'Matematik (2. Sınıf): Çarpma işlemini sadece "ardışık toplama" (2+2+2=6) olarak gören ama 2x3 sembolizasyonuna geçemeyen öğrenciye nasıl bir "köprü" kurarsınız?',
+      id: 'math_adv_abstract',
+      text: 'Diskalkuli tanılı 3. sınıf öğrencisi "çarpma" işlemini ezberlemiş görünmesine rağmen, problem içinde (örn: "Her birinde 5 elma olan 3 sepet") toplamayı çarpma ile ilişkilendiremiyor. En "derin" müdahale basamağınız hangisidir?',
       type: 'radio',
       options: [
-        'Sayı doğrusunda ileriye doğru ikişer zıplayarak ritmik sayma yaptırmak.',
-        'Nesne gruplarını (örn: her tabakta 2 elma) önce fiziksel, sonra "grup sayısı x gruptaki nesne" şeklinde etiketleyerek somutlaştırmak.',
-        'Çarpım tablosunu tekerleme şeklinde ezberleterek dile yerleştirmek.',
-        'Sadece işlem kağıtları üzerinden bol tekrar yaptırmak.'
+        'Somutlaştırma: Sepetleri ve elmaları fiziksel nesnelerle modelleyip "grup-adet" eşlemesini dokunsal (Touch-Math) olarak yapmak.',
+        'Sözel İpucu: Çarpma kelimesini duyduğunda her zaman "kere" veya "tane" demesi gerektiğini hatırlatıp işlemi yaptırmak.',
+        'Görsel İşlemleme: Sayı doğrusu üzerinde beşer beşer atlayarak geldiği noktanın sonucunu işlem kağıdıyla eşleştirmek.',
+        'Hata-Sız Öğretim: Çarpım tablosunu ritmik sayma ile pekiştirip hızlandırma çalışmaları (Fluency) yapmak.'
       ]
     },
     {
-      id: 'math_app_money',
-      text: 'Matematik (3. Sınıf): "100 TL ile markete giden biri 35 TL\'lik ürün alırsa kaç TL kalır?" sorusunda zihinden çıkarma yapamayan öğrenciye hangi "stratejik parça" yöntemini sunarsınız?',
+      id: 'math_adv_place_value',
+      text: 'Onluk bozarak çıkarma işleminde (örn: 52-27) sürekli "üsttekinden alttakini çıkarma" hatası (sonuç: 35 yerine 35 bulma - küçükten büyüğü çıkarma) yapan öğrenciye yaklaşımınız ne olur?',
       type: 'radio',
       options: [
-        'Alt alta yazıp komşudan onluk bozma kuralını hatırlatmak.',
-        'Önce 30 TL çıkarıp 70\'e ulaşmak, sonra 5 TL daha çıkarıp 65 sonucuna "atlamalı" ulaşmak.',
-        'Bozuk paraları (10, 5, 1 TL) kullanarak masada fiziksel eksiltme yapmak.',
-        'Parmaklarıyla 35 saydırarak geriye doğru tek tek saydırmak.'
-      ]
-    },
-    {
-      id: 'math_app_fractions',
-      text: 'Matematik (4. Sınıf): Kesirlerde 1/2\'nin 1/4\'ten büyük olduğunu anlamayan ("4 sayısı 2\'den büyüktür" diyen) öğrenciye kavramsal yanılgıyı nasıl giderirsiniz?',
-      type: 'radio',
-      options: [
-        'Payda büyüdükçe parçanın küçüldüğü kuralını defterine 10 kez yazdırmak.',
-        'Aynı boyuttaki iki somut bütünün (örn: oyun hamuru) birini 2, diğerini 4 parçaya bölüp parçaları fiziksel üst üste koymak.',
-        'Sayı doğrusunda 1/2 ve 1/4 noktalarını işaretleyip sıfıra yakınlığı ölçmek.',
-        'Pasta grafiklerini boyatarak görsel farkı izletmek.'
+        'Basamak Değeri Analizi: Onluk ve birlikleri fiziksel bloklarla ayırıp, "yeterli birlik yoksa bir onluğu bozup birliğe ekleme" sürecini somutlaştırmak.',
+        'Algoritma Tekrarı: İşlem sırasını (1. Birler basamağına bak, 2. Komşuya git) içeren bir akış şeması (Visual Schedule) sunmak.',
+        'Zihinden Strateji: Çıkan sayıyı önce onluğa tamamlayıp aradaki farkı ekletmek (Upward Counting).',
+        'Kural Hatırlatıcı: "Küçükten büyük çıkmaz" cümlesini her işlemde sesli tekrar ettirip (Self-Monitoring) yaptırmak.'
       ]
     },
 
-    // --- TÜRKÇE ---
+    // --- TÜRKÇE / OKUMA-YAZMA (CLINICAL LEVEL) ---
     {
-      id: 'turk_app_phonics',
-      text: 'Türkçe (1. Sınıf): "K-A-L-E-M" seslerini ayrı ayrı tanıyan ama birleştirip "KALEM" diyemeyen (blending sorunu) öğrenciye müdahale basamağınız ne olur?',
+      id: 'turk_adv_decoding',
+      text: 'Disleksi müdahalesinde öğrenci "B-D-P" harflerini karıştırıyor ve akıcı okumada "uydurarak okuma" (Metnin bağlamından tahmin etme) yapıyor. Bu "tahmin stratejisini" nasıl kırırsınız?',
       type: 'radio',
       options: [
-        'Sesi uzatarak söylemek: "KKKAAAAALLLLEEEEMMMM" şeklinde sesleri birbirine akıtarak model olmak.',
-        'Hece tablosundan "KA-LE" hecesini 20 kez tekrarlatmak.',
-        'Harf kartlarını masaya dizip her harfe dokunarak ses çıkarmasını istemek.',
-        'Kelimenin resmini gösterip harfleri bakarak yazmasını sağlamak.'
+        'Bilişsel Ketleme (Inhibition): Tahmin etmeyi engellemek için metindeki resimleri kapatıp, kelimeleri anlamsız hecelere bölerek (Pseudo-words) sadece sesletim odaklı çalışmak.',
+        'Görsel Hafıza: Harflerin yönünü belirten görsel ipuçlarını (örn: B\'nin karnı sağda) masaya yapıştırıp her takıldığında kontrol ettirmek.',
+        'Multi-Sensory: Harfleri kum tepsisine yazdırırken aynı anda sesini çıkarttırıp (VAK - Visual Auditory Kinesthetic) derin iz bırakmak.',
+        'Akıcılık Çalışması: Aynı metni kronometre ile defalarca okutup hata sayısını azaltmaya odaklanmak.'
       ]
     },
     {
-      id: 'turk_app_semantics',
-      text: 'Türkçe (3. Sınıf): Metindeki "Neden-Sonuç" ilişkisini (örn: "Yağmur yağdığı için ıslandı") kuramayan öğrenciye hangi görsel ipucunu (visual prompt) verirsiniz?',
+      id: 'turk_adv_comprehension',
+      text: 'Hiperleksi (Mekanik okuma çok iyi, anlamlandırma yok) eğilimli bir öğrencide, okuduğu paragrafın "ana fikrini" bulması için hangi "üst-bilişsel" aracı devreye sokarsınız?',
       type: 'radio',
       options: [
-        '"Çünkü" ve "Bu yüzden" kelimelerini farklı renklerle boyatıp bağlaç bulmacası çözdürmek.',
-        '"Olay ne?" ve "Sebebi ne?" sorularını içeren bir ok diyagramı (Görsel Akış Şeması) üzerinden çalışmak.',
-        'Metni beş kez yüksek sesle okutup nedenini sormak.',
-        'Metni özetletip ana fikri bulmasını istemek.'
-      ]
-    },
-    {
-      id: 'turk_app_fluency',
-      text: 'Türkçe (4. Sınıf): Okuma hızı normal olmasına rağmen okuduğunu anlamayan (hiperleksi eğilimli) öğrenciye seans içinde hangi "aktif izleme" stratejisini uygularsınız?',
-      type: 'radio',
-      options: [
-        'Her cümle sonunda "Burada kim, ne yaptı?" diye durup kısa notlar (SQ3R modifiyeli) aldırmak.',
-        'Okuma hızını kasten yavaşlatıp heceletmek.',
-        'Metindeki bilinmeyen kelimelerin altını çizdirip sözlük çalışması yapmak.',
-        'Okuma bittikten sonra 10 soruluk bir test çözdürmek.'
+        'Görsel Haritalama (Story Mapping): Metindeki karakter, olay ve yer ilişkisini bir diyagramda çizdirip "Burası neden önemli?" sorusunu görselleştirmek.',
+        'Soru-Cevap: Metinle ilgili "Kim, Nerede, Ne zaman" gibi 5N1K sorularını içeren standart bir test uygulamak.',
+        'Özetleme: Metni kendi cümleleriyle 3 cümlede anlatmasını isteyip anahtar kelimelerin altını çizdirmek.',
+        'Semantik Analiz: Metindeki bilinmeyen kelimeleri bulup sözlükten anlamlarını eşleştirerek kelime hazinesini genişletmek.'
       ]
     },
 
-    // --- SOSYAL / HAYAT BİLGİSİ ---
+    // --- DİL VE İLETİŞİM (CLINICAL LEVEL) ---
     {
-      id: 'soc_app_spatial',
-      text: 'Hayat Bilgisi (1-2. Sınıf): "Kroki" kavramını (kuş bakışı görünüm) anlayamayan öğrenciye "somutlaştırma merdiveni" basamağınız ne olur?',
+      id: 'lang_adv_pragmatic',
+      text: 'Yüksek işlevli otizm (Asperger profili) olan öğrenci, mülahaza (muhabere) sırasında sadece kendi ilgisini çeken "Trenler" hakkında konuşuyor ve karşısındakinin "sıkılma" vücut dilini (bakış kaçırma, saat kontrolü) okuyamıyor. Müdahaleniz?',
       type: 'radio',
       options: [
-        'Lego veya oyuncak kutularla masada sınıfın maketini yapıp, yukarıdan fotoğrafını çekerek krokisiyle eşleştirmek.',
-        'Kurşun kalemle deftere bir dikdörtgen çizip içine "Sıra, Masa" yazdırmak.',
-        'Sınıfın krokisini hazır kağıtta boyatmak.',
-        'Okulun bahçesine çıkıp binaları uzaktan izletmek.'
+        'Sosyal Beceri Eğitimi: "Duygu Okuma" kartları ve video modelleme ile mikro-ifadeleri (sıkılma, şaşkınlık) analiz edip "Diyalog Durdurma" sinyallerini öğretmek.',
+        'Sınır Koyma: Öğrenciye trenler hakkında konuşması için sadece 5 dakika izin verip, sonra konuyu zorla değiştirmek.',
+        'Görsel Destek: Masaya "Dinleme" ve "Konuşma" kartları koyup sırası geldiğinde konuşmasını, bitince dinlemesini sağlamak.',
+        'Davranışsal Söndürme: Trenler hakkında konuştuğunda tepkisiz kalıp (Göz teması kesme), başka konuya geçtiğinde pekiştirmek.'
       ]
     },
     {
-      id: 'soc_app_rights',
-      text: 'Hayat Bilgisi (3. Sınıf): "Sorumluluk" ve "Hak" ayrımını yapamayan ("Odamı toplamak benim hakkım" diyen) öğrenciye davranışçı bir yaklaşımla nasıl farkındalık kazandırırsınız?',
+      id: 'lang_adv_functional',
+      text: 'Non-verbal (konuşmayan) bir öğrenci, istediği bir nesneye ulaşamadığında kendine zarar verme (başını vurma) davranışı sergiliyor. "Alternatif İletişim" (AAC) önceliğiniz nedir?',
       type: 'radio',
       options: [
-        'Hakları (Alınanlar) ve Sorumlulukları (Verilenler) olarak iki sepete kart eşleme oyunu kurgulamak.',
-        'Sorumluluklarını yerine getirmediğinde haklarından mahrum bırakma (Token Economy) uygulamak.',
-        'Çocuk Hakları Sözleşmesi maddelerini okuyup tartıştırmak.',
-        'Anne ve babasının görevlerini listelemesini istemek.'
-      ]
-    },
-    {
-      id: 'soc_app_environment',
-      text: 'Sosyal Bilgiler (4. Sınıf): "Doğal Afetler" (Deprem/Sel) konusunu kaygı düzeyi yüksek (DEHB/Otizm) bir öğrenciye güvenli bir şekilde nasıl sunarsınız?',
-      type: 'radio',
-      options: [
-        'Korkutucu videolar yerine, sadece "Çök-Kapan-Tutun" gibi fiziksel rutinleri oyunlaştırarak ve sosyal öykü kullanarak.',
-        'Deprem anı simülasyon videolarını izleterek ciddiyeti kavramasını sağlamak.',
-        'Konuyu hiç işlemeyip sadece test çözdürerek geçiştirmek.',
-        'Afet çantasındaki malzemeleri ezberleterek.'
+        'FCT (İşlevsel İletişim Eğitimi): Zarar verme davranışı başlamadan hemen önce, öğrenciye "İste" veya "Yardım et" kartını/işaretini kullandırmayı hata-sız bir şekilde öğretmek.',
+        'Duyusal Diyet: Çocuğun kendine vurmasını engellemek için koruyucu kask takmak ve ağır yelek gibi propriyoseptif girdiler sunmak.',
+        'Mand Eğitimi: Sadece en sevdiği oyuncakları kullanarak "ses çıkartması" için baskı (Time Delay) uygulamak.',
+        'Sakinleştirme: Davranış başladığında çocuğu güvenli bir alana alıp sakinleşene kadar beklemek (Time-out).'
       ]
     },
 
-    // --- DİL VE İLETİŞİM ---
+    // --- SOSYAL / HAYAT BİLGİSİ (CLINICAL LEVEL) ---
     {
-      id: 'lang_app_pragmatics',
-      text: 'Dil ve İletişim: Bir öğrenci sosyal ortamda sürekli "Lafı ağzından alıyor" veya "Sırasını beklemeden konuşuyor" ise hangi pragmatik beceri çalışmasını önceliklendirirsiniz?',
+      id: 'soc_adv_empathy',
+      text: 'Sosyal Bilgiler: "Başkalarının duygularını anlama" (Zihin Kuramı - Theory of Mind) kazanımında zorlanan bir öğrenciye, bir arkadaşının neden üzgün olduğunu anlatırken hangi teknik "kanıtlanmış" en yüksek başarıyı sağlar?',
       type: 'radio',
       options: [
-        '"Sıra bende / Sıra sende" görsel kartlarını kullanarak karşılıklı sohbet oyunları (Turn-taking).',
-        'Konuştuğunda ağzını kapatması için fiziksel ipucu vermek.',
-        'Sessiz durduğu her dakika için ödül vermek.',
-        'Grup derslerinde en sona bırakarak beklemesini öğretmek.'
-      ]
-    },
-    {
-      id: 'lang_app_receptive',
-      text: 'Dil ve İletişim: Alıcı dili zayıf olan bir öğrenciye "Masadaki kırmızı kalemi al ve çantana koy" yönergesini verirken hangisini yaparsınız?',
-      type: 'radio',
-      options: [
-        'Yönergeyi parçalara bölüp ("Kalemi al" -> Bekle -> "Çantaya koy") her adımda görsel destek sunmak.',
-        'Yönergeyi daha yavaş ve tane tane 3 kez tekrarlamak.',
-        'Kalemi gösterip "Bunu koy" diyerek tek aşamaya indirmek.',
-        'Öğrencinin elinden tutup işlemi fiziksel yardım ile (Full Physical Prompt) yaptırmak.'
-      ]
-    },
-    {
-      id: 'lang_app_aac',
-      text: 'Dil ve İletişim: Hiç konuşmayan (non-verbal) 5 yaşındaki bir öğrenci için ilk iletişim hedefiniz ne olmalıdır?',
-      type: 'radio',
-      options: [
-        'İsteklerini ifade edebilmesi için "İşaret etme" veya "PECS/Görsel Takas" gibi fonksiyonel bir sistem kurmak.',
-        'Zorlayarak "Anne, Su" gibi kelimeleri söyletmeye çalışmak.',
-        'Sadece ses taklitleri (Oral Motor) üzerine yoğunlaşmak.',
-        'Öğrencinin ne istediğini tahmin ederek her şeyi önüne koymak.'
+        'Sosyal Öyküler (Social Stories): Durumu öğrencinin bakış açısıyla yazılmış, net kuralları ve sosyal ipuçlarını içeren kısa bir öykü ile açıklamak.',
+        'Mantıksal Çıkarım: "Senin oyuncağın kırılsaydı sen de üzülürdün" diyerek empatiyi kendi üzerinden kurmasını istemek.',
+        'Drama: Sınıf içinde olayı canlandırıp öğrenciye "Üzgün" rolünü vererek hissetmesini sağlamak.',
+        'Görsel Semboller: Arkadaşının yanına bir "Üzgün Surat" emojisi koyup nedenini sözlü olarak açıklamak.'
       ]
     }
   ],
   logic_literacy: [
     { 
       id: 'prioritization_1', 
-      text: 'Yoğun bir günde öncelik sıralamanız nasıl olur?', 
+      text: 'Aynı anda gelişen üç olayda önceliğiniz: 1) Nöbet geçiren öğrenci, 2) Kurum müdürünün acil rapor talebi, 3) Seans saati gelen ama ağlayan bir başka öğrenci.', 
       type: 'radio', 
       options: [
-        '1) Krizdeki öğrenci, 2) Veli desteği, 3) İdari raporlar.', 
-        '1) İdari raporlar, 2) Krizdeki öğrenci, 3) Veli desteği.', 
-        '1) Veli desteği, 2) İdari raporlar, 3) Krizdeki öğrenci.', 
-        'Hepsini aynı anda hatasüz yönetirim.'
+        'Önce tıbbi aciliyet (Nöbet), sonra sınıf güvenliği (Ağlayan öğrenci), en son idari süreçler.',
+        'Hızla idari raporu verip, nöbet geçiren öğrenciye müdahale ederken diğer öğrenciyi sakinleştiririm.',
+        'Nöbeti hemşireye bırakır, ağlayan öğrenciyi seansa alır, raporu sonra yazarım.',
+        'Hepsi kritiktir, personelden yardım isteyip koordinasyon kurarım.'
       ] 
     },
     {
       id: 'method_clash',
-      text: 'Uyguladığınız teknik çocukta direnç yarattı ama aile kesin istiyor. Yaklaşımınız?',
+      text: 'Uyguladığınız teknik çocukta fiziksel bir tepki (kusma/bayılma) değil ama şiddetli bir ağlama krizi yarattı. Veli "Bırakın ağlasın, alışsın" diyor. Tavrınız?',
       type: 'radio',
       options: [
-        'Ailenin isteğine uyarım; sonuçta ödemeyi onlar yapıyor.',
-        'Tekniği bırakırım ve bildiğim gibi yaparım (Gizli inisiyatif).',
-        'Aileye verilerle tekniğin zararlarını anlatır, alternatif bir yol haritası sunarım.',
-        'Kurum yönetimine durumu bildirip onların karar vermesini beklerim.'
+        'Etik Değerlendirme: Davranışın işlevini analiz etmek için seansı durdurur, ağlamanın "kaçma" mı yoksa "duyusal aşırı yüklenme" mi olduğunu belirlemeden devam etmem.',
+        'Veli İradesi: Velinin talebine uyarım, sönme patlaması (extinction burst) yaşıyor olabiliriz.',
+        'Duygusal Yaklaşım: Hemen seansı bitirip çocuğu oyun odasına götürürüm, güven bağı sarsılmamalı.',
+        'Uzlaşma: 5 dakika daha devam eder, ağlama dinmezse ara veririm.'
       ]
     }
   ],
   professional_cases: [
     {
       id: 'clinical_error',
-      text: 'Seans sırasında çocuğun güvenliğini hafifçe riske atan bir hata yaptınız. Tavrınız?',
+      text: 'Müdahale planında bir hata yaptığınızı ve öğrencinin 3 aydır yanlış beceri üzerinde çalıştığını fark ettiniz. Kimse fark etmedi. Ne yaparsınız?',
       type: 'radio',
       options: [
-        'Gelecekte daha dikkatli olurum, bir kerelik hatayı büyütmeye gerek yok.',
-        'Sadece kurum müdürüne söylerim, veliyle güvenim bozulmasın.',
-        'Derhal hem aileye hem yönetime raporlarım; etik dürüstlük her şeydir.',
-        'Çocuğun o günkü huysuzluğunu bahane ederek olayı yumuşatırım.'
+        'Radikal Şeffaflık: Hatayı verilerle birlikte yönetime ve aileye açıklar, telafi planı (Mastery check) oluştururum.',
+        'Sessiz Düzeltme: Planı hemen günceller ve öğrenciyi doğru beceriye yönlendiririm, vakit kaybetmem.',
+        'Sorumluluk Paylaşımı: Diğer uzmanların da kontrol etmediğini belirterek ortak bir hata analizi toplantısı isterim.',
+        'Görmezden Gelme: Zaten öğrenci bir şeyler öğrenmiştir, yeni hedeflere odaklanırım.'
       ]
     }
   ],
   psychological_integrity: [
     {
       id: 'aggression_response',
-      text: 'Bir öğrenci size fiziksel zarar verdi. O anki ilk iç sesiniz hangisi olur?',
+      text: 'Ağır düzeyde otizmli bir öğrenciden fiziksel bir saldırı aldınız ve canınız yandı. Seansın kalan 20 dakikasını nasıl yönetirsiniz?',
       type: 'radio',
       options: [
-        '"Neden daha iyi önlem alamadım?" (Aşırı suçluluk).',
-        '"Bu iş için yeterli maaş almıyorum" (Tükenmişlik belirtisi).',
-        '"Bu çocukla bağım koptu, bir başkası devralmalı" (Kaçınma).',
-        '"Bu davranışın işlevini bulup müdahale planımı güncellemeliyim" (Klinik soğukkanlılık).'
+        'Klinik Mesafe: Duygularımı regüle etmek için 2 dakika ara verir, saldırının tetikleyicisini not eder ve güvenli bir mesafeden hedeflere devam ederim.',
+        'Dayanıklılık: Hiçbir şey olmamış gibi devam ederim, zayıflık gösterirsem öğrenci bunu pekiştirebilir.',
+        'Cezalandırma: Seansı hemen bitirir ve "Bunu yaptığın için ders bitti" diyerek odadan çıkarım.',
+        'Duygusal Tepki: Ağladığımı gösteririm ki arkadaşının canının yandığını (Empati) fark etsin.'
       ]
     }
   ],
   development: [
     {
       id: 'failure_analysis_multi',
-      text: 'Öğrenci başarısızlığında kendi metodolojinizi nasıl revize edersiniz?',
+      text: 'Öğrenci 6 aydır "Renkleri Ayırt Etme" hedefini geçemedi. Müdahale metodolojinizdeki revizyon önceliğiniz nedir?',
       type: 'radio',
       options: [
-        'Veri toplama formlarımı (ABC kaydı vb.) analiz edip, öğretim basamaklarını küçülterek yeniden planlarım.',
-        'Öğrencinin potansiyelinin bu kadar olduğuna kanaat getirip mevcut seviyeyi korumaya çalışırım.',
-        'Kullandığım tekniği tamamen değiştirip popüler başka bir yönteme geçerim.',
-        'Ailenin evde çalışmadığını varsayarak sorumluluğu onlara aktarırım.'
-      ]
-    },
-    {
-      id: 'scientific_update',
-      text: 'Bilimsel gelişmeleri takip etme yönteminiz hangisidir?',
-      type: 'radio',
-      options: [
-        'Hakemli dergilerdeki (JABA, Autism Research vb.) makaleleri düzenli okumak.',
-        'Sadece sosyal medyadaki popüler eğitimci videolarını izlemek.',
-        'Sadece kurum içi zorunlu eğitimlere katılmak.',
-        'Üniversite bilgilerimin yeterli olduğunu düşünüyorum.'
+        'Veri Temelli Değişiklik: Sunum şeklini (Görselden-Görsele eşleme), pekiştireç tarifesini veya ipucu hiyerarşisini (Most-to-Least) analiz edip değiştiririm.',
+        'Kapasite Kabulü: Öğrencinin bilişsel kapasitesinin bu hedef için henüz erken olduğunu varsayıp hedefi askıya alırım.',
+        'Materyal Değişimi: Kullandığım kartların rengini veya boyutunu değiştirip tekrar denerim.',
+        'Ev Programı: Sorunun evdeki genelleyici eksikliğinden kaynaklandığını düşünür, aileye ödev veririm.'
       ]
     }
   ]

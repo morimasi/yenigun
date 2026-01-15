@@ -29,7 +29,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // 1. Tabloyu oluştur (Yoksa)
+    // 1. Ana Tablo Kurulumu
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -54,16 +54,12 @@ export default async function handler(request: Request) {
       );
     `;
 
-    // 2. Eksik kolonları ekle (Migration - Tablo önceden eski şemayla oluşturulmuşsa)
-    // Bu blok all_trainings ve cv_data gibi sonradan eklenen kolonların varlığını garanti eder.
-    try {
-      await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS all_trainings JSONB DEFAULT '[]'::jsonb;`;
-      await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
-      await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
-      await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
-    } catch (migrateError) {
-      console.error('Migration notice (Normal if columns exist):', migrateError);
-    }
+    // 2. Migration: Eksik kolonları güvenli bir şekilde ekle
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS all_trainings JSONB DEFAULT '[]'::jsonb;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS admin_notes TEXT;`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
