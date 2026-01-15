@@ -19,28 +19,63 @@ export const FORM_STEPS: FormStep[] = [
 ];
 
 export const CERTIFICATION_LIST = [
-  "ABA (Uygulamalı Davranış Analizi)",
+  // --- OTİZM VE DAVRANIŞSAL MÜDAHALE ---
+  "ABA (Uygulamalı Davranış Analizi) - Uygulayıcı Sertifikası",
   "PECS (Resim Değiş Tokuşuna Dayalı İletişim Sistemi)",
-  "DIR Floortime",
-  "Denver II Gelişimsel Tarama Testi",
-  "WISC-IV / WISC-V Zeka Testleri",
-  "ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale)",
-  "Prep (Disleksi Müdahale Programı)",
+  "ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale Programı)",
+  "OÇİDE (Otizmli Çocuklar İçin Davranışsal Eğitim)",
+  "PCDI (Otizm Müdahale Modeli) Eğitimi",
   "GOBDO-2-TV (Otistik Bozukluk Derecelendirme Ölçeği)",
-  "Pass Teorisi ve CAS Testi",
-  "Duyu Bütünleme Eğitimi (Sensory Integration)",
-  "Artikülasyon ve Fonolojik Bozukluklar Eğitimi",
-  "Disleksi Eğitmenliği Sertifikası",
-  "Akıl ve Zeka Oyunları Eğitmenliği",
-  "Robotik Kodlama (Özel Eğitim Uyarlamalı)",
+  "TÖSİ (Türkçe Öğrenci Sosyal İletişim Ölçeği)",
+  "GİS (Gelişimsel İzleme ve Destekleme Rehberi)",
+  
+  // --- ÖĞRENME GÜÇLÜĞÜ (DİSLEKSİ / DİSKALKULİ) ---
+  "PREP (Disleksi Bilişsel Müdahale Programı)",
+  "COGENT (Bilişsel Gelişim Programı)",
+  "DMP (Disleksi Müdahale Programı)",
+  "ODEM (Okuma Yazma Değerlendirme ve Müdahale)",
+  "PASS Teorisi ve Bilişsel Müdahale Stratejileri",
+  "DİSKALKULİ (Matematik Öğrenme Güçlüğü) Müdahale Programı",
+  "TİLLS (Test of Integrated Language and Literacy Skills)",
+  "Okuma Yazma Öğretimi Stratejileri Sertifikası",
+  
+  // --- MATEMATİK ÖĞRETİMİ ---
+  "Touch Math (Dokunmatik Matematik Öğretim Sistemi)",
+  "Özel Eğitimde Somut Materyallerle Matematik Öğretimi",
+  "Singapore Maths (Özel Eğitim Adaptasyonu)",
+  "Dis-Mat (Diskalkuli Müdahale Seti) Kullanıcı Eğitimi",
+  
+  // --- GELİŞİMSEL VE PSİKOMETRİK TESTLER ---
+  "WISC-V Zeka Testi Uygulayıcı Sertifikası",
+  "CAS (Cognitive Assessment System) Uygulayıcı",
+  "Denver II Gelişimsel Tarama Testi",
+  "MOXO Çeldiricili Dikkat Testi Uygulayıcı",
+  "AGTE (Ankara Gelişim Tarama Envanteri)",
+  "Stanford-Binet Zeka Testi Uygulayıcı",
+  "Frostig Görsel Algı Testi",
+  "Metropolitan Okul Olgunluğu Testi",
+  
+  // --- DİL, KONUŞMA VE DUYUSAL YAKLAŞIMLAR ---
+  "DIR Floortime (101 / 201 Seviye Sertifikası)",
+  "Duyu Bütünleme (Sensory Integration) Eğitimi",
+  "PADAD (Pragmatik Dil Analizi ve Değerlendirmesi)",
+  "Artikülasyon ve Fonolojik Bozukluklar Müdahale Eğitimi",
+  "Oral Motor Terapi Teknikleri",
+  "GOPÖ (Gecikmiş Konuşma Programı)",
+  
+  // --- TERAPÖTİK VE DİĞER YAKLAŞIMLAR ---
+  "Oyun Terapisi (Deneyimsel veya Bilişsel Davranışçı)",
+  "Filial Terapi (Ebeveyn-Çocuk İlişkisi Terapisi)",
+  "Montessori Eğitmenliği (Özel Eğitim Uyarlamalı)",
   "Özel Eğitimde Drama Eğitmenliği",
-  "Montessori Eğitmenliği",
-  "Oyun Terapisi"
+  "Akıl ve Zeka Oyunları Eğitmenliği",
+  "Robotik Kodlama (Erişilebilirlik ve Özel Eğitim)",
+  "Özel Eğitimde Masal Terapisi ve Sosyal Öykü Yazımı"
 ];
 
 export const MOCK_QUESTIONS = {
   academic_proficiency: [
-    // --- MATEMATİK (3 YENİ + MEVCUTLAR) ---
+    // --- MATEMATİK ---
     {
       id: 'math_app_multiplication',
       text: 'Matematik (2. Sınıf): Çarpma işlemini sadece "ardışık toplama" (2+2+2=6) olarak gören ama 2x3 sembolizasyonuna geçemeyen öğrenciye nasıl bir "köprü" kurarsınız?',
@@ -75,7 +110,7 @@ export const MOCK_QUESTIONS = {
       ]
     },
 
-    // --- TÜRKÇE (3 YENİ + MEVCUTLAR) ---
+    // --- TÜRKÇE ---
     {
       id: 'turk_app_phonics',
       text: 'Türkçe (1. Sınıf): "K-A-L-E-M" seslerini ayrı ayrı tanıyan ama birleştirip "KALEM" diyemeyen (blending sorunu) öğrenciye müdahale basamağınız ne olur?',
@@ -110,7 +145,7 @@ export const MOCK_QUESTIONS = {
       ]
     },
 
-    // --- SOSYAL / HAYAT BİLGİSİ (3 YENİ) ---
+    // --- SOSYAL / HAYAT BİLGİSİ ---
     {
       id: 'soc_app_spatial',
       text: 'Hayat Bilgisi (1-2. Sınıf): "Kroki" kavramını (kuş bakışı görünüm) anlayamayan öğrenciye "somutlaştırma merdiveni" basamağınız ne olur?',
@@ -145,7 +180,7 @@ export const MOCK_QUESTIONS = {
       ]
     },
 
-    // --- DİL VE İLETİŞİM (3 YENİ) ---
+    // --- DİL VE İLETİŞİM ---
     {
       id: 'lang_app_pragmatics',
       text: 'Dil ve İletişim: Bir öğrenci sosyal ortamda sürekli "Lafı ağzından alıyor" veya "Sırasını beklemeden konuşuyor" ise hangi pragmatik beceri çalışmasını önceliklendirirsiniz?',
@@ -189,7 +224,7 @@ export const MOCK_QUESTIONS = {
         '1) Krizdeki öğrenci, 2) Veli desteği, 3) İdari raporlar.', 
         '1) İdari raporlar, 2) Krizdeki öğrenci, 3) Veli desteği.', 
         '1) Veli desteği, 2) İdari raporlar, 3) Krizdeki öğrenci.', 
-        'Hepsini aynı anda hatasız yönetirim.'
+        'Hepsini aynı anda hatasüz yönetirim.'
       ] 
     },
     {
