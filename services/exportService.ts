@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom/client';
 import CandidateReport from '../components/CandidateReport';
 
 /**
- * Yeni Gün Akademi - Toplu Arşivleme ve Dışa Aktarma Servisi
+ * Yeni Gün Akademi - Toplu Arşivleme ve Dışa Aktarma Servisi v2.1
  */
 export const exportService = {
   async exportAllCandidatesAsZip(candidates: Candidate[], onProgress?: (p: number) => void): Promise<void> {
@@ -22,9 +22,10 @@ export const exportService = {
     const exportRoot = document.createElement('div');
     exportRoot.id = 'temp-pdf-export-root';
     exportRoot.style.position = 'fixed';
-    exportRoot.style.left = '-9999px';
+    exportRoot.style.left = '-10000px';
     exportRoot.style.top = '0';
-    exportRoot.style.width = '210mm'; // A4 width
+    exportRoot.style.width = '794px'; // 210mm approx at 96dpi
+    exportRoot.style.backgroundColor = '#ffffff';
     document.body.appendChild(exportRoot);
 
     const reactRoot = ReactDOM.createRoot(exportRoot);
@@ -34,33 +35,52 @@ export const exportService = {
         const candidate = candidates[i];
         if (onProgress) onProgress(Math.round(((i + 1) / candidates.length) * 100));
 
-        // Use React.createElement instead of JSX to avoid errors in .ts file
         // Raporu geçici olarak render et
-        reactRoot.render(React.createElement(CandidateReport, { candidate: candidate, report: candidate.report }));
+        reactRoot.render(React.createElement(CandidateReport, { 
+          candidate: candidate, 
+          report: candidate.report 
+        }));
         
-        // Render ve fontların yüklenmesi için bekle
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Render ve CSS reflow için bekleme süresini artır
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         const canvas = await html2canvas(exportRoot, {
-          scale: 2, // Yüksek çözünürlük
+          scale: 2,
           useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
           logging: false,
-          backgroundColor: '#ffffff'
+          width: 794
         });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        // Boyut kontrolü (Sıfır veya geçersiz boyutları engelle)
+        if (canvas.width === 0 || canvas.height === 0) {
+          console.warn(`Aday ${candidate.name} için canvas boyutu geçersiz, atlanıyor.`);
+          continue;
+        }
 
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        const imgData = canvas.toDataURL('image/jpeg', 0.90);
+        const pdf = new jsPDF('p', 'mm', 'a4');
         
-        const fileName = `${candidate.name.replace(/\s+/g, '_')}_Analiz_Raporu.pdf`;
-        const pdfBlob = pdf.output('blob');
-        rootFolder.file(fileName, pdfBlob);
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Orantılı yükseklik hesapla
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Koordinatların ve boyutların sayı olduğundan emin ol
+        if (!isNaN(imgWidth) && !isNaN(imgHeight) && isFinite(imgWidth) && isFinite(imgHeight)) {
+          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          
+          const fileName = `${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Analiz.pdf`;
+          const pdfBlob = pdf.output('blob');
+          rootFolder.file(fileName, pdfBlob);
+        } else {
+          console.error(`Boyut hesaplama hatası: ${candidate.name}`);
+        }
       }
 
-      // ZIP oluştur ve indir
       const content = await zip.generateAsync({ type: 'blob' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(content);
@@ -69,7 +89,6 @@ export const exportService = {
       URL.revokeObjectURL(link.href);
 
     } finally {
-      // Temizlik
       reactRoot.unmount();
       if (document.body.contains(exportRoot)) {
         document.body.removeChild(exportRoot);
