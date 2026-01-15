@@ -5,9 +5,11 @@ interface AdminTopNavProps {
   activeTab: string;
   setActiveTab: (tab: any) => void;
   institutionName: string;
+  onExportAll?: () => void;
+  isExporting?: boolean;
 }
 
-const AdminTopNav: React.FC<AdminTopNavProps> = ({ activeTab, setActiveTab, institutionName }) => {
+const AdminTopNav: React.FC<AdminTopNavProps> = ({ activeTab, setActiveTab, institutionName, onExportAll, isExporting }) => {
   const MENU_ITEMS = [
     { id: 'pipeline', label: 'ADAY AKIŞI', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2' },
     { id: 'analytics', label: 'STRATEJİK VERİ', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2' },
@@ -45,6 +47,17 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({ activeTab, setActiveTab, inst
               <span>{item.label}</span>
             </button>
           ))}
+          
+          <div className="flex-1"></div>
+
+          <button
+            onClick={onExportAll}
+            disabled={isExporting}
+            className={`flex items-center gap-4 px-8 py-5 rounded-[2.2rem] border-2 border-slate-100 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] whitespace-nowrap transition-all hover:border-slate-300 hover:text-slate-600 ${isExporting ? 'opacity-50 cursor-wait' : ''}`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span>{isExporting ? 'İŞLENİYOR...' : 'TOPLU DIŞA AKTAR (ZIP)'}</span>
+          </button>
         </div>
       </nav>
     </div>
