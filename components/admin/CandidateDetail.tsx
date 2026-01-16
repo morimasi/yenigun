@@ -48,10 +48,17 @@ const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ 
 const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, config, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   
-  // Rapor Özelleştirme State
+  const [interviewForm, setInterviewForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    time: '10:00',
+    method: 'Yüz Yüze Mülakat',
+    location: 'Akademi Merkez Ofis'
+  });
+
   const [reportOptions, setReportOptions] = useState<ReportCustomizationOptions>({
     showPersonalDetails: true,
     showAcademicBackground: true,
@@ -86,6 +93,57 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     } finally {
       setIsAnalysing(false);
     }
+  };
+
+  const handleScheduleInterview = async () => {
+    setIsScheduling(true);
+    try {
+      const updatedCandidate: Candidate = {
+        ...candidate,
+        status: 'interview_scheduled',
+        interviewSchedule: {
+          ...interviewForm,
+          isNotificationSent: false
+        },
+        timestamp: Date.now()
+      };
+
+      // Eğer otomatik e-posta aktifse e-posta gönder
+      if (config.automation.autoEmailOnSchedule) {
+        try {
+          const res = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: candidate.email,
+              candidateName: candidate.name,
+              date: interviewForm.date,
+              time: interviewForm.time,
+              location: interviewForm.location
+            })
+          });
+          if (res.ok) {
+            updatedCandidate.interviewSchedule!.isNotificationSent = true;
+          }
+        } catch (e) {
+          console.error("E-posta gönderimi başarısız oldu:", e);
+        }
+      }
+
+      onUpdate(updatedCandidate);
+      setSuccessStatus("Mülakat planlandı ve aday bilgilendirildi.");
+      setTimeout(() => setSuccessStatus(null), 3000);
+    } catch (e) {
+      setErrorStatus("Mülakat planlanırken bir hata oluştu.");
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
+  const handleStatusChange = (newStatus: Candidate['status']) => {
+    onUpdate({ ...candidate, status: newStatus, timestamp: Date.now() });
+    setSuccessStatus(`Aday statüsü '${newStatus}' olarak güncellendi.`);
+    setTimeout(() => setSuccessStatus(null), 2000);
   };
 
   const handleDownloadPDF = async () => {
@@ -130,10 +188,86 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           >
             {isAnalysing ? 'ANALİZ EDİLİYOR...' : 'YENİDEN ANALİZ ET'}
           </button>
+          <button 
+            onClick={onDelete}
+            className="w-12 h-12 flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+          </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#F8FAFC]">
+        {/* Başarı/Hata Mesajları */}
+        {successStatus && <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-2xl animate-fade-in text-center">{successStatus}</div>}
+        {errorStatus && <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 text-[10px] font-black uppercase tracking-widest rounded-2xl animate-fade-in text-center">{errorStatus}</div>}
+
+        {/* LİYAKAT BAZLI AKSİYONLAR PANELİ */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl no-print relative overflow-hidden">
+           <div className="absolute right-0 top-0 w-32 h-32 bg-orange-600/5 rounded-full blur-3xl"></div>
+           <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
+              <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> LİYAKAT BAZLI AKSİYONLAR
+           </h4>
+           
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+              {/* Sol: Mülakat Planla */}
+              <div className="space-y-4">
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mülakat Planlama Ve Davet</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <input 
+                      type="date" 
+                      className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] font-bold outline-none focus:ring-2 focus:ring-orange-100"
+                      value={interviewForm.date}
+                      onChange={e => setInterviewForm({...interviewForm, date: e.target.value})}
+                    />
+                    <input 
+                      type="time" 
+                      className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] font-bold outline-none focus:ring-2 focus:ring-orange-100"
+                      value={interviewForm.time}
+                      onChange={e => setInterviewForm({...interviewForm, time: e.target.value})}
+                    />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <select 
+                      className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] font-bold outline-none focus:ring-2 focus:ring-orange-100 appearance-none"
+                      value={interviewForm.method}
+                      onChange={e => setInterviewForm({...interviewForm, method: e.target.value})}
+                    >
+                      <option>Yüz Yüze Mülakat</option>
+                      <option>Online (Google Meet)</option>
+                      <option>Online (Zoom)</option>
+                      <option>Telefon Mülakatı</option>
+                    </select>
+                    <input 
+                      type="text" 
+                      placeholder="Konum veya Link"
+                      className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] font-bold outline-none focus:ring-2 focus:ring-orange-100"
+                      value={interviewForm.location}
+                      onChange={e => setInterviewForm({...interviewForm, location: e.target.value})}
+                    />
+                 </div>
+                 <button 
+                  onClick={handleScheduleInterview}
+                  disabled={isScheduling}
+                  className="w-full py-4 bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg shadow-orange-600/20 active:scale-95 disabled:opacity-50"
+                 >
+                   {isScheduling ? 'DAVET GÖNDERİLİYOR...' : 'MÜLAKAT PLANLA VE DAVET GÖNDER'}
+                 </button>
+              </div>
+
+              {/* Sağ: Hızlı Karar Ver */}
+              <div className="space-y-4">
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nihai Karar Ve Statü</p>
+                 <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => handleStatusChange('hired')} className="p-4 bg-blue-50 border border-blue-100 text-blue-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">İşe Al</button>
+                    <button onClick={() => handleStatusChange('rejected')} className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">Reddet</button>
+                    <button onClick={() => handleStatusChange('pending')} className="p-4 bg-amber-50 border border-amber-100 text-amber-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-amber-600 hover:text-white transition-all">Beklemeye Al</button>
+                    <button onClick={() => handleStatusChange('withdrawn')} className="p-4 bg-slate-50 border border-slate-100 text-slate-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-600 hover:text-white transition-all">Çekildi</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+
         {/* Rapor Özelleştirme Paneli */}
         <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm no-print">
           <div className="flex justify-between items-center mb-6">
