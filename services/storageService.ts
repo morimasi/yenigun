@@ -71,6 +71,18 @@ export const storageService = {
     try { await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); } catch (e) {}
   },
 
+  async deleteMultipleCandidates(ids: string[]) {
+    const local = localStorage.getItem('yeni_gun_candidates');
+    if (local) {
+      const current: Candidate[] = JSON.parse(local);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
+    }
+    try {
+      // Paralel silme işlemi
+      await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
+    } catch (e) { console.error("Toplu silme sırasında senkronizasyon hatası."); }
+  },
+
   // SİSTEM KONFİGÜRASYON SERVİSLERİ
   async getConfig(): Promise<GlobalConfig | null> {
     try {

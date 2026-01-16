@@ -7,43 +7,46 @@ import StatusBadge from './StatusBadge';
 import { ReportCustomizationOptions } from '../CandidateReport';
 import { exportService } from '../../services/exportService';
 
-const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ title, data, color }) => (
-  <div className="flex flex-col gap-3 py-5 border-b border-slate-50 last:border-0 group hover:bg-slate-50/50 px-4 -mx-4 rounded-xl transition-all">
-    <div className="flex items-start justify-between">
-      <div className="w-40 shrink-0">
-        <h5 className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{title}</h5>
-        <div className="flex items-center gap-2">
-          <span className={`text-base font-black ${color}`}>%{data.score}</span>
-          <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden max-w-[40px]">
-            <div className={`h-full ${color.replace('text', 'bg')} transition-all duration-700`} style={{ width: `${data.score}%` }}></div>
+const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ title, data, color }) => {
+  if (!data) return null;
+  return (
+    <div className="flex flex-col gap-3 py-5 border-b border-slate-50 last:border-0 group hover:bg-slate-50/50 px-4 -mx-4 rounded-xl transition-all">
+      <div className="flex items-start justify-between">
+        <div className="w-40 shrink-0">
+          <h5 className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{title}</h5>
+          <div className="flex items-center gap-2">
+            <span className={`text-base font-black ${color}`}>%{data.score || 0}</span>
+            <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden max-w-[40px]">
+              <div className={`h-full ${color.replace('text', 'bg')} transition-all duration-700`} style={{ width: `${data.score || 0}%` }}></div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1">
+          <p className="text-[11px] font-bold text-slate-700 leading-relaxed mb-3">
+            {data.comment || 'Analiz verisi bulunamadı.'}
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {data.keyPoints?.map((p: string, i: number) => (
+              <span key={i} className="px-2 py-0.5 bg-white border border-slate-100 rounded text-[7px] font-bold text-slate-500 uppercase tracking-tight shadow-sm">
+                {p}
+              </span>
+            ))}
           </div>
         </div>
       </div>
-      <div className="flex-1">
-        <p className="text-[11px] font-bold text-slate-700 leading-relaxed mb-3">
-          {data.comment}
-        </p>
-        <div className="flex flex-wrap gap-1">
-          {data.keyPoints?.map((p: string, i: number) => (
-            <span key={i} className="px-2 py-0.5 bg-white border border-slate-100 rounded text-[7px] font-bold text-slate-500 uppercase tracking-tight shadow-sm">
-              {p}
-            </span>
-          ))}
+      <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
+          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Kısa Vadeli Etki</span>
+          <p className="text-[9px] font-semibold text-slate-600">{data.shortTermImpact || 'Beyan Yok'}</p>
+        </div>
+        <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
+          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Uzun Vadeli Projeksiyon</span>
+          <p className="text-[9px] font-semibold text-slate-600">{data.longTermImplication || 'Beyan Yok'}</p>
         </div>
       </div>
     </div>
-    <div className="grid grid-cols-2 gap-4 mt-2">
-      <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
-        <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Kısa Vadeli Etki</span>
-        <p className="text-[9px] font-semibold text-slate-600">{data.shortTermImpact}</p>
-      </div>
-      <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
-        <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Uzun Vadeli Projeksiyon</span>
-        <p className="text-[9px] font-semibold text-slate-600">{data.longTermImplication}</p>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, config, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
@@ -170,14 +173,14 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="p-6 border-b border-slate-100 bg-white flex justify-between items-center no-print">
         <div className="flex gap-4 items-center">
           <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white text-lg font-black shadow-lg">
-            {candidate.name.charAt(0)}
+            {(candidate.name || 'A').charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
               <StatusBadge status={candidate.status} />
-              <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">DOSYA NO: {candidate.id.toUpperCase().slice(0,8)}</span>
+              <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">DOSYA NO: {candidate.id?.toUpperCase().slice(0,8) || '??'}</span>
             </div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">{candidate.name}</h2>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">{candidate.name || 'İsimsiz Aday'}</h2>
           </div>
         </div>
         <div className="flex gap-3">
@@ -318,12 +321,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                    <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> I. Yönetici Özeti
                 </h4>
                 <p className="text-xs font-bold text-slate-600 leading-relaxed italic border-l-2 border-orange-100 pl-4 py-0.5">
-                  "{candidate.report.summary}"
+                  "{candidate.report.summary || 'Özet bulunmuyor.'}"
                 </p>
               </div>
               <div className="w-24 h-24 bg-slate-900 rounded-full flex flex-col items-center justify-center text-white shadow-xl shrink-0">
                 <span className="text-[7px] font-black text-orange-500 uppercase mb-0.5">LİYAKAT</span>
-                <span className="text-3xl font-black">%{candidate.report.score}</span>
+                <span className="text-3xl font-black">%{candidate.report.score || 0}</span>
               </div>
             </div>
 
@@ -331,9 +334,15 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
               <h4 className="text-[9px] font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span> II. Detaylı Analiz Metrikleri
               </h4>
-              <AnalysisPoint title="Pedagoji" data={candidate.report.detailedAnalysis.pedagogy} color="text-orange-600" />
-              <AnalysisPoint title="Etik Bütünlük" data={candidate.report.detailedAnalysis.ethics} color="text-emerald-600" />
-              <AnalysisPoint title="Kriz Yönetimi" data={candidate.report.detailedAnalysis.stressResponse} color="text-rose-600" />
+              {candidate.report.detailedAnalysis ? (
+                <>
+                  <AnalysisPoint title="Pedagoji" data={candidate.report.detailedAnalysis.pedagogy} color="text-orange-600" />
+                  <AnalysisPoint title="Etik Bütünlük" data={candidate.report.detailedAnalysis.ethics} color="text-emerald-600" />
+                  <AnalysisPoint title="Kriz Yönetimi" data={candidate.report.detailedAnalysis.stressResponse} color="text-rose-600" />
+                </>
+              ) : (
+                <p className="text-[10px] text-slate-400 italic">Detaylı metrik analizi bulunmuyor.</p>
+              )}
             </div>
           </div>
         ) : (

@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
 import StatusBadge from './StatusBadge';
+import { storageService } from '../../services/storageService';
 
 interface PipelineViewProps {
   candidates: Candidate[];
@@ -18,6 +18,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
+  const [multiSelectIds, setMultiSelectIds] = useState<Set<string>>(new Set());
   
   const [filters, setFilters] = useState({
     branches: [] as string[],
@@ -81,11 +82,66 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   };
 
+  const handleToggleSelect = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newSet = new Set(multiSelectIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setMultiSelectIds(newSet);
+  };
+
+  const handleSelectAll = () => {
+    if (multiSelectIds.size === filteredAndSortedCandidates.length) {
+      setMultiSelectIds(new Set());
+    } else {
+      setMultiSelectIds(new Set(filteredAndSortedCandidates.map(c => c.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const count = multiSelectIds.size;
+    if (count === 0) return;
+    if (!confirm(`${count} adet aday kalıcı olarak silinecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?`)) return;
+
+    // Fix: Using spread operator to ensure proper type inference from Set<string> to string[]
+    const idsToDelete = [...multiSelectIds];
+    await storageService.deleteMultipleCandidates(idsToDelete);
+    
+    // UI Refresh (Parent trigger)
+    idsToDelete.forEach(id => onDeleteCandidate(id));
+    setMultiSelectIds(new Set());
+    setSelectedId(null);
+    alert(`${count} aday başarıyla silindi.`);
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-14rem)] min-h-[700px]">
+    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-14rem)] min-h-[700px] relative">
       
-      {/* SOL PANEL: Ultra Kompakt Aday Listesi (260px Genişlik) */}
-      <div className="lg:w-[260px] flex flex-col gap-3 h-full shrink-0 overflow-hidden">
+      {/* ÇOKLU İŞLEM BARI (TOPLU SİLME) */}
+      {multiSelectIds.size > 0 && (
+        <div className="absolute top-[-3.5rem] left-0 right-0 bg-slate-900 text-white p-3 rounded-2xl flex items-center justify-between shadow-2xl z-[70] animate-slide-down no-print">
+          <div className="flex items-center gap-4 ml-4">
+            <span className="text-[10px] font-black uppercase tracking-widest">{multiSelectIds.size} Aday Seçildi</span>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setMultiSelectIds(new Set())}
+              className="px-6 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all"
+            >
+              Vazgeç
+            </button>
+            <button 
+              onClick={handleBulkDelete}
+              className="px-8 py-2 bg-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg"
+            >
+              Seçilenleri Sil
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SOL PANEL: Ultra Kompakt Aday Listesi */}
+      <div className="lg:w-[280px] flex flex-col gap-3 h-full shrink-0 overflow-hidden">
         
         {/* Minimal Kontrol Paneli */}
         <div className="bg-white p-3 rounded-[1.5rem] shadow-sm border border-slate-100 flex flex-col gap-2">
@@ -124,7 +180,15 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
         {/* Kompakt Aday Listesi */}
         <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-1.5">
           <div className="flex items-center justify-between px-2 mb-2">
-             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{filteredAndSortedCandidates.length} ADAY</span>
+             <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" 
+                  checked={filteredAndSortedCandidates.length > 0 && multiSelectIds.size === filteredAndSortedCandidates.length}
+                  onChange={handleSelectAll}
+                />
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{filteredAndSortedCandidates.length} ADAY</span>
+             </div>
              <div className="flex gap-2">
                 <button onClick={() => setSortConfig([{ key: 'timestamp', order: 'desc' }])} className={`text-[7px] font-black uppercase tracking-tighter ${sortConfig[0].key === 'timestamp' ? 'text-orange-600' : 'text-slate-400'}`}>YENİ</button>
                 <button onClick={() => setSortConfig([{ key: 'score', order: 'desc' }])} className={`text-[7px] font-black uppercase tracking-tighter ${sortConfig[0].key === 'score' ? 'text-orange-600' : 'text-slate-400'}`}>SKOR</button>
@@ -135,11 +199,18 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
             <div 
               key={c.id} 
               onClick={() => setSelectedId(c.id)}
-              className={`p-2 rounded-xl border transition-all cursor-pointer relative ${
+              className={`p-2 rounded-xl border transition-all cursor-pointer relative group ${
                 selectedId === c.id ? 'bg-white border-orange-600 shadow-md translate-x-1' : 'bg-white border-slate-50 hover:border-slate-200'
               }`}
             >
               <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  checked={multiSelectIds.has(c.id)}
+                  onClick={e => handleToggleSelect(e, c.id)}
+                  onChange={() => {}} // Controlled input
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity" 
+                />
                 <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-black text-[9px] ${
                   c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
                 }`}>
@@ -147,7 +218,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-black text-slate-900 text-[10px] truncate uppercase leading-tight">{c.name || 'İsimsiz'}</h4>
-                  <p className="text-[7px] font-bold text-slate-400 uppercase truncate mt-0.5">{c.branch.split(' ')[0]} • {c.experienceYears}y</p>
+                  <p className="text-[7px] font-bold text-slate-400 uppercase truncate mt-0.5">{c.branch?.split(' ')[0] || 'Genel'} • {c.experienceYears || 0}y</p>
                 </div>
                 {selectedId === c.id && (
                   <div className="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
