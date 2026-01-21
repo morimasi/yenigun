@@ -75,10 +75,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
+  // Fix: Ensured type safety when toggling filters by explicitly casting dynamic keys and the return object to prevent unknown[] assignment errors.
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      const current = (prev as any)[category] as any[];
-      return { ...prev, [category]: current.includes(value) ? current.filter(v => v !== value) : [...current, value] };
+      const current = prev[category] as string[];
+      const next = current.includes(value) 
+        ? current.filter(v => v !== value) 
+        : [...current, value];
+      return { 
+        ...prev, 
+        [category]: next 
+      } as typeof prev;
     });
   };
 
@@ -101,49 +108,33 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const handleBulkDelete = async () => {
     const count = multiSelectIds.size;
     if (count === 0) return;
-    if (!confirm(`${count} adet aday kalıcı olarak silinecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?`)) return;
+    if (!confirm(`${count} adet aday kalıcı olarak silinecektir. Devam edilsin mi?`)) return;
 
-    // Fix: Using spread operator to ensure proper type inference from Set<string> to string[]
-    const idsToDelete = [...multiSelectIds];
+    const idsToDelete = Array.from(multiSelectIds);
     await storageService.deleteMultipleCandidates(idsToDelete);
     
-    // UI Refresh (Parent trigger)
     idsToDelete.forEach(id => onDeleteCandidate(id));
     setMultiSelectIds(new Set());
     setSelectedId(null);
-    alert(`${count} aday başarıyla silindi.`);
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-14rem)] min-h-[700px] relative">
       
-      {/* ÇOKLU İŞLEM BARI (TOPLU SİLME) */}
       {multiSelectIds.size > 0 && (
         <div className="absolute top-[-3.5rem] left-0 right-0 bg-slate-900 text-white p-3 rounded-2xl flex items-center justify-between shadow-2xl z-[70] animate-slide-down no-print">
           <div className="flex items-center gap-4 ml-4">
             <span className="text-[10px] font-black uppercase tracking-widest">{multiSelectIds.size} Aday Seçildi</span>
           </div>
           <div className="flex gap-2">
-            <button 
-              onClick={() => setMultiSelectIds(new Set())}
-              className="px-6 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all"
-            >
-              Vazgeç
-            </button>
-            <button 
-              onClick={handleBulkDelete}
-              className="px-8 py-2 bg-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg"
-            >
-              Seçilenleri Sil
-            </button>
+            <button onClick={() => setMultiSelectIds(new Set())} className="px-6 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all">Vazgeç</button>
+            <button onClick={handleBulkDelete} className="px-8 py-2 bg-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg">Seçilenleri Sil</button>
           </div>
         </div>
       )}
 
-      {/* SOL PANEL: Ultra Kompakt Aday Listesi */}
+      {/* SOL PANEL */}
       <div className="lg:w-[280px] flex flex-col gap-3 h-full shrink-0 overflow-hidden">
-        
-        {/* Minimal Kontrol Paneli */}
         <div className="bg-white p-3 rounded-[1.5rem] shadow-sm border border-slate-100 flex flex-col gap-2">
           <form onSubmit={handleSearchSubmit} className="relative">
             <input 
@@ -171,13 +162,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
               </button>
             ))}
           </div>
-          
-          {(searchInput || filters.branches.length > 0) && (
-            <button onClick={clearFilters} className="py-1 bg-slate-100 text-slate-500 hover:text-slate-900 rounded-md text-[7px] font-black uppercase tracking-widest transition-colors">Sıfırla</button>
-          )}
         </div>
 
-        {/* Kompakt Aday Listesi */}
         <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-1.5">
           <div className="flex items-center justify-between px-2 mb-2">
              <div className="flex items-center gap-2">
@@ -189,47 +175,55 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                 />
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{filteredAndSortedCandidates.length} ADAY</span>
              </div>
-             <div className="flex gap-2">
-                <button onClick={() => setSortConfig([{ key: 'timestamp', order: 'desc' }])} className={`text-[7px] font-black uppercase tracking-tighter ${sortConfig[0].key === 'timestamp' ? 'text-orange-600' : 'text-slate-400'}`}>YENİ</button>
-                <button onClick={() => setSortConfig([{ key: 'score', order: 'desc' }])} className={`text-[7px] font-black uppercase tracking-tighter ${sortConfig[0].key === 'score' ? 'text-orange-600' : 'text-slate-400'}`}>SKOR</button>
+             <div className="flex gap-2 text-[7px] font-black uppercase">
+                <button onClick={() => setSortConfig([{ key: 'timestamp', order: 'desc' }])} className={sortConfig[0].key === 'timestamp' ? 'text-orange-600' : 'text-slate-400'}>YENİ</button>
+                <button onClick={() => setSortConfig([{ key: 'score', order: 'desc' }])} className={sortConfig[0].key === 'score' ? 'text-orange-600' : 'text-slate-400'}>SKOR</button>
              </div>
           </div>
 
-          {filteredAndSortedCandidates.map(c => (
-            <div 
-              key={c.id} 
-              onClick={() => setSelectedId(c.id)}
-              className={`p-2 rounded-xl border transition-all cursor-pointer relative group ${
-                selectedId === c.id ? 'bg-white border-orange-600 shadow-md translate-x-1' : 'bg-white border-slate-50 hover:border-slate-200'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  checked={multiSelectIds.has(c.id)}
-                  onClick={e => handleToggleSelect(e, c.id)}
-                  onChange={() => {}} // Controlled input
-                  className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity" 
-                />
-                <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-black text-[9px] ${
-                  c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
-                }`}>
-                  {c.report ? c.report.score : '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-black text-slate-900 text-[10px] truncate uppercase leading-tight">{c.name || 'İsimsiz'}</h4>
-                  <p className="text-[7px] font-bold text-slate-400 uppercase truncate mt-0.5">{c.branch?.split(' ')[0] || 'Genel'} • {c.experienceYears || 0}y</p>
-                </div>
-                {selectedId === c.id && (
-                  <div className="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
-                )}
-              </div>
+          {filteredAndSortedCandidates.length === 0 ? (
+            <div className="py-10 text-center px-4 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+               <p className="text-[9px] font-black text-slate-400 uppercase leading-relaxed">
+                 {candidates.length > 0 ? "Filtrelere Uygun Aday Yok" : "Henüz Başvuru Alınmadı veya Veriler Yükleniyor"}
+               </p>
+               {candidates.length === 0 && (
+                 <button onClick={() => window.location.reload()} className="mt-4 text-[7px] font-black text-orange-600 border-b border-orange-600 uppercase">Yenile ve Senkronize Et</button>
+               )}
             </div>
-          ))}
+          ) : (
+            filteredAndSortedCandidates.map(c => (
+              <div 
+                key={c.id} 
+                onClick={() => setSelectedId(c.id)}
+                className={`p-2 rounded-xl border transition-all cursor-pointer relative group ${
+                  selectedId === c.id ? 'bg-white border-orange-600 shadow-md translate-x-1' : 'bg-white border-slate-50 hover:border-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    checked={multiSelectIds.has(c.id)}
+                    onClick={e => handleToggleSelect(e, c.id)}
+                    onChange={() => {}}
+                    className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity" 
+                  />
+                  <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-black text-[9px] ${
+                    c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {c.report ? c.report.score : '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-black text-slate-900 text-[10px] truncate uppercase leading-tight">{c.name || 'İsimsiz'}</h4>
+                    <p className="text-[7px] font-bold text-slate-400 uppercase truncate mt-0.5">{c.branch?.split(' ')[0] || 'Genel'} • {c.experienceYears || 0}y</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/* SAĞ PANEL: Genişletilmiş Detay */}
+      {/* SAĞ PANEL */}
       <div className="flex-1 h-full overflow-hidden">
         {selectedCandidate ? (
           <CandidateDetail 

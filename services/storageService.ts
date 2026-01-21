@@ -1,8 +1,8 @@
 import { Candidate, GlobalConfig } from '../types';
 
 /**
- * Yeni Gün Akademi - Veri Koruma ve Kurtarma Servisi v7.0
- * Prensip: Yerel veriyi asla silme, buluta taşınana kadar mühürle.
+ * Yeni Gün Akademi - Bunker-Level Data Storage v8.0
+ * Prensip: Veri kutsaldır. Bulut sadece bir yedekleme değil, bir mühürdür.
  */
 export const storageService = {
   async getCandidates(): Promise<Candidate[]> {
@@ -10,6 +10,7 @@ export const storageService = {
     const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
     
     try {
+      // 1. Sunucudan taze veriyi iste
       const response = await fetch('/api/candidates', {
         cache: 'no-store',
         headers: { 'Pragma': 'no-cache' }
@@ -19,49 +20,42 @@ export const storageService = {
         const remoteData: Candidate[] = await response.json();
         const mergedMap = new Map<string, Candidate>();
         
-        // 1. Önce sunucudaki verileri haritaya ekle
-        remoteData.forEach(remote => {
-          if (remote && remote.id) mergedMap.set(remote.id, remote);
+        // Önce yereldeki verileri "taslak" olarak haritaya koy (Kurtarma Modu)
+        localData.forEach(local => {
+          if (local && local.id) mergedMap.set(local.id, local);
         });
 
-        // 2. Yereldeki verileri kontrol et
-        const pendingUploads: Candidate[] = [];
-        localData.forEach(local => {
-          if (local && local.id) {
-            const remoteMatch = mergedMap.get(local.id);
-            if (!remoteMatch) {
-              // VERİ KURTARMA: Bu veri sunucuda yok! Kaybetmek yerine "gönderilecekler" listesine al.
-              mergedMap.set(local.id, local);
-              pendingUploads.push(local);
-            } else if ((local.timestamp || 0) > (remoteMatch.timestamp || 0)) {
-              // GÜNCELLEME: Yereldeki veri daha yeni, sunucuyu güncellemek gerekecek.
-              mergedMap.set(local.id, local);
-              pendingUploads.push(local);
+        // Sonra sunucudaki verileri üzerine yaz (Eğer sunucudaki daha yeniyse veya yerelde yoksa)
+        remoteData.forEach(remote => {
+          if (remote && remote.id) {
+            const localMatch = mergedMap.get(remote.id);
+            if (!localMatch || (remote.timestamp || 0) >= (localMatch.timestamp || 0)) {
+              mergedMap.set(remote.id, remote);
             }
           }
         });
 
-        // 3. Arka planda eksik verileri sunucuya gönder (Taşıma işlemi)
-        if (pendingUploads.length > 0) {
-          console.log(`${pendingUploads.length} adet veri buluta taşınıyor...`);
-          // Teker teker veya toplu gönderim denenebilir
-          pendingUploads.forEach(c => {
+        const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        // Yerelde eksik olup sunucuda olmayan (mülteci) verileri buluta tırmandır
+        const missingOnRemote = finalData.filter(f => !remoteData.find(r => r.id === f.id));
+        if (missingOnRemote.length > 0) {
+          console.log(`Kurtarılan ${missingOnRemote.length} aday buluta mühürleniyor...`);
+          for (const c of missingOnRemote) {
             fetch('/api/candidates', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(c)
-            }).catch(err => console.error("Taşıma başarısız:", err));
-          });
+            }).catch(e => console.error("Sync Up Error:", e));
+          }
         }
 
-        const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        // Yerel önbelleği sadece başarılı birleşimden sonra güncelle
+        // Yerel önbelleği her zaman mühürlü veriyle güncelle
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
         return finalData;
       }
     } catch (e) {
-      console.warn("Bulut senkronizasyonu başarısız, veriler yerel modda korunuyor.");
+      console.warn("Bulut Bağlantısı Kesildi: Çevrimdışı verilerle devam ediliyor.");
     }
 
     return localData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
@@ -70,37 +64,29 @@ export const storageService = {
   async saveCandidate(candidate: Candidate): Promise<boolean> {
     const candidateWithTime = { ...candidate, timestamp: Date.now() };
     
-    // 1. Önce yerel belleğe yaz (KAYIP RİSKİNE KARŞI İLK ÖNLEM)
+    // 1. Önce yereli güncelle (Anında UI tepkisi)
     const localStr = localStorage.getItem('yeni_gun_candidates');
     const current: Candidate[] = localStr ? JSON.parse(localStr) : [];
     localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
     
     try {
-      // 2. Şimdi sunucuya gönder
+      // 2. Sunucuya mühürle
       const res = await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateWithTime)
       });
-      
-      // Sunucuya yazıldıysa bile yereli silmiyoruz, getCandidates bir sonraki seferde eşitleyecek
       return res.ok;
-    } catch (e) { 
-      // Sunucu hatası olsa bile veri yerelde duruyor (Silinmedi!)
-      return false; 
-    }
+    } catch (e) { return false; }
   },
 
   async updateCandidate(candidate: Candidate): Promise<boolean> {
     const updatedCandidate = { ...candidate, timestamp: Date.now() };
-    
     const localStr = localStorage.getItem('yeni_gun_candidates');
     if (localStr) {
       const current: Candidate[] = JSON.parse(localStr);
-      const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.map(c => c.id === candidate.id ? updatedCandidate : c)));
     }
-
     try {
       const res = await fetch('/api/candidates', {
         method: 'PATCH',
@@ -112,7 +98,6 @@ export const storageService = {
   },
 
   async deleteCandidate(id: string): Promise<boolean> {
-    // Yerelden siliyoruz
     const localStr = localStorage.getItem('yeni_gun_candidates');
     if (localStr) {
       const current: Candidate[] = JSON.parse(localStr);
