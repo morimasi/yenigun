@@ -26,18 +26,10 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  const loadData = useCallback(async (forceRefresh = false) => {
+  // loadData artık her zaman sunucuya gider
+  const loadData = useCallback(async () => {
     const data = await storageService.getCandidates();
-    setCandidates(prev => {
-      if (forceRefresh) return data;
-      const mergedMap = new Map<string, Candidate>();
-      prev.forEach(c => mergedMap.set(c.id, c));
-      data.forEach(c => {
-        const existing = mergedMap.get(c.id);
-        if (!existing || c.timestamp > existing.timestamp) mergedMap.set(c.id, c);
-      });
-      return Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
-    });
+    setCandidates(data);
     
     try {
       const remoteConfig = await storageService.getConfig();
@@ -48,14 +40,18 @@ const App: React.FC = () => {
     } catch (e) {}
   }, []);
 
+  // Görünüm değiştiğinde (örneğin admin panelini açtığında) veriyi tazele
+  useEffect(() => {
+    loadData();
+  }, [view, loadData]);
+
   useEffect(() => {
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-    loadData();
-  }, [loadData]);
+  }, []);
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -67,28 +63,27 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    // 1. Optimistik Güncelleme (UI'da anında göster)
-    setCandidates(prev => [newCandidate, ...prev]);
-
-    // 2. Veritabanına Kaydet
+    // 1. Veritabanına Kaydet (Senkron Bekleyiş)
     const isSaved = await storageService.saveCandidate(newCandidate);
     
-    if (!isSaved) {
-      console.warn("Veri sunucuya iletilemedi, sadece yerel bellekte saklanıyor.");
+    if (isSaved) {
+      // 2. Sadece kayıt başarılıysa AI Analizini başlat (Arka Plan)
+      generateCandidateAnalysis(newCandidate, config).then(async (report) => {
+        if (report) {
+          const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
+          await storageService.updateCandidate(finalCandidate);
+          // State'i sadece güncellenen aday için tazele
+          setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
+        }
+      }).catch(err => console.error("AI Analiz Motoru Hatası:", err));
+
+      alert("Başvurunuz Yeni Gün Akademi bulut sistemine başarıyla mühürlendi.");
+      setView('candidate');
+    } else {
+      alert("HATA: Bağlantı sorunu nedeniyle başvurunuz sunucuya iletilemedi. Lütfen internetinizi kontrol edip tekrar deneyiniz.");
     }
 
-    // 3. AI Analizini başlat
-    generateCandidateAnalysis(newCandidate, config).then(async (report) => {
-      if (report) {
-        const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
-        await storageService.updateCandidate(finalCandidate);
-        setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
-      }
-    }).catch(err => console.error("Analiz motoru hatası:", err));
-
     setIsProcessing(false);
-    alert("Başvurunuz Akademi sistemine iletildi. Uzmanlarımız incelemeye başladı.");
-    setView('candidate');
   };
 
   const handleUpdateConfig = async (newConfig: GlobalConfig) => {
@@ -101,13 +96,14 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-8">
         <div className="max-w-md w-full p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100 animate-scale-in">
+           <div className="w-20 h-20 bg-slate-900 rounded-[2rem] mx-auto mb-8 flex items-center justify-center text-white text-3xl font-black">YG</div>
            <h3 className="text-3xl font-black text-slate-900 mb-10 text-center uppercase tracking-tighter">Akademi Paneli</h3>
            <form onSubmit={(e) => { e.preventDefault(); if(loginForm.password === 'yenigun2024') setIsLoggedIn(true); else alert("Hatalı Şifre"); }} className="space-y-6">
-              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">Sistem Girişi</button>
+              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Yönetici Kimliği" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Giriş Anahtarı" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">Sistemi Aç</button>
            </form>
-           <button onClick={() => setView('candidate')} className="w-full mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-colors">Başvuru Sayfasına Dön</button>
+           <button onClick={() => setView('candidate')} className="w-full mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-colors">Aday Sayfasına Dön</button>
         </div>
       </div>
     );
@@ -119,7 +115,10 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setView('candidate')}>
             <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black transition-transform group-hover:scale-105" style={{ backgroundColor: config.accentColor }}>YG</div>
-            <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
+              <span className="text-[8px] font-black text-orange-600 uppercase tracking-[0.3em] opacity-60">Bulut Tabanlı Akademik Takip</span>
+            </div>
           </div>
           <div className="flex bg-slate-100 p-1.5 rounded-full border border-slate-200">
             <button onClick={() => setView('candidate')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru</button>
@@ -135,13 +134,13 @@ const App: React.FC = () => {
           <DashboardLayout 
             candidates={candidates} 
             config={config} 
-            onUpdateCandidate={c => { 
-              storageService.updateCandidate(c); 
-              setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); 
+            onUpdateCandidate={async (c) => { 
+              const ok = await storageService.updateCandidate(c); 
+              if(ok) setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); 
             }}
-            onDeleteCandidate={id => { 
-              storageService.deleteCandidate(id); 
-              setCandidates(prev => prev.filter(x => x.id !== id)); 
+            onDeleteCandidate={async (id) => { 
+              const ok = await storageService.deleteCandidate(id);
+              if(ok) setCandidates(prev => prev.filter(x => x.id !== id)); 
             }}
             onUpdateConfig={handleUpdateConfig}
           />
@@ -151,10 +150,10 @@ const App: React.FC = () => {
       {isProcessing && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
-            <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>
             <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Aday Kaydı İşleniyor</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Liyakat Analiz Motoru Devreye Alınıyor...</p>
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Veri Senkronizasyonu</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Bulut Veritabanına Mühürleniyor...</p>
             </div>
           </div>
         </div>
