@@ -21,11 +21,11 @@ export default async function handler(request: Request) {
   }
 
   if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'Veritabanı bağlantısı yapılandırılmamış.' }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'Veritabanı bağlantısı yok.' }), { status: 500, headers });
   }
 
   try {
-    // Tablo şemasını otomatik oluştur/güncelle
+    // Otomatik Tablo Başlatma
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -52,6 +52,7 @@ export default async function handler(request: Request) {
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
+      // Frontend uyumluluğu için DB kolonlarını camelCase'e çeviriyoruz
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name || 'İsimsiz',
@@ -79,6 +80,8 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
+      // UPSERT MANTIĞI: Veri varsa güncelle, yoksa ekle.
+      // SQL Injection koruması için template literal kullanıyoruz.
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, experience_years, 
@@ -89,7 +92,7 @@ export default async function handler(request: Request) {
           ${body.name || 'İsimsiz'}, 
           ${body.email || ''}, 
           ${body.phone || ''}, 
-          ${body.age || 20}, 
+          ${body.age || 22}, 
           ${body.gender || 'Belirtilmemiş'},
           ${body.branch || ''}, 
           ${body.experienceYears || 0}, 
@@ -108,29 +111,19 @@ export default async function handler(request: Request) {
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
           branch = EXCLUDED.branch,
+          experience_years = EXCLUDED.experience_years,
+          previous_institutions = EXCLUDED.previous_institutions,
+          all_trainings = EXCLUDED.all_trainings,
+          answers = EXCLUDED.answers,
           status = EXCLUDED.status,
           admin_notes = EXCLUDED.admin_notes,
           report = EXCLUDED.report,
           algo_report = EXCLUDED.algo_report,
           interview_schedule = EXCLUDED.interview_schedule,
+          cv_data = EXCLUDED.cv_data,
           updated_at = EXCLUDED.updated_at;
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
-    }
-
-    if (method === 'PATCH') {
-      const body = await request.json();
-      const now = new Date().toISOString();
-      await sql`
-        UPDATE candidates SET 
-          status = ${body.status},
-          admin_notes = ${body.adminNotes || null},
-          report = ${body.report ? JSON.stringify(body.report) : null},
-          interview_schedule = ${body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null},
-          updated_at = ${now}
-        WHERE id = ${body.id}
-      `;
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
     if (method === 'DELETE') {
@@ -143,7 +136,7 @@ export default async function handler(request: Request) {
 
     return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
   } catch (error: any) {
-    console.error("SQL Error:", error.message);
-    return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
+    console.error("SQL_FATAL_ERROR:", error.message);
+    return new Response(JSON.stringify({ error: 'DB_ERROR', detail: error.message }), { status: 500, headers });
   }
 }

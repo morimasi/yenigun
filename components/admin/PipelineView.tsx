@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -50,7 +51,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       const matchesSearch = term === '' || name.includes(term);
       const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
       const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
-      const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
+      // Cast filters.genders to string[] to ensure includes works correctly with Gender union types
+      const matchesGender = filters.genders.length === 0 || (c.gender && (filters.genders as string[]).includes(c.gender));
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
@@ -70,17 +72,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Line 110 - Explicitly cast the state object and the extracted array to avoid 'unknown[]' inference issues during dynamic indexing.
-  const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
+  // Fix: Line 109 - Use a type-safe approach for state updates to avoid 'unknown[]' errors during dynamic property access.
+  const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
-      const current = (prev as any)[category] as string[];
+      const current = prev[category] as string[];
       const next = current.includes(value) 
-        ? current.filter(v => v !== value) 
+        ? current.filter((v: string) => v !== value) 
         : [...current, value];
       return { 
         ...prev, 
         [category]: next 
-      } as any;
+      } as typeof filters;
     });
   };
 

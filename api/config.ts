@@ -1,4 +1,3 @@
-
 import { sql } from '@vercel/postgres';
 
 export const config = {
@@ -15,16 +14,10 @@ export default async function handler(request: Request) {
     'Cache-Control': 'no-store, max-age=0'
   };
 
-  if (method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers });
-  }
-
-  if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ error: 'DB_NOT_CONFIGURED' }), { status: 500, headers });
-  }
+  if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // Singleton tablosu kurulumu: Sadece tek bir satıra (id=1) izin verir.
+    // Singleton tablosu kurulumu
     await sql`
       CREATE TABLE IF NOT EXISTS system_config (
         id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -35,10 +28,7 @@ export default async function handler(request: Request) {
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT data FROM system_config WHERE id = 1;`;
-      if (rows.length === 0) {
-        return new Response(JSON.stringify(null), { status: 200, headers });
-      }
-      return new Response(JSON.stringify(rows[0].data), { status: 200, headers });
+      return new Response(JSON.stringify(rows[0]?.data || null), { status: 200, headers });
     }
 
     if (method === 'POST') {
@@ -50,10 +40,8 @@ export default async function handler(request: Request) {
       `;
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
-
-    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
   } catch (error: any) {
-    console.error('Config API Error:', error.message);
-    return new Response(JSON.stringify({ error: 'DATABASE_ERROR', message: error.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'CONFIG_DB_ERROR', detail: error.message }), { status: 500, headers });
   }
+  return new Response(null, { status: 405 });
 }
