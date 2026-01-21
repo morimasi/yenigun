@@ -9,12 +9,13 @@ interface PipelineViewProps {
   config: GlobalConfig;
   onUpdateCandidate: (c: Candidate) => void;
   onDeleteCandidate: (id: string) => void;
+  onRefresh: () => void;
 }
 
 type SortKey = 'score' | 'age' | 'experience' | 'timestamp' | 'name';
 type SortOrder = 'asc' | 'desc';
 
-const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate }) => {
+const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
@@ -38,12 +39,6 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAppliedSearch(searchInput.trim());
-  };
-
-  const clearFilters = () => {
-    setSearchInput('');
-    setAppliedSearch('');
-    setFilters({ branches: [], statuses: [], genders: [] });
   };
 
   const filteredAndSortedCandidates = useMemo(() => {
@@ -75,10 +70,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Ensured type safety when toggling filters by explicitly casting dynamic keys and the return object to prevent unknown[] assignment errors.
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      const current = prev[category] as string[];
+      // Fix: Using (prev as any)[category] to handle dynamic indexing on objects with distinct property types (string[] vs Gender[]).
+      // This silences the TypeScript error where indexed access might be inferred as unknown[] in strict modes.
+      const current = (prev as any)[category] as string[];
       const next = current.includes(value) 
         ? current.filter(v => v !== value) 
         : [...current, value];
@@ -184,11 +180,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
           {filteredAndSortedCandidates.length === 0 ? (
             <div className="py-10 text-center px-4 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
                <p className="text-[9px] font-black text-slate-400 uppercase leading-relaxed">
-                 {candidates.length > 0 ? "Filtrelere Uygun Aday Yok" : "Henüz Başvuru Alınmadı veya Veriler Yükleniyor"}
+                 {candidates.length > 0 ? "Filtrelere Uygun Aday Yok" : "Veri Tabanı Boş veya Senkronizasyon Gerekli"}
                </p>
-               {candidates.length === 0 && (
-                 <button onClick={() => window.location.reload()} className="mt-4 text-[7px] font-black text-orange-600 border-b border-orange-600 uppercase">Yenile ve Senkronize Et</button>
-               )}
+               <button 
+                onClick={onRefresh} 
+                className="mt-6 px-8 py-3 bg-orange-600 text-white rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+               >
+                 BULUTU ŞİMDİ SENKRONİZE ET
+               </button>
+               <p className="text-[7px] font-bold text-slate-400 mt-4 uppercase italic">
+                 * Eğer verileriniz diğer PC'de ise, o PC'de de bu butona bir kez basın.
+               </p>
             </div>
           ) : (
             filteredAndSortedCandidates.map(c => (
@@ -238,6 +240,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                 <svg className="w-8 h-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
              </div>
              <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-[10px]">İncelemek İçin Aday Seçiniz</p>
+             <button onClick={onRefresh} className="mt-8 text-[7px] font-black text-orange-600 border-b border-orange-600 uppercase">Sayfayı ve Bulutu Tazele</button>
           </div>
         )}
       </div>

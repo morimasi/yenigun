@@ -27,8 +27,10 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
+  const loadData = useCallback(async (isManual = false) => {
+    if (isManual) setIsProcessing(true);
+    else setIsLoading(true);
+
     try {
       const data = await storageService.getCandidates();
       setCandidates(data);
@@ -42,6 +44,7 @@ const App: React.FC = () => {
       console.error("Yükleme hatası:", e);
     } finally {
       setIsLoading(false);
+      setIsProcessing(false);
     }
   }, []);
 
@@ -64,14 +67,10 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    // 1. Yerel ve State güncelleme (Optimistik)
     setCandidates(prev => [newCandidate, ...prev]);
-
-    // 2. Veritabanına Kaydet
     const isSaved = await storageService.saveCandidate(newCandidate);
     
     if (isSaved) {
-      // 3. AI Analizi (Arka Plan)
       generateCandidateAnalysis(newCandidate, config).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
@@ -79,10 +78,9 @@ const App: React.FC = () => {
           setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
         }
       }).catch(err => console.error("AI Analiz Hatası:", err));
-
       alert("Başvurunuz Akademi bulut sistemine kaydedildi.");
     } else {
-      alert("UYARI: Bağlantı sorunu! Başvurunuz sadece bu cihazda saklanıyor, internet geldiğinde otomatik senkronize edilecektir.");
+      alert("UYARI: İnternet sorunu! Verileriniz bu cihazda mühürlendi, bağlantı gelince buluta taşınacaktır.");
     }
 
     setIsProcessing(false);
@@ -131,11 +129,11 @@ const App: React.FC = () => {
       </nav>
 
       <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)] relative">
-        {isLoading && view === 'admin' && (
+        {isLoading && (
           <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-[4rem]">
              <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Veri Senkronize Ediliyor...</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Veriler Hazırlanıyor...</p>
              </div>
           </div>
         )}
@@ -155,6 +153,7 @@ const App: React.FC = () => {
               if(ok) setCandidates(prev => prev.filter(x => x.id !== id)); 
             }}
             onUpdateConfig={handleUpdateConfig}
+            onRefresh={() => loadData(true)}
           />
         )}
       </main>
@@ -164,8 +163,8 @@ const App: React.FC = () => {
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>
             <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Veri Senkronizasyonu</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Bulut Veritabanına Mühürleniyor...</p>
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Bulut Senkronizasyonu</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Veritabanı ile El Sıkışılıyor...</p>
             </div>
           </div>
         </div>
