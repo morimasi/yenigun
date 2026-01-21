@@ -10,28 +10,10 @@ const DEFAULT_CONFIG: GlobalConfig = {
   primaryColor: '#ea580c',
   accentColor: '#0f172a',
   aiTone: 'balanced',
-  aiPersona: {
-    skepticism: 50,
-    empathy: 50,
-    formality: 70
-  },
-  aiWeights: {
-    ethics: 40,
-    clinical: 30,
-    experience: 15,
-    fit: 15
-  },
-  automation: {
-    autoEmailOnSchedule: true,
-    requireCvUpload: true,
-    allowMultipleApplications: false
-  },
-  interviewSettings: {
-    defaultDuration: 45,
-    bufferTime: 15,
-    autoStatusAfterInterview: false,
-    defaultMeetingLink: 'https://meet.google.com/new'
-  },
+  aiPersona: { skepticism: 50, empathy: 50, formality: 70 },
+  aiWeights: { ethics: 40, clinical: 30, experience: 15, fit: 15 },
+  automation: { autoEmailOnSchedule: true, requireCvUpload: true, allowMultipleApplications: false },
+  interviewSettings: { defaultDuration: 45, bufferTime: 15, autoStatusAfterInterview: false, defaultMeetingLink: 'https://meet.google.com/new' },
   notificationEmail: 'info@yenigun.com',
   lastUpdated: Date.now()
 };
@@ -45,54 +27,25 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
   const loadData = useCallback(async (forceRefresh = false) => {
-    // Adayları yükle
     const data = await storageService.getCandidates();
-    
-    // Eğer yerel state zaten daha güncelse (veya bir işlem sürüyorsa) dikkatli birleştirme yap
     setCandidates(prev => {
       if (forceRefresh) return data;
-      
       const mergedMap = new Map<string, Candidate>();
-      // Mevcut state (en taze olan)
       prev.forEach(c => mergedMap.set(c.id, c));
-      // Yeni gelenler (DB'den)
       data.forEach(c => {
         const existing = mergedMap.get(c.id);
-        if (!existing || c.timestamp > existing.timestamp) {
-          mergedMap.set(c.id, c);
-        }
+        if (!existing || c.timestamp > existing.timestamp) mergedMap.set(c.id, c);
       });
       return Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
     });
     
-    // Konfigürasyonu DB'den yükle
     try {
       const remoteConfig = await storageService.getConfig();
-      let finalConfig = DEFAULT_CONFIG;
-      const localConfigStr = localStorage.getItem('yeni_gun_config');
-      
-      if (localConfigStr) {
-        try {
-          finalConfig = { ...finalConfig, ...JSON.parse(localConfigStr) };
-        } catch (e) {}
-      }
-
       if (remoteConfig) {
-        finalConfig = {
-          ...finalConfig,
-          ...remoteConfig,
-          aiPersona: { ...finalConfig.aiPersona, ...(remoteConfig.aiPersona || {}) },
-          aiWeights: { ...finalConfig.aiWeights, ...(remoteConfig.aiWeights || {}) },
-          automation: { ...finalConfig.automation, ...(remoteConfig.automation || {}) },
-          interviewSettings: { ...finalConfig.interviewSettings, ...(remoteConfig.interviewSettings || {}) }
-        };
+        setConfig(prev => ({ ...prev, ...remoteConfig }));
+        document.documentElement.style.setProperty('--primary-color', remoteConfig.primaryColor);
       }
-
-      setConfig(finalConfig);
-      document.documentElement.style.setProperty('--primary-color', finalConfig.primaryColor);
-    } catch (error) {
-      console.error("Config loading failed:", error);
-    }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -106,38 +59,40 @@ const App: React.FC = () => {
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
+    const candidateId = Math.random().toString(36).substr(2, 9);
     const newCandidate: Candidate = {
       ...data,
-      id: Math.random().toString(36).substr(2, 9),
+      id: candidateId,
       timestamp: Date.now(),
       status: 'pending'
     };
 
-    // 1. Önce State'e ekle (Anında UI tepkisi)
+    // 1. Optimistik Güncelleme (UI'da anında göster)
     setCandidates(prev => [newCandidate, ...prev]);
 
-    // 2. Storage'a kaydet (Sync)
-    await storageService.saveCandidate(newCandidate);
+    // 2. Veritabanına Kaydet
+    const isSaved = await storageService.saveCandidate(newCandidate);
+    
+    if (!isSaved) {
+      console.warn("Veri sunucuya iletilemedi, sadece yerel bellekte saklanıyor.");
+    }
 
-    // 3. AI Analizini başlat (Arka planda)
+    // 3. AI Analizini başlat
     generateCandidateAnalysis(newCandidate, config).then(async (report) => {
       if (report) {
         const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
         await storageService.updateCandidate(finalCandidate);
-        setCandidates(prev => prev.map(c => c.id === newCandidate.id ? finalCandidate : c));
+        setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
       }
-    }).catch(err => {
-      console.error("Analiz başarısız:", err);
-    });
+    }).catch(err => console.error("Analiz motoru hatası:", err));
 
     setIsProcessing(false);
-    alert("Başvurunuz başarıyla Yeni Gün Akademi sistemine kaydedildi. Analiz süreci arka planda devam etmektedir.");
+    alert("Başvurunuz Akademi sistemine iletildi. Uzmanlarımız incelemeye başladı.");
     setView('candidate');
   };
 
   const handleUpdateConfig = async (newConfig: GlobalConfig) => {
     setConfig(newConfig);
-    localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
     document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
     await storageService.saveConfig(newConfig);
   };
@@ -145,14 +100,14 @@ const App: React.FC = () => {
   if (view === 'admin' && !isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-8">
-        <div className="max-w-md w-full p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100">
+        <div className="max-w-md w-full p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100 animate-scale-in">
            <h3 className="text-3xl font-black text-slate-900 mb-10 text-center uppercase tracking-tighter">Akademi Paneli</h3>
-           <form onSubmit={(e) => { e.preventDefault(); if(loginForm.password === 'yenigun2024') setIsLoggedIn(true); }} className="space-y-6">
-              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all">Giriş Yap</button>
+           <form onSubmit={(e) => { e.preventDefault(); if(loginForm.password === 'yenigun2024') setIsLoggedIn(true); else alert("Hatalı Şifre"); }} className="space-y-6">
+              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">Sistem Girişi</button>
            </form>
-           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Başvuru Formuna Dön</button>
+           <button onClick={() => setView('candidate')} className="w-full mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-colors">Başvuru Sayfasına Dön</button>
         </div>
       </div>
     );
@@ -160,20 +115,20 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
-      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] h-28 flex items-center no-print">
+      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] h-28 flex items-center no-print shadow-sm">
         <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
-          <div className="flex items-center space-x-4 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black" style={{ backgroundColor: config.accentColor }}>YG</div>
+          <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setView('candidate')}>
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black transition-transform group-hover:scale-105" style={{ backgroundColor: config.accentColor }}>YG</div>
             <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
           </div>
-          <div className="flex bg-orange-50 p-2 rounded-full border border-orange-100">
-            <button onClick={() => setView('candidate')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
-            <button onClick={() => setView('admin')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
+          <div className="flex bg-slate-100 p-1.5 rounded-full border border-slate-200">
+            <button onClick={() => setView('candidate')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru</button>
+            <button onClick={() => setView('admin')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Yönetim</button>
           </div>
         </div>
       </nav>
 
-      <main className="py-20 px-8 max-w-7xl mx-auto">
+      <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)]">
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : (
@@ -194,10 +149,13 @@ const App: React.FC = () => {
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center">
-          <div className="bg-white p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6">
-            <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
-            <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Aday Kaydediliyor...</p>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
+          <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
+            <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
+            <div className="text-center">
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Aday Kaydı İşleniyor</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Liyakat Analiz Motoru Devreye Alınıyor...</p>
+            </div>
           </div>
         </div>
       )}

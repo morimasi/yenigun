@@ -10,77 +10,79 @@ export const storageService = {
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
         
-        // Map yapısı ile ID çakışmalarını yönetelim
         const mergedMap = new Map<string, Candidate>();
         
-        // Önce yerel veriyi yükle (Güvenli Alan)
+        // Önce yerel veriyi temel al (senkronize olmamış değişiklikler dahil)
         localData.forEach(c => { 
           if (c && c.id) mergedMap.set(c.id, c); 
         });
 
-        // Uzak veriyi üstüne işle (Sadece daha yeni veya eksik verileri al)
+        // Uzak veriyi işle: Eğer uzak veri daha yeniyse veya yerelde hiç yoksa güncelle
         remoteData.forEach(remote => {
           if (remote && remote.id) {
-            const existing = mergedMap.get(remote.id);
-            // Eğer yerelde yoksa veya uzaktaki veri daha güncelse (veya eşitse) güncelle
-            if (!existing || (remote.timestamp >= (existing.timestamp || 0))) {
+            const localMatch = mergedMap.get(remote.id);
+            // Kural: Uzaktaki veri her zaman "onaylanmış" veridir. 
+            // Sadece yereldeki veri bariz daha yeniyse (kullanıcı henüz kaydetmişse) yereli koru.
+            if (!localMatch || (remote.timestamp >= (localMatch.timestamp || 0))) {
               mergedMap.set(remote.id, remote);
             }
           }
         });
 
         const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        // localStorage'ı güncelle ama yerel adayları asla kaybetme
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
         return finalData;
       }
     } catch (e) {
-      console.warn("API bağlantısı kurulamadı, yerel önbellek kullanılıyor.");
+      console.warn("Kritik: API erişilemez durumda, yerel modda devam ediliyor.");
     }
     return localData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   },
 
-  async saveCandidate(candidate: Candidate) {
-    // timestamp'i garanti altına al
-    const candidateWithTime = { ...candidate, timestamp: candidate.timestamp || Date.now() };
+  async saveCandidate(candidate: Candidate): Promise<boolean> {
+    const candidateWithTime = { ...candidate, timestamp: Date.now() };
     
-    // Önce yerel listeye ekle (Anında görünürlük için)
+    // 1. Önce yerel önbelleğe anında yaz (UI tepkisi için)
     const local = localStorage.getItem('yeni_gun_candidates');
     const current: Candidate[] = local ? JSON.parse(local) : [];
-    
-    // Mükerrer kaydı önle
-    const filtered = current.filter(c => c.id !== candidate.id);
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...filtered]));
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
     
     try {
+      // 2. Hemen Veritabanına gönder
       const res = await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateWithTime)
       });
-      return res.ok;
-    } catch { 
+      
+      if (!res.ok) throw new Error("API Yazma Hatası");
+      return true;
+    } catch (e) { 
+      console.error("Veritabanına yazılamadı, veri yerelde asılı kaldı.", e);
       return false; 
     }
   },
 
   async updateCandidate(candidate: Candidate) {
+    // Güncelleme her zaman zaman damgasını yeniler
     const updatedCandidate = { ...candidate, timestamp: Date.now() };
+    
     const local = localStorage.getItem('yeni_gun_candidates');
     if (local) {
       const current: Candidate[] = JSON.parse(local);
       const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
     }
+
     try {
-      await fetch('/api/candidates', {
+      const res = await fetch('/api/candidates', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCandidate)
       });
+      return res.ok;
     } catch (e) { 
-      console.error("Bulut senkronizasyonu başarısız."); 
+      return false; 
     }
   },
 
@@ -102,22 +104,17 @@ export const storageService = {
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
     }
     try {
+      // Toplu silme işlemi API tarafında daha verimli bir endpoint ile yapılabilir
+      // Şu an için paralel fetch kullanıyoruz
       await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
-    } catch (e) { 
-      console.error("Toplu silme hatası."); 
-    }
+    } catch (e) {}
   },
 
   async getConfig(): Promise<GlobalConfig | null> {
     try {
       const res = await fetch('/api/config');
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (e) { 
-      console.error("Config yükleme hatası."); 
-    }
-    return null;
+      return res.ok ? await res.json() : null;
+    } catch (e) { return null; }
   },
 
   async saveConfig(config: GlobalConfig): Promise<boolean> {
@@ -128,8 +125,6 @@ export const storageService = {
         body: JSON.stringify(config)
       });
       return res.ok;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { return false; }
   }
 };
