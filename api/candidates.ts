@@ -1,4 +1,3 @@
-
 import { sql } from '@vercel/postgres';
 
 export const config = {
@@ -22,19 +21,16 @@ export default async function handler(request: Request) {
   }
 
   if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ 
-      error: 'DATABASE_NOT_CONFIGURED',
-      message: 'POSTGRES_URL bulunamadı.'
-    }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'DB URL Eksik' }), { status: 500, headers });
   }
 
   try {
-    // 1. Ana Tablo Kurulumu
+    // Tablo ve Kolon Kontrolleri
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
+        name TEXT,
+        email TEXT,
         phone TEXT,
         age INTEGER,
         gender TEXT,
@@ -42,7 +38,7 @@ export default async function handler(request: Request) {
         experience_years INTEGER,
         previous_institutions TEXT,
         all_trainings JSONB DEFAULT '[]'::jsonb,
-        answers JSONB,
+        answers JSONB DEFAULT '{}'::jsonb,
         status TEXT DEFAULT 'pending',
         admin_notes TEXT,
         report JSONB,
@@ -54,18 +50,11 @@ export default async function handler(request: Request) {
       );
     `;
 
-    // 2. Migration: Eksik kolonları güvenli bir şekilde ekle
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS all_trainings JSONB DEFAULT '[]'::jsonb;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS admin_notes TEXT;`;
-
     if (method === 'GET') {
-      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC LIMIT 500;`;
+      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
       const candidates = rows.map(row => ({
         id: row.id,
-        name: row.name || 'İsimsiz Aday',
+        name: row.name || 'İsimsiz',
         email: row.email || '',
         phone: row.phone || '',
         age: row.age || 0,
@@ -81,7 +70,7 @@ export default async function handler(request: Request) {
         report: row.report || null,
         algoReport: row.algo_report || null,
         cvData: row.cv_data || null,
-        timestamp: new Date(row.updated_at || row.created_at).getTime()
+        timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
       }));
       return new Response(JSON.stringify(candidates), { status: 200, headers });
     }
@@ -89,26 +78,24 @@ export default async function handler(request: Request) {
     if (method === 'POST') {
       const body = await request.json();
       const now = new Date().toISOString();
-      
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, experience_years, 
           previous_institutions, all_trainings, answers, status, cv_data, updated_at
-        )
-        VALUES (
+        ) VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
           ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
-          ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers)}, ${body.status},
+          ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers || {})}, ${body.status},
           ${JSON.stringify(body.cvData || null)}, ${now}
-        )
+        ) ON CONFLICT (id) DO UPDATE SET 
+          name = EXCLUDED.name, email = EXCLUDED.email, updated_at = ${now};
       `;
-      return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 201, headers });
+      return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
     if (method === 'PATCH') {
       const body = await request.json();
       const now = new Date().toISOString();
-      
       await sql`
         UPDATE candidates SET 
           status = ${body.status},
@@ -120,8 +107,7 @@ export default async function handler(request: Request) {
           updated_at = ${now}
         WHERE id = ${body.id}
       `;
-
-      return new Response(JSON.stringify({ success: true, timestamp: new Date(now).getTime() }), { status: 200, headers });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
     if (method === 'DELETE') {
@@ -130,13 +116,10 @@ export default async function handler(request: Request) {
         await sql`DELETE FROM candidates WHERE id = ${id}`;
         return new Response(JSON.stringify({ success: true }), { status: 200, headers });
       }
-      return new Response(JSON.stringify({ error: 'MISSING_ID' }), { status: 400, headers });
     }
 
-    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
-
+    return new Response(JSON.stringify({ error: 'M_NOT_A' }), { status: 405, headers });
   } catch (error: any) {
-    console.error('DB Error:', error.message);
-    return new Response(JSON.stringify({ error: 'DATABASE_ERROR', message: error.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
   }
 }

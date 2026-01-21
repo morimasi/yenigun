@@ -24,34 +24,35 @@ const App: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [config, setConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  // loadData artık her zaman sunucuya gider
   const loadData = useCallback(async () => {
-    const data = await storageService.getCandidates();
-    setCandidates(data);
-    
+    setIsLoading(true);
     try {
+      const data = await storageService.getCandidates();
+      setCandidates(data);
+      
       const remoteConfig = await storageService.getConfig();
       if (remoteConfig) {
         setConfig(prev => ({ ...prev, ...remoteConfig }));
         document.documentElement.style.setProperty('--primary-color', remoteConfig.primaryColor);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Yükleme hatası:", e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Görünüm değiştiğinde (örneğin admin panelini açtığında) veriyi tazele
   useEffect(() => {
     loadData();
-  }, [view, loadData]);
-
-  useEffect(() => {
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, []);
+  }, [loadData]);
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -63,27 +64,29 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    // 1. Veritabanına Kaydet (Senkron Bekleyiş)
+    // 1. Yerel ve State güncelleme (Optimistik)
+    setCandidates(prev => [newCandidate, ...prev]);
+
+    // 2. Veritabanına Kaydet
     const isSaved = await storageService.saveCandidate(newCandidate);
     
     if (isSaved) {
-      // 2. Sadece kayıt başarılıysa AI Analizini başlat (Arka Plan)
+      // 3. AI Analizi (Arka Plan)
       generateCandidateAnalysis(newCandidate, config).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
           await storageService.updateCandidate(finalCandidate);
-          // State'i sadece güncellenen aday için tazele
           setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
         }
-      }).catch(err => console.error("AI Analiz Motoru Hatası:", err));
+      }).catch(err => console.error("AI Analiz Hatası:", err));
 
-      alert("Başvurunuz Yeni Gün Akademi bulut sistemine başarıyla mühürlendi.");
-      setView('candidate');
+      alert("Başvurunuz Akademi bulut sistemine kaydedildi.");
     } else {
-      alert("HATA: Bağlantı sorunu nedeniyle başvurunuz sunucuya iletilemedi. Lütfen internetinizi kontrol edip tekrar deneyiniz.");
+      alert("UYARI: Bağlantı sorunu! Başvurunuz sadece bu cihazda saklanıyor, internet geldiğinde otomatik senkronize edilecektir.");
     }
 
     setIsProcessing(false);
+    setView('candidate');
   };
 
   const handleUpdateConfig = async (newConfig: GlobalConfig) => {
@@ -127,7 +130,16 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)]">
+      <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)] relative">
+        {isLoading && view === 'admin' && (
+          <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-[4rem]">
+             <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Veri Senkronize Ediliyor...</p>
+             </div>
+          </div>
+        )}
+        
         {view === 'candidate' ? (
           <CandidateForm onSubmit={handleCandidateSubmit} />
         ) : (

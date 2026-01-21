@@ -1,58 +1,74 @@
 import { Candidate, GlobalConfig } from '../types';
 
 /**
- * Yeni Gün Akademi - Cloud-Centric Storage Service v5.0
- * Bu servis "Database is the King" (Veritabanı Kraldır) prensibiyle çalışır.
+ * Yeni Gün Akademi - Gelişmiş Hibrit Senkronizasyon Servisi v6.0
+ * Prensip: Veritabanı otoritedir, ancak yerel veriler mühürlenene kadar korunur.
  */
 export const storageService = {
   async getCandidates(): Promise<Candidate[]> {
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
+
     try {
-      // 1. Önce sunucudan en güncel veriyi çek
       const response = await fetch('/api/candidates', {
-        cache: 'no-store', // Tarayıcı cache'ini bypass et
+        cache: 'no-store',
         headers: { 'Pragma': 'no-cache' }
       });
 
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
         
-        // 2. Veritabanından gelen veriyi yerel belleğe "mutlak gerçek" olarak mühürle
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
+        // --- KRİTİK BİRLEŞTİRME MANTIĞI ---
+        const mergedMap = new Map<string, Candidate>();
         
-        // 3. Sıralamayı sunucu tarafındaki zaman damgasına göre doğrula
-        return remoteData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        // 1. Önce veritabanındaki (onaylanmış) verileri yükle
+        remoteData.forEach(remote => {
+          if (remote && remote.id) mergedMap.set(remote.id, remote);
+        });
+
+        // 2. Yerelde olup veritabanında henüz olmayanları (yeni başvurular) ekle
+        localData.forEach(local => {
+          if (local && local.id) {
+            const remoteMatch = mergedMap.get(local.id);
+            // Eğer veritabanında yoksa veya yereldeki veri daha güncelse (yeni işlem) koru
+            if (!remoteMatch || (local.timestamp > (remoteMatch.timestamp || 0))) {
+              mergedMap.set(local.id, local);
+            }
+          }
+        });
+
+        const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        // Yerel önbelleği güncelle
+        localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
+        return finalData;
       }
     } catch (e) {
-      console.error("KRİTİK: Veritabanı bağlantı hatası. Yerel önbellek (Cache) devreye alınıyor.");
+      console.warn("Bulut senkronizasyonu başarısız, çevrimdışı mod aktif.");
     }
 
-    // Sunucuya ulaşılamazsa fallback olarak yereli kullan
-    const local = localStorage.getItem('yeni_gun_candidates');
-    return local ? JSON.parse(local) : [];
+    return localData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   },
 
   async saveCandidate(candidate: Candidate): Promise<boolean> {
     const candidateWithTime = { ...candidate, timestamp: Date.now() };
     
+    // 1. Önce yerel belleğe yaz (Anında görünürlük için)
+    const local = localStorage.getItem('yeni_gun_candidates');
+    const current: Candidate[] = local ? JSON.parse(local) : [];
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
+    
     try {
-      // DOĞRUDAN YAZIM: Yerel belleğe yazmadan ÖNCE sunucuya gönderilir.
-      // Sunucu onay vermezse işlem başarısız sayılır.
+      // 2. Veritabanına mühürle
       const res = await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateWithTime)
       });
       
-      if (res.ok) {
-        // Sunucu onayladıysa yerel önbelleği güncelle
-        const local = localStorage.getItem('yeni_gun_candidates');
-        const current: Candidate[] = local ? JSON.parse(local) : [];
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
-        return true;
-      }
-      return false;
+      return res.ok;
     } catch (e) { 
-      console.error("Senkronizasyon Hatası: Veritabanına yazılamadı.");
+      console.error("Veritabanı bağlantı hatası, veri yerelde asılı kaldı.");
       return false; 
     }
   },
@@ -60,60 +76,46 @@ export const storageService = {
   async updateCandidate(candidate: Candidate): Promise<boolean> {
     const updatedCandidate = { ...candidate, timestamp: Date.now() };
     
+    // Yerel güncelleme
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    if (localStr) {
+      const current: Candidate[] = JSON.parse(localStr);
+      const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
+    }
+
     try {
       const res = await fetch('/api/candidates', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCandidate)
       });
-
-      if (res.ok) {
-        const local = localStorage.getItem('yeni_gun_candidates');
-        if (local) {
-          const current: Candidate[] = JSON.parse(local);
-          const updated = current.map(c => c.id === candidate.id ? updatedCandidate : c);
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(updated));
-        }
-        return true;
-      }
-      return false;
-    } catch (e) { 
-      return false; 
-    }
+      return res.ok;
+    } catch (e) { return false; }
   },
 
   async deleteCandidate(id: string): Promise<boolean> {
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    if (localStr) {
+      const current: Candidate[] = JSON.parse(localStr);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
+    }
     try { 
       const res = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); 
-      if (res.ok) {
-        const local = localStorage.getItem('yeni_gun_candidates');
-        if (local) {
-          const current = JSON.parse(local);
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
-        }
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+      return res.ok;
+    } catch (e) { return false; }
   },
 
   async deleteMultipleCandidates(ids: string[]): Promise<boolean> {
-    try {
-      const results = await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
-      const allOk = results.every(r => r.ok);
-      if (allOk) {
-        const local = localStorage.getItem('yeni_gun_candidates');
-        if (local) {
-          const current: Candidate[] = JSON.parse(local);
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
-        }
-      }
-      return allOk;
-    } catch (e) { 
-      return false; 
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    if (localStr) {
+      const current: Candidate[] = JSON.parse(localStr);
+      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
     }
+    try {
+      await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
+      return true;
+    } catch (e) { return false; }
   },
 
   async getConfig(): Promise<GlobalConfig | null> {
