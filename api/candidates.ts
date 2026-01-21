@@ -21,11 +21,11 @@ export default async function handler(request: Request) {
   }
 
   if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'DB URL Eksik' }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'Veritabanı bağlantısı yapılandırılmamış.' }), { status: 500, headers });
   }
 
   try {
-    // Tablo şemasını her ihtimale karşı güncel tut
+    // Tablo şemasını otomatik oluştur/güncelle
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -79,7 +79,6 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      // Upsert: Hem yeni kayıt hem de mevcut kaydı tüm verileriyle güncelleme
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, experience_years, 
@@ -108,6 +107,7 @@ export default async function handler(request: Request) {
           name = EXCLUDED.name,
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
+          branch = EXCLUDED.branch,
           status = EXCLUDED.status,
           admin_notes = EXCLUDED.admin_notes,
           report = EXCLUDED.report,
@@ -126,9 +126,7 @@ export default async function handler(request: Request) {
           status = ${body.status},
           admin_notes = ${body.adminNotes || null},
           report = ${body.report ? JSON.stringify(body.report) : null},
-          algo_report = ${body.algoReport ? JSON.stringify(body.algoReport) : null},
           interview_schedule = ${body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null},
-          cv_data = ${body.cvData ? JSON.stringify(body.cvData) : null},
           updated_at = ${now}
         WHERE id = ${body.id}
       `;
@@ -143,9 +141,9 @@ export default async function handler(request: Request) {
       }
     }
 
-    return new Response(JSON.stringify({ error: 'M_NOT_A' }), { status: 405, headers });
+    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
   } catch (error: any) {
-    console.error("Critical API Error:", error.message);
+    console.error("SQL Error:", error.message);
     return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
   }
 }

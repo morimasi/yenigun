@@ -1,92 +1,38 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
-/**
- * Yeni Gün Akademi - Stratejik Liyakat Analiz Motoru v25.0 (CLINICAL REASONING FOCUS)
- */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
 
-  if (!apiKey) {
-    throw new Error("AUTH_MISSING: Analiz motoru için geçerli bir API anahtarı bulunamadı.");
-  }
+  if (!apiKey) throw new Error("API_KEY_MISSING");
 
   const ai = new GoogleGenAI({ apiKey });
   
-  const toneSettings = {
-    strict: {
-      budget: 32768,
-      baseInstruction: `TON: RİJİT, SORGULAYICI, AKADEMİK DENETÇİ. 
-        PERSPEKTİF: Adayın seçenekler arasındaki 'yüzeysel' (textbook) olanı mı yoksa 'klinik olarak doğru' olanı mı seçtiğini analiz et. 
-        Müfredat bilgisini özel eğitim teknikleriyle sentezleyemeyen adaylara tolerans gösterme. 
-        Çeldiricilere düşen adayları 'Kritik Risk' olarak işaretle.`
-    },
-    balanced: {
-      budget: 32768,
-      baseInstruction: `TON: PROFESYONEL, DENGELİ, NESNEL. 
-        PERSPEKTİF: Akademik donanım ve klinik sağduyuyu objektif verilerle tart. 
-        Adayın yanlış seçeneklerdeki 'yaygın pedagojik hataları' benimseyip benimsemediğini kontrol et.`
-    },
-    empathetic: {
-      budget: 24576,
-      baseInstruction: `TON: GELİŞİM ODAKLI, YAPICI. 
-        PERSPEKTİF: Adayın mevcut klinik eksiğinden ziyade, doğru muhakeme yolundaki çabasını ve kurumsal kültüre uyum potansiyelini değerlendir.`
-    }
-  };
-
-  const selectedTone = toneSettings[config.aiTone] || toneSettings.balanced;
-
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Akademik Denetleme ve Liyakat Kurulu Başkanı.
-    GÖREV: Adayın 'academic_proficiency' bölümündeki yüksek zorluk seviyeli klinik senaryolara verdiği yanıtları analiz et.
+    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
+    GÖREV: Adayın klinik senaryo yanıtlarını analiz et.
     DİL: Türkçe.
     
-    ÖZEL TALİMAT:
-    1. KLİNİK MUHAKEME ANALİZİ: Sorular 'yaygın ama hatalı uygulama' çeldiricileri içerir. Adayın bu çeldiricilere yönelmesi, teorik bilgisinin pratikle uyuşmadığını gösterir.
-    2. RED FLAG TESPİTİ: Davranışçı yaklaşımlarda (ABA) 'söndürme' yerine 'ceza' eğilimi gösteren, akademik problemlerde 'somutlaştırma' yerine 'ezber' öneren adayları düşük puanla değerlendir.
-    3. SERTİFİKA VE YANIT TUTARLILIĞI: Aday 'ABA Sertifikası' beyan edip ilgili soruda 'Davranışsal Söndürme' yerine 'Sakinleştirme/Bekleme' seçmişse bunu 'Liyakat Tutarsızlığı' olarak rapora ekle.
-    4. ETKİ ANALİZİ: Her değerlendirme alanı için adayın bu özelliğinin kurum üzerindeki "Kısa Vadeli Etki" ve "Uzun Vadeli Sonuç" tahminlerini yap.
-
-    ${selectedTone.baseInstruction}
+    ANALİZ KRİTERLERİ:
+    1. KLİNİK MUHAKEME: Aday çeldirici seçeneklerdeki "yaygın ama bilimsellikten uzak" yöntemlere mi düşmüş yoksa "kanıta dayalı" (ABA, Floortime vb.) yöntemleri mi seçmiş?
+    2. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
+    3. SERTİFİKA TUTARLILIĞI: Adayın sahip olduğu sertifikalarla yanıtlarındaki profesyonellik uyuşuyor mu?
     
-    FORMAT: Kesinlikle geçerli JSON döndür.
+    FORMAT: JSON.
   `;
-
-  const segmentSchema = {
-    type: Type.OBJECT,
-    properties: {
-      score: { type: Type.NUMBER },
-      comment: { type: Type.STRING },
-      keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-      shortTermImpact: { type: Type.STRING, description: "İlk 3 ayda sınıfa ve kuruma yansıyacak doğrudan etki." },
-      longTermImplication: { type: Type.STRING, description: "1 yıl sonunda adayın mesleki evrimi ve kurumsal risk/fayda projeksiyonu." }
-    },
-    required: ["score", "comment", "keyPoints", "shortTermImpact", "longTermImplication"]
-  };
 
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Profili ve Verileri: ${JSON.stringify({
+        { text: `Aday Verileri: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
             experience: candidate.experienceYears,
             allTrainings: candidate.allTrainings,
-            answers: candidate.answers,
-            weights: config.aiWeights
+            answers: candidate.answers
           })}` }
       ] 
     };
-
-    if (candidate.cvData) {
-      contents.parts.push({
-        inlineData: {
-          mimeType: candidate.cvData.mimeType,
-          data: candidate.cvData.base64
-        }
-      });
-    }
 
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
@@ -94,7 +40,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: selectedTone.budget },
+        thinkingConfig: { thinkingBudget: 32768 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -104,12 +50,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             detailedAnalysis: {
               type: Type.OBJECT,
               properties: {
-                ethics: segmentSchema,
-                pedagogy: segmentSchema,
-                clinicalWisdom: segmentSchema,
-                emotionalResilience: segmentSchema,
-                institutionalFit: segmentSchema,
-                stressResponse: segmentSchema
+                ethics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
+                pedagogy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
+                clinicalWisdom: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
+                stressResponse: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } }
               }
             },
             swot: {
@@ -123,13 +67,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             },
             competencies: {
               type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  value: { type: Type.NUMBER }
-                }
-              }
+              items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, value: { type: Type.NUMBER } } }
             }
           },
           required: ["score", "summary", "recommendation", "detailedAnalysis", "swot", "competencies"]
@@ -139,7 +77,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
     return JSON.parse(response.text || "{}");
   } catch (error: any) {
-    console.error("AI Engine Error:", error);
-    throw new Error(`AI_ANALYSIS_FAILED: ${error.message}`);
+    console.error("Gemini Error:", error);
+    throw error;
   }
 };

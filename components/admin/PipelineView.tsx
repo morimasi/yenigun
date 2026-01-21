@@ -70,18 +70,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Correctly cast the current list to prevent unknown[] inference during dynamic indexing.
+  // Fix: Line 110 - Explicitly cast the state object and the extracted array to avoid 'unknown[]' inference issues during dynamic indexing.
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      // Access the array using any to avoid dynamic indexer issues where TS might infer unknown[].
-      const current = (prev as any)[category] as any[];
+      const current = (prev as any)[category] as string[];
       const next = current.includes(value) 
         ? current.filter(v => v !== value) 
         : [...current, value];
       return { 
         ...prev, 
         [category]: next 
-      } as typeof prev;
+      } as any;
     });
   };
 
