@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import CandidateForm from './components/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
@@ -45,26 +44,40 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (forceRefresh = false) => {
     // Adayları yükle
     const data = await storageService.getCandidates();
-    setCandidates(data);
     
-    // Konfigürasyonu DB'den yükle (En güncel otorite)
+    // Eğer yerel state zaten daha güncelse (veya bir işlem sürüyorsa) dikkatli birleştirme yap
+    setCandidates(prev => {
+      if (forceRefresh) return data;
+      
+      const mergedMap = new Map<string, Candidate>();
+      // Mevcut state (en taze olan)
+      prev.forEach(c => mergedMap.set(c.id, c));
+      // Yeni gelenler (DB'den)
+      data.forEach(c => {
+        const existing = mergedMap.get(c.id);
+        if (!existing || c.timestamp > existing.timestamp) {
+          mergedMap.set(c.id, c);
+        }
+      });
+      return Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+    });
+    
+    // Konfigürasyonu DB'den yükle
     try {
       const remoteConfig = await storageService.getConfig();
-      
       let finalConfig = DEFAULT_CONFIG;
       const localConfigStr = localStorage.getItem('yeni_gun_config');
       
       if (localConfigStr) {
         try {
           finalConfig = { ...finalConfig, ...JSON.parse(localConfigStr) };
-        } catch (e) { console.error("Local config parse error"); }
+        } catch (e) {}
       }
 
       if (remoteConfig) {
-        // Derin birleştirme: nested nesnelerin kaybolmaması için
         finalConfig = {
           ...finalConfig,
           ...remoteConfig,
@@ -100,20 +113,25 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    await storageService.saveCandidate(newCandidate);
+    // 1. Önce State'e ekle (Anında UI tepkisi)
     setCandidates(prev => [newCandidate, ...prev]);
 
-    // Güncel config ile analiz başlat
+    // 2. Storage'a kaydet (Sync)
+    await storageService.saveCandidate(newCandidate);
+
+    // 3. AI Analizini başlat (Arka planda)
     generateCandidateAnalysis(newCandidate, config).then(async (report) => {
       if (report) {
-        const final = { ...newCandidate, report };
-        await storageService.updateCandidate(final);
-        setCandidates(prev => prev.map(c => c.id === newCandidate.id ? final : c));
+        const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
+        await storageService.updateCandidate(finalCandidate);
+        setCandidates(prev => prev.map(c => c.id === newCandidate.id ? finalCandidate : c));
       }
+    }).catch(err => {
+      console.error("Analiz başarısız:", err);
     });
 
     setIsProcessing(false);
-    alert("Başvurunuz kaydedildi.");
+    alert("Başvurunuz başarıyla Yeni Gün Akademi sistemine kaydedildi. Analiz süreci arka planda devam etmektedir.");
     setView('candidate');
   };
 
@@ -121,11 +139,7 @@ const App: React.FC = () => {
     setConfig(newConfig);
     localStorage.setItem('yeni_gun_config', JSON.stringify(newConfig));
     document.documentElement.style.setProperty('--primary-color', newConfig.primaryColor);
-    
-    const success = await storageService.saveConfig(newConfig);
-    if (success) {
-      console.log("Konfigürasyon DB ile senkronize edildi.");
-    }
+    await storageService.saveConfig(newConfig);
   };
 
   if (view === 'admin' && !isLoggedIn) {
@@ -134,11 +148,11 @@ const App: React.FC = () => {
         <div className="max-w-md w-full p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100">
            <h3 className="text-3xl font-black text-slate-900 mb-10 text-center uppercase tracking-tighter">Akademi Paneli</h3>
            <form onSubmit={(e) => { e.preventDefault(); if(loginForm.password === 'yenigun2024') setIsLoggedIn(true); }} className="space-y-6">
-              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold" placeholder="Kullanıcı" onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold" placeholder="Şifre" onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest">Giriş</button>
+              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all">Giriş Yap</button>
            </form>
-           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Geri Dön</button>
+           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Başvuru Formuna Dön</button>
         </div>
       </div>
     );
@@ -153,23 +167,40 @@ const App: React.FC = () => {
             <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
           </div>
           <div className="flex bg-orange-50 p-2 rounded-full border border-orange-100">
-            <button onClick={() => setView('candidate')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
-            <button onClick={() => setView('admin')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
+            <button onClick={() => setView('candidate')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
+            <button onClick={() => setView('admin')} className={`px-8 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
           </div>
         </div>
       </nav>
 
       <main className="py-20 px-8 max-w-7xl mx-auto">
-        {view === 'candidate' ? <CandidateForm onSubmit={handleCandidateSubmit} /> : 
-        <DashboardLayout 
-          candidates={candidates} config={config} 
-          onUpdateCandidate={c => { storageService.updateCandidate(c); setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); }}
-          onDeleteCandidate={id => { storageService.deleteCandidate(id); setCandidates(prev => prev.filter(x => x.id !== id)); }}
-          onUpdateConfig={handleUpdateConfig}
-        />}
+        {view === 'candidate' ? (
+          <CandidateForm onSubmit={handleCandidateSubmit} />
+        ) : (
+          <DashboardLayout 
+            candidates={candidates} 
+            config={config} 
+            onUpdateCandidate={c => { 
+              storageService.updateCandidate(c); 
+              setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); 
+            }}
+            onDeleteCandidate={id => { 
+              storageService.deleteCandidate(id); 
+              setCandidates(prev => prev.filter(x => x.id !== id)); 
+            }}
+            onUpdateConfig={handleUpdateConfig}
+          />
+        )}
       </main>
 
-      {isProcessing && <div className="fixed inset-0 bg-slate-900/90 z-[100] flex items-center justify-center font-black text-white">İŞLENİYOR...</div>}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center">
+          <div className="bg-white p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6">
+            <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
+            <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Aday Kaydediliyor...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

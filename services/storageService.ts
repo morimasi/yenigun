@@ -1,4 +1,3 @@
-
 import { Candidate, GlobalConfig } from '../types';
 
 export const storageService = {
@@ -10,17 +9,29 @@ export const storageService = {
       const response = await fetch('/api/candidates');
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
+        
+        // Map yapısı ile ID çakışmalarını yönetelim
         const mergedMap = new Map<string, Candidate>();
-        localData.forEach(c => { if (c && c.id) mergedMap.set(c.id, c); });
+        
+        // Önce yerel veriyi yükle (Güvenli Alan)
+        localData.forEach(c => { 
+          if (c && c.id) mergedMap.set(c.id, c); 
+        });
+
+        // Uzak veriyi üstüne işle (Sadece daha yeni veya eksik verileri al)
         remoteData.forEach(remote => {
           if (remote && remote.id) {
             const existing = mergedMap.get(remote.id);
+            // Eğer yerelde yoksa veya uzaktaki veri daha güncelse (veya eşitse) güncelle
             if (!existing || (remote.timestamp >= (existing.timestamp || 0))) {
               mergedMap.set(remote.id, remote);
             }
           }
         });
+
         const finalData = Array.from(mergedMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        // localStorage'ı güncelle ama yerel adayları asla kaybetme
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
         return finalData;
       }
@@ -31,10 +42,17 @@ export const storageService = {
   },
 
   async saveCandidate(candidate: Candidate) {
-    const candidateWithTime = { ...candidate, timestamp: Date.now() };
+    // timestamp'i garanti altına al
+    const candidateWithTime = { ...candidate, timestamp: candidate.timestamp || Date.now() };
+    
+    // Önce yerel listeye ekle (Anında görünürlük için)
     const local = localStorage.getItem('yeni_gun_candidates');
-    const current = local ? JSON.parse(local) : [];
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...current]));
+    const current: Candidate[] = local ? JSON.parse(local) : [];
+    
+    // Mükerrer kaydı önle
+    const filtered = current.filter(c => c.id !== candidate.id);
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidateWithTime, ...filtered]));
+    
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST',
@@ -42,7 +60,9 @@ export const storageService = {
         body: JSON.stringify(candidateWithTime)
       });
       return res.ok;
-    } catch { return false; }
+    } catch { 
+      return false; 
+    }
   },
 
   async updateCandidate(candidate: Candidate) {
@@ -59,7 +79,9 @@ export const storageService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCandidate)
       });
-    } catch (e) { console.error("Bulut senkronizasyonu başarısız."); }
+    } catch (e) { 
+      console.error("Bulut senkronizasyonu başarısız."); 
+    }
   },
 
   async deleteCandidate(id: string) {
@@ -68,7 +90,9 @@ export const storageService = {
       const current = JSON.parse(local);
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter((c: any) => c.id !== id)));
     }
-    try { await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); } catch (e) {}
+    try { 
+      await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); 
+    } catch (e) {}
   },
 
   async deleteMultipleCandidates(ids: string[]) {
@@ -78,20 +102,21 @@ export const storageService = {
       localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
     }
     try {
-      // Paralel silme işlemi
       await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
-    } catch (e) { console.error("Toplu silme sırasında senkronizasyon hatası."); }
+    } catch (e) { 
+      console.error("Toplu silme hatası."); 
+    }
   },
 
-  // SİSTEM KONFİGÜRASYON SERVİSLERİ
   async getConfig(): Promise<GlobalConfig | null> {
     try {
       const res = await fetch('/api/config');
       if (res.ok) {
-        const data = await res.json();
-        return data;
+        return await res.json();
       }
-    } catch (e) { console.error("Konfigürasyon yükleme hatası."); }
+    } catch (e) { 
+      console.error("Config yükleme hatası."); 
+    }
     return null;
   },
 
@@ -104,7 +129,6 @@ export const storageService = {
       });
       return res.ok;
     } catch (e) {
-      console.error("Konfigürasyon kaydetme hatası.");
       return false;
     }
   }
