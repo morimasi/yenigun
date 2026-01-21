@@ -70,11 +70,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
+  // Fix: Correctly cast the current list to prevent unknown[] inference during dynamic indexing.
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     setFilters(prev => {
-      // Fix: Using (prev as any)[category] to handle dynamic indexing on objects with distinct property types (string[] vs Gender[]).
-      // This silences the TypeScript error where indexed access might be inferred as unknown[] in strict modes.
-      const current = (prev as any)[category] as string[];
+      // Access the array using any to avoid dynamic indexer issues where TS might infer unknown[].
+      const current = (prev as any)[category] as any[];
       const next = current.includes(value) 
         ? current.filter(v => v !== value) 
         : [...current, value];

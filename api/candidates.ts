@@ -25,7 +25,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tablo ve Kolon Kontrolleri
+    // Tablo şemasını her ihtimale karşı güncel tut
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -78,17 +78,42 @@ export default async function handler(request: Request) {
     if (method === 'POST') {
       const body = await request.json();
       const now = new Date().toISOString();
+      
+      // Upsert: Hem yeni kayıt hem de mevcut kaydı tüm verileriyle güncelleme
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, experience_years, 
-          previous_institutions, all_trainings, answers, status, cv_data, updated_at
+          previous_institutions, all_trainings, answers, status, admin_notes,
+          report, algo_report, interview_schedule, cv_data, updated_at
         ) VALUES (
-          ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
-          ${body.branch}, ${body.experienceYears}, ${body.previousInstitutions}, 
-          ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers || {})}, ${body.status},
-          ${JSON.stringify(body.cvData || null)}, ${now}
+          ${body.id}, 
+          ${body.name || 'İsimsiz'}, 
+          ${body.email || ''}, 
+          ${body.phone || ''}, 
+          ${body.age || 20}, 
+          ${body.gender || 'Belirtilmemiş'},
+          ${body.branch || ''}, 
+          ${body.experienceYears || 0}, 
+          ${body.previousInstitutions || ''}, 
+          ${JSON.stringify(body.allTrainings || [])}, 
+          ${JSON.stringify(body.answers || {})}, 
+          ${body.status || 'pending'},
+          ${body.adminNotes || null},
+          ${JSON.stringify(body.report || null)},
+          ${JSON.stringify(body.algoReport || null)},
+          ${JSON.stringify(body.interviewSchedule || null)},
+          ${JSON.stringify(body.cvData || null)}, 
+          ${now}
         ) ON CONFLICT (id) DO UPDATE SET 
-          name = EXCLUDED.name, email = EXCLUDED.email, updated_at = ${now};
+          name = EXCLUDED.name,
+          email = EXCLUDED.email,
+          phone = EXCLUDED.phone,
+          status = EXCLUDED.status,
+          admin_notes = EXCLUDED.admin_notes,
+          report = EXCLUDED.report,
+          algo_report = EXCLUDED.algo_report,
+          interview_schedule = EXCLUDED.interview_schedule,
+          updated_at = EXCLUDED.updated_at;
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
@@ -120,6 +145,7 @@ export default async function handler(request: Request) {
 
     return new Response(JSON.stringify({ error: 'M_NOT_A' }), { status: 405, headers });
   } catch (error: any) {
+    console.error("Critical API Error:", error.message);
     return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
   }
 }
