@@ -36,11 +36,11 @@ const AnalysisPoint: React.FC<{ title: string; data: any; color: string }> = ({ 
       </div>
       <div className="grid grid-cols-2 gap-4 mt-2">
         <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
-          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Kısa Vadeli Etki</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Klinik Avantaj</span>
           <p className="text-[9px] font-semibold text-slate-600">{data.shortTermImpact || 'Beyan Yok'}</p>
         </div>
         <div className="p-3 bg-white/50 rounded-xl border border-slate-100 shadow-sm">
-          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Uzun Vadeli Projeksiyon</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase block mb-1">Kurumsal Risk</span>
           <p className="text-[9px] font-semibold text-slate-600">{data.longTermImplication || 'Beyan Yok'}</p>
         </div>
       </div>
@@ -111,7 +111,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         timestamp: Date.now()
       };
 
-      // Eğer otomatik e-posta aktifse e-posta gönder
       if (config.automation.autoEmailOnSchedule) {
         try {
           const res = await fetch('/api/send-email', {
@@ -201,7 +200,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#F8FAFC]">
-        {/* Başarı/Hata Mesajları */}
         {successStatus && <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-2xl animate-fade-in text-center">{successStatus}</div>}
         {errorStatus && <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 text-[10px] font-black uppercase tracking-widest rounded-2xl animate-fade-in text-center">{errorStatus}</div>}
 
@@ -213,7 +211,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
            </h4>
            
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-              {/* Sol: Mülakat Planla */}
               <div className="space-y-4">
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mülakat Planlama Ve Davet</p>
                  <div className="grid grid-cols-2 gap-4">
@@ -258,7 +255,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                  </button>
               </div>
 
-              {/* Sağ: Hızlı Karar Ver */}
               <div className="space-y-4">
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nihai Karar Ve Statü</p>
                  <div className="grid grid-cols-2 gap-3">
@@ -270,6 +266,41 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
               </div>
            </div>
         </div>
+
+        {/* AI MÜLAKAT REHBERİ (STRATEJİK) */}
+        {candidate.report?.interviewGuidance && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up">
+            <div className="bg-slate-900 p-8 rounded-[3rem] text-white shadow-2xl space-y-6">
+              <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-2">KLİNİK MÜLAKAT SORULARI</h4>
+              <div className="space-y-4">
+                {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                  <div key={i} className="p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors">
+                    <p className="text-[12px] font-bold text-slate-200 leading-relaxed italic">"{q}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-orange-600 p-8 rounded-[3rem] text-white shadow-2xl space-y-6">
+              <h4 className="text-[10px] font-black text-orange-100 uppercase tracking-[0.4em] mb-2">KRİTİK GÖZLEM REHBERİ</h4>
+              <div className="space-y-4">
+                {candidate.report.interviewGuidance.criticalObservations.map((o, i) => (
+                  <div key={i} className="flex gap-4 items-start p-4 bg-black/10 rounded-2xl">
+                    <span className="w-2 h-2 rounded-full bg-white mt-1.5 shrink-0"></span>
+                    <p className="text-[11px] font-black uppercase tracking-tight leading-tight">{o}</p>
+                  </div>
+                ))}
+              </div>
+              {candidate.report.interviewGuidance.answerAnomalies.length > 0 && (
+                <div className="mt-6 p-5 bg-white/10 rounded-2xl border border-white/20">
+                   <p className="text-[9px] font-black uppercase mb-3 opacity-60">Saptanan Yanıt Tutarsızlıkları</p>
+                   {candidate.report.interviewGuidance.answerAnomalies.map((a, i) => (
+                     <p key={i} className="text-[10px] font-bold leading-tight mb-2">• {a}</p>
+                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Rapor Özelleştirme Paneli */}
         <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm no-print">

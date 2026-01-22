@@ -29,6 +29,11 @@ export interface AIReport {
     institutionalFit: AnalysisSegment;
     stressResponse: AnalysisSegment;
   };
+  interviewGuidance: {
+    strategicQuestions: string[];
+    criticalObservations: string[];
+    answerAnomalies: string[];
+  };
   swot: {
     strengths: string[];
     weaknesses: string[];

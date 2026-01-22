@@ -9,15 +9,15 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
-    GÖREV: Adayın klinik senaryo yanıtlarını, akademik geçmişini ve deneyimlerini analiz et.
+    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı ve Baş Mülakatçı.
+    GÖREV: Adayın klinik senaryo yanıtlarını, akademik geçmişini ve deneyimlerini analiz et. Mülakatçı için "Hile Saptama" ve "Derinlemesine Sorgulama" rehberi oluştur.
     DİL: Türkçe.
     
     ANALİZ KRİTERLERİ:
-    1. AKADEMİK KÖKEN: Adayın mezun olduğu üniversite ve bölüm, seçtiği branşla ne kadar uyumlu? Üniversitenin eğitim ekolü, adayın metodolojik yaklaşımını nasıl etkilemiş olabilir?
-    2. KLİNİK MUHAKEME: Aday çeldirici seçeneklerdeki "yaygın ama bilimsellikten uzak" yöntemlere mi düşmüş yoksa "kanıta dayalı" (ABA, Floortime vb.) yöntemleri mi seçmiş?
-    3. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
-    4. SERTİFİKA TUTARLILIĞI: Adayın sahip olduğu sertifikalarla yanıtlarındaki profesyonellik uyuşuyor mu?
+    1. YANIT ÇAPRAZ DENETİMİ: Adayın verdiği spesifik cevapları (answers) incele. Sertifika listesiyle yanıtlarındaki teknik derinlik uyuşuyor mu? Örn: ABA eğitimi olduğunu söyleyip ceza odaklı bir yanıt seçmişse bunu belirt.
+    2. MÜLAKAT REHBERİ: Adayın "en zayıf" veya "en kaçamak" yanıt verdiği sorulardan yola çıkarak mülakatta sorulması gereken 3 kritik soru üret.
+    3. DİKKAT EDİLECEK NOKTALAR: Adayın kişilik testindeki veya klinik senaryolardaki riskli eğilimlerini (aşırı otoriterlik, tükenmişlik sinyali, etik esneklik) "Kritik Gözlemler" olarak raporla.
+    4. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
     
     FORMAT: JSON.
   `;
@@ -25,7 +25,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Verileri: ${JSON.stringify({
+        { text: `Aday Verileri ve Yanıtları: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
             education: {
@@ -34,18 +34,17 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             },
             experience: candidate.experienceYears,
             allTrainings: candidate.allTrainings,
-            answers: candidate.answers
+            answers: candidate.answers // Yanıtlar mülakat rehberi için kritik
           })}` }
       ] 
     };
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Sadece Flash modelleri kullanılıyor
+      model: "gemini-3-flash-preview",
       contents,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Gemini 3 Flash için optimize edilmiş düşünme bütçesi (Max: 24576)
         thinkingConfig: { thinkingBudget: 24000 }, 
         responseSchema: {
           type: Type.OBJECT,
@@ -64,6 +63,15 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 institutionalFit: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } }
               }
             },
+            interviewGuidance: {
+              type: Type.OBJECT,
+              properties: {
+                strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+                answerAnomalies: { type: Type.ARRAY, items: { type: Type.STRING } }
+              },
+              required: ["strategicQuestions", "criticalObservations", "answerAnomalies"]
+            },
             swot: {
               type: Type.OBJECT,
               properties: {
@@ -78,7 +86,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
               items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, value: { type: Type.NUMBER } } }
             }
           },
-          required: ["score", "summary", "recommendation", "detailedAnalysis", "swot", "competencies"]
+          required: ["score", "summary", "recommendation", "detailedAnalysis", "interviewGuidance", "swot", "competencies"]
         }
       }
     });

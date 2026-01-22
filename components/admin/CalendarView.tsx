@@ -11,7 +11,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
   const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null);
   const [showContactMenu, setShowContactMenu] = useState(false);
 
-  // Sadece mülakatı planlanmış adayları tarih sırasına göre listele
   const interviewees = useMemo(() => 
     candidates
       .filter(c => c.status === 'interview_scheduled' && c.interviewSchedule)
@@ -27,23 +26,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
 
   const handleContact = (method: 'whatsapp' | 'call' | 'email') => {
     if (!selectedCandidate) return;
-    const phone = selectedCandidate.phone?.replace(/\s/g, '');
+    const phone = selectedCandidate.phone?.replace(/\D/g, ''); // Sadece rakamlar
     const email = selectedCandidate.email;
 
-    const message = encodeURIComponent(`Merhaba ${selectedCandidate.name}, Yeni Gün Akademi'den mülakatınızla ilgili iletişime geçiyoruz.`);
+    const formattedDate = new Date(selectedCandidate.interviewSchedule!.date).toLocaleDateString('tr-TR');
+    const message = encodeURIComponent(`Merhaba ${selectedCandidate.name}, Yeni Gün Akademi'den iletişime geçiyoruz. ${formattedDate} tarihindeki saat ${selectedCandidate.interviewSchedule!.time} mülakatınız için kurumumuzda görüşmek üzere sabırsızlanıyoruz. Bir sorun olması durumunda lütfen bize bildirin.`);
 
     switch(method) {
       case 'whatsapp': window.open(`https://wa.me/90${phone}?text=${message}`, '_blank'); break;
       case 'call': window.location.href = `tel:+90${phone}`; break;
-      case 'email': window.location.href = `mailto:${email}?subject=Mülakat Bilgilendirmesi`; break;
+      case 'email': window.location.href = `mailto:${email}?subject=Mülakat Hatırlatması - Yeni Gün Akademi`; break;
     }
     setShowContactMenu(false);
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 animate-fade-in h-[calc(100vh-14rem)] relative">
-      
-      {/* SOL PANEL: Randevu Akışı */}
       <div className="lg:w-[320px] flex flex-col gap-4 shrink-0 overflow-hidden">
         <div className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
            <div className="relative z-10">
@@ -88,7 +86,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
         </div>
       </div>
 
-      {/* SAĞ PANEL: Aday Koordinasyon Dosyası */}
       <div className="flex-1 overflow-hidden">
         {selectedCandidate ? (
           <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 h-full flex flex-col overflow-hidden animate-slide-up">
@@ -99,7 +96,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
                   </div>
                   <div>
                     <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">{selectedCandidate.name}</h3>
-                    <p className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mt-2">Mülakat Hazırlık ve Lojistik</p>
+                    <p className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mt-2">Mülakat Koordinasyon Paneli</p>
                   </div>
                </div>
                <div className="flex gap-3">
@@ -108,19 +105,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
                       onClick={() => setShowContactMenu(!showContactMenu)} 
                       className="px-8 py-5 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm"
                     >
-                      İLETİŞİM KANALLARI
+                      ADAYI BİLGİLENDİR
                       <svg className={`w-3 h-3 transition-transform ${showContactMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {showContactMenu && (
                       <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-2 z-50 animate-scale-in">
                         <button onClick={() => handleContact('whatsapp')} className="w-full text-left p-4 hover:bg-emerald-50 rounded-xl text-[10px] font-black text-emerald-600 uppercase transition-all flex items-center gap-3">
-                          <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> WhatsApp Mesajı
+                          <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> WhatsApp (Hatırlatma)
                         </button>
                         <button onClick={() => handleContact('call')} className="w-full text-left p-4 hover:bg-blue-50 rounded-xl text-[10px] font-black text-blue-600 uppercase transition-all flex items-center gap-3">
-                          <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> Sesli Arama
+                          <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> Sesli Arama (Acil)
                         </button>
                         <button onClick={() => handleContact('email')} className="w-full text-left p-4 hover:bg-slate-50 rounded-xl text-[10px] font-black text-slate-600 uppercase transition-all flex items-center gap-3">
-                          <span className="w-2.5 h-2.5 bg-slate-400 rounded-full"></span> E-Posta Gönder
+                          <span className="w-2.5 h-2.5 bg-slate-400 rounded-full"></span> Resmi E-Posta
                         </button>
                       </div>
                     )}
@@ -130,58 +127,88 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
             
             <div className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Randevu Detayları</p>
+                  <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 shadow-inner">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Lojistik Detaylar</p>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-600 shadow-sm border border-slate-100">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5" /></svg>
                         </div>
                         <span className="text-[12px] font-black text-slate-900 uppercase tracking-widest">{selectedCandidate.interviewSchedule?.date} • {selectedCandidate.interviewSchedule?.time}</span>
                       </div>
-                      <div className="p-6 bg-white rounded-[2rem] border border-slate-100 text-[11px] font-bold text-slate-600 leading-relaxed shadow-inner">
-                        <span className="block text-orange-600 text-[9px] font-black uppercase mb-1">Konum / Bağlantı</span>
-                        {selectedCandidate.interviewSchedule?.location}
+                      <div className="p-6 bg-white rounded-[2rem] border border-slate-100 text-[11px] font-bold text-slate-600 leading-relaxed shadow-sm">
+                        <span className="block text-orange-600 text-[9px] font-black uppercase mb-1 tracking-widest">Konum ve Yöntem</span>
+                        {selectedCandidate.interviewSchedule?.location} ({selectedCandidate.interviewSchedule?.method})
                       </div>
                     </div>
                   </div>
                   <div className="bg-slate-900 p-8 rounded-[3rem] text-white relative overflow-hidden group shadow-2xl">
-                    <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4 relative z-10">Liyakat Analiz Özeti</p>
-                    <p className="text-[13px] font-bold text-slate-300 italic leading-relaxed relative z-10">
-                      "{selectedCandidate.report?.summary}"
-                    </p>
-                    <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-orange-600/5 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700"></div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                      <div>
+                        <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">Klinik Ön Gözlem</p>
+                        <p className="text-[13px] font-bold text-slate-300 italic leading-relaxed">
+                          "{selectedCandidate.report?.summary}"
+                        </p>
+                      </div>
+                      <div className="mt-6 flex items-center gap-3">
+                         <div className="h-2 flex-1 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-600" style={{ width: `${selectedCandidate.report?.score}%` }}></div>
+                         </div>
+                         <span className="text-[10px] font-black">%{selectedCandidate.report?.score} LİYAKAT</span>
+                      </div>
+                    </div>
                   </div>
                </div>
                
-               <div className="space-y-6">
+               <div className="space-y-8">
                   <div className="flex items-center gap-6">
-                    <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em]">Stratejik Mülakat Soruları (AI Önerisi)</h4>
+                    <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em]">ADAY ÖZELİNDE MÜLAKAT REHBERİ</h4>
                     <div className="flex-1 h-px bg-slate-100"></div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {selectedCandidate.report?.swot.threats.slice(0, 4).map((threat, i) => (
-                      <div key={i} className="group p-8 bg-white border-2 border-slate-50 rounded-[2.5rem] hover:border-orange-600 transition-all shadow-sm hover:shadow-xl">
-                        <div className="flex items-start gap-5">
-                          <span className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-[10px] font-black shrink-0">SORU {i+1}</span>
-                          <p className="text-[12px] font-bold text-slate-800 leading-relaxed italic">
-                            "Adayın analiz raporunda belirtilen <strong>{threat}</strong> riski hakkında klinik yaklaşımını ve çözümleme metodolojisini derinlemesine sorgulayın."
-                          </p>
+                  
+                  {selectedCandidate.report?.interviewGuidance ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-2 space-y-4">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Yanıtlarından Üretilen Stratejik Sorular</p>
+                        {selectedCandidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                          <div key={i} className="group p-8 bg-white border-2 border-slate-50 rounded-[2.5rem] hover:border-orange-600 transition-all shadow-sm hover:shadow-xl">
+                            <div className="flex items-start gap-5">
+                              <span className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-[10px] font-black shrink-0">S{i+1}</span>
+                              <p className="text-[13px] font-bold text-slate-800 leading-relaxed italic">"{q}"</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mülakatta Dikkat Edilecekler</p>
+                        <div className="bg-orange-600 p-8 rounded-[3rem] text-white shadow-xl space-y-6">
+                           {selectedCandidate.report.interviewGuidance.criticalObservations.map((obs, i) => (
+                             <div key={i} className="flex gap-4 items-start">
+                               <div className="w-1.5 h-1.5 bg-white rounded-full mt-1.5 shrink-0"></div>
+                               <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{obs}</p>
+                             </div>
+                           ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
+                       <p className="text-[10px] font-black text-slate-400 uppercase">Aday analizi henüz tamamlanmadığı için mülakat rehberi üretilemedi.</p>
+                    </div>
+                  )}
                </div>
 
-               <div className="p-10 bg-orange-50/30 border-2 border-orange-100 rounded-[3.5rem] flex items-center justify-between gap-10">
+               <div className="p-10 bg-white border-2 border-slate-100 rounded-[3.5rem] shadow-sm flex items-center justify-between gap-10">
                   <div className="flex-1">
-                    <h5 className="text-[11px] font-black text-orange-600 uppercase tracking-widest mb-2">Kurumsal Hatırlatma</h5>
-                    <p className="text-[10px] font-bold text-slate-600 leading-relaxed uppercase">
-                      Mülakat sonrasındaki nihai kararlarınızı ve aday hakkındaki kritik gözlemlerinizi, adayın ana sayfasındaki "Yönetici Özel Notları" alanına kaydetmeyi unutmayınız.
+                    <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-2">Hızlı Hatırlatma</h5>
+                    <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase">
+                      Mülakat sonrasında adayın "Yönetici Notları" kısmına nihai klinik gözlemlerinizi eklemeyi unutmayın. Bu veriler gelecekteki aday değerlendirme algoritmamızı besleyecektir.
                     </p>
                   </div>
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg shrink-0">
-                    <svg className="w-8 h-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <div className="flex gap-3 shrink-0">
+                    <button onClick={() => window.print()} className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    </button>
                   </div>
                </div>
             </div>
@@ -191,8 +218,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
              <div className="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-10">
                <svg className="w-14 h-14 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5" /></svg>
              </div>
-             <p className="text-slate-400 font-black uppercase tracking-[0.8em] text-sm">Mülakat Yönetimi İçin Aday Seçiniz</p>
-             <p className="text-slate-300 font-bold text-[10px] mt-6 uppercase tracking-[0.3em]">Koordinasyon verileri mülakat günü rehberlik için yüklenecektir.</p>
+             <p className="text-slate-400 font-black uppercase tracking-[0.8em] text-sm">Takvim Detayı İçin Aday Seçiniz</p>
           </div>
         )}
       </div>
