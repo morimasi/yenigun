@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef } from 'react';
 import { FORM_STEPS, MOCK_QUESTIONS, CERTIFICATION_LIST } from '../constants';
 import { Branch, Candidate, Gender } from '../types';
@@ -18,6 +17,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     age: 22,
     gender: 'Belirtilmemiş' as Gender,
     branch: Branch.OzelEgitim,
+    university: '',
+    department: '',
     experienceYears: 0,
     previousInstitutions: '',
     allTrainings: [] as string[],
@@ -65,8 +66,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     const stepId = FORM_STEPS[currentStep].id;
     
     if (stepId === 'personal') {
-      if (!formData.name || !formData.email || !formData.phone) {
-        alert("Lütfen temel iletişim bilgilerinizi eksiksiz doldurunuz.");
+      if (!formData.name || !formData.email || !formData.phone || !formData.university || !formData.department) {
+        alert("Lütfen tüm temel ve akademik bilgilerinizi eksiksiz doldurunuz.");
         return;
       }
     } else {
@@ -173,6 +174,28 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                 >
                   {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mezun Olunan Üniversite</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
+                    value={formData.university}
+                    onChange={(e) => setFormData({...formData, university: e.target.value})}
+                    placeholder="Üniversite Adı"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mezun Olunan Bölüm</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
+                    value={formData.department}
+                    onChange={(e) => setFormData({...formData, department: e.target.value})}
+                    placeholder="Bölüm Adı"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mesleki Deneyim (Yıl)</label>

@@ -25,7 +25,6 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Otomatik Tablo Başlatma
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -35,6 +34,8 @@ export default async function handler(request: Request) {
         age INTEGER,
         gender TEXT,
         branch TEXT,
+        university TEXT,
+        department TEXT,
         experience_years INTEGER,
         previous_institutions TEXT,
         all_trainings JSONB DEFAULT '[]'::jsonb,
@@ -52,7 +53,6 @@ export default async function handler(request: Request) {
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
-      // Frontend uyumluluğu için DB kolonlarını camelCase'e çeviriyoruz
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name || 'İsimsiz',
@@ -61,6 +61,8 @@ export default async function handler(request: Request) {
         age: row.age || 0,
         gender: row.gender || 'Belirtilmemiş',
         branch: row.branch || '',
+        university: row.university || '',
+        department: row.department || '',
         experienceYears: row.experience_years || 0,
         previousInstitutions: row.previous_institutions || '',
         allTrainings: row.all_trainings || [],
@@ -80,13 +82,11 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      // UPSERT MANTIĞI: Veri varsa güncelle, yoksa ekle.
-      // SQL Injection koruması için template literal kullanıyoruz.
       await sql`
         INSERT INTO candidates (
-          id, name, email, phone, age, gender, branch, experience_years, 
-          previous_institutions, all_trainings, answers, status, admin_notes,
-          report, algo_report, interview_schedule, cv_data, updated_at
+          id, name, email, phone, age, gender, branch, university, department,
+          experience_years, previous_institutions, all_trainings, answers, 
+          status, admin_notes, report, algo_report, interview_schedule, cv_data, updated_at
         ) VALUES (
           ${body.id}, 
           ${body.name || 'İsimsiz'}, 
@@ -95,6 +95,8 @@ export default async function handler(request: Request) {
           ${body.age || 22}, 
           ${body.gender || 'Belirtilmemiş'},
           ${body.branch || ''}, 
+          ${body.university || ''},
+          ${body.department || ''},
           ${body.experienceYears || 0}, 
           ${body.previousInstitutions || ''}, 
           ${JSON.stringify(body.allTrainings || [])}, 
@@ -111,6 +113,8 @@ export default async function handler(request: Request) {
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
           branch = EXCLUDED.branch,
+          university = EXCLUDED.university,
+          department = EXCLUDED.department,
           experience_years = EXCLUDED.experience_years,
           previous_institutions = EXCLUDED.previous_institutions,
           all_trainings = EXCLUDED.all_trainings,

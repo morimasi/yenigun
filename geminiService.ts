@@ -10,13 +10,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   
   const systemInstruction = `
     ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı.
-    GÖREV: Adayın klinik senaryo yanıtlarını analiz et.
+    GÖREV: Adayın klinik senaryo yanıtlarını, akademik geçmişini ve deneyimlerini analiz et.
     DİL: Türkçe.
     
     ANALİZ KRİTERLERİ:
-    1. KLİNİK MUHAKEME: Aday çeldirici seçeneklerdeki "yaygın ama bilimsellikten uzak" yöntemlere mi düşmüş yoksa "kanıta dayalı" (ABA, Floortime vb.) yöntemleri mi seçmiş?
-    2. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
-    3. SERTİFİKA TUTARLILIĞI: Adayın sahip olduğu sertifikalarla yanıtlarındaki profesyonellik uyuşuyor mu?
+    1. AKADEMİK KÖKEN: Adayın mezun olduğu üniversite ve bölüm, seçtiği branşla ne kadar uyumlu? Üniversitenin eğitim ekolü, adayın metodolojik yaklaşımını nasıl etkilemiş olabilir?
+    2. KLİNİK MUHAKEME: Aday çeldirici seçeneklerdeki "yaygın ama bilimsellikten uzak" yöntemlere mi düşmüş yoksa "kanıta dayalı" (ABA, Floortime vb.) yöntemleri mi seçmiş?
+    3. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
+    4. SERTİFİKA TUTARLILIĞI: Adayın sahip olduğu sertifikalarla yanıtlarındaki profesyonellik uyuşuyor mu?
     
     FORMAT: JSON.
   `;
@@ -27,6 +28,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         { text: `Aday Verileri: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
+            education: {
+              university: candidate.university,
+              department: candidate.department
+            },
             experience: candidate.experienceYears,
             allTrainings: candidate.allTrainings,
             answers: candidate.answers
@@ -53,7 +58,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 ethics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
                 pedagogy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
                 clinicalWisdom: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
-                stressResponse: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } }
+                stressResponse: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
+                emotionalResilience: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } },
+                institutionalFit: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, comment: { type: Type.STRING }, shortTermImpact: { type: Type.STRING }, longTermImplication: { type: Type.STRING } } }
               }
             },
             swot: {

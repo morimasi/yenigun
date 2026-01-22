@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AIReport, Candidate } from '../types';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
@@ -129,6 +128,17 @@ const CandidateReport: React.FC<CandidateReportProps> = ({ report, candidate, op
         <section className="mb-12 break-inside-avoid">
           <SectionHeader title="Akademik Geçmiş ve Teknik Donanım" number="02" />
           <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="p-6 bg-slate-900 text-white rounded-[2rem] shadow-xl">
+                 <span className="text-[7px] font-black text-orange-500 uppercase block mb-2 tracking-[0.3em]">Üniversite</span>
+                 <p className="text-[14px] font-black uppercase">{candidate.university || 'Belirtilmedi'}</p>
+              </div>
+              <div className="p-6 bg-orange-600 text-white rounded-[2rem] shadow-xl">
+                 <span className="text-[7px] font-black text-orange-100 uppercase block mb-2 tracking-[0.3em]">Bölüm</span>
+                 <p className="text-[14px] font-black uppercase">{candidate.department || 'Belirtilmedi'}</p>
+              </div>
+            </div>
+
             <div className="p-8 bg-white border-2 border-slate-50 rounded-3xl relative overflow-hidden">
               <h4 className="text-[9px] font-black text-slate-900 uppercase tracking-widest mb-4">Mesleki Yolculuk ve Önemli Kurumlar</h4>
               <p className="text-[11px] font-bold text-slate-700 leading-relaxed whitespace-pre-wrap italic">

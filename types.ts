@@ -1,4 +1,3 @@
-
 export enum Branch {
   OzelEgitim = 'Özel Eğitim Öğretmeni',
   Psikolog = 'Psikolog',
@@ -67,6 +66,8 @@ export interface Candidate {
   age: number;
   gender: Gender;
   branch: Branch;
+  university: string;
+  department: string;
   experienceYears: number;
   previousInstitutions: string;
   allTrainings: string[];
