@@ -74,8 +74,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   // Fix: Line 111 - Cast dynamic property access using any to resolve the union indexing ambiguity and avoid 'unknown[]' type mismatch.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
-      // Accessing a union property result in unknown[] in some TS versions; casting through any fixes the mismatch.
-      const current = (prev[category] as any) as string[];
+      // Accessing a union property result in unknown[] in some TS versions; casting to string[] fixes the mismatch since all values are strings.
+      const current = prev[category] as string[];
       const next = current.includes(value) 
         ? current.filter((v: string) => v !== value) 
         : [...current, value];

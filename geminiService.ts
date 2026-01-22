@@ -40,12 +40,13 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     };
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-3-flash-preview", // Sadece Flash modelleri kullanılıyor
       contents,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 32768 },
+        // Gemini 3 Flash için optimize edilmiş düşünme bütçesi (Max: 24576)
+        thinkingConfig: { thinkingBudget: 24000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -84,7 +85,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
     return JSON.parse(response.text || "{}");
   } catch (error: any) {
-    console.error("Gemini Error:", error);
+    console.error("Gemini Flash Error:", error);
     throw error;
   }
 };
