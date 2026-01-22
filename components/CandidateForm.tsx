@@ -1,6 +1,8 @@
+
 import React, { useState, useMemo, useRef } from 'react';
-import { FORM_STEPS, MOCK_QUESTIONS, CERTIFICATION_LIST } from '../constants';
+import { FORM_STEPS, MOCK_QUESTIONS, CERTIFICATION_LIST, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../constants';
 import { Branch, Candidate, Gender } from '../types';
+import SearchableSelect from './SearchableSelect';
 
 interface CandidateFormProps {
   onSubmit: (candidate: Omit<Candidate, 'id' | 'timestamp' | 'report'>) => void;
@@ -175,27 +177,21 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                   {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mezun Olunan Üniversite</label>
-                  <input
-                    type="text"
-                    className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
-                    value={formData.university}
-                    onChange={(e) => setFormData({...formData, university: e.target.value})}
-                    placeholder="Üniversite Adı"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mezun Olunan Bölüm</label>
-                  <input
-                    type="text"
-                    className="w-full rounded-[2rem] border-2 border-orange-100 p-5 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-bold text-slate-800 transition-all bg-white"
-                    value={formData.department}
-                    onChange={(e) => setFormData({...formData, department: e.target.value})}
-                    placeholder="Bölüm Adı"
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-5">
+                <SearchableSelect 
+                  label="Mezun Olunan Üniversite"
+                  options={TURKISH_UNIVERSITIES}
+                  value={formData.university}
+                  placeholder="Üniversite seçiniz veya yazınız"
+                  onChange={(val) => setFormData({...formData, university: val})}
+                />
+                <SearchableSelect 
+                  label="Mezun Olunan Bölüm"
+                  options={TURKISH_DEPARTMENTS}
+                  value={formData.department}
+                  placeholder="Bölüm seçiniz veya yazınız"
+                  onChange={(val) => setFormData({...formData, department: val})}
+                />
               </div>
               <div>
                 <label className="block text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] mb-3 ml-1">Mesleki Deneyim (Yıl)</label>

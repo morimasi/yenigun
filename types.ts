@@ -5,7 +5,8 @@ export enum Branch {
   Ergoterapist = 'Ergoterapist',
   DilKonusma = 'Dil ve Konuşma Terapisti',
   OkulOncesi = 'Okul Öncesi Öğretmeni',
-  Odyolog = 'Odyolog'
+  Odyolog = 'Odyolog',
+  SinifOgretmeni = 'Sınıf Öğretmeni'
 }
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';

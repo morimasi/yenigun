@@ -18,8 +18,71 @@ export const FORM_STEPS: FormStep[] = [
   { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki hataların analizi ve gelişim dürüstlüğü.' }
 ];
 
+export const TURKISH_UNIVERSITIES = [
+  "Abant İzzet Baysal Üniversitesi", "Acıbadem Üniversitesi", "Adıyaman Üniversitesi", "Adnan Menderes Üniversitesi",
+  "Afyon Kocatepe Üniversitesi", "Ağrı İbrahim Çeçen Üniversitesi", "Akdeniz Üniversitesi", "Aksaray Üniversitesi",
+  "Alanya Alaaddin Keykubat Üniversitesi", "Altınbaş Üniversitesi", "Amasya Üniversitesi", "Anadolu Üniversitesi",
+  "Anka Teknoloji Üniversitesi", "Ankara Üniversitesi", "Ankara Bilim Üniversitesi", "Ankara Hacı Bayram Veli Üniversitesi",
+  "Ankara Medipol Üniversitesi", "Ankara Müzik ve Güzel Sanatlar Üniversitesi", "Ankara Sosyal Bilimler Üniversitesi",
+  "Ankara Yıldırım Beyazıt Üniversitesi", "Antalya Bilim Üniversitesi", "Antalya Akev Üniversitesi",
+  "Ardahan Üniversitesi", "Artvin Çoruh Üniversitesi", "Atatürk Üniversitesi", "Atılım Üniversitesi",
+  "Avrasya Üniversitesi", "Bahçeşehir Üniversitesi", "Balıkesir Üniversitesi", "Bandırma Onyedi Eylül Üniversitesi",
+  "Bartın Üniversitesi", "Başkent Üniversitesi", "Batman Üniversitesi", "Bayburt Üniversitesi",
+  "Beykent Üniversitesi", "Beykoz Üniversitesi", "Bezm-i Alem Vakıf Üniversitesi", "Bilecik Şeyh Edebali Üniversitesi",
+  "Bingöl Üniversitesi", "Biruni Üniversitesi", "Bitlis Eren Üniversitesi", "Boğaziçi Üniversitesi",
+  "Bozok Üniversitesi", "Bursa Teknik Üniversitesi", "Bursa Uludağ Üniversitesi", "Bezmiâlem Vakıf Üniversitesi",
+  "Celal Bayar Üniversitesi", "Cumhuriyet Üniversitesi", "Çağ Üniversitesi", "Çanakkale Onsekiz Mart Üniversitesi",
+  "Çankaya Üniversitesi", "Çankırı Karatekin Üniversitesi", "Çukurova Üniversitesi", "Dicle Üniversitesi",
+  "Doğuş Üniversitesi", "Dokuz Eylül Üniversitesi", "Dumlupınar Üniversitesi", "Düzce Üniversitesi",
+  "Ege Üniversitesi", "Erciyes Üniversitesi", "Erzincan Binali Yıldırım Üniversitesi", "Erzurum Teknik Üniversitesi",
+  "Eskişehir Osmangazi Üniversitesi", "Eskişehir Teknik Üniversitesi", "Fatih Sultan Mehmet Vakıf Üniversitesi",
+  "Fırat Üniversitesi", "Galatasaray Üniversitesi", "Gazi Üniversitesi", "Gaziantep Üniversitesi",
+  "Gaziantep İslam Bilim ve Teknoloji Üniversitesi", "Gebze Teknik Üniversitesi", "Giresun Üniversitesi",
+  "Gümüşhane Üniversitesi", "Hacettepe Üniversitesi", "Hakkari Üniversitesi", "Haliç Üniversitesi",
+  "Harran Üniversitesi", "Hasan Kalyoncu Üniversitesi", "Hatay Mustafa Kemal Üniversitesi", "Hitit Üniversitesi",
+  "Iğdır Üniversitesi", "Işık Üniversitesi", "İbn Haldun Üniversitesi", "İhsan Doğramacı Bilkent Üniversitesi",
+  "İnönü Üniversitesi", "İskenderun Teknik Üniversitesi", "İstanbul Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa",
+  "İstanbul Atlas Üniversitesi", "İstanbul Aydın Üniversitesi", "İstanbul Ayvansaray Üniversitesi",
+  "İstanbul Bilgi Üniversitesi", "İstanbul Galata Üniversitesi", "İstanbul Gedik Üniversitesi",
+  "İstanbul Gelişim Üniversitesi", "İstanbul Kent Üniversitesi", "İstanbul Kültür Üniversitesi",
+  "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi", "İstanbul Okan Üniversitesi",
+  "İstanbul Sabahattin Zaim Üniversitesi", "İstanbul Sağlık ve Sosyal Bilimler Meslek Yüksekokulu",
+  "İstanbul Sağlık ve Teknoloji Üniversitesi", "İstanbul Teknik Üniversitesi", "İstanbul Ticaret Üniversitesi",
+  "İstanbul Yeni Yüzyıl Üniversitesi", "İstanbul Esenyurt Üniversitesi", "İstanbul Rumeli Üniversitesi",
+  "İstinye Üniversitesi", "İzmir Bakırçay Üniversitesi", "İzmir Demokrasi Üniversitesi", "İzmir Ekonomi Üniversitesi",
+  "İzmir Katip Çelebi Üniversitesi", "İzmir Tınaztepe Üniversitesi", "İzmir Yüksek Teknoloji Enstitüsü",
+  "Kadir Has Üniversitesi", "Kafkas Üniversitesi", "Kahramanmaraş Sütçü İmam Üniversitesi", "Kapadokya Üniversitesi",
+  "Karabük Üniversitesi", "Karadeniz Teknik Üniversitesi", "Karamanoğlu Mehmetbey Üniversitesi", "Kastamonu Üniversitesi",
+  "Kayseri Üniversitesi", "Kırıkkale Üniversitesi", "Kırklareli Üniversitesi", "Kırşehir Ahi Evran Üniversitesi",
+  "Kilis 7 Aralık Üniversitesi", "Kocaeli Üniversitesi", "Kocaeli Sağlık ve Teknoloji Üniversitesi", "Koç Üniversitesi",
+  "Konya Gıda ve Tarım Üniversitesi", "Konya Teknik Üniversitesi", "KTO Karatay Üniversitesi", "Kütahya Dumlupınar Üniversitesi",
+  "Kütahya Sağlık Bilimleri Üniversitesi", "Lefke Avrupa Üniversitesi", "Malatya Turgut Özal Üniversitesi",
+  "Maltepe Üniversitesi", "Manisa Celal Bayar Üniversitesi", "Mardin Artuklu Üniversitesi", "Marmara Üniversitesi",
+  "MEF Üniversitesi", "Mersin Üniversitesi", "Mimar Sinan Güzel Sanatlar Üniversitesi", "Muğla Sıtkı Koçman Üniversitesi",
+  "Munzur Üniversitesi", "Muş Alparslan Üniversitesi", "Niğde Ömer Halisdemir Üniversitesi", "Nişantaşı Üniversitesi",
+  "Nuh Naci Yazgan Üniversitesi", "Ondokuz Mayıs Üniversitesi", "Ordu Üniversitesi", "Orta Doğu Teknik Üniversitesi",
+  "Osmaniye Korkut Ata Üniversitesi", "Ostim Teknik Üniversitesi", "Özyeğin Üniversitesi", "Pamukkale Üniversitesi",
+  "Piri Reis Üniversitesi", "Recep Tayyip Erdoğan Üniversitesi", "Sabancı Üniversitesi", "Sağlık Bilimleri Üniversitesi",
+  "Sakarya Üniversitesi", "Sakarya Uygulamalı Bilimler Üniversitesi", "Samsun Üniversitesi", "Sanko Üniversitesi",
+  "Selçuk Üniversitesi", "Siirt Üniversitesi", "Sinop Üniversitesi", "Sivas Cumhuriyet Üniversitesi",
+  "Sivas Bilim ve Teknoloji Üniversitesi", "Süleyman Demirel Üniversitesi", "Şırnak Üniversitesi", "Tarsus Üniversitesi",
+  "TED Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi", "TOBB Ekonomi ve Teknoloji Üniversitesi", "Toros Üniversitesi",
+  "Trakya Üniversitesi", "Türk-Alman Üniversitesi", "Türk-Japon Bilim ve Teknoloji Üniversitesi",
+  "Türk Hava Kurumu Üniversitesi", "Türkiye Uluslararası İslam, Bilim ve Teknoloji Üniversitesi",
+  "Uşak Üniversitesi", "Üsküdar Üniversitesi", "Yalova Üniversitesi", "Yaşar Üniversitesi", "Yeditepe Üniversitesi",
+  "Yıldız Teknik Üniversitesi", "Yüksek İhtisas Üniversitesi", "Yüzüncü Yıl Üniversitesi", "Zonguldak Bülent Ecevit Üniversitesi"
+];
+
+export const TURKISH_DEPARTMENTS = [
+  "Özel Eğitim Öğretmenliği", "Zihin Engelliler Öğretmenliği", "Görme Engelliler Öğretmenliği", 
+  "İşitme Engelliler Öğretmenliği", "Üstün Zekalılar Öğretmenliği", "Psikoloji", 
+  "Psikolojik Danışmanlık ve Rehberlik (PDR)", "Çocuk Gelişimi", "Okul Öncesi Öğretmenliği", 
+  "Fizyoterapi ve Rehabilitasyon", "Ergoterapi", "Dil ve Konuşma Terapisi", "Odyoloji", 
+  "Sosyal Hizmet", "Hemşirelik", "Sınıf Öğretmenliği", "Beden Eğitimi ve Spor Öğretmenliği",
+  "Müzik Öğretmenliği", "Görsel Sanatlar Öğretmenliği", "Felsefe", "Sosyoloji", "Sağlık Yönetimi"
+];
+
 export const CERTIFICATION_LIST = [
-  // --- OTİZM VE DAVRANIŞSAL MÜDAHALE ---
   "ABA (Uygulamalı Davranış Analizi) - Uygulayıcı Sertifikası",
   "PECS (Resim Değiş Tokuşuna Dayalı İletişim Sistemi)",
   "ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale Programı)",
@@ -28,8 +91,6 @@ export const CERTIFICATION_LIST = [
   "GOBDO-2-TV (Otistik Bozukluk Derecelendirme Ölçeği)",
   "TÖSİ (Türkçe Öğrenci Sosyal İletişim Ölçeği)",
   "GİS (Gelişimsel İzleme ve Destekleme Rehberi)",
-  
-  // --- ÖĞRENME GÜÇLÜĞÜ (DİSLEKSİ / DİSKALKULİ) ---
   "PREP (Disleksi Bilişsel Müdahale Programı)",
   "COGENT (Bilişsel Gelişim Programı)",
   "DMP (Disleksi Müdahale Programı)",
@@ -38,14 +99,10 @@ export const CERTIFICATION_LIST = [
   "DİSKALKULİ (Matematik Öğrenme Güçlüğü) Müdahale Programı",
   "TİLLS (Test of Integrated Language and Literacy Skills)",
   "Okuma Yazma Öğretimi Stratejileri Sertifikası",
-  
-  // --- MATEMATİK ÖĞRETİMİ ---
   "Touch Math (Dokunmatik Matematik Öğretim Sistemi)",
   "Özel Eğitimde Somut Materyallerle Matematik Öğretimi",
   "Singapore Maths (Özel Eğitim Adaptasyonu)",
   "Dis-Mat (Diskalkuli Müdahale Seti) Kullanıcı Eğitimi",
-  
-  // --- GELİŞİMSEL VE PSİKOMETRİK TESTLER ---
   "WISC-V Zeka Testi Uygulayıcı Sertifikası",
   "CAS (Cognitive Assessment System) Uygulayıcı",
   "Denver II Gelişimsel Tarama Testi",
@@ -54,16 +111,12 @@ export const CERTIFICATION_LIST = [
   "Stanford-Binet Zeka Testi Uygulayıcı",
   "Frostig Görsel Algı Testi",
   "Metropolitan Okul Olgunluğu Testi",
-  
-  // --- DİL, KONUŞMA VE DUYUSAL YAKLAŞIMLAR ---
   "DIR Floortime (101 / 201 Seviye Sertifikası)",
   "Duyu Bütünleme (Sensory Integration) Eğitimi",
   "PADAD (Pragmatik Dil Analizi ve Değerlendirmesi)",
   "Artikülasyon ve Fonolojik Bozukluklar Müdahale Eğitimi",
   "Oral Motor Terapi Teknikleri",
   "GOPÖ (Gecikmiş Konuşma Programı)",
-  
-  // --- TERAPÖTİK VE DİĞER YAKLAŞIMLAR ---
   "Oyun Terapisi (Deneyimsel veya Bilişsel Davranışçı)",
   "Filial Terapi (Ebeveyn-Çocuk İlişkisi Terapisi)",
   "Montessori Eğitmenliği (Özel Eğitim Uyarlamalı)",
@@ -75,7 +128,6 @@ export const CERTIFICATION_LIST = [
 
 export const MOCK_QUESTIONS = {
   academic_proficiency: [
-    // --- MATEMATİK (CLINICAL LEVEL) ---
     {
       id: 'math_adv_abstract',
       text: 'Diskalkuli tanılı 3. sınıf öğrencisi "çarpma" işlemini ezberlemiş görünmesine rağmen, problem içinde (örn: "Her birinde 5 elma olan 3 sepet") toplamayı çarpma ile ilişkilendiremiyor. En "derin" müdahale basamağınız hangisidir?',
@@ -120,8 +172,6 @@ export const MOCK_QUESTIONS = {
         'Hızlandırma: Problem çözme süresini kısıtlayarak öğrencinin sezgisel olarak sonuca odaklanmasını sağlamak.'
       ]
     },
-
-    // --- TÜRKÇE / OKUMA-YAZMA (CLINICAL LEVEL) ---
     {
       id: 'turk_adv_decoding',
       text: 'Disleksi müdahalesinde öğrenci "B-D-P" harflerini karıştırıyor ve akıcı okumada "uydurarak okuma" (Metnin bağlamından tahmin etme) yapıyor. Bu "tahmin stratejisini" nasıl kırırsınız?',
@@ -166,8 +216,6 @@ export const MOCK_QUESTIONS = {
         'Sözlü Komut: Harfin her hamlesini (Yukarı çık, aşağı in, yuvarla) yüksek sesle söyleyerek yazdırmak.'
       ]
     },
-
-    // --- DİL VE İLETİŞİM (CLINICAL LEVEL) ---
     {
       id: 'lang_adv_pragmatic',
       text: 'Yüksek işlevli otizm (Asperger profili) olan öğrenci, mülahaza (muhabere) sırasında sadece kendi ilgisini çeken "Trenler" hakkında konuşuyor ve karşısındakinin "sıkılma" vücut dilini (bakış kaçırma, saat kontrolü) okuyamıyor. Müdahaleniz?',
@@ -212,8 +260,6 @@ export const MOCK_QUESTIONS = {
         'Eşleme: Sorduğunuz sorunun resimli kartını gösterip, kartı eline verdiğinde cevaplamasını beklemek.'
       ]
     },
-
-    // --- SOSYAL / HAYAT BİLGİSİ (CLINICAL LEVEL) ---
     {
       id: 'soc_adv_empathy',
       text: 'Sosyal Bilgiler: "Başkalarının duygularını anlama" (Zihin Kuramı - Theory of Mind) kazanımında zorlanan bir öğrenciye, bir arkadaşının neden üzgün olduğunu anlatırken hangi teknik "kanıtlanmış" en yüksek başarıyı sağlar?',
