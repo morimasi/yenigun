@@ -25,6 +25,10 @@ export default async function handler(request: Request) {
   }
 
   try {
+    // 1. Eklentiyi etkinleştir (Hata Çözümü)
+    await sql`CREATE EXTENSION IF NOT EXISTS pg_trgm;`;
+
+    // 2. Tabloyu oluştur
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -50,6 +54,9 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // 3. İsim bazlı hızlı arama indeksini oluştur
+    await sql`CREATE INDEX IF NOT EXISTS idx_candidates_name_trgm ON candidates USING gin (name gin_trgm_ops);`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
