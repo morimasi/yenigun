@@ -1,3 +1,4 @@
+
 import { sql } from '@vercel/postgres';
 
 export const config = {
@@ -25,10 +26,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // 1. Eklentiyi etkinleştir (Hata Çözümü)
-    await sql`CREATE EXTENSION IF NOT EXISTS pg_trgm;`;
-
-    // 2. Tabloyu oluştur
+    // Tabloyu oluştur (Basitleştirilmiş, her istekte kontrol edilse de hata üretmeyecek yapıda)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -54,9 +52,6 @@ export default async function handler(request: Request) {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
-    // 3. İsim bazlı hızlı arama indeksini oluştur
-    await sql`CREATE INDEX IF NOT EXISTS idx_candidates_name_trgm ON candidates USING gin (name gin_trgm_ops);`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
@@ -89,6 +84,14 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
+      // JSONB alanları için güvenli stringify
+      const allTrainings = JSON.stringify(body.allTrainings || []);
+      const answers = JSON.stringify(body.answers || {});
+      const report = JSON.stringify(body.report || null);
+      const algoReport = JSON.stringify(body.algoReport || null);
+      const interviewSchedule = JSON.stringify(body.interviewSchedule || null);
+      const cvData = JSON.stringify(body.cvData || null);
+
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
@@ -106,14 +109,14 @@ export default async function handler(request: Request) {
           ${body.department || ''},
           ${body.experienceYears || 0}, 
           ${body.previousInstitutions || ''}, 
-          ${JSON.stringify(body.allTrainings || [])}, 
-          ${JSON.stringify(body.answers || {})}, 
+          ${allTrainings}, 
+          ${answers}, 
           ${body.status || 'pending'},
           ${body.adminNotes || null},
-          ${JSON.stringify(body.report || null)},
-          ${JSON.stringify(body.algoReport || null)},
-          ${JSON.stringify(body.interviewSchedule || null)},
-          ${JSON.stringify(body.cvData || null)}, 
+          ${report},
+          ${algoReport},
+          ${interviewSchedule},
+          ${cvData}, 
           ${now}
         ) ON CONFLICT (id) DO UPDATE SET 
           name = EXCLUDED.name,
