@@ -1,44 +1,62 @@
+
 import { Candidate, GlobalConfig } from '../types';
 
 export const storageService = {
-  async getCandidates(): Promise<Candidate[]> {
+  async getCandidates(forceRefresh = false): Promise<Candidate[]> {
     const localStr = localStorage.getItem('yeni_gun_candidates');
     const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
     
     try {
-      const response = await fetch(`/api/candidates?_t=${Date.now()}`, { cache: 'no-store' });
+      // Force refresh durumunda veya normalde buluttan en güncel halini iste
+      const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
+        cache: 'no-store',
+        headers: { 'Pragma': 'no-cache' }
+      });
+
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
-        const mergedMap = new Map<string, Candidate>();
         
-        // Önce buluttakileri ekle
-        remoteData.forEach(r => mergedMap.set(r.id, r));
+        // BULUTU MUTLAK GERÇEK KABUL ET
+        // Yerelde olup bulutta olmayanları (internet kesikken eklenenleri) koru
+        const remoteMap = new Map<string, Candidate>();
+        remoteData.forEach(r => remoteMap.set(r.id, r));
 
-        // Yerelde daha yeni veri varsa veya bulutta yoksa bulutu güncelle
         const pendingUploads: Candidate[] = [];
         localData.forEach(l => {
-          const remoteMatch = mergedMap.get(l.id);
-          if (!remoteMatch || (l.timestamp || 0) > (remoteMatch.timestamp || 0)) {
-            mergedMap.set(l.id, l);
+          if (!remoteMap.has(l.id)) {
             pendingUploads.push(l);
+          } else {
+            // Eğer yereldeki veri, buluttakinden DAHA YENİ ise (timestamp ile kontrol)
+            const remoteMatch = remoteMap.get(l.id)!;
+            if ((l.timestamp || 0) > (remoteMatch.timestamp || 0)) {
+              pendingUploads.push(l);
+            }
           }
         });
 
-        // BULUTA PUSH (Background Sync)
-        for (const c of pendingUploads) {
-          fetch('/api/candidates', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(c)
-          }).catch(err => console.error("Sync Error:", err));
+        // BEKLEYEN VERİLERİ BULUTA BAS
+        if (pendingUploads.length > 0) {
+          console.log(`${pendingUploads.length} adet yerel değişiklik buluta senkronize ediliyor...`);
+          for (const c of pendingUploads) {
+            await fetch('/api/candidates', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(c)
+            }).catch(err => console.error("Sync Error for ID:", c.id, err));
+          }
+          // Buluta bastıktan sonra tekrar güncel listeyi çek ki ID'ler ve timestamp'ler eşitlensin
+          const finalRes = await fetch(`/api/candidates?_t=${Date.now() + 1}`, { cache: 'no-store' });
+          const finalData: Candidate[] = await finalRes.json();
+          localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
+          return finalData.sort((a, b) => b.timestamp - a.timestamp);
         }
 
-        const finalData = Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
-        return finalData;
+        // Değişiklik yoksa direkt buluttakini mühürle ve dön
+        localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
+        return remoteData.sort((a, b) => b.timestamp - a.timestamp);
       }
     } catch (e) {
-      console.warn("Offline Mode: Yerel veriler kullanılıyor.");
+      console.warn("Bulut bağlantısı kurulamadı. Çevrimdışı mod aktif.");
     }
     return localData.sort((a, b) => b.timestamp - a.timestamp);
   },
@@ -66,7 +84,7 @@ export const storageService = {
     }
     try {
       const res = await fetch('/api/candidates', {
-        method: 'POST', // Upsert için POST kullanıyoruz
+        method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidate)
       });

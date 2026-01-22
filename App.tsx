@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import CandidateForm from './components/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
@@ -32,7 +33,7 @@ const App: React.FC = () => {
     else setIsLoading(true);
 
     try {
-      const data = await storageService.getCandidates();
+      const data = await storageService.getCandidates(isManual);
       setCandidates(data);
       
       const remoteConfig = await storageService.getConfig();
@@ -154,11 +155,12 @@ const App: React.FC = () => {
             }}
             onUpdateConfig={handleUpdateConfig}
             onRefresh={() => loadData(true)}
+            isProcessing={isProcessing}
           />
         )}
       </main>
 
-      {isProcessing && (
+      {isProcessing && view === 'candidate' && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>

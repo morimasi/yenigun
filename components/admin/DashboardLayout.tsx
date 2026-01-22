@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
 import AdminTopNav from './AdminTopNav';
@@ -14,6 +15,7 @@ interface DashboardLayoutProps {
   onUpdateConfig: (conf: GlobalConfig) => void;
   onDeleteCandidate: (id: string) => void;
   onRefresh: () => void;
+  isProcessing: boolean;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
@@ -83,6 +85,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
         institutionName={props.config.institutionName}
         onExportAll={handleExportAll}
         isExporting={isExporting}
+        onRefresh={props.onRefresh}
+        isProcessing={props.isProcessing}
       />
       
       <main className="flex-1 w-full min-w-0 px-2 md:px-0">
