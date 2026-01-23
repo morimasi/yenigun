@@ -21,7 +21,6 @@ export default async function handler(request: Request) {
     return new Response(null, { status: 204, headers });
   }
 
-  // 1. KRİTİK KONTROL: Veritabanı URL'si var mı?
   if (!process.env.POSTGRES_URL) {
     return new Response(JSON.stringify({ 
       error: 'CONFIG_MISSING', 
@@ -30,32 +29,35 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tabloyu her ihtimale karşı sessizce oluştur (Trigger içermez, hata riskini düşürür)
+    // 1. TEMEL TABLO OLUŞTURMA
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
         name TEXT,
-        email TEXT,
-        phone TEXT,
-        age INTEGER,
-        gender TEXT,
-        branch TEXT,
-        university TEXT,
-        department TEXT,
-        experience_years INTEGER,
-        previous_institutions TEXT,
-        all_trainings JSONB DEFAULT '[]'::jsonb,
-        answers JSONB DEFAULT '{}'::jsonb,
-        status TEXT DEFAULT 'pending',
-        admin_notes TEXT,
-        report JSONB,
-        algo_report JSONB,
-        interview_schedule JSONB,
-        cv_data JSONB,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // 2. SELF-HEALING MIGRATION: Eksik olabilecek tüm sütunları tek tek kontrol et ve ekle
+    // Postgres'de 'ADD COLUMN IF NOT EXISTS' güvenlidir ve tablo varsa hata vermez.
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS email TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS age INTEGER;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS branch TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS university TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS department TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS experience_years INTEGER;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS previous_institutions TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS all_trainings JSONB DEFAULT '[]'::jsonb;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS answers JSONB DEFAULT '{}'::jsonb;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS admin_notes TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;`;
 
     if (method === 'GET') {
       const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
@@ -125,6 +127,8 @@ export default async function handler(request: Request) {
           name = EXCLUDED.name,
           email = EXCLUDED.email,
           phone = EXCLUDED.phone,
+          age = EXCLUDED.age,
+          gender = EXCLUDED.gender,
           branch = EXCLUDED.branch,
           university = EXCLUDED.university,
           department = EXCLUDED.department,
@@ -153,10 +157,10 @@ export default async function handler(request: Request) {
 
     return new Response(JSON.stringify({ error: 'INVALID_METHOD' }), { status: 405, headers });
   } catch (error: any) {
-    console.error("SQL_CRITICAL_ERROR:", error.message);
+    console.error("SQL_FATAL_ERROR:", error.message);
     return new Response(JSON.stringify({ 
       error: 'DB_ERROR', 
-      message: `Veritabanı erişim hatası: ${error.message}` 
+      message: `Veritabanı hatası: ${error.message}` 
     }), { status: 500, headers });
   }
 }
