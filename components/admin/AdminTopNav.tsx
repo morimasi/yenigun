@@ -20,12 +20,21 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   onRefresh, 
   isProcessing 
 }) => {
-  const [lastSync, setLastSync] = useState<string>(new Date().toLocaleTimeString('tr-TR'));
+  const [dbStatus, setDbStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
-  const handleRefresh = () => {
-    onRefresh();
-    setLastSync(new Date().toLocaleTimeString('tr-TR'));
-  };
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/candidates?_ping=1');
+        setDbStatus(res.ok ? 'online' : 'offline');
+      } catch (e) {
+        setDbStatus('offline');
+      }
+    };
+    checkStatus();
+    const interval = setInterval(checkStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const MENU_ITEMS = [
     { id: 'pipeline', label: 'ADAY AKIŞI', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2' },
@@ -37,7 +46,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   return (
     <div className="flex flex-col gap-4 w-full animate-fade-in no-print">
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 w-full">
-        {/* Kurumsal Marka Bloğu */}
         <div className="md:w-72 p-8 bg-slate-900 rounded-[3rem] text-white shadow-xl relative overflow-hidden border border-slate-800 shrink-0 group">
           <div className="relative z-10">
             <h2 className="text-[9px] font-black uppercase tracking-[0.4em] text-orange-500 mb-1 opacity-80">Yeni Gün AI</h2>
@@ -46,7 +54,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
           <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-600/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
         </div>
 
-        {/* Yatay Menü Bloğu */}
         <nav className="flex-1 flex items-center bg-white/70 backdrop-blur-2xl rounded-[3rem] border border-white shadow-xl shadow-slate-200/50 p-2 overflow-x-auto custom-scrollbar">
           <div className="flex items-center gap-2 w-full min-w-max">
             {MENU_ITEMS.map(item => (
@@ -69,41 +76,25 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
             <div className="flex-1 min-w-[20px]"></div>
 
             <div className="flex items-center gap-2 mr-2">
+              {/* Bulut Durum Göstergesi */}
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${dbStatus === 'online' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
+                <div className={`w-2 h-2 rounded-full ${dbStatus === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+                <span className="text-[8px] font-black uppercase tracking-widest">{dbStatus === 'online' ? 'BULUT BAĞLI' : 'BAĞLANTI YOK'}</span>
+              </div>
+
               <button
-                onClick={handleRefresh}
+                onClick={onRefresh}
                 disabled={isProcessing}
                 className={`flex items-center gap-3 px-6 py-4 rounded-[2rem] bg-slate-900 text-white font-black text-[9px] uppercase tracking-widest transition-all hover:bg-black active:scale-95 shadow-lg ${isProcessing ? 'opacity-70' : ''}`}
               >
                 <svg className={`w-4 h-4 text-orange-500 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
                 </svg>
-                <span>{isProcessing ? 'GÜNCELLENİYOR...' : 'ŞİMDİ TAZELA'}</span>
-              </button>
-
-              <button
-                onClick={onExportAll}
-                disabled={isExporting}
-                className={`flex items-center gap-3 px-6 py-4 rounded-[2rem] border-2 border-slate-100 text-slate-400 font-black text-[9px] uppercase tracking-widest whitespace-nowrap transition-all hover:border-slate-300 hover:text-slate-600 ${isExporting ? 'opacity-50 cursor-wait' : ''}`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                <span>ZIP</span>
+                <span>{isProcessing ? 'YÜKLENİYOR...' : 'TAZELA'}</span>
               </button>
             </div>
           </div>
         </nav>
-      </div>
-      
-      {/* Canlı Akış Durum Çubuğu */}
-      <div className="flex justify-end px-12 -mt-2">
-         <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-1.5 rounded-full border border-slate-100 shadow-sm">
-            <span className="flex h-2 w-2 relative">
-               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">
-               CANLI AKIŞ AKTİF: Veriler her 30sn'de bir bulutla el sıkışıyor.
-            </p>
-         </div>
       </div>
     </div>
   );

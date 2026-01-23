@@ -55,7 +55,7 @@ const App: React.FC = () => {
     if (view === 'admin' && isLoggedIn) {
       pollInterval.current = window.setInterval(() => {
         loadData(false);
-      }, 30000);
+      }, 45000);
     } else {
       if (pollInterval.current) clearInterval(pollInterval.current);
     }
@@ -83,29 +83,28 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    // DOĞRUDAN BULUTA KAYDET
     const result = await storageService.saveCandidate(newCandidate);
     
     if (result.success) {
       setCandidates(prev => [newCandidate, ...prev]);
       
-      // Arka planda AI Analizini başlat
+      // Arka planda AI Analizini başlat (Kritik değil, biterse günceller)
       generateCandidateAnalysis(newCandidate, config).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
           await storageService.updateCandidate(finalCandidate);
           setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
         }
-      }).catch(err => console.error("AI Analiz Hatası:", err));
+      }).catch(err => console.warn("AI Analiz (Arka Plan) Atlandı:", err));
       
-      alert("Başvurunuz başarıyla Yeni Gün Akademi bulut sistemine aktarıldı. Teşekkür ederiz.");
+      alert("BAŞARILI: Başvurunuz Yeni Gün Akademi bulut sistemine kaydedildi.");
+      setView('candidate');
     } else {
-      // Hata mesajını detaylandır
-      alert(`BAŞVURU KAYDEDİLEMEDİ:\n${result.error}\n\nNot: Verileriniz tarayıcıda yedeklendi, bağlantı düzelince tekrar deneyebilirsiniz.`);
+      // Hata mesajı artık gerçek nedeni içeriyor
+      alert(`KRİTİK HATA:\n${result.error}\n\nLütfen kurum yönetimi ile iletişime geçiniz.`);
     }
 
     setIsProcessing(false);
-    setView('candidate');
   };
 
   const handleUpdateConfig = async (newConfig: GlobalConfig) => {

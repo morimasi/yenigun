@@ -71,18 +71,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Improved toggleFilter typing to resolve 'unknown[]' and 'string[]' assignment errors in the state update.
+  // Fix: Correctly toggle filters by ensuring the current array is cast to string[] and the updated state returns the correct partial structure.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
-    setFilters((prev: any) => {
-      // Use any[] and any return to bypass complex union mapping with dynamic property access in React state
-      const current = (prev[category] as any[]) || [];
-      const next = current.includes(value) 
-        ? current.filter((v: any) => v !== value) 
+    setFilters(prev => {
+      const current = (prev[category] as string[]) || [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
         : [...current, value];
-      return { 
-        ...prev, 
-        [category]: next 
-      };
+      return {
+        ...prev,
+        [category]: next
+      } as typeof filters;
     });
   };
 

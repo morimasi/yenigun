@@ -21,16 +21,16 @@ export default async function handler(request: Request) {
     return new Response(null, { status: 204, headers });
   }
 
+  // 1. KRİTİK KONTROL: Veritabanı URL'si var mı?
   if (!process.env.POSTGRES_URL) {
     return new Response(JSON.stringify({ 
-      error: 'DB_ERROR', 
-      message: 'Veritabanı yapılandırması (POSTGRES_URL) bulunamadı. Lütfen ortam değişkenlerini kontrol edin.' 
+      error: 'CONFIG_MISSING', 
+      message: 'Sunucu hatası: POSTGRES_URL tanımlanmamış. Lütfen Vercel panelinden veritabanını bağlayın.' 
     }), { status: 500, headers });
   }
 
   try {
-    // Tabloyu ve Gerekli Fonksiyonları Oluştur
-    // Not: Edge runtime'da her zaman çalışması güvenlidir.
+    // Tabloyu her ihtimale karşı sessizce oluştur (Trigger içermez, hata riskini düşürür)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -151,12 +151,12 @@ export default async function handler(request: Request) {
       }
     }
 
-    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
+    return new Response(JSON.stringify({ error: 'INVALID_METHOD' }), { status: 405, headers });
   } catch (error: any) {
-    console.error("SQL_FATAL_ERROR:", error.message);
+    console.error("SQL_CRITICAL_ERROR:", error.message);
     return new Response(JSON.stringify({ 
-      error: 'DB_EXECUTION_ERROR', 
-      message: `Veritabanı hatası: ${error.message}. Lütfen SQL şemasının doğru yüklendiğinden emin olun.` 
+      error: 'DB_ERROR', 
+      message: `Veritabanı erişim hatası: ${error.message}` 
     }), { status: 500, headers });
   }
 }
