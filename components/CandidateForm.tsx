@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { FORM_STEPS, BRANCH_QUESTIONS, CERTIFICATION_CATEGORIES, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS, TRAINING_VERIFICATION_QUESTIONS } from '../constants';
 import { Branch, Candidate, Gender, Question } from '../types';
 import SearchableSelect from './SearchableSelect';
@@ -8,10 +8,19 @@ interface CandidateFormProps {
   onSubmit: (candidate: Omit<Candidate, 'id' | 'timestamp' | 'report'>) => void;
 }
 
+// Yardımcı Fonksiyon: Şıkları Karıştır
+const shuffleArray = (array: string[]) => {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+};
+
 const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [otherTrainings, setOtherTrainings] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,6 +38,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     status: 'pending' as const
   });
 
+  // Şıkların her renderda değişmemesi için memoize edilmiş shuffle listesi
+  const [shuffledOptionsMap, setShuffledOptionsMap] = useState<Record<string, string[]>>({});
+
   const progress = useMemo(() => ((currentStep + 1) / FORM_STEPS.length) * 100, [currentStep]);
 
   const currentQuestions = useMemo(() => {
@@ -45,6 +57,17 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
       return q.requiredBranch.includes(formData.branch);
     });
   }, [currentStep, formData.branch, formData.allTrainings]);
+
+  // Soru şıklarını karıştır ve sakla
+  useEffect(() => {
+    const newMap: Record<string, string[]> = {};
+    currentQuestions.forEach(q => {
+      if (q.type === 'radio' && q.options) {
+        newMap[q.id] = shuffleArray(q.options);
+      }
+    });
+    setShuffledOptionsMap(prev => ({ ...prev, ...newMap }));
+  }, [currentQuestions]);
 
   const toggleTraining = (training: string) => {
     setFormData(prev => ({
@@ -172,18 +195,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
       );
     }
 
-    if (step.id === 'technical_deep_dive' && currentQuestions.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
-           <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center animate-bounce">
-             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
-           </div>
-           <p className="text-slate-500 font-bold text-lg">Beyan ettiğiniz akreditasyonlar için ek mülakat sorusu gerekmemektedir.</p>
-           <p className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em]">Genel değerlendirme adımlarına geçebilirsiniz.</p>
-        </div>
-      );
-    }
-
     return (
       <div className="space-y-12 animate-fade-in pb-10">
         {currentQuestions.map((q: Question, idx: number) => (
@@ -199,7 +210,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             <div className="pl-0 md:pl-20">
               {q.type === 'radio' ? (
                 <div className="grid grid-cols-1 gap-4">
-                  {q.options?.map((opt: string) => (
+                  {(shuffledOptionsMap[q.id] || q.options || []).map((opt: string) => (
                     <button key={opt} onClick={() => updateAnswer(q.id, opt)} className={`text-left p-6 rounded-[2rem] border-2 transition-all font-black text-[13px] uppercase tracking-tight ${formData.answers[q.id] === opt ? 'bg-slate-900 border-slate-900 text-white shadow-2xl scale-[1.02]' : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200'}`}>
                       {opt}
                     </button>

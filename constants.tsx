@@ -5,7 +5,7 @@ export const FORM_STEPS: FormStep[] = [
   { id: 'personal', title: 'Akademik Kimlik', description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz.' },
   { id: 'academic_proficiency', title: 'Klinik Uygulama Profili', description: 'Branşınıza özel derinlikli vaka analizleri.' },
   { id: 'technical_deep_dive', title: 'Akreditasyon Doğrulama', description: 'Beyan ettiğiniz eğitimlere dair teknik yetkinlik denetimi.' },
-  { id: 'logic_literacy', title: 'Operasyonel Zeka', description: 'Karmaşık kriz anlarında mantıksal önceliklendirme.' },
+  { id: 'character_projection', title: 'Klinik Karakter Projeksiyonu', description: 'Gri alan senaryoları ile profesyonel sınır ve etik refleksi ölçümü.' },
   { id: 'professional_cases', title: 'Etik İkilemler', description: 'Profesyonel ahlak ile kurumsal gerçeklik dengesi.' },
   { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki gelişim dürüstlüğü.' }
 ];
@@ -18,15 +18,7 @@ export const CERTIFICATION_CATEGORIES = {
   ASSESSMENT: ["WISC-V", "MOXO", "Denver II", "CAS", "Stanford-Binet", "Metropolitan"]
 };
 
-export const CERTIFICATION_LIST = [
-  ...CERTIFICATION_CATEGORIES.LANGUAGE_SPEECH,
-  ...CERTIFICATION_CATEGORIES.OCCUPATIONAL_THERAPY,
-  ...CERTIFICATION_CATEGORIES.PHYSIOTHERAPY,
-  ...CERTIFICATION_CATEGORIES.SPECIAL_ED_ABA,
-  ...CERTIFICATION_CATEGORIES.ASSESSMENT
-];
-
-// EĞİTİM SPESİFİK DOĞRULAMA SORULARI (Domain-Specific Verification)
+// EĞİTİM SPESİFİK DOĞRULAMA SORULARI
 export const TRAINING_VERIFICATION_QUESTIONS: Record<string, Question> = {
   "PROMPT": {
     id: 'v_prompt',
@@ -52,11 +44,6 @@ export const TRAINING_VERIFICATION_QUESTIONS: Record<string, Question> = {
     id: 'v_floortime',
     text: 'Floortime basamaklarından "Representational Capacity" seviyesinde olan bir çocukta, oyunun akışını bozmadan "Circles of Communication" sayısını nasıl artırırsınız?',
     type: 'text'
-  },
-  "WISC-V": {
-    id: 'v_wisc',
-    text: 'WISC-V profilinde "Görsel Mekansal" skorun "Akıcı Akıl Yürütme"den 1.5 standart sapma düşük olması durumunda, öğrencinin akademik kurgusunda ne tür bir modifikasyon önerirsiniz?',
-    type: 'text'
   }
 };
 
@@ -75,36 +62,58 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       requiredBranch: [Branch.Fizyoterapist]
     }
   ],
-  logic_literacy: [
+  character_projection: [
     {
-      id: 'crisis_behavior_safety',
-      text: 'Seans sırasında kendine zarar verme (self-injury) davranışı gösteren bir öğrencide, "A-B-C Verisi" toplarken o anki fiziksel güvenliği nasıl sağlarsınız?',
+      id: 'parent_boundary_scenario',
+      text: 'Seans sonunda bir veli ağlayarak özel ailevi sorunlarını anlatmaya başladı ve bir sonraki seansınızın süresinden çalıyor. Yaklaşımınız?',
       type: 'radio',
       options: [
-        'Davranışın bitmesini beklerim, sonra müdahale ederim.',
-        'Antisepatif müdahale ile çevre güvenliğini sağlar, fiziksel kısıtlama yerine yönlendirme yaparım.',
-        'Hemen odayı terk edip yardım çağırırım.',
-        'Ödül vererek davranışı durdurmaya çalışırım.'
+        'Veliyi dinlerim, terapötik bağ kurmak mülga bir seans yapmaktan daha önceliklidir.',
+        'Nazikçe mola verir, durumun profesyonel destek gerektirdiğini belirterek kurumsal psikoloğa yönlendiririm ve seansımı başlatırım.',
+        'Veliyi dinlerken bir yandan diğer öğrenciyi içeri alırım.',
+        'Süre bittiği için dinleyemeyeceğimi sertçe belirtirim.'
+      ]
+    },
+    {
+      id: 'peer_conflict_method',
+      text: 'Aynı çocukla çalışan bir meslektaşınızın yöntemi, sizin seans verimliliğinizi bilimsel olarak düşürüyor. Ne yaparsınız?',
+      type: 'radio',
+      options: [
+        'Seans sırasında odaya girip yanlışını düzeltirim.',
+        'Haftalık vaka toplantısında (Case Study) literatür eşliğinde konuyu tartışmaya açar, ortak protokol öneririm.',
+        'Yönetime şikayet ederim.',
+        'Kendi yöntemimi veliye övüp meslektaşımın yöntemini eleştiririm.'
+      ]
+    },
+    {
+      id: 'stress_resilience_crisis',
+      text: 'Seans odasında çocuk kontrolsüz bir öfke nöbeti geçiriyor ve çevreye zarar veriyor. İlk önceliğiniz nedir?',
+      type: 'radio',
+      options: [
+        'Çocuğu fiziksel olarak kısıtlayıp (restraint) cezalandırırım.',
+        'Çevre güvenliğini sağlar, "Antisipatif" yaklaşımla çocuğun kendine zarar vermesini önler ve sakinleşmesi için güvenli alan yaratırım.',
+        'Derhal odayı terk edip güvenliği çağırırım.',
+        'Dikkatini dağıtmak için sevdiği bir yiyeceği veririm.'
       ]
     }
   ],
   professional_cases: [
     {
-      id: 'ethics_confidentiality',
-      text: 'Başka bir kurumda görevli bir uzman, sizin öğrenciniz hakkında bilgi istiyor. Veli izni olmadan yaklaşımınız?',
+      id: 'ethics_confidentiality_v2',
+      text: 'Bir kurum dışı uzman, vaka hakkında bilgi istiyor. Veli onayı "sözlü" var ama "yazılı" yok. Tutumunuz?',
       type: 'radio',
       options: [
-        'Meslektaşım olduğu için tüm bilgileri paylaşırım.',
-        'Sadece genel gelişimini anlatırım.',
-        'Yazılı veli onayı olmadan bilgi paylaşımını reddederim.',
-        'Yöneticime sorarım.'
+        'Sözlü beyan yeterlidir, bilgiyi paylaşırım.',
+        'Yazılı onay ve resmi protokol olmadan hiçbir klinik veriyi kurum dışına çıkarmam.',
+        'Sadece yüzeysel bilgi veririm.',
+        'Arkadaşımsa paylaşırım.'
       ]
     }
   ],
   development: [
     {
-      id: 'dev_future_tech',
-      text: 'Yapay zekanın kendi branşınızdaki (rehabilitasyon) rolünü 5 yıl sonra nerede görüyorsunuz?',
+      id: 'dev_self_critique',
+      text: 'Klinik pratiğinizde en çok zorlandığınız vaka tipi nedir ve bu eksikliği nasıl kapatmayı planlıyorsunuz?',
       type: 'text'
     }
   ]

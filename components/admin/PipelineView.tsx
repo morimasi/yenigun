@@ -79,12 +79,12 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly cast current filter category to string[] to resolve TypeScript 'unknown[]' inference error on line 119.
+  // Fix: Explicitly cast current filter category to string[] and type the filter callback to resolve TypeScript inference errors.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
       const current = prev[category] as string[];
       const next = current.includes(value)
-        ? current.filter(v => v !== value)
+        ? current.filter((v: string) => v !== value)
         : [...current, value];
       return {
         ...prev,

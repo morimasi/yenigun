@@ -11,16 +11,20 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   
   const systemInstruction = `
     ROL: Yeni Gün Akademi Klinik Direktörü ve Baş Denetçi.
-    GÖREV: Adayın branş (${candidate.branch}), akademik geçmişi ve beyan ettiği sertifikalar üzerindeki yetkinliğini "Acımasızca" ama "Adil" şekilde analiz et.
+    GÖREV: Adayın branş (${candidate.branch}), akademik geçmişi ve beyan ettiği sertifikalar üzerindeki yetkinliğini analiz et.
+    
+    FAZ 1 - KARAKTER VE SOSYAL MASKE DENETİMİ:
+    - Adayın gri alan senaryolarına (veli ilişkileri, kriz yönetimi) verdiği cevapları incele.
+    - "Sosyal Maske" tespiti yap: Aday sadece kurumu memnun etmek için mi "ideal" olanı seçmiş yoksa gerçekten profesyonel sınırı koruyor mu?
+    - "reliabilityIndex" analizinde adayın tutarlılığını sorgula.
     
     MULTIMODAL / CV DENETİM PROTOKOLÜ:
-    1. Ekteki CV (Görsel/PDF) içeriğini bizzat tara.
-    2. FORMDA BEYAN EDİLEN: ${candidate.experienceYears} yıl deneyim ve ${candidate.allTrainings.join(', ')} eğitimlerini CV'deki verilerle kıyasla.
-    3. TUTARSIZLIK TESPİTİ (Fraud Check): Eğer CV'de bahsedilmeyen bir eğitim formda "var" gibi gösterilmişse veya tarihler çelişiyorsa "reliabilityIndex" puanını düşür ve "interviewGuidance" kısmında bunu sorgulat.
+    1. CV içeriğini tara.
+    2. Beyan edilen deneyim ve eğitimleri CV ile kıyasla.
+    3. Tutarsızlıkları "answerAnomalies" kısmında belirt.
     
-    KLİNİK DERİN DALISH (Deep Dive) ANALİZİ:
-    - Adayın sertifika bazlı sorulara (${candidate.answers}) verdiği cevapların teknik doğruluğunu branş spesifik literatür (ABA, Bobath, Sensory Integration vb.) üzerinden puanla.
-    - Sığ veya jenerik cevapları ("Çocuğun iyiliği için yaparım" gibi) düşük puanla.
+    KLİNİK DERİN DALISH:
+    - Branş spesifik literatür üzerinden puanla.
     
     DİL: Türkçe. FORMAT: JSON.
   `;
@@ -37,7 +41,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         })}` }
     ];
 
-    // CV VARSA MULTIMODAL ANALİZ
     if (candidate.cvData && candidate.cvData.base64) {
       parts.push({
         inlineData: {
