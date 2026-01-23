@@ -1,5 +1,5 @@
 
-import { Candidate, AlgorithmicReport, Branch, WeightedOption } from './types';
+import { Candidate, AlgorithmicReport, WeightedOption } from './types';
 import { BRANCH_QUESTIONS } from './constants';
 
 export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicReport => {
@@ -11,23 +11,19 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   const patterns: string[] = [];
   let reliabilityPoints = 100;
 
-  // Tüm soruları tara ve ağırlıkları topla
   Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
     const answer = candidate.answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
         scores[selectedOption.category].push(selectedOption.weight * 100);
-        
-        // Kritik eşik kontrolü (0.3 altı risk bayrağı çeker)
         if (selectedOption.weight < 0.4) {
-          riskFlags.push(`Kritik Karar Riski: "${q.text.slice(0, 30)}..." sorusunda düşük liyakat puanlı yaklaşım sergilendi.`);
+          riskFlags.push(`Kritik Karar Riski: "${q.text.slice(0, 30)}..."`);
         }
       }
     }
   });
 
-  // Kategori ortalamalarını hesapla
   const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 70;
 
   const ethicsScore = getAvg(scores.ethics);
@@ -37,15 +33,18 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   const resilienceScore = getAvg(scores.resilience);
   const fitScore = getAvg(scores.fit);
 
-  // Deneyim ve Güvenilirlik Denetimi
+  // FAZ 4: Prediktif Algoritmalar
   const exp = candidate.experienceYears || 0;
+  
+  // Bağlılık Skoru: Deneyim stabilitesi ve kurumsal uyum korelasyonu
+  const retentionScore = Math.round((fitScore * 0.6) + (Math.min(exp * 5, 40)));
+  
+  // Tükenmişlik Direnci: Duygusal direnç ve kriz yönetimi korelasyonu
+  const burnoutResistance = Math.round((resilienceScore * 0.7) + (crisisScore * 0.3));
+
   if (exp < 2 && (clinicalScore > 90 || ethicsScore > 90)) {
     reliabilityPoints -= 20;
     patterns.push("Teorik İdealizm");
-  }
-
-  if (fitScore < 50 && ethicsScore > 80) {
-    patterns.push("Kuralcı Ama Uyumsuz");
   }
 
   const overallScore = Math.round(
@@ -61,12 +60,20 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
     overallScore,
     reliabilityIndex: reliabilityPoints,
     ethicsScore,
+    experienceWeight: Math.min(exp * 10, 100),
+    retentionScore,
+    burnoutResistance,
+    ethicsBreakdown: {
+      confidentiality: ethicsScore,
+      boundaries: resilienceScore,
+      loyalty: fitScore,
+      peerSupport: pedagogyScore
+    },
     crisisManagementScore: crisisScore,
     pedagogyScore,
     clinicalScore,
     resilienceScore,
     fitScore,
-    experienceWeight: Math.min(exp * 10, 100),
     detectedPatterns: patterns,
     riskFlags
   };

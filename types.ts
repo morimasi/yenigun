@@ -1,5 +1,4 @@
 
-// Added to fix constants.tsx import error
 export interface FormStep {
   id: string;
   title: string;
@@ -23,7 +22,7 @@ export interface WeightedOption {
   label: string;
   weight: number; 
   category: 'ethics' | 'pedagogy' | 'clinical' | 'crisis' | 'resilience' | 'fit';
-  tags?: string[]; // Faz 3: "red-flag", "social-mask" vb. etiketler
+  tags?: string[];
 }
 
 export interface Question {
@@ -35,42 +34,66 @@ export interface Question {
   requiredBranch?: Branch[];
 }
 
+export interface IntelligenceSegment {
+  score: number;
+  status: 'optimal' | 'warning' | 'critical';
+  pros: string[];
+  cons: string[];
+  risks: string[];
+  contradictions: string[]; // Beyan ile uygulama arasındaki çelişkiler
+  competencyLevel: 'Junior' | 'Mid' | 'Senior' | 'Expert';
+}
+
 export interface AIReport {
   score: number;
-  integrityIndex: number; // Faz 3: Cevap tutarlılığı (0-100)
-  socialMaskingScore: number; // Faz 3: Kendini iyi gösterme eğilimi (0-100)
+  integrityIndex: number; // Dürüstlük ve Tutarlılık (0-100)
+  socialMaskingScore: number; // Kendini saklama eğilimi (0-100)
   summary: string;
   recommendation: string;
-  detailedAnalysis: {
-    ethics: AnalysisSegment;
-    pedagogy: AnalysisSegment;
-    clinicalWisdom: AnalysisSegment;
-    emotionalResilience: AnalysisSegment;
-    institutionalFit: AnalysisSegment;
-    stressResponse: AnalysisSegment;
+  
+  // 10 Boyutlu Derin Analiz (Faz 1 - Intelligence Layer)
+  deepAnalysis: {
+    personality: IntelligenceSegment;        // Kişilik & Mizaç
+    formality: IntelligenceSegment;          // Resmiyet & Kurumsallık
+    parentStudentRelations: IntelligenceSegment; // Veli-Öğrenci İlişkileri
+    sustainability: IntelligenceSegment;     // Sürdürülebilirlik & Burnout
+    developmentOpenness: IntelligenceSegment; // Gelişime Açıklık
+    criticismTolerance: IntelligenceSegment;  // Eleştiriye Açıklık
+    workEthics: IntelligenceSegment;         // İş Ahlakı & Etik
+    pedagogicalAnalysis: IntelligenceSegment; // Pedagojik Analiz
+    technicalExpertise: IntelligenceSegment;  // Alan Yeterliliği
+    institutionalLoyalty: IntelligenceSegment; // Kurumsallık & Sadakat
   };
+
+  predictiveMetrics: {
+    retentionProbability: number;
+    burnoutRisk: number;
+    learningVelocity: number;
+    leadershipPotential: number;
+  };
+
   interviewGuidance: {
     strategicQuestions: string[];
     criticalObservations: string[];
     answerAnomalies: string[];
+    simulationTasks: string[];
   };
+  
   swot: {
     strengths: string[];
     weaknesses: string[];
     opportunities: string[];
     threats: string[];
   };
-  competencies: {
-    name: string;
-    value: number;
-  }[];
 }
 
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
-  ethicsScore: number; // Added to fix analysisUtils.ts error
-  experienceWeight: number; // Added to fix analysisUtils.ts error
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
   ethicsBreakdown: {
     confidentiality: number;
     boundaries: number;
@@ -84,14 +107,6 @@ export interface AlgorithmicReport {
   fitScore: number;
   detectedPatterns: string[];
   riskFlags: string[];
-}
-
-export interface AnalysisSegment {
-  score: number;
-  comment: string;
-  keyPoints: string[];
-  shortTermImpact: string;
-  longTermImplication: string;
 }
 
 export interface Candidate {

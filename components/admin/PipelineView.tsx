@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -80,9 +79,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
+  // Fix: Explicitly cast the returned object to the state type to ensure full compatibility with union keys.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
-      // Fix: Cast current to string[] to resolve unknown[] inference issue on line 118.
       const current = prev[category] as string[];
       const next: string[] = current.includes(value)
         ? current.filter((v: string) => v !== value)
