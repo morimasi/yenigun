@@ -79,11 +79,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly cast the returned object to the state type to ensure full compatibility with union keys.
+  // Fix: Explicitly handle array types for computed state updates to resolve TypeScript 'unknown[]' mismatch.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
       const current = prev[category] as string[];
-      const next: string[] = current.includes(value)
+      const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
       return {
