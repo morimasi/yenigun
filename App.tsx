@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CandidateForm from './components/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
 import { Candidate, GlobalConfig } from './types';
@@ -27,10 +27,13 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  
+  const pollInterval = useRef<number | null>(null);
 
   const loadData = useCallback(async (isManual = false) => {
     if (isManual) setIsProcessing(true);
-    else setIsLoading(true);
+    // İlk yüklemede loading göster, polling sırasında gösterme (sessiz güncelleme)
+    if (!isManual && candidates.length === 0) setIsLoading(true);
 
     try {
       const data = await storageService.getCandidates(isManual);
@@ -47,7 +50,22 @@ const App: React.FC = () => {
       setIsLoading(false);
       setIsProcessing(false);
     }
-  }, []);
+  }, [candidates.length]);
+
+  // Canlı Akış (Polling) Mekanizması
+  useEffect(() => {
+    if (view === 'admin' && isLoggedIn) {
+      // Yönetici panelindeyken her 30 saniyede bir bulutu kontrol et
+      pollInterval.current = window.setInterval(() => {
+        loadData(false);
+      }, 30000);
+    } else {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    }
+    return () => {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    };
+  }, [view, isLoggedIn, loadData]);
 
   useEffect(() => {
     loadData();
@@ -56,7 +74,7 @@ const App: React.FC = () => {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, [loadData]);
+  }, []); // Sadece mount anında
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -68,10 +86,14 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
+    // UI'da hemen göster (İyimser Güncelleme)
     setCandidates(prev => [newCandidate, ...prev]);
+    
+    // DOĞRUDAN BULUTA KAYDET
     const isSaved = await storageService.saveCandidate(newCandidate);
     
     if (isSaved) {
+      // Arka planda AI Analizini başlat (Buluta yansıyacak)
       generateCandidateAnalysis(newCandidate, config).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
@@ -79,9 +101,10 @@ const App: React.FC = () => {
           setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
         }
       }).catch(err => console.error("AI Analiz Hatası:", err));
-      alert("Başvurunuz Akademi bulut sistemine kaydedildi.");
+      
+      alert("Başvurunuz başarıyla Yeni Gün Akademi bulut sistemine aktarıldı. Teşekkür ederiz.");
     } else {
-      alert("UYARI: İnternet sorunu! Verileriniz bu cihazda mühürlendi, bağlantı gelince buluta taşınacaktır.");
+      alert("DİKKAT: İnternet bağlantısı kurulamadı! Verileriniz tarayıcıda yedeklendi, bağlantı gelince otomatik buluta aktarılacaktır.");
     }
 
     setIsProcessing(false);
@@ -130,11 +153,11 @@ const App: React.FC = () => {
       </nav>
 
       <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)] relative">
-        {isLoading && (
+        {isLoading && candidates.length === 0 && (
           <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-[4rem]">
              <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Veriler Hazırlanıyor...</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Bulut Verileri Alınıyor...</p>
              </div>
           </div>
         )}
@@ -165,8 +188,8 @@ const App: React.FC = () => {
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>
             <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Bulut Senkronizasyonu</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Veritabanı ile El Sıkışılıyor...</p>
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Veritabanı Kaydı</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Yeni Aday Dosyası Oluşturuluyor...</p>
             </div>
           </div>
         </div>

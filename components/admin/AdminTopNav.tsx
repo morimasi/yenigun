@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface AdminTopNavProps {
   activeTab: string;
@@ -75,9 +75,9 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
                 className={`flex items-center gap-3 px-6 py-4 rounded-[2rem] bg-slate-900 text-white font-black text-[9px] uppercase tracking-widest transition-all hover:bg-black active:scale-95 shadow-lg ${isProcessing ? 'opacity-70' : ''}`}
               >
                 <svg className={`w-4 h-4 text-orange-500 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
                 </svg>
-                <span>{isProcessing ? 'SENKRONİZE EDİLİYOR...' : 'BULUTU SENKRONİZE ET'}</span>
+                <span>{isProcessing ? 'GÜNCELLENİYOR...' : 'ŞİMDİ TAZELA'}</span>
               </button>
 
               <button
@@ -93,12 +93,15 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
         </nav>
       </div>
       
-      {/* Senkronizasyon Durum Çubuğu */}
+      {/* Canlı Akış Durum Çubuğu */}
       <div className="flex justify-end px-12 -mt-2">
          <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-1.5 rounded-full border border-slate-100 shadow-sm">
-            <span className={`w-1.5 h-1.5 rounded-full ${isProcessing ? 'bg-orange-600 animate-pulse' : 'bg-emerald-500'}`}></span>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-               {isProcessing ? 'Veritabanı Okunuyor...' : `Son Başarılı Senkronizasyon: ${lastSync}`}
+            <span className="flex h-2 w-2 relative">
+               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">
+               CANLI AKIŞ AKTİF: Veriler her 30sn'de bir bulutla el sıkışıyor.
             </p>
          </div>
       </div>

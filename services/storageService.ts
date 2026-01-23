@@ -3,11 +3,8 @@ import { Candidate, GlobalConfig } from '../types';
 
 export const storageService = {
   async getCandidates(forceRefresh = false): Promise<Candidate[]> {
-    const localStr = localStorage.getItem('yeni_gun_candidates');
-    const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
-    
     try {
-      // Force refresh durumunda veya normalde buluttan en güncel halini iste
+      // BULUTTAN TAZE VERİ İSTE (Sıfır Önbellek)
       const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
         cache: 'no-store',
         headers: { 'Pragma': 'no-cache' }
@@ -16,102 +13,89 @@ export const storageService = {
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
         
-        // BULUTU MUTLAK GERÇEK KABUL ET
-        // Yerelde olup bulutta olmayanları (internet kesikken eklenenleri) koru
-        const remoteMap = new Map<string, Candidate>();
-        remoteData.forEach(r => remoteMap.set(r.id, r));
-
-        const pendingUploads: Candidate[] = [];
-        localData.forEach(l => {
-          if (!remoteMap.has(l.id)) {
-            pendingUploads.push(l);
-          } else {
-            // Eğer yereldeki veri, buluttakinden DAHA YENİ ise (timestamp ile kontrol)
-            const remoteMatch = remoteMap.get(l.id)!;
-            if ((l.timestamp || 0) > (remoteMatch.timestamp || 0)) {
-              pendingUploads.push(l);
-            }
-          }
-        });
-
-        // BEKLEYEN VERİLERİ BULUTA BAS
-        if (pendingUploads.length > 0) {
-          console.log(`${pendingUploads.length} adet yerel değişiklik buluta senkronize ediliyor...`);
-          for (const c of pendingUploads) {
-            await fetch('/api/candidates', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(c)
-            }).catch(err => console.error("Sync Error for ID:", c.id, err));
-          }
-          // Buluta bastıktan sonra tekrar güncel listeyi çek ki ID'ler ve timestamp'ler eşitlensin
-          const finalRes = await fetch(`/api/candidates?_t=${Date.now() + 1}`, { cache: 'no-store' });
-          const finalData: Candidate[] = await finalRes.json();
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(finalData));
-          return finalData.sort((a, b) => b.timestamp - a.timestamp);
-        }
-
-        // Değişiklik yoksa direkt buluttakini mühürle ve dön
+        // Yerel hafızayı güncelle (Yedek olarak)
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
         return remoteData.sort((a, b) => b.timestamp - a.timestamp);
       }
     } catch (e) {
-      console.warn("Bulut bağlantısı kurulamadı. Çevrimdışı mod aktif.");
+      console.warn("Bulut bağlantısı kurulamadı. Yerel yedek veriler yükleniyor...");
     }
+
+    // Bulut başarısız olursa yerel hafızaya dön
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
     return localData.sort((a, b) => b.timestamp - a.timestamp);
   },
 
   async saveCandidate(candidate: Candidate): Promise<boolean> {
-    const localStr = localStorage.getItem('yeni_gun_candidates');
-    const current = localStr ? JSON.parse(localStr) : [];
-    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
-    
+    // 1. Önce Buluta Yaz (Direct-to-DB)
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidate)
       });
-      return res.ok;
-    } catch (e) { return false; }
+      
+      if (res.ok) {
+        // Bulut başarılıysa yereli de güncelle
+        const localStr = localStorage.getItem('yeni_gun_candidates');
+        const current = localStr ? JSON.parse(localStr) : [];
+        localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
+        return true;
+      }
+    } catch (e) {
+      console.error("Direct Save Error:", e);
+    }
+    
+    // 2. Bulut başarısızsa sadece yerelde tut (Fallback)
+    const localStr = localStorage.getItem('yeni_gun_candidates');
+    const current = localStr ? JSON.parse(localStr) : [];
+    localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
+    return false;
   },
 
   async updateCandidate(candidate: Candidate): Promise<boolean> {
-    const localStr = localStorage.getItem('yeni_gun_candidates');
-    if (localStr) {
-      const current: Candidate[] = JSON.parse(localStr);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.map(c => c.id === candidate.id ? candidate : c)));
-    }
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidate)
       });
-      return res.ok;
-    } catch (e) { return false; }
+      if (res.ok) {
+        const localStr = localStorage.getItem('yeni_gun_candidates');
+        if (localStr) {
+          const current: Candidate[] = JSON.parse(localStr);
+          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.map(c => c.id === candidate.id ? candidate : c)));
+        }
+        return true;
+      }
+    } catch (e) { }
+    return false;
   },
 
   async deleteCandidate(id: string): Promise<boolean> {
-    const localStr = localStorage.getItem('yeni_gun_candidates');
-    if (localStr) {
-      const current: Candidate[] = JSON.parse(localStr);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => c.id !== id)));
-    }
     try { 
       const res = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); 
-      return res.ok;
-    } catch (e) { return false; }
+      if (res.ok) {
+        const localStr = localStorage.getItem('yeni_gun_candidates');
+        if (localStr) {
+          const current: Candidate[] = JSON.parse(localStr);
+          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => c.id !== id)));
+        }
+        return true;
+      }
+    } catch (e) { }
+    return false;
   },
 
   async deleteMultipleCandidates(ids: string[]): Promise<boolean> {
-    const localStr = localStorage.getItem('yeni_gun_candidates');
-    if (localStr) {
-      const current: Candidate[] = JSON.parse(localStr);
-      localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
-    }
     try {
       await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
+      const localStr = localStorage.getItem('yeni_gun_candidates');
+      if (localStr) {
+        const current: Candidate[] = JSON.parse(localStr);
+        localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
+      }
       return true;
     } catch (e) { return false; }
   },
