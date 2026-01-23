@@ -38,8 +38,7 @@ export default async function handler(request: Request) {
       );
     `;
 
-    // 2. SELF-HEALING MIGRATION: Eksik olabilecek tüm sütunları tek tek kontrol et ve ekle
-    // Postgres'de 'ADD COLUMN IF NOT EXISTS' güvenlidir ve tablo varsa hata vermez.
+    // 2. SELF-HEALING MIGRATION
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS email TEXT;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS age INTEGER;`;
@@ -53,6 +52,7 @@ export default async function handler(request: Request) {
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS answers JSONB DEFAULT '{}'::jsonb;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS admin_notes TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reminder_note TEXT;`; // Yeni kolon
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
@@ -77,6 +77,7 @@ export default async function handler(request: Request) {
         answers: row.answers || {},
         status: row.status || 'pending',
         adminNotes: row.admin_notes || '',
+        reminderNote: row.reminder_note || '',
         interviewSchedule: row.interview_schedule || null,
         report: row.report || null,
         algoReport: row.algo_report || null,
@@ -101,7 +102,7 @@ export default async function handler(request: Request) {
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
           experience_years, previous_institutions, all_trainings, answers, 
-          status, admin_notes, report, algo_report, interview_schedule, cv_data, updated_at
+          status, admin_notes, reminder_note, report, algo_report, interview_schedule, cv_data, updated_at
         ) VALUES (
           ${body.id}, 
           ${body.name || 'İsimsiz'}, 
@@ -118,6 +119,7 @@ export default async function handler(request: Request) {
           ${answers}, 
           ${body.status || 'pending'},
           ${body.adminNotes || null},
+          ${body.reminderNote || null},
           ${report},
           ${algoReport},
           ${interviewSchedule},
@@ -138,6 +140,7 @@ export default async function handler(request: Request) {
           answers = EXCLUDED.answers,
           status = EXCLUDED.status,
           admin_notes = EXCLUDED.admin_notes,
+          reminder_note = EXCLUDED.reminder_note,
           report = EXCLUDED.report,
           algo_report = EXCLUDED.algo_report,
           interview_schedule = EXCLUDED.interview_schedule,

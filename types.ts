@@ -1,3 +1,4 @@
+
 export enum Branch {
   OzelEgitim = 'Özel Eğitim Öğretmeni',
   Psikolog = 'Psikolog',
@@ -81,6 +82,7 @@ export interface Candidate {
   timestamp: number;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
   adminNotes?: string;
+  reminderNote?: string; // Akademik kısa not alanı
   report?: AIReport;
   algoReport?: AlgorithmicReport;
   cvData?: {
