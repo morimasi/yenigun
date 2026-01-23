@@ -22,11 +22,15 @@ export default async function handler(request: Request) {
   }
 
   if (!process.env.POSTGRES_URL) {
-    return new Response(JSON.stringify({ error: 'DB_ERROR', message: 'Veritabanı bağlantısı yok.' }), { status: 500, headers });
+    return new Response(JSON.stringify({ 
+      error: 'DB_ERROR', 
+      message: 'Veritabanı yapılandırması (POSTGRES_URL) bulunamadı. Lütfen ortam değişkenlerini kontrol edin.' 
+    }), { status: 500, headers });
   }
 
   try {
-    // Tabloyu oluştur (Basitleştirilmiş, her istekte kontrol edilse de hata üretmeyecek yapıda)
+    // Tabloyu ve Gerekli Fonksiyonları Oluştur
+    // Not: Edge runtime'da her zaman çalışması güvenlidir.
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -84,7 +88,6 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      // JSONB alanları için güvenli stringify
       const allTrainings = JSON.stringify(body.allTrainings || []);
       const answers = JSON.stringify(body.answers || {});
       const report = JSON.stringify(body.report || null);
@@ -151,6 +154,9 @@ export default async function handler(request: Request) {
     return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers });
   } catch (error: any) {
     console.error("SQL_FATAL_ERROR:", error.message);
-    return new Response(JSON.stringify({ error: 'DB_ERROR', detail: error.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ 
+      error: 'DB_EXECUTION_ERROR', 
+      message: `Veritabanı hatası: ${error.message}. Lütfen SQL şemasının doğru yüklendiğinden emin olun.` 
+    }), { status: 500, headers });
   }
 }

@@ -32,7 +32,6 @@ const App: React.FC = () => {
 
   const loadData = useCallback(async (isManual = false) => {
     if (isManual) setIsProcessing(true);
-    // İlk yüklemede loading göster, polling sırasında gösterme (sessiz güncelleme)
     if (!isManual && candidates.length === 0) setIsLoading(true);
 
     try {
@@ -52,10 +51,8 @@ const App: React.FC = () => {
     }
   }, [candidates.length]);
 
-  // Canlı Akış (Polling) Mekanizması
   useEffect(() => {
     if (view === 'admin' && isLoggedIn) {
-      // Yönetici panelindeyken her 30 saniyede bir bulutu kontrol et
       pollInterval.current = window.setInterval(() => {
         loadData(false);
       }, 30000);
@@ -74,7 +71,7 @@ const App: React.FC = () => {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
-  }, []); // Sadece mount anında
+  }, []);
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -86,14 +83,13 @@ const App: React.FC = () => {
       status: 'pending'
     };
 
-    // UI'da hemen göster (İyimser Güncelleme)
-    setCandidates(prev => [newCandidate, ...prev]);
-    
     // DOĞRUDAN BULUTA KAYDET
-    const isSaved = await storageService.saveCandidate(newCandidate);
+    const result = await storageService.saveCandidate(newCandidate);
     
-    if (isSaved) {
-      // Arka planda AI Analizini başlat (Buluta yansıyacak)
+    if (result.success) {
+      setCandidates(prev => [newCandidate, ...prev]);
+      
+      // Arka planda AI Analizini başlat
       generateCandidateAnalysis(newCandidate, config).then(async (report) => {
         if (report) {
           const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
@@ -104,7 +100,8 @@ const App: React.FC = () => {
       
       alert("Başvurunuz başarıyla Yeni Gün Akademi bulut sistemine aktarıldı. Teşekkür ederiz.");
     } else {
-      alert("DİKKAT: İnternet bağlantısı kurulamadı! Verileriniz tarayıcıda yedeklendi, bağlantı gelince otomatik buluta aktarılacaktır.");
+      // Hata mesajını detaylandır
+      alert(`BAŞVURU KAYDEDİLEMEDİ:\n${result.error}\n\nNot: Verileriniz tarayıcıda yedeklendi, bağlantı düzelince tekrar deneyebilirsiniz.`);
     }
 
     setIsProcessing(false);
@@ -169,8 +166,8 @@ const App: React.FC = () => {
             candidates={candidates} 
             config={config} 
             onUpdateCandidate={async (c) => { 
-              const ok = await storageService.updateCandidate(c); 
-              if(ok) setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); 
+              const res = await storageService.updateCandidate(c); 
+              if(res.success) setCandidates(prev => prev.map(x => x.id === c.id ? c : x)); 
             }}
             onDeleteCandidate={async (id) => { 
               const ok = await storageService.deleteCandidate(id);
@@ -188,8 +185,8 @@ const App: React.FC = () => {
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>
             <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Veritabanı Kaydı</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Yeni Aday Dosyası Oluşturuluyor...</p>
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Bulut Senkronizasyonu</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Aday Dosyası Mühürleniyor...</p>
             </div>
           </div>
         </div>
