@@ -71,10 +71,10 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Correctly toggle filters by using any[] for the intermediate array to bypass union type indexing constraints.
+  // Fix: Explicitly cast to string[] to ensure type compatibility during filter toggling and avoid unknown array issues
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
-      const current = (prev[category] as any[]) || [];
+      const current = (prev[category] as string[]) || [];
       const next = current.includes(value)
         ? current.filter(v => v !== value)
         : [...current, value];
