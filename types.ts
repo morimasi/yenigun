@@ -18,6 +18,14 @@ export interface FormStep {
   description: string;
 }
 
+export interface Question {
+  id: string;
+  text: string;
+  type: 'radio' | 'text' | 'checkbox';
+  options?: string[];
+  requiredBranch?: Branch[]; // Sadece bu branşlara gösterilir. Boşsa herkese gösterilir.
+}
+
 export interface AIReport {
   score: number;
   summary: string;
@@ -82,7 +90,7 @@ export interface Candidate {
   timestamp: number;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
   adminNotes?: string;
-  reminderNote?: string; // Akademik kısa not alanı
+  reminderNote?: string;
   report?: AIReport;
   algoReport?: AlgorithmicReport;
   cvData?: {
@@ -105,9 +113,9 @@ export interface GlobalConfig {
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
   aiPersona: {
-    skepticism: number; // 0-100
-    empathy: number;    // 0-100
-    formality: number;  // 0-100
+    skepticism: number;
+    empathy: number;
+    formality: number;
   };
   aiWeights: {
     ethics: number;
@@ -121,8 +129,8 @@ export interface GlobalConfig {
     allowMultipleApplications: boolean;
   };
   interviewSettings: {
-    defaultDuration: number; // minutes
-    bufferTime: number; // minutes
+    defaultDuration: number;
+    bufferTime: number;
     autoStatusAfterInterview: boolean;
     defaultMeetingLink: string;
   };

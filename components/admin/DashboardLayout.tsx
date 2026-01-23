@@ -6,6 +6,7 @@ import PipelineView from './PipelineView';
 import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
 import SettingsView from './SettingsView';
+import DecisionSupportView from './DecisionSupportView';
 import { exportService } from '../../services/exportService';
 
 interface DashboardLayoutProps {
@@ -19,7 +20,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'settings'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings'>('pipeline');
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
 
@@ -52,6 +53,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'pipeline': return <PipelineView {...props} />;
       case 'analytics': return <AnalyticsView candidates={props.candidates} />;
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
+      case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
       default: return <PipelineView {...props} />;
     }

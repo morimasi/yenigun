@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: GlobalConfig = {
 
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('yeni_gun_admin_token'));
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [config, setConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -43,7 +43,11 @@ const App: React.FC = () => {
         setConfig(prev => ({ ...prev, ...remoteConfig }));
         document.documentElement.style.setProperty('--primary-color', remoteConfig.primaryColor);
       }
-    } catch (e) {
+    } catch (e: any) {
+      if (e.message === "UNAUTHORIZED") {
+        setIsLoggedIn(false);
+        setView('admin');
+      }
       console.error("Yükleme hatası:", e);
     } finally {
       setIsLoading(false);
@@ -53,6 +57,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (view === 'admin' && isLoggedIn) {
+      loadData();
       pollInterval.current = window.setInterval(() => {
         loadData(false);
       }, 45000);
@@ -65,13 +70,31 @@ const App: React.FC = () => {
   }, [view, isLoggedIn, loadData]);
 
   useEffect(() => {
-    loadData();
     const loader = document.getElementById('boot-loader');
     if (loader) {
       loader.style.opacity = '0';
       setTimeout(() => loader.style.display = 'none', 500);
     }
   }, []);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    const result = await storageService.login(loginForm.username, loginForm.password);
+    if (result.success) {
+      setIsLoggedIn(true);
+      loadData();
+    } else {
+      alert(result.error || "Giriş hatası");
+    }
+    setIsProcessing(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('yeni_gun_admin_token');
+    setIsLoggedIn(false);
+    setView('candidate');
+  };
 
   const handleCandidateSubmit = async (data: any) => {
     setIsProcessing(true);
@@ -86,24 +109,12 @@ const App: React.FC = () => {
     const result = await storageService.saveCandidate(newCandidate);
     
     if (result.success) {
-      setCandidates(prev => [newCandidate, ...prev]);
-      
-      // Arka planda AI Analizini başlat (Kritik değil, biterse günceller)
-      generateCandidateAnalysis(newCandidate, config).then(async (report) => {
-        if (report) {
-          const finalCandidate = { ...newCandidate, report, timestamp: Date.now() };
-          await storageService.updateCandidate(finalCandidate);
-          setCandidates(prev => prev.map(c => c.id === candidateId ? finalCandidate : c));
-        }
-      }).catch(err => console.warn("AI Analiz (Arka Plan) Atlandı:", err));
-      
       alert("BAŞARILI: Başvurunuz Yeni Gün Akademi bulut sistemine kaydedildi.");
-      setView('candidate');
+      // Arka planda analiz tetikle (Giriş yapılmışsa listeye de ekler)
+      if (isLoggedIn) loadData(true);
     } else {
-      // Hata mesajı artık gerçek nedeni içeriyor
-      alert(`KRİTİK HATA:\n${result.error}\n\nLütfen kurum yönetimi ile iletişime geçiniz.`);
+      alert(`HATA:\n${result.error}`);
     }
-
     setIsProcessing(false);
   };
 
@@ -119,10 +130,28 @@ const App: React.FC = () => {
         <div className="max-w-md w-full p-16 bg-white rounded-[4rem] shadow-2xl border border-orange-100 animate-scale-in">
            <div className="w-20 h-20 bg-slate-900 rounded-[2rem] mx-auto mb-8 flex items-center justify-center text-white text-3xl font-black">YG</div>
            <h3 className="text-3xl font-black text-slate-900 mb-10 text-center uppercase tracking-tighter">Akademi Paneli</h3>
-           <form onSubmit={(e) => { e.preventDefault(); if(loginForm.password === 'yenigun2024') setIsLoggedIn(true); else alert("Hatalı Şifre"); }} className="space-y-6">
-              <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Yönetici Kimliği" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-              <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Giriş Anahtarı" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">Sistemi Aç</button>
+           <form onSubmit={handleAdminLogin} className="space-y-6">
+              <input 
+                type="text" 
+                className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" 
+                placeholder="Yönetici Kimliği" 
+                value={loginForm.username} 
+                onChange={e => setLoginForm({...loginForm, username: e.target.value})} 
+              />
+              <input 
+                type="password" 
+                className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" 
+                placeholder="Giriş Anahtarı" 
+                value={loginForm.password} 
+                onChange={e => setLoginForm({...loginForm, password: e.target.value})} 
+              />
+              <button 
+                type="submit" 
+                disabled={isProcessing}
+                className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              >
+                {isProcessing ? 'DOĞRULANIYOR...' : 'SİSTEMİ AÇ'}
+              </button>
            </form>
            <button onClick={() => setView('candidate')} className="w-full mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-colors">Aday Sayfasına Dön</button>
         </div>
@@ -145,11 +174,14 @@ const App: React.FC = () => {
             <button onClick={() => setView('candidate')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru</button>
             <button onClick={() => setView('admin')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Yönetim</button>
           </div>
+          {isLoggedIn && view === 'admin' && (
+            <button onClick={handleLogout} className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-700 ml-4">Güvenli Çıkış</button>
+          )}
         </div>
       </nav>
 
       <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)] relative">
-        {isLoading && candidates.length === 0 && (
+        {isLoading && view === 'admin' && (
           <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-[4rem]">
              <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
@@ -179,13 +211,13 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {isProcessing && view === 'candidate' && (
+      {isProcessing && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin shadow-lg"></div>
             <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Bulut Senkronizasyonu</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Aday Dosyası Mühürleniyor...</p>
+              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Sunucu Etkileşimi</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest animate-pulse">Lütfen Bekleyiniz...</p>
             </div>
           </div>
         </div>

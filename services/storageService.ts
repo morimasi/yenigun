@@ -7,19 +7,49 @@ export interface StorageResult {
 }
 
 export const storageService = {
+  getAuthHeader() {
+    const token = localStorage.getItem('yeni_gun_admin_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  },
+
+  async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('yeni_gun_admin_token', data.token);
+        return { success: true };
+      }
+      return { success: false, error: data.message || 'Giriş başarısız.' };
+    } catch (e) {
+      return { success: false, error: 'Sunucuya bağlanılamadı.' };
+    }
+  },
+
   async getCandidates(forceRefresh = false): Promise<Candidate[]> {
     try {
       const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
         cache: 'no-store',
-        headers: { 'Pragma': 'no-cache' }
+        headers: { 
+          'Pragma': 'no-cache',
+          ...this.getAuthHeader()
+        }
       });
 
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
         localStorage.setItem('yeni_gun_candidates', JSON.stringify(remoteData));
         return remoteData.sort((a, b) => b.timestamp - a.timestamp);
+      } else if (response.status === 401) {
+        localStorage.removeItem('yeni_gun_admin_token');
+        throw new Error("UNAUTHORIZED");
       }
-    } catch (e) {
+    } catch (e: any) {
+      if (e.message === "UNAUTHORIZED") throw e;
       console.warn("Bulut bağlantısı kurulamadı. Yerel yedek veriler yükleniyor...");
     }
 
@@ -37,22 +67,13 @@ export const storageService = {
       });
       
       if (res.ok) {
-        const localStr = localStorage.getItem('yeni_gun_candidates');
-        const current = localStr ? JSON.parse(localStr) : [];
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify([candidate, ...current]));
         return { success: true };
       } else {
         const errorData = await res.json().catch(() => ({}));
-        return { 
-          success: false, 
-          error: errorData.message || `Sunucu Hatası (Kod: ${res.status})` 
-        };
+        return { success: false, error: errorData.message || `Sunucu Hatası (${res.status})` };
       }
     } catch (e) {
-      return { 
-        success: false, 
-        error: "Ağ hatası: Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin." 
-      };
+      return { success: false, error: "Ağ hatası: Sunucuya ulaşılamıyor." };
     }
   },
 
@@ -60,20 +81,14 @@ export const storageService = {
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader()
+        },
         body: JSON.stringify(candidate)
       });
-      if (res.ok) {
-        const localStr = localStorage.getItem('yeni_gun_candidates');
-        if (localStr) {
-          const current: Candidate[] = JSON.parse(localStr);
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.map(c => c.id === candidate.id ? candidate : c)));
-        }
-        return { success: true };
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        return { success: false, error: errorData.message || "Güncelleme başarısız." };
-      }
+      if (res.ok) return { success: true };
+      return { success: false, error: "Güncelleme başarısız." };
     } catch (e) {
       return { success: false, error: "Sunucu bağlantı hatası." };
     }
@@ -81,34 +96,27 @@ export const storageService = {
 
   async deleteCandidate(id: string): Promise<boolean> {
     try { 
-      const res = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE' }); 
-      if (res.ok) {
-        const localStr = localStorage.getItem('yeni_gun_candidates');
-        if (localStr) {
-          const current: Candidate[] = JSON.parse(localStr);
-          localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => c.id !== id)));
-        }
-        return true;
-      }
-    } catch (e) { }
-    return false;
+      const res = await fetch(`/api/candidates?id=${id}`, { 
+        method: 'DELETE',
+        headers: this.getAuthHeader()
+      }); 
+      return res.ok;
+    } catch (e) { return false; }
   },
 
   async deleteMultipleCandidates(ids: string[]): Promise<boolean> {
     try {
-      await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { method: 'DELETE' })));
-      const localStr = localStorage.getItem('yeni_gun_candidates');
-      if (localStr) {
-        const current: Candidate[] = JSON.parse(localStr);
-        localStorage.setItem('yeni_gun_candidates', JSON.stringify(current.filter(c => !ids.includes(c.id))));
-      }
-      return true;
+      const results = await Promise.all(ids.map(id => fetch(`/api/candidates?id=${id}`, { 
+        method: 'DELETE',
+        headers: this.getAuthHeader()
+      })));
+      return results.every(r => r.ok);
     } catch (e) { return false; }
   },
 
   async getConfig(): Promise<GlobalConfig | null> {
     try {
-      const res = await fetch('/api/config');
+      const res = await fetch('/api/config', { headers: this.getAuthHeader() });
       return res.ok ? await res.json() : null;
     } catch (e) { return null; }
   },
@@ -117,7 +125,10 @@ export const storageService = {
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader()
+        },
         body: JSON.stringify(config)
       });
       return res.ok;

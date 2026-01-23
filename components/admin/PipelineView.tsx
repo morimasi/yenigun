@@ -74,17 +74,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Cast to any inside the state update to bypass strict computed property type checking and prevent unknown[] inference errors.
+  // Fix: Explicitly cast the current array to string[] to resolve the 'unknown[]' inference issue during dynamic key updates.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
-      const current = (prev[category] as any[]) || [];
+      const current = prev[category] as string[];
       const next = current.includes(value)
         ? current.filter(v => v !== value)
         : [...current, value];
       return {
         ...prev,
         [category]: next
-      } as any;
+      } as typeof filters;
     });
   };
 

@@ -40,6 +40,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
     { id: 'pipeline', label: 'ADAY AKIŞI', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2' },
     { id: 'analytics', label: 'STRATEJİK VERİ', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2' },
     { id: 'calendar', label: 'MÜLAKAT TAKVİMİ', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5' },
+    { id: 'decision', label: 'KARAR DESTEK', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
     { id: 'settings', label: 'SİSTEM AYARLARI', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0' }
   ];
 
@@ -76,7 +77,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
             <div className="flex-1 min-w-[20px]"></div>
 
             <div className="flex items-center gap-2 mr-2">
-              {/* Bulut Durum Göstergesi */}
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${dbStatus === 'online' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
                 <div className={`w-2 h-2 rounded-full ${dbStatus === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
                 <span className="text-[8px] font-black uppercase tracking-widest">{dbStatus === 'online' ? 'BULUT BAĞLI' : 'BAĞLANTI YOK'}</span>

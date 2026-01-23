@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
@@ -9,32 +10,30 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Akademik Denetleme Kurulu Başkanı ve Baş Mülakatçı.
-    GÖREV: Adayın klinik senaryo yanıtlarını, akademik geçmişini ve deneyimlerini analiz et. Mülakatçı için "Hile Saptama" ve "Derinlemesine Sorgulama" rehberi oluştur.
+    ROL: Yeni Gün Akademi Baş Denetçisi ve Klinik Uzman.
+    GÖREV: Adayın ${candidate.branch} branşındaki yeterliliğini analiz et. 
+    
+    ÖZEL TALİMATLAR:
+    1. BRANŞA ÖZEL ANALİZ: Adayın seçtiği branş (${candidate.branch}) ile verdiği cevaplardaki teknik tutarlılığı denetle. 
+       - Ergoterapist ise duyusal işlemleme, ADL ve propriosepsiyon bilgisine odaklan.
+       - Psikolog ise terapötik bağ, aile direnci ve kriz yönetimine odaklan.
+       - Özel Eğitimci ise ABA, veri toplama ve BEP revizyonuna odaklan.
+    2. LİYAKAT SKORLAMASI: Adayın deneyimi (${candidate.experienceYears} yıl) ile verdiği kararların olgunluk seviyesini karşılaştır.
+    3. HİLE SAPTAMA: Cevaplar yapay veya aşırı "kitabi" ise bunu mülakat rehberinde belirt.
+    
     DİL: Türkçe.
-    
-    ANALİZ KRİTERLERİ:
-    1. YANIT ÇAPRAZ DENETİMİ: Adayın verdiği spesifik cevapları (answers) incele. Sertifika listesiyle yanıtlarındaki teknik derinlik uyuşuyor mu? Örn: ABA eğitimi olduğunu söyleyip ceza odaklı bir yanıt seçmişse bunu belirt.
-    2. MÜLAKAT REHBERİ: Adayın "en zayıf" veya "en kaçamak" yanıt verdiği sorulardan yola çıkarak mülakatta sorulması gereken 3 kritik soru üret.
-    3. DİKKAT EDİLECEK NOKTALAR: Adayın kişilik testindeki veya klinik senaryolardaki riskli eğilimlerini (aşırı otoriterlik, tükenmişlik sinyali, etik esneklik) "Kritik Gözlemler" olarak raporla.
-    4. RİSK TESPİTİ: Çocuğun güvenliğini riske atan veya etik sınırları zorlayan yanıtları "Tehdit" olarak işaretle.
-    
     FORMAT: JSON.
   `;
 
   try {
     const contents: any = { 
       parts: [
-        { text: `Aday Verileri ve Yanıtları: ${JSON.stringify({
+        { text: `Aday Verileri: ${JSON.stringify({
             name: candidate.name,
             branch: candidate.branch,
-            education: {
-              university: candidate.university,
-              department: candidate.department
-            },
             experience: candidate.experienceYears,
             allTrainings: candidate.allTrainings,
-            answers: candidate.answers // Yanıtlar mülakat rehberi için kritik
+            answers: candidate.answers
           })}` }
       ] 
     };
@@ -69,8 +68,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
                 criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
                 answerAnomalies: { type: Type.ARRAY, items: { type: Type.STRING } }
-              },
-              required: ["strategicQuestions", "criticalObservations", "answerAnomalies"]
+              }
             },
             swot: {
               type: Type.OBJECT,
@@ -93,7 +91,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
     return JSON.parse(response.text || "{}");
   } catch (error: any) {
-    console.error("Gemini Flash Error:", error);
+    console.error("Gemini Analysis Error:", error);
     throw error;
   }
 };
