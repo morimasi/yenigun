@@ -1,4 +1,42 @@
 
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  stressLevel: number;
+  candidateResponse: string;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    criticalMistakes: string[];
+  };
+}
+
+export interface NeuralPrediction {
+  oneYearOutcome: 'Promotion' | 'Stability' | 'Burnout' | 'Turnover';
+  predictionConfidence: number;
+  behavioralPatterns: string[];
+  suggestedMentorType: string;
+  longTermCompatibilityScore: number;
+}
+
+// Global tipe yeni alanlar ekle
+export interface AIReport {
+  score: number;
+  integrityIndex: number;
+  socialMaskingScore: number;
+  summary: string;
+  recommendation: string;
+  deepAnalysis: any;
+  predictiveMetrics: any;
+  interviewGuidance: any;
+  swot: any;
+  // FAZ 4 Eklentileri
+  simulation?: SimulationResult;
+  neuralPrediction?: NeuralPrediction;
+}
+
 export interface FormStep {
   id: string;
   title: string;
@@ -40,51 +78,8 @@ export interface IntelligenceSegment {
   pros: string[];
   cons: string[];
   risks: string[];
-  contradictions: string[]; // Beyan ile uygulama arasındaki çelişkiler
+  contradictions: string[]; 
   competencyLevel: 'Junior' | 'Mid' | 'Senior' | 'Expert';
-}
-
-export interface AIReport {
-  score: number;
-  integrityIndex: number; // Dürüstlük ve Tutarlılık (0-100)
-  socialMaskingScore: number; // Kendini saklama eğilimi (0-100)
-  summary: string;
-  recommendation: string;
-  
-  // 10 Boyutlu Derin Analiz (Faz 1 - Intelligence Layer)
-  deepAnalysis: {
-    personality: IntelligenceSegment;        // Kişilik & Mizaç
-    formality: IntelligenceSegment;          // Resmiyet & Kurumsallık
-    parentStudentRelations: IntelligenceSegment; // Veli-Öğrenci İlişkileri
-    sustainability: IntelligenceSegment;     // Sürdürülebilirlik & Burnout
-    developmentOpenness: IntelligenceSegment; // Gelişime Açıklık
-    criticismTolerance: IntelligenceSegment;  // Eleştiriye Açıklık
-    workEthics: IntelligenceSegment;         // İş Ahlakı & Etik
-    pedagogicalAnalysis: IntelligenceSegment; // Pedagojik Analiz
-    technicalExpertise: IntelligenceSegment;  // Alan Yeterliliği
-    institutionalLoyalty: IntelligenceSegment; // Kurumsallık & Sadakat
-  };
-
-  predictiveMetrics: {
-    retentionProbability: number;
-    burnoutRisk: number;
-    learningVelocity: number;
-    leadershipPotential: number;
-  };
-
-  interviewGuidance: {
-    strategicQuestions: string[];
-    criticalObservations: string[];
-    answerAnomalies: string[];
-    simulationTasks: string[];
-  };
-  
-  swot: {
-    strengths: string[];
-    weaknesses: string[];
-    opportunities: string[];
-    threats: string[];
-  };
 }
 
 export interface AlgorithmicReport {

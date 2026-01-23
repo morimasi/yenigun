@@ -79,9 +79,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly handle array types for computed state updates to resolve TypeScript 'unknown[]' mismatch.
+  // Fixed: Cast current as string[] to ensure 'next' is correctly typed as string[] during computed property update, resolving the unknown[] assignment error.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const current = prev[category] as string[];
       const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
@@ -314,7 +314,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
           />
         ) : (
           <div className="h-full bg-white border-2 border-dashed border-slate-100 rounded-[4rem] flex flex-col items-center justify-center text-center p-24 opacity-30">
-             <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-8">
+             <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-8">
                 <svg className="w-12 h-12 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
              </div>
              <p className="text-slate-400 font-black uppercase tracking-[0.6em] text-[11px]">Detaylı İnceleme İçin Dosya Seçiniz</p>

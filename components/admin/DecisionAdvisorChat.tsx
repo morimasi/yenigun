@@ -10,7 +10,7 @@ interface DecisionAdvisorChatProps {
 
 const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, onClose }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: `Merhaba. Seçtiğiniz ${candidates.length} aday (${candidates.map(c => c.name).join(', ')}) üzerinde liyakat bazlı derinlemesine karşılaştırma yapmak için hazırım. Hangi klinik yetkinliği veya senaryoyu sorgulamak istersiniz?` }
+    { role: 'ai', text: `Merhaba Kurul Üyesi. Seçtiğiniz ${candidates.length} aday üzerinde mülakat verileri ve klinik test sonuçları ışığında çapraz sorgulama yapmaya hazırım. (Gemini-3-Pro Motoru Aktif)` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -30,94 +30,98 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
     setIsTyping(true);
 
     try {
+      // Karar destek gibi kritik ve çoklu veri karşılaştırma işleri için PRO model
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const systemInstruction = `
-        ROL: Yeni Gün Akademi Stratejik İK Danışmanı.
-        GÖREV: Aşağıdaki adayları yan yana karşılaştır ve yöneticinin sorusuna liyakat odaklı cevap ver.
-        ADAYLAR: ${JSON.stringify(candidates.map(c => ({
-          name: c.name,
-          branch: c.branch,
-          score: c.report?.score,
-          summary: c.report?.summary,
-          answers: c.answers,
-          swot: c.report?.swot
-        })))}
+        ROL: Yeni Gün Akademi Stratejik İK ve Klinik Kurul Danışmanı.
+        MODEL: Gemini-3-Pro.
+        GÖREV: Seçilen adayları (Adaylar: ${candidates.map(c => c.name).join(', ')}) liyakat ve uyum açısından karşılaştır.
         
-        ANALİZ KURALLARI:
-        1. Politik cevaplardan kaçın, adaylar arasındaki klinik farkları net bir şekilde ortaya koy.
-        2. "Bu aday daha iyi" demek yerine "Bu aday X senaryosunda daha başarılıdır çünkü..." de.
-        3. Adayların gerçek cevaplarını referans göster.
-        4. Kısa, öz ve profesyonel bir ton kullan.
+        KARAR PARAMETRELERİ:
+        1. Klinik Yetkinlik Derinliği.
+        2. Kurumsal Sadakat Projeksiyonu.
+        3. Veli İletişim Riskleri.
+        
+        CEVAP STİLİ: Net, liyakat odaklı, "X adayı şu konuda daha güçlüdür" şeklinde somut kanıtlı.
+        ADAY VERİLERİ: ${JSON.stringify(candidates)}
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Kullanıcı Sorusu: ${userText}`,
-        config: { systemInstruction, thinkingConfig: { thinkingBudget: 15000 } }
+        model: "gemini-3-pro-preview",
+        contents: `Analiz Talebi: ${userText}`,
+        config: { 
+          systemInstruction, 
+          thinkingConfig: { thinkingBudget: 30000 } 
+        }
       });
 
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Üzgünüm, şu an analiz yapamıyorum." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Şu an stratejik bir sonuç üretemiyorum." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Ağ bağlantısı hatası oluştu." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Muhakeme motoruna erişim sağlanamadı." }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-md flex items-center justify-end p-8 animate-fade-in no-print">
-      <div className="w-full max-w-2xl bg-white h-full rounded-[4rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-slide-right">
-        <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
-           <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/></svg>
+    <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-2xl flex items-center justify-end p-8 animate-fade-in no-print">
+      <div className="w-full max-w-3xl bg-white h-full rounded-[4.5rem] shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-slide-right relative">
+        <div className="p-10 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center relative overflow-hidden">
+           <div className="flex items-center gap-6 relative z-10">
+              <div className="w-14 h-14 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white shadow-2xl">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/></svg>
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">AI Karar Danışmanı</h3>
-                <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest mt-1">Canlı Liyakat Sorgulama</p>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Stratejik Karar Paneli</h3>
+                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Gemini-3-Pro Muhakeme Motoru</p>
               </div>
            </div>
-           <button onClick={onClose} className="p-4 hover:bg-rose-50 rounded-2xl text-rose-400 transition-all">
-             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+           <button onClick={onClose} className="p-5 hover:bg-rose-50 rounded-[2rem] text-rose-400 transition-all z-10">
+             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
            </button>
+           <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/5 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar" ref={scrollRef}>
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-               <div className={`max-w-[85%] p-6 rounded-[2.5rem] shadow-sm ${
+               <div className={`max-w-[85%] p-8 rounded-[3rem] shadow-sm relative ${
                  m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-slate-50 border border-slate-100 text-slate-800'
                }`}>
-                  <p className="text-xs font-bold leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                  <p className="text-[13px] font-bold leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                  {m.role === 'ai' && <div className="absolute -left-2 top-8 w-4 h-4 bg-slate-50 rotate-45 border-l border-b border-slate-100"></div>}
                </div>
             </div>
           ))}
           {isTyping && (
             <div className="flex justify-start">
-               <div className="bg-slate-50 p-6 rounded-3xl animate-pulse flex gap-2">
-                 <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce"></div>
-                 <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-100"></div>
-                 <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-200"></div>
+               <div className="bg-slate-900/5 p-8 rounded-[2.5rem] flex items-center gap-4">
+                 <div className="flex gap-2">
+                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce"></div>
+                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-100"></div>
+                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-200"></div>
+                 </div>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Sinyal İşleniyor (Pro-3)</span>
                </div>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleAsk} className="p-8 border-t border-slate-50 bg-white">
-           <div className="flex gap-4">
+        <form onSubmit={handleAsk} className="p-10 border-t border-slate-50 bg-white">
+           <div className="flex gap-5">
               <input 
                 autoFocus
                 type="text" 
-                className="flex-1 bg-slate-100 rounded-3xl p-5 text-sm font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all"
-                placeholder="Örn: Hangi aday otizm sınıfında daha soğukkanlı davranır?"
+                className="flex-1 bg-slate-50 rounded-[2.5rem] p-6 text-base font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all shadow-inner"
+                placeholder="Örn: Bu adaylar arasında sürdürülebilirlik skoru en yüksek olan kim?"
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />
               <button 
                 type="submit"
-                className="w-16 h-16 bg-slate-900 rounded-3xl flex items-center justify-center text-white hover:bg-orange-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
+                className="w-20 h-20 bg-slate-900 text-white rounded-[2.5rem] flex items-center justify-center hover:bg-orange-600 transition-all shadow-2xl active:scale-95 group"
               >
-                <svg className="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z"/></svg>
+                <svg className="w-8 h-8 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z"/></svg>
               </button>
            </div>
         </form>

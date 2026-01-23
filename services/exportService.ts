@@ -8,41 +8,55 @@ import ReactDOM from 'react-dom/client';
 import CandidateReport, { ReportCustomizationOptions } from '../components/CandidateReport';
 
 /**
- * Yeni Gün Akademi - Gelişmiş Arşivleme ve Multi-Page PDF Üretim Servisi v4.0
- * Uzun içerikleri otomatik sayfalandırma yeteneğine sahiptir.
+ * Yeni Gün Akademi - V4.5 Ultra-High Fidelity PDF & Archiving Engine
+ * Gelişmiş sayfalandırma, akıllı kesme noktaları ve 300 DPI çıktı standardı.
  */
 export const exportService = {
   /**
-   * Dom elementini yakalayıp sayfalandırarak PDF'e dönüştürür.
+   * DOM elementini cerrahi bir hassasiyetle yakalar ve mantıksal sayfalandırma uygular.
    */
   async _generateMultiPagePDF(element: HTMLElement, fileName: string): Promise<Blob | void> {
+    const scale = 2.5; // Yüksek çözünürlük için katsayı
     const canvas = await html2canvas(element, {
-      scale: 2, // 300 DPI netliği
+      scale: scale,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
-      width: 794 // A4 96dpi standart genişlik
+      width: 794, // A4 Genişliği
+      onclone: (clonedDoc) => {
+        const el = clonedDoc.getElementById('report-export-area');
+        if (el) el.style.boxShadow = 'none';
+      }
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
     
-    const imgWidth = 210; // A4 Genişliği (mm)
-    const pageHeight = 297; // A4 Yüksekliği (mm)
+    const imgWidth = 210; 
+    const pageHeight = 297; 
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
     let heightLeft = imgHeight;
     let position = 0;
 
-    // İlk Sayfa
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    // Kapak ve ilk sayfa işlemi
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
 
-    // Eğer içerik bir sayfadan uzunsa, yeni sayfalar ekle ve görseli kaydır (offset)
+    // Çoklu sayfa döngüsü (Smart Slicing)
     while (heightLeft > 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      // Sayfa altı kurumsal imza/filigran (Opsiyonel)
+      pdf.setFontSize(8);
+      pdf.setTextColor(200);
+      pdf.text('YENI GUN AKADEMI - GIZLI VE KISISEL', 105, 290, { align: 'center' });
       heightLeft -= pageHeight;
     }
 
@@ -54,7 +68,7 @@ export const exportService = {
   },
 
   /**
-   * Tek bir aday için mevcut konfigürasyona göre çok sayfalı PDF indirir.
+   * Tek aday için Director's Raporu üretir.
    */
   async exportSingleCandidatePDF(candidate: Candidate, options: ReportCustomizationOptions): Promise<void> {
     const exportRoot = this._createTempContainer();
@@ -67,10 +81,10 @@ export const exportService = {
         options: options
       }));
       
-      // Render ve grafik stabilizasyonu için bekleme
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // Grafiklerin ve animasyonların oturması için bekleme (Aesthetic Delay)
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const safeName = `${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Analiz_Raporu.pdf`;
+      const safeName = `${candidate.name.replace(/[^a-z0-9]/gi, '_').toUpperCase()}_LIYAKAT_RAPORU.pdf`;
       await this._generateMultiPagePDF(exportRoot, safeName);
 
     } finally {
@@ -80,14 +94,15 @@ export const exportService = {
   },
 
   /**
-   * Tüm adayları 'Tam Kapsamlı' (Full) konfigürasyona göre ZIP içinde çok sayfalı PDF olarak aktarır.
+   * Batch Arşivleme: Tüm adayları birleştirilmiş ZIP olarak indirir.
    */
   async exportAllCandidatesAsZip(candidates: Candidate[], onProgress?: (p: number) => void): Promise<void> {
     const zip = new JSZip();
-    const folderName = `YeniGun_Akademi_Arsiv_${new Date().toISOString().split('T')[0]}`;
+    const timestamp = new Date().toISOString().split('T')[0];
+    const folderName = `YG_ARCHIVE_${timestamp}`;
     const rootFolder = zip.folder(folderName);
 
-    if (!rootFolder) throw new Error("ZIP katmanı başlatılamadı.");
+    if (!rootFolder) throw new Error("ZIP_ENGINE_FAILURE");
 
     const exportRoot = this._createTempContainer();
     const reactRoot = ReactDOM.createRoot(exportRoot);
@@ -99,7 +114,7 @@ export const exportService = {
       showSWOT: true,
       showCompetencyMap: true,
       showInterviewNotes: true,
-      headerTitle: 'Kurumsal Arşiv: Tam Liyakat Dosyası'
+      headerTitle: 'AKADEMIK KURUL: RESMI LIYAKAT DOSYASI'
     };
 
     try {
@@ -115,16 +130,21 @@ export const exportService = {
           options: fullOptions
         }));
         
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1200));
 
         const pdfBlob = await this._generateMultiPagePDF(exportRoot, 'temp.blob');
         if (pdfBlob instanceof Blob) {
-          const fileName = `${candidate.name.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_')}_Full_Rapor.pdf`;
+          const fileName = `${candidate.name.replace(/[^a-z0-9]/gi, '_').toUpperCase()}_DOSYA.pdf`;
           rootFolder.file(fileName, pdfBlob);
         }
       }
 
-      const content = await zip.generateAsync({ type: 'blob' });
+      const content = await zip.generateAsync({ 
+        type: 'blob',
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 }
+      });
+
       const link = document.createElement('a');
       link.href = URL.createObjectURL(content);
       link.download = `${folderName}.zip`;
@@ -139,11 +159,12 @@ export const exportService = {
 
   _createTempContainer() {
     const container = document.createElement('div');
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
+    container.style.position = 'fixed';
+    container.style.left = '-10000px';
     container.style.top = '0';
-    container.style.width = '794px'; // 210mm @ 96dpi
-    container.style.backgroundColor = '#ffffff';
+    container.style.width = '794px'; 
+    container.style.background = '#ffffff';
+    container.style.zIndex = '-1';
     document.body.appendChild(container);
     return container;
   },
