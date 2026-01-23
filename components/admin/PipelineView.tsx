@@ -71,17 +71,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Line 111 - Use 'any' casting on 'prev' to allow dynamic indexing without strict union type checks that cause 'unknown[]' errors.
+  // Fix: Improved toggleFilter typing to resolve 'unknown[]' and 'string[]' assignment errors in the state update.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
-    setFilters((prev: any) => {
-      const current = prev[category] as string[];
+    setFilters(prev => {
+      const current = (prev[category] as string[]) || [];
       const next = current.includes(value) 
         ? current.filter((v: string) => v !== value) 
         : [...current, value];
       return { 
         ...prev, 
         [category]: next 
-      };
+      } as typeof filters;
     });
   };
 

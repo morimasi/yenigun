@@ -105,202 +105,157 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     if (step.id === 'personal') {
       return (
         <div className="space-y-6 animate-fade-in">
-          {/* ÜST DASHBOARD PANELİ: ANA KİMLİK */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* ÜST PANEL: TEMEL BİLGİLER */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            {/* SOL BLOK: KİMLİK VE DEMOGRAFİ (7/12) */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-[2.5rem] border border-orange-50 shadow-2xl shadow-orange-900/5 space-y-5">
-               <div className="flex justify-between items-center px-2">
-                 <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                   <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 01. PROFİL KARTI
-                 </h3>
-                 <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Temel Veri Seti</span>
-               </div>
+            {/* SOL: AD/İLETİŞİM (Kompakt Grid) */}
+            <div className="lg:col-span-8 bg-white p-5 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+               <h3 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] mb-2">01. Bireysel Profil</h3>
                
-               <div className="grid grid-cols-1 gap-3">
-                  <div className="relative group">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Tam Adınız</label>
                     <input
                       type="text"
-                      className="w-full rounded-2xl border-2 border-slate-50 p-4 font-black text-base text-slate-900 focus:border-orange-500 outline-none transition-all bg-slate-50/50 placeholder:text-slate-300"
+                      className="w-full rounded-xl border border-slate-100 p-3 font-bold text-slate-900 focus:border-orange-500 outline-none transition-all bg-slate-50/30"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="AD SOYAD"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="email"
-                      className="w-full rounded-2xl border-2 border-slate-50 p-3.5 font-bold text-[13px] text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/50"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      placeholder="E-POSTA"
-                    />
-                    <input
-                      type="text"
-                      className="w-full rounded-2xl border-2 border-slate-50 p-3.5 font-bold text-[13px] text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/50"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      placeholder="TELEFON"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-12 gap-3 pt-1">
-                    <div className="col-span-3">
-                      <div className="bg-slate-50/50 border-2 border-slate-50 rounded-2xl p-3 flex flex-col items-center justify-center group-focus-within:border-orange-500 transition-all">
-                        <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">YAŞ</label>
-                        <input
-                          type="number"
-                          min="18"
-                          className="w-full bg-transparent font-black text-lg text-slate-900 outline-none text-center"
-                          value={formData.age}
-                          onChange={(e) => setFormData({...formData, age: parseInt(e.target.value) || 0})}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-span-9 flex bg-slate-100 p-1 rounded-2xl h-[64px]">
-                      {['Kadın', 'Erkek', 'Belirtilmemiş'].map(g => (
-                        <button
-                          key={g}
-                          type="button"
-                          onClick={() => setFormData({...formData, gender: g as Gender})}
-                          className={`flex-1 py-1 rounded-xl text-[8px] font-black uppercase transition-all ${formData.gender === g ? 'bg-white text-orange-600 shadow-md scale-[0.97]' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          {g === 'Belirtilmemiş' ? 'DİĞER' : g}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-               </div>
-            </div>
-
-            {/* SAĞ BLOK: UZMANLIK (5/12) */}
-            <div className="lg:col-span-5 bg-white p-6 rounded-[2.5rem] border border-orange-50 shadow-2xl shadow-orange-900/5 flex flex-col">
-               <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 px-2">
-                 <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 02. UZMANLIK
-               </h3>
-               <div className="space-y-4 flex-1">
-                 <div className="relative">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Branş / Uzmanlık</label>
                     <select
-                      className="w-full rounded-2xl border-2 border-slate-50 p-4 font-black text-[13px] text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/50 appearance-none cursor-pointer"
+                      className="w-full rounded-xl border border-slate-100 p-3 font-bold text-slate-900 focus:border-orange-500 outline-none transition-all bg-slate-50/30 appearance-none"
                       value={formData.branch}
                       onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}
                     >
                       {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-orange-600">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">E-Posta</label>
+                    <input
+                      type="email"
+                      className="w-full rounded-xl border border-slate-100 p-3 font-bold text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/30"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      placeholder="E-POSTA"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Telefon</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-xl border border-slate-100 p-3 font-bold text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/30"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      placeholder="TELEFON"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Yaş / Cinsiyet</label>
+                    <div className="flex gap-2">
+                       <input
+                        type="number"
+                        className="w-16 rounded-xl border border-slate-100 p-3 font-bold text-slate-900 outline-none bg-slate-50/30 text-center"
+                        value={formData.age}
+                        onChange={(e) => setFormData({...formData, age: parseInt(e.target.value) || 0})}
+                      />
+                      <select 
+                        className="flex-1 rounded-xl border border-slate-100 p-3 font-bold text-slate-900 outline-none bg-slate-50/30"
+                        value={formData.gender}
+                        onChange={(e) => setFormData({...formData, gender: e.target.value as Gender})}
+                      >
+                         {['Belirtilmemiş', 'Kadın', 'Erkek'].map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
                     </div>
-                 </div>
-                 
-                 <div className="space-y-3">
-                    <SearchableSelect 
-                      label="ÜNİVERSİTE"
-                      options={TURKISH_UNIVERSITIES}
-                      value={formData.university}
-                      placeholder="Ara..."
-                      onChange={(val) => setFormData({...formData, university: val})}
-                    />
-                    <SearchableSelect 
-                      label="BÖLÜM"
-                      options={TURKISH_DEPARTMENTS}
-                      value={formData.department}
-                      placeholder="Ara..."
-                      onChange={(val) => setFormData({...formData, department: val})}
-                    />
-                 </div>
+                  </div>
                </div>
             </div>
-          </div>
 
-          {/* ALT DASHBOARD PANELİ: DENEYİM VE DOSYA */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 bg-white p-6 rounded-[2.5rem] border border-orange-50 shadow-xl shadow-orange-900/5">
-              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 px-2">
-                <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 03. KLİNİK GEÇMİŞ
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                <div className="sm:col-span-1">
-                   <div className="bg-slate-50/50 border-2 border-slate-50 rounded-2xl p-4 flex flex-col items-center justify-center">
-                     <label className="text-[7px] font-black text-orange-600 uppercase mb-2 tracking-widest">YIL</label>
-                     <input
-                      type="number"
-                      className="w-full bg-transparent font-black text-3xl text-slate-900 outline-none text-center"
-                      value={formData.experienceYears}
-                      onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value) || 0})}
-                    />
-                   </div>
-                </div>
-                <div className="sm:col-span-4">
-                   <textarea
-                    className="w-full rounded-2xl border-2 border-slate-50 p-4 font-bold text-slate-800 focus:border-orange-500 outline-none transition-all bg-slate-50/50 h-[92px] resize-none text-[12px] placeholder:text-slate-300"
-                    value={formData.previousInstitutions}
-                    onChange={(e) => setFormData({...formData, previousInstitutions: e.target.value})}
-                    placeholder="Daha önce çalıştığınız kurumlar ve pozisyonlar..."
-                  />
-                </div>
-              </div>
-            </div>
-
+            {/* SAĞ: CV / DOSYA (Kompakt Dropzone) */}
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className={`lg:col-span-4 p-6 rounded-[2.5rem] border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center group shadow-xl ${
-                formData.cvData ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 hover:border-orange-400 text-slate-400'
+              className={`lg:col-span-4 p-6 rounded-[2rem] border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center ${
+                formData.cvData ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:border-orange-400 text-slate-400'
               }`}
             >
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,image/*" />
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all ${
-                formData.cvData ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300 group-hover:text-orange-600'
-              }`}>
-                {formData.cvData ? (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                )}
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${formData.cvData ? 'bg-orange-600' : 'bg-white shadow-sm'}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d={formData.cvData ? "M5 13l4 4L19 7" : "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"} />
+                </svg>
               </div>
-              <h4 className="text-[9px] font-black uppercase tracking-widest text-center">{formData.cvData ? 'CV GÜNCELLENDİ' : 'DİJİTAL PORTFOLYO / CV'}</h4>
-              <p className="text-[7px] font-bold opacity-50 mt-1 uppercase">{formData.cvData ? formData.cvData.fileName : 'PDF veya Görsel'}</p>
+              <h4 className="text-[10px] font-black uppercase tracking-widest">{formData.cvData ? 'CV YÜKLENDİ' : 'CV / PORTFOLYO YÜKLE'}</h4>
+              <p className="text-[8px] font-bold opacity-60 mt-1 uppercase">{formData.cvData ? formData.cvData.fileName : 'PDF / JPG (MAX 5MB)'}</p>
             </div>
           </div>
 
-          {/* AKREDİTASYON PANELİ - ULTRA KOMPAKT GRID */}
-          <div className="bg-white p-8 rounded-[3rem] border border-orange-50 shadow-2xl shadow-orange-900/10">
-            <div className="flex justify-between items-center mb-6 px-2">
-               <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 04. KLİNİK AKREDİTASYONLAR
-               </h3>
-               <div className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg shadow-lg">
-                  <span className="text-[8px] font-black text-white uppercase tracking-widest">{formData.allTrainings.length} SEÇİLİ</span>
-               </div>
+          {/* ORTA PANEL: AKADEMİK GEÇMİŞ */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+             <div className="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+                <h3 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">02. Akademik Geçmiş</h3>
+                <div className="grid grid-cols-1 gap-4">
+                   <SearchableSelect label="Mezun Olunan Üniversite" options={TURKISH_UNIVERSITIES} value={formData.university} onChange={(v) => setFormData({...formData, university: v})} />
+                   <SearchableSelect label="Mezun Olunan Bölüm" options={TURKISH_DEPARTMENTS} value={formData.department} onChange={(v) => setFormData({...formData, department: v})} />
+                </div>
+             </div>
+             <div className="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+                <h3 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">03. Klinik Deneyim</h3>
+                <div className="grid grid-cols-1 gap-4">
+                   <div className="flex gap-4">
+                      <div className="w-24 space-y-1.5">
+                        <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Tecrübe (Yıl)</label>
+                        <input type="number" className="w-full rounded-xl border border-slate-100 p-3 font-black text-slate-900 outline-none bg-slate-50/30 text-center" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value) || 0})} />
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Daha Önceki Kurumlar</label>
+                        <input type="text" className="w-full rounded-xl border border-slate-100 p-3 font-bold text-slate-800 outline-none bg-slate-50/30" value={formData.previousInstitutions} onChange={(e) => setFormData({...formData, previousInstitutions: e.target.value})} placeholder="Kurum adlarını virgülle ayırın..." />
+                      </div>
+                   </div>
+                   <div className="p-4 bg-orange-50/50 rounded-xl border border-orange-100/50">
+                      <p className="text-[10px] font-bold text-orange-800 leading-tight">
+                        * Verdiğiniz deneyim bilgileri, senaryo testindeki liyakat puanlamanızı doğrudan etkileyecektir.
+                      </p>
+                   </div>
+                </div>
+             </div>
+          </div>
+
+          {/* ALT PANEL: SERTİFİKALAR (Kompakt Chip Dizilimi) */}
+          <div className="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">04. Akreditasyonlar ve Eğitimler</h3>
+              <span className="text-[9px] font-black bg-slate-900 text-white px-3 py-1 rounded-full">{formData.allTrainings.length} SEÇİLİ</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {CERTIFICATION_LIST.map((cert) => (
                 <button
                   key={cert}
                   type="button"
                   onClick={() => toggleTraining(cert)}
-                  className={`p-2.5 rounded-xl border transition-all text-left text-[8px] font-black uppercase tracking-tight flex items-center gap-2 relative overflow-hidden ${
+                  className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-tight transition-all border ${
                     formData.allTrainings.includes(cert)
-                      ? 'bg-orange-600 border-orange-600 text-white shadow-lg -translate-y-0.5'
-                      : 'bg-slate-50 border-transparent text-slate-400 hover:border-orange-200 hover:bg-white'
+                      ? 'bg-orange-600 border-orange-600 text-white shadow-md'
+                      : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
                   }`}
                 >
-                  <div className={`w-2 h-2 rounded-full border-2 shrink-0 ${formData.allTrainings.includes(cert) ? 'border-white bg-white' : 'border-slate-200'}`} />
-                  <span className="truncate">{cert.split('(')[0]}</span>
+                  {cert.split('(')[0].trim()}
                 </button>
               ))}
-            </div>
-            <div className="mt-6 flex items-center gap-4">
-               <div className="flex-1 bg-slate-50 rounded-xl p-1 px-3 border border-slate-100 flex items-center gap-3">
-                 <span className="text-[7px] font-black text-slate-400 uppercase whitespace-nowrap">DİĞER:</span>
+              <div className="flex-1 min-w-[200px]">
                  <input
                   type="text"
-                  className="w-full bg-transparent p-2 text-[10px] font-bold text-slate-800 outline-none"
+                  className="w-full bg-slate-100 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-700 outline-none border border-transparent focus:border-orange-600"
                   value={otherTrainings}
                   onChange={(e) => setOtherTrainings(e.target.value)}
-                  placeholder="Ek eğitimlerinizi buraya ekleyin..."
+                  placeholder="Diğer eğitimleri buraya yazın..."
                 />
-               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -308,42 +263,49 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     }
 
     return (
-      <div className="space-y-16 py-4">
+      <div className="space-y-10 animate-fade-in">
         {questions.map((q: any, idx: number) => (
-          <div key={q.id} className="animate-fade-in relative group" style={{ animationDelay: `${idx * 0.1}s` }}>
-            <div className="flex items-start gap-6 mb-8">
-              <span className="shrink-0 w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-lg font-black shadow-xl shadow-orange-100">{idx + 1}</span>
-              <label className="text-2xl font-black text-slate-900 leading-tight tracking-tight pt-1">{q.text}</label>
+          <div key={q.id} className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div className="flex items-start gap-4 md:gap-6 mb-6">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-sm md:text-lg font-black shrink-0 shadow-lg">
+                {idx + 1}
+              </div>
+              <h4 className="text-xl md:text-2xl font-black text-slate-900 leading-tight tracking-tight pt-1">
+                {q.text}
+              </h4>
             </div>
-            <div className="grid grid-cols-1 gap-4 ml-16">
+            
+            <div className="grid grid-cols-1 gap-3 pl-0 md:pl-16">
               {q.type === 'radio' ? (
                 q.options.map((opt: string) => (
                   <button
                     key={opt}
                     onClick={() => updateAnswer(q.id, opt)}
-                    className={`text-left p-6 rounded-[2rem] border-2 transition-all font-bold text-base relative overflow-hidden group/btn ${
+                    className={`text-left p-4 md:p-5 rounded-2xl border-2 transition-all font-bold text-sm md:text-base relative ${
                       formData.answers[q.id] === opt 
-                      ? 'bg-orange-600 border-orange-600 text-white shadow-2xl translate-x-3' 
-                      : 'bg-white border-orange-50 text-slate-600 hover:border-orange-300 hover:bg-orange-50/30'
+                      ? 'bg-orange-600 border-orange-600 text-white shadow-xl scale-[1.01] z-10' 
+                      : 'bg-slate-50 border-slate-50 text-slate-600 hover:border-slate-200 hover:bg-white'
                     }`}
                   >
-                    <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${formData.answers[q.id] === opt ? 'border-white bg-white' : 'border-slate-300'}`}>
+                          {formData.answers[q.id] === opt && <div className="w-2 h-2 bg-orange-600 rounded-full"></div>}
+                       </div>
                        <span>{opt}</span>
-                       {formData.answers[q.id] === opt && (
-                         <svg className="w-6 h-6 animate-bounce-x" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                       )}
                     </div>
                   </button>
                 ))
               ) : (
                 <textarea
-                  className="w-full rounded-[2.5rem] border-2 border-orange-100 p-8 h-48 focus:border-orange-500 focus:ring-4 focus:ring-orange-50 outline-none font-semibold text-slate-800 resize-none bg-orange-50/10 shadow-inner"
+                  className="w-full rounded-2xl border-2 border-slate-100 p-6 h-40 focus:border-orange-500 outline-none font-semibold text-slate-800 resize-none bg-slate-50/30"
                   value={formData.answers[q.id] as string || ''}
                   onChange={(e) => updateAnswer(q.id, e.target.value)}
-                  placeholder="Lütfen bu durumu detaylandırınız..."
+                  placeholder="Yaklaşımınızı ve teknik gerekçelerinizi buraya yazın..."
                 />
               )}
             </div>
+            {/* Arka Plan Dekorasyonu */}
+            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-slate-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
           </div>
         ))}
       </div>
@@ -351,44 +313,70 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
-      <div className="bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(234,88,12,0.15)] overflow-hidden border border-orange-100">
-        <div className="bg-slate-900 p-12 md:p-16 text-white relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px]"></div>
-          <div className="absolute right-16 top-16 z-10 hidden md:block">
-            <div className="w-24 h-24 rounded-full border-8 border-white/5 flex items-center justify-center font-black text-2xl relative">
-              <svg className="absolute w-full h-full transform -rotate-90">
-                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/10" />
-                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={251} strokeDashoffset={251 - (251 * progress) / 100} className="text-orange-600 transition-all duration-700" />
-              </svg>
-              <span className="relative">%{Math.round(progress)}</span>
+    <div className="max-w-5xl mx-auto px-2 md:px-4">
+      <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-2xl overflow-hidden border border-white">
+        
+        {/* HEADER: DİNAMİK PROGRESS */}
+        <div className="bg-slate-900 p-8 md:p-12 text-white relative">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-4">
+               <span className="px-3 py-1 bg-orange-600 text-[10px] font-black uppercase rounded-lg tracking-widest">Adım {currentStep + 1} / {FORM_STEPS.length}</span>
+               <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-orange-600 transition-all duration-700" style={{ width: `${progress}%` }}></div>
+               </div>
             </div>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-2 leading-none">{FORM_STEPS[currentStep].title}</h1>
+            <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase tracking-widest opacity-80">{FORM_STEPS[currentStep].description}</p>
           </div>
-          <div className="max-w-2xl relative z-10">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4 leading-none">{FORM_STEPS[currentStep].title}</h1>
-            <p className="text-orange-500 font-bold uppercase tracking-[0.2em] text-[10px] opacity-80">{FORM_STEPS[currentStep].description}</p>
+          {/* Mobil İlerleme Halkası */}
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden md:block">
+             <div className="w-20 h-20 rounded-full border-4 border-white/5 flex items-center justify-center text-xl font-black text-orange-600">
+               %{Math.round(progress)}
+             </div>
           </div>
         </div>
         
-        <div className="p-8 md:p-14 min-h-[600px] bg-gradient-to-b from-white to-slate-50/20">
+        {/* FORM GÖVDESİ */}
+        <div className="p-4 md:p-10 min-h-[500px]">
           {renderStepContent()}
         </div>
 
-        <div className="p-8 md:p-12 bg-white border-t border-orange-50 flex justify-between items-center">
+        {/* NAVİGASYON: ALT BAR */}
+        <div className="p-6 md:p-10 bg-white border-t border-slate-100 flex justify-between items-center sticky bottom-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
           <button 
             onClick={() => currentStep > 0 && setCurrentStep(c => c - 1)} 
-            disabled={currentStep === 0} 
-            className={`px-8 py-4 font-black text-[9px] uppercase tracking-[0.2em] transition-all rounded-2xl ${currentStep === 0 ? 'opacity-0' : 'text-slate-400 hover:text-orange-600 hover:bg-orange-50'}`}
+            className={`px-6 py-3 font-black text-[10px] uppercase tracking-widest transition-all rounded-xl ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-orange-600 hover:bg-orange-50'}`}
           >
-            ← GERİ
+            ← GERİ DÖN
           </button>
-          <button 
-            onClick={handleNext} 
-            className="px-12 py-5 bg-orange-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-orange-700 shadow-[0_20px_40px_-10px_rgba(234,88,12,0.3)] transition-all hover:-translate-y-1 active:scale-95"
-          >
-            {currentStep === FORM_STEPS.length - 1 ? 'ANALİZİ BAŞLAT' : 'SONRAKİ ADIM →'}
-          </button>
+          
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleNext} 
+              className="px-8 md:px-12 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-orange-600 shadow-xl transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+            >
+              {currentStep === FORM_STEPS.length - 1 ? (
+                <>
+                  <span>BAŞVURUYU TAMAMLA</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                </>
+              ) : (
+                <>
+                  <span>İLERLE</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+      </div>
+
+      {/* FOOTER BİLGİ */}
+      <div className="mt-8 text-center pb-10">
+         <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] leading-relaxed">
+           YENİ GÜN AKADEMİ ADAY DEĞERLENDİRME SİSTEMİ <br />
+           <span className="text-orange-600/50">LİYAKAT • BİLİMSEL TEMELLİ YAKLAŞIM • ETİK DEĞERLER</span>
+         </p>
       </div>
     </div>
   );
