@@ -1,80 +1,73 @@
 
-import { Candidate, AlgorithmicReport, Branch } from './types';
+import { Candidate, AlgorithmicReport, Branch, WeightedOption } from './types';
+import { BRANCH_QUESTIONS } from './constants';
 
-/**
- * Yeni Gün Akademi - Stratejik Analiz Motoru v6.0
- * Deterministik dürüstlük ve profesyonel tutarlılık denetimi.
- */
 export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicReport => {
-  let ethicsPoints = 0;
-  let crisisPoints = 0;
-  let reliabilityPoints = 100;
+  const scores: Record<string, number[]> = {
+    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: []
+  };
+  
   const riskFlags: string[] = [];
   const patterns: string[] = [];
+  let reliabilityPoints = 100;
 
-  const answers = candidate.answers;
+  // Tüm soruları tara ve ağırlıkları topla
+  Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
+    const answer = candidate.answers[q.id];
+    if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
+      const selectedOption = q.weightedOptions.find(o => o.label === answer);
+      if (selectedOption) {
+        scores[selectedOption.category].push(selectedOption.weight * 100);
+        
+        // Kritik eşik kontrolü (0.3 altı risk bayrağı çeker)
+        if (selectedOption.weight < 0.4) {
+          riskFlags.push(`Kritik Karar Riski: "${q.text.slice(0, 30)}..." sorusunda düşük liyakat puanlı yaklaşım sergilendi.`);
+        }
+      }
+    }
+  });
+
+  // Kategori ortalamalarını hesapla
+  const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 70;
+
+  const ethicsScore = getAvg(scores.ethics);
+  const pedagogyScore = getAvg(scores.pedagogy);
+  const clinicalScore = getAvg(scores.clinical);
+  const crisisScore = getAvg(scores.crisis);
+  const resilienceScore = getAvg(scores.resilience);
+  const fitScore = getAvg(scores.fit);
+
+  // Deneyim ve Güvenilirlik Denetimi
   const exp = candidate.experienceYears || 0;
-  
-  // allTrainings bir array olduğu için önce birleştiriyoruz
-  const trainingsStr = Array.isArray(candidate.allTrainings) 
-    ? candidate.allTrainings.join(' ').toLowerCase() 
-    : String(candidate.allTrainings || '').toLowerCase();
-  
-  // 1. DÜRÜSTLÜK & MANTIK DENETİMİ (CV CROSS-CHECK)
-  const advancedKeywords = ['aba', 'denver', 'wisc', 'floortime', 'disleksi', 'otizm', 'pecs'];
-  const trainingCount = advancedKeywords.filter(kw => trainingsStr.includes(kw)).length;
-
-  // Tutarsızlık: Düşük deneyime rağmen çok fazla ileri düzey eğitim beyanı
-  if (exp < 2 && trainingCount > 4) {
-    reliabilityPoints -= 30;
-    riskFlags.push("İstisnai Eğitim Yoğunluğu: Düşük kıdeme rağmen beyan edilen sertifika sayısı hayatın olağan akışıyla çelişiyor (CV Şişirme Riski).");
-  }
-
-  // Tutarsızlık: Yüksek deneyime rağmen branşın temel eğitimlerinin eksikliği
-  if (exp > 10 && trainingCount < 1) {
-    reliabilityPoints -= 15;
-    riskFlags.push("Mesleki Statiklik: Uzun deneyim süresine rağmen güncel metodolojik eğitim beyanı bulunmuyor.");
-  }
-
-  // 2. KRİZ YÖNETİMİ & MASKELER
-  const priorityAns = answers['prioritization_1'] as string;
-  if (priorityAns?.includes('Hiçbirini ihmal etmem')) {
-    reliabilityPoints -= 25;
-    riskFlags.push("Maskeleme Belirtisi: İnsani sınırları kabul etmeyen, gerçekçi olmayan 'mükemmeliyetçi' yaklaşım tespiti.");
-  } else if (priorityAns?.includes('Öğrenciyi')) {
-    crisisPoints += 50;
-    patterns.push("Analitik Önceliklendirme");
-  }
-
-  // 3. ETİK SINIRLAR
-  const bribeAns = answers['clinical_error'] as string; // Soru ID'si güncellendi
-  if (bribeAns?.includes('Derhal hem aileye hem yönetime')) {
-    ethicsPoints += 50;
-    patterns.push("Yüksek Kurumsal Aidiyet");
-  } else {
+  if (exp < 2 && (clinicalScore > 90 || ethicsScore > 90)) {
     reliabilityPoints -= 20;
-    riskFlags.push("Sınır İhlali Eğilimi: Bireysel inisiyatifi kurumsal etik kuralların önünde tutma eğilimi.");
+    patterns.push("Teorik İdealizm");
   }
 
-  // 4. BRANŞ SPESİFİK ANALİZ
-  if (candidate.branch === Branch.OzelEgitim && !trainingsStr.includes('otizm') && !trainingsStr.includes('aba')) {
-    riskFlags.push("Branş Eksikliği: Özel eğitim branşında temel kabul edilen metodolojik (ABA/Otizm) donanım eksiği.");
+  if (fitScore < 50 && ethicsScore > 80) {
+    patterns.push("Kuralcı Ama Uyumsuz");
   }
 
   const overallScore = Math.round(
-    (ethicsPoints * 0.4) + 
-    (crisisPoints * 0.3) + 
-    (Math.min(exp * 8, 100) * 0.1) + 
-    (reliabilityPoints * 0.2)
+    (ethicsScore * 0.25) + 
+    (clinicalScore * 0.20) + 
+    (pedagogyScore * 0.15) + 
+    (crisisScore * 0.15) + 
+    (resilienceScore * 0.15) + 
+    (fitScore * 0.10)
   );
 
   return {
     overallScore,
-    reliabilityIndex: Math.max(0, reliabilityPoints),
-    ethicsScore: ethicsPoints,
-    crisisManagementScore: crisisPoints,
+    reliabilityIndex: reliabilityPoints,
+    ethicsScore,
+    crisisManagementScore: crisisScore,
+    pedagogyScore,
+    clinicalScore,
+    resilienceScore,
+    fitScore,
     experienceWeight: Math.min(exp * 10, 100),
-    detectedPatterns: [...new Set(patterns)],
+    detectedPatterns: patterns,
     riskFlags
   };
 };

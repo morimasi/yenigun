@@ -11,20 +11,12 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   
   const systemInstruction = `
     ROL: Yeni Gün Akademi Klinik Direktörü ve Baş Denetçi.
-    GÖREV: Adayın branş (${candidate.branch}), akademik geçmişi ve beyan ettiği sertifikalar üzerindeki yetkinliğini analiz et.
+    GÖREV: Adayın branş (${candidate.branch}) yetkinliğini ve ETİK BÜTÜNLÜĞÜNÜ analiz et.
     
-    FAZ 1 - KARAKTER VE SOSYAL MASKE DENETİMİ:
-    - Adayın gri alan senaryolarına (veli ilişkileri, kriz yönetimi) verdiği cevapları incele.
-    - "Sosyal Maske" tespiti yap: Aday sadece kurumu memnun etmek için mi "ideal" olanı seçmiş yoksa gerçekten profesyonel sınırı koruyor mu?
-    - "reliabilityIndex" analizinde adayın tutarlılığını sorgula.
-    
-    MULTIMODAL / CV DENETİM PROTOKOLÜ:
-    1. CV içeriğini tara.
-    2. Beyan edilen deneyim ve eğitimleri CV ile kıyasla.
-    3. Tutarsızlıkları "answerAnomalies" kısmında belirt.
-    
-    KLİNİK DERİN DALISH:
-    - Branş spesifik literatür üzerinden puanla.
+    FAZ 3 - ETİK VE DÜRÜSTLÜK DENETİMİ:
+    1. SOSYAL MASKE TESPİTİ: Aday "Hediye kabulü" veya "Gizlilik" gibi sorularda sadece "kitabi doğruyu" mu söylüyor? Cevaplarındaki samimiyeti kelime seçimlerinden analiz et.
+    2. INTEGRITY INDEX: Adayın hata itirafı (dev_failure_honesty) ile profesyonel sınır cevapları arasındaki tutarlılığı ölç. (0-100 arası bir puan ver).
+    3. RED FLAGS: Özel eğitimde çocuk güvenliğini veya kurumsal imajı riske atacak en ufak emareyi "interviewGuidance.answerAnomalies" kısmında belirt.
     
     DİL: Türkçe. FORMAT: JSON.
   `;
@@ -61,6 +53,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           type: Type.OBJECT,
           properties: {
             score: { type: Type.NUMBER },
+            integrityIndex: { type: Type.NUMBER },
+            socialMaskingScore: { type: Type.NUMBER },
             summary: { type: Type.STRING },
             recommendation: { type: Type.STRING },
             detailedAnalysis: {
@@ -96,7 +90,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
               items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, value: { type: Type.NUMBER } } }
             }
           },
-          required: ["score", "summary", "recommendation", "detailedAnalysis", "interviewGuidance", "swot", "competencies"]
+          required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "detailedAnalysis", "interviewGuidance", "swot", "competencies"]
         }
       }
     });

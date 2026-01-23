@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -24,7 +25,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   
-  // Fix: Defined explicit types for filters state to prevent TypeScript inference errors when using computed property names in toggleFilter.
+  // Explicit types for filters state to prevent TypeScript inference errors when using computed property names in toggleFilter.
   const [filters, setFilters] = useState<{
     branches: string[];
     statuses: string[];
@@ -79,17 +80,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly cast current filter category to string[] and type the filter callback to resolve TypeScript inference errors.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
+      // Fix: Cast current to string[] to resolve unknown[] inference issue on line 118.
       const current = prev[category] as string[];
-      const next = current.includes(value)
+      const next: string[] = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
       return {
         ...prev,
         [category]: next
-      };
+      } as typeof filters;
     });
   };
 

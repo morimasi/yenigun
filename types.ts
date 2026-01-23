@@ -1,4 +1,11 @@
 
+// Added to fix constants.tsx import error
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export enum Branch {
   OzelEgitim = 'Özel Eğitim Öğretmeni',
   Psikolog = 'Psikolog',
@@ -12,10 +19,11 @@ export enum Branch {
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
+export interface WeightedOption {
+  label: string;
+  weight: number; 
+  category: 'ethics' | 'pedagogy' | 'clinical' | 'crisis' | 'resilience' | 'fit';
+  tags?: string[]; // Faz 3: "red-flag", "social-mask" vb. etiketler
 }
 
 export interface Question {
@@ -23,11 +31,14 @@ export interface Question {
   text: string;
   type: 'radio' | 'text' | 'checkbox';
   options?: string[];
-  requiredBranch?: Branch[]; // Sadece bu branşlara gösterilir. Boşsa herkese gösterilir.
+  weightedOptions?: WeightedOption[];
+  requiredBranch?: Branch[];
 }
 
 export interface AIReport {
   score: number;
+  integrityIndex: number; // Faz 3: Cevap tutarlılığı (0-100)
+  socialMaskingScore: number; // Faz 3: Kendini iyi gösterme eğilimi (0-100)
   summary: string;
   recommendation: string;
   detailedAnalysis: {
@@ -58,9 +69,19 @@ export interface AIReport {
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
-  ethicsScore: number;
+  ethicsScore: number; // Added to fix analysisUtils.ts error
+  experienceWeight: number; // Added to fix analysisUtils.ts error
+  ethicsBreakdown: {
+    confidentiality: number;
+    boundaries: number;
+    loyalty: number;
+    peerSupport: number;
+  };
   crisisManagementScore: number;
-  experienceWeight: number;
+  pedagogyScore: number;
+  clinicalScore: number;
+  resilienceScore: number;
+  fitScore: number;
   detectedPatterns: string[];
   riskFlags: string[];
 }
@@ -98,13 +119,6 @@ export interface Candidate {
     mimeType: string;
     fileName: string;
   };
-  interviewSchedule?: {
-    date: string;
-    time: string;
-    method: string;
-    location: string;
-    isNotificationSent: boolean;
-  };
 }
 
 export interface GlobalConfig {
@@ -112,28 +126,10 @@ export interface GlobalConfig {
   primaryColor: string;
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
-  aiPersona: {
-    skepticism: number;
-    empathy: number;
-    formality: number;
-  };
-  aiWeights: {
-    ethics: number;
-    clinical: number;
-    experience: number;
-    fit: number;
-  };
-  automation: {
-    autoEmailOnSchedule: boolean;
-    requireCvUpload: boolean;
-    allowMultipleApplications: boolean;
-  };
-  interviewSettings: {
-    defaultDuration: number;
-    bufferTime: number;
-    autoStatusAfterInterview: boolean;
-    defaultMeetingLink: string;
-  };
+  aiPersona: { skepticism: number; empathy: number; formality: number; };
+  aiWeights: { ethics: number; clinical: number; experience: number; fit: number; };
+  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; };
+  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; };
   notificationEmail: string;
   lastUpdated: number;
 }
