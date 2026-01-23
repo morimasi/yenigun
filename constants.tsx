@@ -2,146 +2,118 @@
 import { FormStep, Question, Branch } from './types';
 
 export const FORM_STEPS: FormStep[] = [
-  { 
-    id: 'personal', 
-    title: 'Akademik Kimlik', 
-    description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz. Lütfen sadece klinik deneyimlerinize odaklanın.' 
-  },
-  { 
-    id: 'academic_proficiency', 
-    title: 'Klinik Uygulama Profili', 
-    description: 'Branşınıza özel derinlikli vaka analizleri ve müdahale planlama yetkinliği testi.' 
-  },
-  { id: 'logic_literacy', title: 'Operasyonel Zeka', description: 'Karmaşık kriz anlarında mantıksal önceliklendirme kapasitesi.' },
-  { id: 'professional_cases', title: 'Etik İkilemler', description: 'Profesyonel ahlak ile kurumsal gerçeklik arasındaki denge.' },
-  { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki hataların analizi ve gelişim dürüstlüğü.' }
+  { id: 'personal', title: 'Akademik Kimlik', description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz.' },
+  { id: 'academic_proficiency', title: 'Klinik Uygulama Profili', description: 'Branşınıza özel derinlikli vaka analizleri.' },
+  { id: 'technical_deep_dive', title: 'Akreditasyon Doğrulama', description: 'Beyan ettiğiniz eğitimlere dair teknik yetkinlik denetimi.' },
+  { id: 'logic_literacy', title: 'Operasyonel Zeka', description: 'Karmaşık kriz anlarında mantıksal önceliklendirme.' },
+  { id: 'professional_cases', title: 'Etik İkilemler', description: 'Profesyonel ahlak ile kurumsal gerçeklik dengesi.' },
+  { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki gelişim dürüstlüğü.' }
 ];
+
+export const CERTIFICATION_CATEGORIES = {
+  LANGUAGE_SPEECH: ["PROMPT", "LSVT Loud", "Vital-Stim", "Hanen Programı", "ETÖOM", "TEDİL", "GOPAS", "E-YÖS"],
+  OCCUPATIONAL_THERAPY: ["Ayres Duyu Bütünleme", "SIPT/EASI", "DIR Floortime 101/201", "Bobath (EBTA)", "Kinesiotaping", "CO-OP"],
+  PHYSIOTHERAPY: ["Uzay Terapi", "Vojta", "Schroth", "Manuel Terapi", "Pediatrik Rehabilitasyon", "Therasuit"],
+  SPECIAL_ED_ABA: ["ABA Uygulayıcı (BCBA Onaylı)", "PECS Faz 1-6", "ETEÇOM", "PREP", "PASS Teorisi", "GOPDÖ-2-TV"],
+  ASSESSMENT: ["WISC-V", "MOXO", "Denver II", "CAS", "Stanford-Binet", "Metropolitan"]
+};
+
+export const CERTIFICATION_LIST = [
+  ...CERTIFICATION_CATEGORIES.LANGUAGE_SPEECH,
+  ...CERTIFICATION_CATEGORIES.OCCUPATIONAL_THERAPY,
+  ...CERTIFICATION_CATEGORIES.PHYSIOTHERAPY,
+  ...CERTIFICATION_CATEGORIES.SPECIAL_ED_ABA,
+  ...CERTIFICATION_CATEGORIES.ASSESSMENT
+];
+
+// EĞİTİM SPESİFİK DOĞRULAMA SORULARI (Domain-Specific Verification)
+export const TRAINING_VERIFICATION_QUESTIONS: Record<string, Question> = {
+  "PROMPT": {
+    id: 'v_prompt',
+    text: 'PROMPT tekniğinde "Parameter" ile "Surface" dokunsal ipuçları arasındaki farkı, artikülasyon bozukluğu olan bir çocukta nasıl önceliklendirirsiniz?',
+    type: 'text'
+  },
+  "Ayres Duyu Bütünleme": {
+    id: 'v_sensory',
+    text: 'Duyu bütünleme seansında "Just Right Challenge" (Tam Kararında Zorluk) ilkesini, graviteye karşı güvensizliği (gravitational insecurity) olan bir çocukta nasıl modüle edersiniz?',
+    type: 'text'
+  },
+  "Vojta": {
+    id: 'v_vojta',
+    text: 'Vojta terapisinde "Refleks Sürünme" aktivasyonunda, göğüs zonu ve kalkaneus noktası arasındaki koordinasyonu bozan en yaygın kompanse hareket nedir?',
+    type: 'text'
+  },
+  "BCBA Onaylı ABA": {
+    id: 'v_aba',
+    text: 'ABA uygulamasında "Extinction Burst" (Sönme Patlaması) sırasında ailenin müdahaleyi kesme eğilimine karşı klinik argümanınız ve veri toplama stratejiniz ne olur?',
+    type: 'text'
+  },
+  "DIR Floortime 201": {
+    id: 'v_floortime',
+    text: 'Floortime basamaklarından "Representational Capacity" seviyesinde olan bir çocukta, oyunun akışını bozmadan "Circles of Communication" sayısını nasıl artırırsınız?',
+    type: 'text'
+  },
+  "WISC-V": {
+    id: 'v_wisc',
+    text: 'WISC-V profilinde "Görsel Mekansal" skorun "Akıcı Akıl Yürütme"den 1.5 standart sapma düşük olması durumunda, öğrencinin akademik kurgusunda ne tür bir modifikasyon önerirsiniz?',
+    type: 'text'
+  }
+};
 
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   academic_proficiency: [
-    // --- ERGOTERAPİ SPESİFİK ---
     {
-      id: 'ot_sensory_meltdown',
-      text: 'Duyusal işlemleme bozukluğu olan bir çocukta "Tactile Defensiveness" (Dokunsal Savunma) nedeniyle seans sırasında ağır bir kaçınma davranışı gözlemliyorsunuz. Müdahale hiyerarşiniz nasıl olur?',
-      type: 'radio',
-      requiredBranch: [Branch.Ergoterapist],
-      options: [
-        'Proprioseptif derin basınç (deep pressure) uygulayarak sinir sistemini regüle etmeye çalışmak.',
-        'Dokunsal materyali hemen kaldırıp görsel ipuçlarıyla sakinleşmesini beklemek.',
-        'Çocuğu materyale dokunmaya zorlamadan sadece yakınında tutarak desensitizasyon (duyarsızlaştırma) yapmak.',
-        'Fırçalama tekniği (Wilbarger) ile anlık müdahale edip seansa devam etmek.'
-      ]
+      id: 'dkt_stuttering_vaca',
+      text: 'Okul öncesi dönemde (4 yaş) kekemelik semptomları gösteren bir çocukta Lidcombe Programı mı yoksa Dolaylı Terapi mi tercih edersiniz? Gerekçelendirin.',
+      type: 'text',
+      requiredBranch: [Branch.DilKonusma]
     },
-    // --- PSİKOLOG SPESİFİK ---
     {
-      id: 'psy_family_resistance',
-      text: 'Oyun terapisi sürecinde çocuğun ilerleme kaydettiğini ancak ailenin evde süreci sabote eden tutumlar sergilediğini fark ettiniz. İlk stratejik hamleniz?',
-      type: 'radio',
-      requiredBranch: [Branch.Psikolog],
-      options: [
-        'Aileyle yüzleştirme yaparak çocuğun zarar gördüğünü sert bir dille ifade etmek.',
-        'Paralel ebeveyn danışmanlığı seansları planlayıp ailenin "direncini" klinik olarak analiz etmek.',
-        'Çocukla çalışmaya devam edip aileyi sadece bilgilendirmek.',
-        'Süreci sonlandırıp aileyi başka bir uzmana refere etmek.'
-      ]
-    },
-    // --- ÖZEL EĞİTİM SPESİFİK ---
-    {
-      id: 'se_aba_extinction',
-      text: 'Ağır düzey otizmli bir öğrencide "İlgi Elde Etme" işlevli bir problem davranış için "Extinction" (Sönme) uyguluyorsunuz. "Extinction Burst" (Sönme Patlaması) sırasında çocuğun kendine zarar verme riski doğdu. Ne yaparsınız?',
-      type: 'radio',
-      requiredBranch: [Branch.OzelEgitim],
-      options: [
-        'Sönme işlemini derhal durdurup çocuğun istediği ilgiyi vererek sakinleştirmek.',
-        'Fiziksel güvenliği sağlayıp (kask, minder vb.) göz temasını ve ilgiyi kesmeye (sönmeye) devam etmek.',
-        'İşlevsel bir alternatif iletişim becerisi (örn: "bak" kartı) öğretmek için süreci Diferansiyel Pekiştirme (DRA) ile değiştirmek.',
-        'Çocuğu sakinleşmesi için mola (time-out) odasına götürmek.'
-      ]
-    },
-    // --- DİL VE KONUŞMA SPESİFİK ---
-    {
-      id: 'slp_aac_choice',
-      text: 'Sözel iletişimi olmayan 5 yaşındaki otizmli bir çocukta AAC (Alternatif ve Destekleyici İletişim) sistemine geçiş kararı alırken en kritik kriteriniz nedir?',
-      type: 'radio',
-      requiredBranch: [Branch.DilKonusma],
-      options: [
-        'Çocuğun ince motor becerilerinin ekran kullanımına (iPad) uygunluğu.',
-        'Ailenin sistemi evde sürdürme motivasyonu ve teknolojik okuryazarlığı.',
-        'Çocuğun sembolik temsil yeteneği ve ortak dikkat süresi.',
-        'Konuşma seslerini taklit etme potansiyelinin tamamen tükenmiş olması.'
-      ]
-    },
-    // --- FİZYOTERAPİ SPESİFİK ---
-    {
-      id: 'pt_cp_spasticity',
-      text: 'Spastik Serebral Palsili bir çocukta alt ekstremite spastisitesini azaltmak ve yürüyüş kalitesini artırmak için "Inhibition" tekniklerini hangi dizilimle uygularsınız?',
-      type: 'radio',
-      requiredBranch: [Branch.Fizyoterapist],
-      options: [
-        'Proksimalden distale doğru ritmik rotasyonlar ve germe egzersizleri.',
-        'Sadece distal eklemlere odaklanıp AFO kullanımını zorunlu kılmak.',
-        'Yüksek frekanslı vibrasyon uygulayıp ardından aktif hareket yaptırmak.',
-        'Çocuğu cihazlara bağlayıp pasif germe ile seansı bitirmek.'
-      ]
-    },
-    // --- GENEL AKADEMİK (TÜM BRANŞLAR) ---
-    {
-      id: 'gen_bep_dynamic',
-      text: 'Hazırladığınız BEP (Bireyselleştirilmiş Eğitim Programı) hedeflerinin çocuk için çok kolay kaldığını 2. haftada fark ettiniz. Protokolünüz?',
-      type: 'radio',
-      options: [
-        'Dönem sonuna kadar bekleyip resmi değerlendirme zamanında değiştirmek.',
-        'Veri grafiklerini (data sheets) inceleyip hedefleri hemen revize ederek bir üst basamağa geçmek.',
-        'Mevcut hedefleri pekiştirmek için seansları serbest oyunla doldurmak.',
-        'Diğer branş öğretmenlerinin hedeflerine yardım etmek.'
-      ]
+      id: 'ft_cp_posture',
+      text: 'GMFCS Seviye III olan bir CP tanılı çocukta, kaba motor fonksiyonları korurken skolyoz riskini minimize etmek için gece pozisyonlaması stratejiniz nedir?',
+      type: 'text',
+      requiredBranch: [Branch.Fizyoterapist]
     }
   ],
   logic_literacy: [
     {
-      id: 'logic_crisis_safety',
-      text: 'Seans odasında yangın alarmı çaldı, aynı anda yan odadan bir cam kırılma sesi geldi ve öğrenciniz kapıya doğru kaçmaya çalışıyor. Sıralamanız?',
+      id: 'crisis_behavior_safety',
+      text: 'Seans sırasında kendine zarar verme (self-injury) davranışı gösteren bir öğrencide, "A-B-C Verisi" toplarken o anki fiziksel güvenliği nasıl sağlarsınız?',
       type: 'radio',
       options: [
-        'Öğrenciyi güvenli bir şekilde kontrol altına al, koridora çıkıp durumu kontrol et, binayı tahliye et.',
-        'Önce yan odaya bak, sonra öğrenciyi al, sonra binayı terk et.',
-        'Öğrenciyi bırak, alarmın gerçekliğini sorgula, sonra geri dön.',
-        'Sadece öğrenciyi al ve kimseye bakmadan binadan kaç.'
+        'Davranışın bitmesini beklerim, sonra müdahale ederim.',
+        'Antisepatif müdahale ile çevre güvenliğini sağlar, fiziksel kısıtlama yerine yönlendirme yaparım.',
+        'Hemen odayı terk edip yardım çağırırım.',
+        'Ödül vererek davranışı durdurmaya çalışırım.'
       ]
     }
   ],
   professional_cases: [
     {
-      id: 'ethics_gift',
-      text: 'Bir veli, çocuğunun başarısı nedeniyle size maddi değeri yüksek bir hediye çeki vermek istiyor ve "Lütfen reddetmeyin, bu sadece bir teşekkür" diyor. Tavrınız?',
+      id: 'ethics_confidentiality',
+      text: 'Başka bir kurumda görevli bir uzman, sizin öğrenciniz hakkında bilgi istiyor. Veli izni olmadan yaklaşımınız?',
       type: 'radio',
       options: [
-        'Kırmamak için kabul ederim ama kuruma bildirmem.',
-        'Kurumsal etik kurallar gereği kabul edemeyeceğimi nazikçe açıklar, bunun yerine kuruma bir eğitim materyali bağışlamasını öneririm.',
-        'Hediyeyi kabul edip seans ücretinden indirim yaparım.',
-        'Sert bir dille reddedip veliyle olan profesyonel ilişkimi sınırlarım.'
+        'Meslektaşım olduğu için tüm bilgileri paylaşırım.',
+        'Sadece genel gelişimini anlatırım.',
+        'Yazılı veli onayı olmadan bilgi paylaşımını reddederim.',
+        'Yöneticime sorarım.'
       ]
     }
   ],
   development: [
     {
-      id: 'dev_failure_reflection',
-      text: 'Son 1 yılda yaptığınız en büyük mesleki hatayı ve bu hatadan çıkardığınız dersi AI analiz motoru için detaylandırın.',
+      id: 'dev_future_tech',
+      text: 'Yapay zekanın kendi branşınızdaki (rehabilitasyon) rolünü 5 yıl sonra nerede görüyorsunuz?',
       type: 'text'
     }
   ]
 };
 
 export const TURKISH_UNIVERSITIES = [
-  "Abant İzzet Baysal Üniversitesi", "Acıbadem Üniversitesi", "Adıyaman Üniversitesi", "Adnan Menderes Üniversitesi",
-  "Afyon Kocatepe Üniversitesi", "Akdeniz Üniversitesi", "Hacettepe Üniversitesi", "Ankara Üniversitesi", "İstanbul Üniversitesi",
-  "Marmara Üniversitesi", "Ege Üniversitesi", "Dokuz Eylül Üniversitesi", "Koç Üniversitesi", "Sabancı Üniversitesi"
+  "Abant İzzet Baysal Üniversitesi", "Hacettepe Üniversitesi", "İstanbul Üniversitesi", "Marmara Üniversitesi", "Ege Üniversitesi", "Ankara Üniversitesi", "Dokuz Eylül Üniversitesi", "Gazi Üniversitesi", "Bezmialem Vakıf Üniversitesi"
 ];
 
 export const TURKISH_DEPARTMENTS = [
-  "Özel Eğitim Öğretmenliği", "Psikoloji", "PDR", "Ergoterapi", "Dil ve Konuşma Terapisi", "Fizyoterapi ve Rehabilitasyon", "Çocuk Gelişimi"
-];
-
-export const CERTIFICATION_LIST = [
-  "ABA Uygulayıcı", "DIR Floortime 101", "DIR Floortime 201", "PECS", "WISC-V", "MOXO", "Denver II", "ETEÇOM", "PREP"
+  "Özel Eğitim Öğretmenliği", "Psikoloji", "PDR", "Ergoterapi", "Dil ve Konuşma Terapisi", "Fizyoterapi ve Rehabilitasyon", "Odyoloji", "Okul Öncesi Öğretmenliği"
 ];

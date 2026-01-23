@@ -10,41 +10,50 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Denetçisi ve Klinik Uzman.
-    GÖREV: Adayın ${candidate.branch} branşındaki yeterliliğini analiz et. 
+    ROL: Yeni Gün Akademi Klinik Direktörü ve Baş Denetçi.
+    GÖREV: Adayın branş (${candidate.branch}), akademik geçmişi ve beyan ettiği sertifikalar üzerindeki yetkinliğini "Acımasızca" ama "Adil" şekilde analiz et.
     
-    ÖZEL TALİMATLAR:
-    1. BRANŞA ÖZEL ANALİZ: Adayın seçtiği branş (${candidate.branch}) ile verdiği cevaplardaki teknik tutarlılığı denetle. 
-       - Ergoterapist ise duyusal işlemleme, ADL ve propriosepsiyon bilgisine odaklan.
-       - Psikolog ise terapötik bağ, aile direnci ve kriz yönetimine odaklan.
-       - Özel Eğitimci ise ABA, veri toplama ve BEP revizyonuna odaklan.
-    2. LİYAKAT SKORLAMASI: Adayın deneyimi (${candidate.experienceYears} yıl) ile verdiği kararların olgunluk seviyesini karşılaştır.
-    3. HİLE SAPTAMA: Cevaplar yapay veya aşırı "kitabi" ise bunu mülakat rehberinde belirt.
+    MULTIMODAL / CV DENETİM PROTOKOLÜ:
+    1. Ekteki CV (Görsel/PDF) içeriğini bizzat tara.
+    2. FORMDA BEYAN EDİLEN: ${candidate.experienceYears} yıl deneyim ve ${candidate.allTrainings.join(', ')} eğitimlerini CV'deki verilerle kıyasla.
+    3. TUTARSIZLIK TESPİTİ (Fraud Check): Eğer CV'de bahsedilmeyen bir eğitim formda "var" gibi gösterilmişse veya tarihler çelişiyorsa "reliabilityIndex" puanını düşür ve "interviewGuidance" kısmında bunu sorgulat.
     
-    DİL: Türkçe.
-    FORMAT: JSON.
+    KLİNİK DERİN DALISH (Deep Dive) ANALİZİ:
+    - Adayın sertifika bazlı sorulara (${candidate.answers}) verdiği cevapların teknik doğruluğunu branş spesifik literatür (ABA, Bobath, Sensory Integration vb.) üzerinden puanla.
+    - Sığ veya jenerik cevapları ("Çocuğun iyiliği için yaparım" gibi) düşük puanla.
+    
+    DİL: Türkçe. FORMAT: JSON.
   `;
 
   try {
-    const contents: any = { 
-      parts: [
-        { text: `Aday Verileri: ${JSON.stringify({
-            name: candidate.name,
-            branch: candidate.branch,
-            experience: candidate.experienceYears,
-            allTrainings: candidate.allTrainings,
-            answers: candidate.answers
-          })}` }
-      ] 
-    };
+    const parts: any[] = [
+      { text: `Aday Verileri: ${JSON.stringify({
+          name: candidate.name,
+          branch: candidate.branch,
+          university: candidate.university,
+          experience: candidate.experienceYears,
+          allTrainings: candidate.allTrainings,
+          answers: candidate.answers
+        })}` }
+    ];
+
+    // CV VARSA MULTIMODAL ANALİZ
+    if (candidate.cvData && candidate.cvData.base64) {
+      parts.push({
+        inlineData: {
+          data: candidate.cvData.base64,
+          mimeType: candidate.cvData.mimeType || 'image/jpeg'
+        }
+      });
+    }
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents,
+      contents: { parts },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 }, 
+        thinkingConfig: { thinkingBudget: 24000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -91,7 +100,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 
     return JSON.parse(response.text || "{}");
   } catch (error: any) {
-    console.error("Gemini Analysis Error:", error);
+    console.error("Gemini Multi-Modal Analysis Error:", error);
     throw error;
   }
 };

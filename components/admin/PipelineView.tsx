@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -25,10 +24,15 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   
-  const [filters, setFilters] = useState({
-    branches: [] as string[],
-    statuses: [] as string[],
-    genders: [] as Gender[]
+  // Fix: Defined explicit types for filters state to prevent TypeScript inference errors when using computed property names in toggleFilter.
+  const [filters, setFilters] = useState<{
+    branches: string[];
+    statuses: string[];
+    genders: string[];
+  }>({
+    branches: [],
+    statuses: [],
+    genders: []
   });
 
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }[]>([
@@ -54,7 +58,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       const matchesSearch = term === '' || name.includes(term);
       const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
       const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
-      const matchesGender = filters.genders.length === 0 || (c.gender && (filters.genders as string[]).includes(c.gender));
+      const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
       return matchesSearch && matchesBranch && matchesStatus && matchesGender;
     });
 
@@ -74,7 +78,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Fix: Explicitly cast the current array to string[] to resolve the 'unknown[]' inference issue during dynamic key updates.
+  // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
+  // Fix: Explicitly cast current filter category to string[] to resolve TypeScript 'unknown[]' inference error on line 119.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => {
       const current = prev[category] as string[];
@@ -84,7 +89,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       return {
         ...prev,
         [category]: next
-      } as typeof filters;
+      };
     });
   };
 
