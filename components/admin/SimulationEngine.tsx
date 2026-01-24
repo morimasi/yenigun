@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Candidate, SimulationResult } from '../../types';
-import { GoogleGenAI, Type } from "@google/genai";
+import { runStresSimulation } from '../../geminiService';
 
 interface SimulationEngineProps {
   candidates: Candidate[];
@@ -18,64 +18,36 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
     if (!candidate) return;
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      
-      const systemInstruction = `
-        ROL: Gelişmiş Klinik Kriz Simülatörü.
-        MODEL: Gemini-3-Flash (Deep Reasoning Mode).
-        BÜTÇE: 24,576 Thinking Tokens.
-        
-        GÖREV: Adayın zayıf etik sınırlarını veya pedagojik açıklarını test edecek "kişiye özel" bir stres senaryosu tasarla.
-        
-        DÜŞÜNME SÜRECİ: Önce adayın tüm cevaplarını oku. Nerede açık vermiş? Hangi durumda "profesyonel mesafesini" kaybedebilir? Veli personasını adayın en çok zorlanacağı karakter yapısına büründür.
-      `;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: "Adayın profesyonel sınırlarını zorlayacak, yüksek stresli bir klinik kriz senaryosu kurgula ve simüle et.",
-        config: {
-          systemInstruction,
-          responseMimeType: "application/json",
-          thinkingConfig: { thinkingBudget: 24576 },
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              scenario: { type: Type.STRING },
-              parentPersona: { type: Type.STRING },
-              stressLevel: { type: Type.NUMBER },
-              candidateResponse: { type: Type.STRING },
-              aiEvaluation: {
-                type: Type.OBJECT,
-                properties: {
-                  ethicalBoundaryScore: { type: Type.NUMBER },
-                  empathyCalibration: { type: Type.NUMBER },
-                  professionalDistance: { type: Type.NUMBER },
-                  crisisResolutionEfficiency: { type: Type.NUMBER },
-                  criticalMistakes: { type: Type.ARRAY, items: { type: Type.STRING } }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      setSimulationData(JSON.parse(response.text || "{}"));
+      const result = await runStresSimulation(candidate);
+      setSimulationData(result);
     } catch (e) {
-      alert("Simülasyon Hatası: Derin düşünme motoru geçici olarak yanıt vermiyor.");
+      alert("Nöral Motor Hatası: Lütfen bağlantınızı kontrol edin.");
     } finally {
       setIsSimulating(false);
     }
   };
 
+  const MetricPill = ({ label, value, color }: { label: string, value: number, color: string }) => (
+    <div className="flex flex-col gap-2">
+       <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+          <span className={`text-sm font-black ${color}`}>%{value}</span>
+       </div>
+       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+          <div className={`h-full ${color.replace('text-', 'bg-')} transition-all duration-1000`} style={{ width: `${value}%` }}></div>
+       </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-12 animate-fade-in">
+    <div className="space-y-12 animate-fade-in relative">
       <div className="flex justify-between items-center border-b border-slate-100 pb-8">
          <div className="flex gap-4">
             {candidates.map(c => (
               <button 
                 key={c.id} 
                 onClick={() => { setActiveCandidateId(c.id); setSimulationData(null); }}
-                className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeCandidateId === c.id ? 'bg-slate-900 text-white shadow-xl' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeCandidateId === c.id ? 'bg-slate-900 text-white shadow-xl scale-105' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
               >
                 {c.name}
               </button>
@@ -84,95 +56,105 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
          <button 
            onClick={handleStartSimulation} 
            disabled={isSimulating}
-           className="group relative px-10 py-4 overflow-hidden bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:shadow-orange-600/30 transition-all disabled:opacity-50"
+           className="group relative px-12 py-5 overflow-hidden bg-orange-600 text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest shadow-2xl hover:bg-slate-900 transition-all disabled:opacity-50"
          >
            <span className="relative z-10 flex items-center gap-3">
-             <svg className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-             {isSimulating ? 'DERİN MUHAKEME...' : 'KLİNİK STRES TESTİ'}
+             <svg className={`w-5 h-5 ${isSimulating ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+             {isSimulating ? 'MUHAKEME MOTORU AKTİF...' : 'KRİZ SİMÜLASYONU BAŞLAT'}
            </span>
-           <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          </button>
       </div>
 
       {!simulationData && !isSimulating ? (
-        <div className="py-40 text-center relative overflow-hidden rounded-[4rem] bg-slate-50/50 border-2 border-dashed border-slate-100">
-           <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.8em]">Flash-3 Nöral Simülasyon</p>
-           <p className="max-w-md mx-auto mt-6 text-[10px] font-bold text-slate-300 leading-relaxed uppercase tracking-widest">
-             Adayın dijital kopyası üzerinde yapılan derin muhakeme testleri ile klinik sınır ihlali olasılıkları hesaplanır.
-           </p>
+        <div className="py-48 text-center bg-slate-50/50 rounded-[4rem] border-4 border-dashed border-slate-100 relative group overflow-hidden">
+           <div className="relative z-10">
+              <div className="w-32 h-32 bg-white rounded-[3rem] shadow-xl mx-auto mb-10 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
+                 <svg className="w-16 h-16 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              </div>
+              <p className="text-[14px] font-black text-slate-900 uppercase tracking-[0.8em] mb-4">NÖRAL KRİZ LABORATUVARI</p>
+              <p className="max-w-md mx-auto text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-[0.2em]">Adayın cevaplarından yola çıkarak "Digital Twin" modeli üzerinde yüksek stresli klinik vaka simülasyonu uygulayın.</p>
+           </div>
+           <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[100px]"></div>
         </div>
       ) : isSimulating ? (
-        <div className="py-40 flex flex-col items-center justify-center space-y-10">
+        <div className="py-48 flex flex-col items-center justify-center space-y-12">
            <div className="relative">
-              <div className="w-24 h-24 border-t-4 border-orange-600 rounded-full animate-spin"></div>
+              <div className="w-40 h-40 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-12 h-12 bg-slate-900 rounded-2xl animate-pulse"></div>
+                 <div className="w-20 h-20 bg-slate-900 rounded-[2.5rem] animate-pulse shadow-2xl"></div>
               </div>
            </div>
-           <div className="text-center space-y-4">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">Flash-3 Muhakeme Ediyor</h3>
-              <p className="text-[10px] font-black text-orange-600 uppercase tracking-[0.4em]">Derin Karar Ağaçları Analiz Ediliyor</p>
+           <div className="text-center">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">Gemini 3 Pro Analiz Ediyor</h3>
+              <p className="text-[12px] font-black text-orange-600 uppercase tracking-[0.4em] animate-bounce">Adayın Zayıf Etik Sınırları Tespit Ediliyor</p>
            </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-slide-up">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-scale-in">
+           {/* SOL: VAKA VE PERSONA */}
            <div className="lg:col-span-7 space-y-8">
-              <div className="bg-slate-900 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
+              <div className="bg-slate-900 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group border border-slate-800">
                  <div className="relative z-10">
-                    <div className="flex items-center gap-4 mb-10">
-                       <span className="w-3 h-3 bg-orange-600 rounded-full animate-ping"></span>
-                       <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.5em]">KLİNİK VAKA SENARYOSU (DEEP REASONING)</h5>
+                    <div className="flex justify-between items-center mb-12">
+                       <div className="flex items-center gap-4">
+                          <span className="w-3 h-3 bg-rose-500 rounded-full animate-ping"></span>
+                          <h5 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.5em]">KRİTİK KRİZ SENARYOSU</h5>
+                       </div>
+                       <div className="px-5 py-2 bg-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest">STRES: %{simulationData.stressLevel}</div>
                     </div>
-                    <p className="text-2xl font-black leading-tight italic mb-12 tracking-tight group-hover:text-orange-50 transition-colors">"{simulationData.scenario}"</p>
-                    <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md">
-                       <span className="text-[9px] font-black text-slate-400 uppercase block mb-3 tracking-widest">Parent / Clinical Boundary Analysis</span>
-                       <p className="text-sm font-bold text-slate-200 leading-relaxed">{simulationData.parentPersona}</p>
+                    <p className="text-3xl font-black leading-tight italic mb-12 tracking-tight">"{simulationData.scenario}"</p>
+                    <div className="p-10 bg-white/5 rounded-[3.5rem] border border-white/10 backdrop-blur-xl">
+                       <span className="text-[10px] font-black text-slate-400 uppercase block mb-4 tracking-widest">Veli Profil Analizi (Manipülatör)</span>
+                       <p className="text-base font-bold text-slate-300 leading-relaxed italic">"{simulationData.parentPersona}"</p>
                     </div>
                  </div>
-                 <div className="absolute -right-20 -top-20 w-80 h-80 bg-orange-600/10 rounded-full blur-[100px]"></div>
+                 <div className="absolute -right-40 -top-40 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[150px]"></div>
               </div>
 
-              <div className="bg-white p-16 rounded-[4.5rem] border border-slate-100 shadow-xl relative group">
-                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-10 border-l-4 border-orange-600 pl-4">ÖNGÖRÜLEN ADAY REFLEKSİ</h5>
-                 <p className="text-base font-bold text-slate-600 leading-relaxed italic opacity-80 group-hover:opacity-100 transition-opacity">
+              <div className="bg-white p-16 rounded-[4.5rem] border border-slate-100 shadow-xl relative overflow-hidden group">
+                 <div className="flex items-center gap-4 mb-10">
+                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-900 font-black text-xl border border-slate-100">?</div>
+                    <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">ÖNGÖRÜLEN ADAY REFLEKSİ</h5>
+                 </div>
+                 <p className="text-xl font-bold text-slate-700 leading-relaxed italic opacity-90 group-hover:opacity-100 transition-opacity">
                     "{simulationData.candidateResponse}"
                  </p>
+                 <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-50">
+                    <div className="h-full bg-orange-600 transition-all duration-[2000ms]" style={{ width: '100%' }}></div>
+                 </div>
               </div>
            </div>
 
+           {/* SAĞ: ANALİTİK ÇIKTI */}
            <div className="lg:col-span-5 space-y-8">
-              <div className="bg-slate-50 p-12 rounded-[4.5rem] border border-slate-100 shadow-inner">
-                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-12">REASONING METRİKLERİ</h5>
-                 <div className="space-y-10">
-                    {[
-                      { l: 'ETİK SINIR KORUMA', v: simulationData.aiEvaluation.ethicalBoundaryScore, c: 'bg-slate-900' },
-                      { l: 'EMPATİ KALİBRASYONU', v: simulationData.aiEvaluation.empathyCalibration, c: 'bg-orange-600' },
-                      { l: 'PROFESYONEL MESAFE', v: simulationData.aiEvaluation.professionalDistance, c: 'bg-sky-600' },
-                      { l: 'KRİZ ÇÖZÜM HIZI', v: simulationData.aiEvaluation.crisisResolutionEfficiency, c: 'bg-emerald-600' }
-                    ].map((m, i) => (
-                      <div key={i} className="space-y-3">
-                        <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                           <span>{m.l}</span>
-                           <span className="text-slate-900">%{m.v}</span>
-                        </div>
-                        <div className="h-3 bg-white rounded-full overflow-hidden border border-slate-100 p-0.5">
-                           <div className={`h-full ${m.c} rounded-full transition-all duration-1000`} style={{ width: `${m.v}%` }}></div>
-                        </div>
-                      </div>
-                    ))}
+              <div className="bg-white p-12 rounded-[4.5rem] border border-slate-100 shadow-2xl relative">
+                 <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] mb-12 border-l-4 border-orange-600 pl-6">NÖRAL ANALİZ METRİKLERİ</h5>
+                 <div className="space-y-12">
+                    <MetricPill label="ETİK SINIR KORUMA" value={simulationData.aiEvaluation.ethicalBoundaryScore} color="text-slate-900" />
+                    <MetricPill label="EMPATİ KALİBRASYONU" value={simulationData.aiEvaluation.empathyCalibration} color="text-orange-600" />
+                    <MetricPill label="PROFESYONEL MESAFE" value={simulationData.aiEvaluation.professionalDistance} color="text-blue-600" />
+                    <MetricPill label="KRİZ ÇÖZÜM VERİMİ" value={simulationData.aiEvaluation.crisisResolutionEfficiency} color="text-emerald-600" />
                  </div>
               </div>
 
-              <div className="bg-rose-600 p-12 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden">
-                 <h5 className="text-[10px] font-black text-rose-200 uppercase tracking-widest mb-8">KRİTİK HATA SİNYALLERİ</h5>
+              <div className="bg-rose-600 p-12 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
+                 <h5 className="text-[11px] font-black text-rose-200 uppercase tracking-widest mb-10">TESPİT EDİLEN RİSKLİ DAVRANIŞLAR</h5>
                  <div className="space-y-6 relative z-10">
                     {simulationData.aiEvaluation.criticalMistakes.map((err, i) => (
-                      <div key={i} className="flex gap-5 items-start">
-                         <div className="w-5 h-5 bg-white/20 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0">!</div>
-                         <p className="text-[11px] font-black uppercase tracking-widest leading-tight opacity-90">{err}</p>
+                      <div key={i} className="flex gap-6 items-start group-hover:translate-x-2 transition-transform">
+                         <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center font-black text-[12px] shrink-0">!</div>
+                         <p className="text-[12px] font-black uppercase tracking-widest leading-tight">{err}</p>
                       </div>
                     ))}
                  </div>
+                 <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+              </div>
+
+              <div className="p-10 bg-slate-900 rounded-[3.5rem] text-white">
+                 <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">Mülakatçıya Not</p>
+                 <p className="text-[12px] font-bold text-slate-400 italic leading-relaxed uppercase">
+                    Aday bu senaryoda sınır ihlali yapmaya meyilli görünüyor. Mülakat sırasında "veliye hayır deme" kapasitesini bu vaka üzerinden sorgulayın.
+                 </p>
               </div>
            </div>
         </div>
