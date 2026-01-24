@@ -79,21 +79,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fixed type safety error by ensuring the callback uses the inferred state type correctly for dynamic indexing.
+  // Fixed type safety error by calculating next state based on current filters before calling setFilters.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
-    setFilters((prev) => {
-      // Explicitly cast current to string[] to resolve the 'unknown[]' inference issue.
-      const current = prev[category] as string[];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      
-      // Return the updated state, casting to satisfy the strict typing requirements for dynamic property updates.
-      return {
-        ...prev,
-        [category]: next
-      } as typeof filters;
-    });
+    const current = filters[category] as string[];
+    const next: string[] = current.includes(value)
+      ? current.filter((v: string) => v !== value)
+      : [...current, value];
+
+    setFilters((prev) => ({
+      ...prev,
+      [category]: next
+    }));
   };
 
   const handleToggleSelect = (e: React.MouseEvent, id: string) => {
