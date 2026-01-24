@@ -1,6 +1,54 @@
 
-import { Candidate, AlgorithmicReport } from './types';
+import { Candidate, AlgorithmicReport, AIReport } from './types';
 import { BRANCH_QUESTIONS } from './constants';
+
+/**
+ * Aday verilerinin ve AI raporunun birbirleriyle tutarlılığını denetleyen 
+ * "Data Integrity Shield" (Veri Bütünlüğü Kalkanı) motoru.
+ */
+export const verifyCandidateIntegrity = (candidate: Candidate): { score: number, issues: string[], status: 'valid' | 'compromised' | 'warning' } => {
+  const issues: string[] = [];
+  let integrityScore = 100;
+
+  if (!candidate.report || !candidate.algoReport) {
+    return { score: 0, issues: ["Analiz henüz tamamlanmadı."], status: 'warning' };
+  }
+
+  const ai = candidate.report;
+  const algo = candidate.algoReport;
+
+  // 1. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
+  const scoreDiff = Math.abs(ai.score - algo.overallScore);
+  if (scoreDiff > 25) {
+    integrityScore -= 20;
+    issues.push("AI Muhakemesi ile Algoritmik Veri arasında yüksek sapma tespit edildi.");
+  }
+
+  // 2. Deneyim - Yetkinlik Doğrulaması
+  if (candidate.experienceYears < 2 && ai.score > 90) {
+    integrityScore -= 15;
+    issues.push("Düşük deneyim yılına rağmen olağandışı yüksek liyakat skoru (Bilişsel Çelişki).");
+  }
+
+  // 3. Etik Sınır Denetimi
+  if (ai.integrityIndex < 40 && ai.socialMaskingScore < 30) {
+    integrityScore -= 10;
+    issues.push("Düşük dürüstlük endeksi ile düşük maskeleme skoru mantıksal olarak çelişiyor.");
+  }
+
+  // 4. Derin Analiz Kapsam Kontrolü
+  const segments = Object.keys(ai.deepAnalysis);
+  if (segments.length < 10) {
+    integrityScore -= 10;
+    issues.push("10 boyutlu matris analizinde eksik veri katmanları bulundu.");
+  }
+
+  let status: 'valid' | 'compromised' | 'warning' = 'valid';
+  if (integrityScore < 60) status = 'compromised';
+  else if (integrityScore < 85) status = 'warning';
+
+  return { score: integrityScore, issues, status };
+};
 
 export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicReport => {
   const scores: Record<string, number[]> = {
@@ -15,14 +63,11 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
-        // Vektörel ağırlıkları ilgili kategorilere dağıt
         Object.entries(selectedOption.weights).forEach(([cat, weight]) => {
-          // Explicitly typing weight to ensure arithmetic operations are safe
           const numericWeight = Number(weight);
           if (scores[cat]) scores[cat].push(numericWeight * 100);
         });
 
-        // Kritik risk tespiti
         if (selectedOption.weights.ethics && Number(selectedOption.weights.ethics) < 0.4) {
           riskFlags.push(`Kritik Etik Sınır İhlali Riski: ${q.id}`);
         }
@@ -38,15 +83,11 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
 
-  // Deneyim-Liyakat Korelasyonu
   const exp = candidate.experienceYears || 0;
   const experienceWeight = Math.min(exp * 10, 100);
-
-  // Prediktif Bağlılık ve Direnç
   const retentionScore = Math.round((loyaltyScore * 0.7) + (fitScore * 0.3));
   const burnoutResistance = Math.round((resilienceScore * 0.8) + (clinicalScore * 0.2));
 
-  // Tutarlılık Kontrolü (Anomaly Detection)
   if (exp > 5 && clinicalScore < 50) {
     reliabilityPoints -= 15;
     riskFlags.push("Deneyim/Yetkinlik Uyumsuzluğu");

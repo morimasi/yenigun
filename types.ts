@@ -8,14 +8,12 @@ export enum ClinicalTestType {
   COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
 }
 
-// Added FormStep interface
 export interface FormStep {
   id: string;
   title: string;
   description: string;
 }
 
-// Added Question interface
 export interface Question {
   id: string;
   category: string;
@@ -43,15 +41,33 @@ export interface ClinicalTestResult {
   };
 }
 
-export interface NeuralPrediction {
-  oneYearOutcome: 'Promotion' | 'Stability' | 'Burnout' | 'Turnover';
-  predictionConfidence: number;
-  behavioralPatterns: string[];
-  suggestedMentorType: string;
-  longTermCompatibilityScore: number;
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    clinicalTruths: string[];
+    criticalMistakes: string[];
+    neuralDivergence: {
+      decisionPath: string;
+      contradictionIndex: number;
+      dominantEmotion: string;
+      alternativeOutcome: string;
+    };
+    microBehaviors: {
+      toneAnalysis: string;
+      nonVerbalPrediction: string;
+      silenceTolerance: string;
+    };
+  };
 }
 
-// Added AlgorithmicReport interface
+// @google/genai guidelines: Define the structure for algorithmic analysis results to ensure type safety
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -63,21 +79,6 @@ export interface AlgorithmicReport {
   riskFlags: string[];
 }
 
-// Added SimulationResult interface
-export interface SimulationResult {
-  scenario: string;
-  parentPersona: string;
-  candidateResponse: string;
-  stressLevel: number;
-  aiEvaluation: {
-    ethicalBoundaryScore: number;
-    empathyCalibration: number;
-    professionalDistance: number;
-    crisisResolutionEfficiency: number;
-    criticalMistakes: string[];
-  };
-}
-
 export interface AIReport {
   score: number;
   integrityIndex: number;
@@ -85,7 +86,7 @@ export interface AIReport {
   summary: string;
   recommendation: string;
   deepAnalysis: Record<string, IntelligenceSegment>;
-  clinicalTests?: ClinicalTestResult[]; // 6 Yeni Derin Test Sonucu
+  clinicalTests?: ClinicalTestResult[];
   predictiveMetrics: {
     retentionProbability: number;
     burnoutRisk: number;
@@ -145,8 +146,9 @@ export interface Candidate {
   adminNotes?: string;
   reminderNote?: string;
   report?: AIReport;
-  algoReport?: AlgorithmicReport; // Added field
-  interviewSchedule?: { // Added field for scheduling
+  // @google/genai guidelines: Using AlgorithmicReport interface instead of 'any' for the analysis result
+  algoReport?: AlgorithmicReport;
+  interviewSchedule?: {
     date: string;
     time: string;
     method: string;
@@ -165,7 +167,6 @@ export interface GlobalConfig {
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
   aiWeights: { ethics: number; clinical: number; experience: number; fit: number; };
-  // Added missing configuration properties
   aiPersona: { skepticism: number; empathy: number; formality: number; };
   automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; };
   interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; };

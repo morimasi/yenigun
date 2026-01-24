@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
-import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
+import { calculateAlgorithmicAnalysis, verifyCandidateIntegrity } from '../../analysisUtils';
 import { exportService } from '../../services/exportService';
 import StatusBadge from './StatusBadge';
 import { 
@@ -22,6 +22,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     method: 'Yüz Yüze Görüşme',
     location: config.institutionName + ' Merkez Yerleşkesi'
   });
+
+  const integrityReport = useMemo(() => verifyCandidateIntegrity(candidate), [candidate]);
 
   const segments = useMemo(() => [
     { key: 'workEthics', label: 'İŞ AHLAKI' },
@@ -49,7 +51,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
-    const phases = ['Veri Paketleri Çözülüyor...', 'Klinik Muhakeme Başlatıldı...', 'Psikolojik Maske Analizi...', 'Stratejik Karar Üretiliyor...'];
+    const phases = ['Veri Paketleri Çözülüyor...', 'Gemini-3 Nöral Muhakeme...', 'Dahili Bütünlük Denetimi...', 'Stratejik Karar Üretiliyor...'];
     
     let phaseIdx = 0;
     const phaseInterval = setInterval(() => {
@@ -126,7 +128,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
       )}
 
-      {/* HEADER (STICKY TO THE TOP OF NAVBAR) */}
+      {/* HEADER */}
       <div className="p-12 bg-white border-b border-slate-50 flex justify-between items-center relative z-40 rounded-t-[4.5rem]">
         <div className="flex gap-10 items-center">
           <div className="w-28 h-28 bg-slate-900 rounded-[3.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl relative overflow-hidden group">
@@ -137,6 +139,17 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             <div className="flex items-center gap-5 mb-4">
               <StatusBadge status={candidate.status} />
               <div className="px-4 py-1.5 bg-slate-50 rounded-xl text-[11px] font-black text-slate-400 uppercase tracking-widest border border-slate-100">KLİNİK DOSYA: {candidate.id?.toUpperCase()}</div>
+              
+              {candidate.report && (
+                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                  integrityReport.status === 'valid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 
+                  integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-600' : 
+                  'bg-rose-50 border-rose-100 text-rose-600'
+                }`}>
+                   <div className={`w-2 h-2 rounded-full ${integrityReport.status === 'valid' ? 'bg-emerald-500' : integrityReport.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500 animate-ping'}`}></div>
+                   Bütünlük: %{integrityReport.score}
+                </div>
+              )}
             </div>
             <h2 className="text-6xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] mb-2">{candidate.name}</h2>
             <div className="flex items-center gap-5 mt-6">
@@ -158,7 +171,22 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
       </div>
 
-      {/* TABS (STICKY DURING SCROLL - OFFSET BY NAVBAR HEIGHT) */}
+      {/* INTEGRITY ALERTS (If Warning or Compromised) */}
+      {candidate.report && integrityReport.status !== 'valid' && (
+        <div className={`mx-12 mt-8 p-6 rounded-3xl border flex items-center gap-6 animate-fade-in ${
+          integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-100' : 'bg-rose-50 border-rose-100'
+        }`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${integrityReport.status === 'warning' ? 'bg-amber-600' : 'bg-rose-600'} text-white shadow-lg`}>
+             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          </div>
+          <div>
+            <h4 className={`text-[11px] font-black uppercase tracking-widest ${integrityReport.status === 'warning' ? 'text-amber-800' : 'text-rose-800'}`}>Veri Bütünlüğü Uyarısı Tespiti</h4>
+            <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-tight">{integrityReport.issues[0]}</p>
+          </div>
+        </div>
+      )}
+
+      {/* TABS */}
       <div className="px-12 py-6 bg-white/90 backdrop-blur-md border-b border-slate-50 flex gap-6 overflow-x-auto custom-scrollbar no-print sticky top-28 z-40">
         {[
           { id: 'matrix', label: '10 BOYUTLU MATRİS' },
@@ -178,7 +206,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         ))}
       </div>
 
-      {/* CONTENT AREA (Infinite Canvas - No inner scroll) */}
+      {/* CONTENT AREA */}
       <div className="p-16 bg-[#FAFAFA] min-h-[600px]">
         {!candidate.report ? (
           <div className="h-[400px] flex flex-col items-center justify-center text-center p-20 grayscale opacity-40">
@@ -364,6 +392,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                             </li>
                           ))}
                        </ul>
+                    </div>
+
+                    <div className="p-10 bg-white rounded-[3rem] border border-slate-100 shadow-xl">
+                       <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6">MOTOR TEKNOLOJİSİ</h5>
+                       <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                             <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
+                             <span className="text-[10px] font-bold text-slate-600">Gemini-3 Flash (Deep Analysis)</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                             <div className="w-2 h-2 bg-emerald-600 rounded-full"></div>
+                             <span className="text-[10px] font-bold text-slate-600">Cross-Verify Bütünlük Motoru</span>
+                          </div>
+                       </div>
                     </div>
                  </div>
               </div>
