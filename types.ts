@@ -1,15 +1,45 @@
 
-export interface SimulationResult {
+export enum ClinicalTestType {
+  BEP_ADAPTATION = 'BEP/IEP Dinamik Adaptasyon',
+  DMP_STRESS = 'DMP Stres Simülatörü',
+  CONFLICT_MANAGEMENT = 'Multidisipliner Çatışma',
+  DATA_LITERACY = 'Klinik Veri Okuryazarlığı',
+  BOUNDARY_INTEGRITY = 'Veli-Öğretmen Sınır İhlali',
+  COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
+}
+
+// Added FormStep interface
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
+// Added Question interface
+export interface Question {
+  id: string;
+  category: string;
+  text: string;
+  type: 'radio' | 'text';
+  weightedOptions?: {
+    label: string;
+    weights: Record<string, number>;
+    analysisInsight?: string;
+  }[];
+  options?: string[];
+  requiredBranch?: Branch[];
+}
+
+export interface ClinicalTestResult {
+  testType: ClinicalTestType;
   scenario: string;
-  parentPersona: string;
-  stressLevel: number;
   candidateResponse: string;
-  aiEvaluation: {
-    ethicalBoundaryScore: number;
-    empathyCalibration: number;
-    professionalDistance: number;
-    crisisResolutionEfficiency: number;
-    criticalMistakes: string[];
+  evaluation: {
+    logicScore: number;
+    empathyScore: number;
+    professionalismScore: number;
+    scientificAccuracy: number;
+    criticalNotes: string[];
   };
 }
 
@@ -21,6 +51,33 @@ export interface NeuralPrediction {
   longTermCompatibilityScore: number;
 }
 
+// Added AlgorithmicReport interface
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number;
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
+  fitScore: number;
+  riskFlags: string[];
+}
+
+// Added SimulationResult interface
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    criticalMistakes: string[];
+  };
+}
+
 export interface AIReport {
   score: number;
   integrityIndex: number;
@@ -28,6 +85,7 @@ export interface AIReport {
   summary: string;
   recommendation: string;
   deepAnalysis: Record<string, IntelligenceSegment>;
+  clinicalTests?: ClinicalTestResult[]; // 6 Yeni Derin Test Sonucu
   predictiveMetrics: {
     retentionProbability: number;
     burnoutRisk: number;
@@ -45,8 +103,14 @@ export interface AIReport {
     opportunities: string[];
     threats: string[];
   };
-  simulation?: SimulationResult;
-  neuralPrediction?: NeuralPrediction;
+}
+
+export interface IntelligenceSegment {
+  score: number;
+  status: 'optimal' | 'warning' | 'critical';
+  pros: string[];
+  cons: string[];
+  risks: string[];
 }
 
 export enum Branch {
@@ -61,58 +125,6 @@ export enum Branch {
 }
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
-
-// Added FormStep interface to satisfy constants.tsx imports
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
-}
-
-export interface WeightedOption {
-  label: string;
-  weights: {
-    ethics?: number;
-    pedagogy?: number;
-    clinical?: number;
-    crisis?: number;
-    resilience?: number;
-    fit?: number;
-    formality?: number;
-    loyalty?: number;
-    // Added risk property to allow specific weighting in clinical logic questions
-    risk?: number;
-  };
-  analysisInsight: string; // AI'ya bu seçeneğin neden seçilmiş olabileceğine dair ipucu
-}
-
-export interface Question {
-  id: string;
-  category: keyof AIReport['deepAnalysis'] | 'general';
-  text: string;
-  type: 'radio' | 'text';
-  weightedOptions?: WeightedOption[];
-  requiredBranch?: Branch[];
-}
-
-export interface IntelligenceSegment {
-  score: number;
-  status: 'optimal' | 'warning' | 'critical';
-  pros: string[];
-  cons: string[];
-  risks: string[];
-}
-
-export interface AlgorithmicReport {
-  overallScore: number;
-  reliabilityIndex: number;
-  ethicsScore: number;
-  experienceWeight: number;
-  retentionScore: number;
-  burnoutResistance: number;
-  fitScore: number;
-  riskFlags: string[];
-}
 
 export interface Candidate {
   id: string;
@@ -133,7 +145,13 @@ export interface Candidate {
   adminNotes?: string;
   reminderNote?: string;
   report?: AIReport;
-  algoReport?: AlgorithmicReport;
+  algoReport?: AlgorithmicReport; // Added field
+  interviewSchedule?: { // Added field for scheduling
+    date: string;
+    time: string;
+    method: string;
+    location: string;
+  };
   cvData?: {
     base64: string;
     mimeType: string;
@@ -146,8 +164,9 @@ export interface GlobalConfig {
   primaryColor: string;
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
-  aiPersona: { skepticism: number; empathy: number; formality: number; };
   aiWeights: { ethics: number; clinical: number; experience: number; fit: number; };
+  // Added missing configuration properties
+  aiPersona: { skepticism: number; empathy: number; formality: number; };
   automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; };
   interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; };
   notificationEmail: string;

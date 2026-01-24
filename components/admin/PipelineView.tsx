@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -79,11 +80,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly typing the filter state update to resolve the unknown[] assignment issue with computed property names.
+  // Fixed type safety error by explicitly casting current to string[]
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current: string[] = prev[category];
-      const next: string[] = current.includes(value)
+      const current = prev[category] as string[];
+      const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
       

@@ -17,11 +17,13 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
       if (selectedOption) {
         // Vektörel ağırlıkları ilgili kategorilere dağıt
         Object.entries(selectedOption.weights).forEach(([cat, weight]) => {
-          if (scores[cat]) scores[cat].push(weight * 100);
+          // Explicitly typing weight to ensure arithmetic operations are safe
+          const numericWeight = Number(weight);
+          if (scores[cat]) scores[cat].push(numericWeight * 100);
         });
 
         // Kritik risk tespiti
-        if (selectedOption.weights.ethics && selectedOption.weights.ethics < 0.4) {
+        if (selectedOption.weights.ethics && Number(selectedOption.weights.ethics) < 0.4) {
           riskFlags.push(`Kritik Etik Sınır İhlali Riski: ${q.id}`);
         }
       }
