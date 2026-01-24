@@ -33,7 +33,7 @@ const SectionHeader: React.FC<{ title: string; number: string }> = ({ title, num
 const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, options?: ReportCustomizationOptions }> = ({ report, candidate, options = defaultOptions }) => {
   const dateStr = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const radarData = report?.deepAnalysis ? [
+  const radarData = (report?.deepAnalysis && typeof report.deepAnalysis === 'object') ? [
     { subject: 'ETİK', value: report.deepAnalysis.workEthics?.score || 0 },
     { subject: 'KLİNİK', value: report.deepAnalysis.technicalExpertise?.score || 0 },
     { subject: 'PEDAGOJİ', value: report.deepAnalysis.pedagogicalAnalysis?.score || 0 },
@@ -99,7 +99,6 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
             <ResponsiveContainer width="100%" height="100%">
                <RadarChart data={radarData}>
                   <PolarGrid stroke="#cbd5e1" strokeWidth={1} />
-                  {/* Fix: Changed 'fontBold' to 'fontWeight' as 'fontBold' is not a valid SVG property */}
                   <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fontWeight: 900, fill: '#64748b' }} />
                   <Radar dataKey="value" stroke="#000000" fill="#000000" fillOpacity={0.08} strokeWidth={2.5} />
                </RadarChart>
@@ -109,21 +108,21 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
             <div className="p-10 bg-slate-900 rounded-[3rem] text-white">
                <div className="flex justify-between items-end mb-8">
                   <div>
-                     <p className="text-4xl font-black">%{report?.integrityIndex}</p>
+                     <p className="text-4xl font-black">%{report?.integrityIndex || 0}</p>
                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dürüstlük Endeksi</p>
                   </div>
                   <div className="text-right">
-                     <p className="text-4xl font-black">%{report?.socialMaskingScore}</p>
+                     <p className="text-4xl font-black">%{report?.socialMaskingScore || 0}</p>
                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sosyal Maske</p>
                   </div>
                </div>
                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-orange-600" style={{ width: `${report?.integrityIndex}%` }}></div>
+                  <div className="h-full bg-orange-600" style={{ width: `${report?.integrityIndex || 0}%` }}></div>
                </div>
             </div>
             <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Baş Klinik Özeti</span>
-               <p className="text-[12px] font-bold text-slate-800 leading-relaxed italic">"{report?.summary}"</p>
+               <p className="text-[12px] font-bold text-slate-800 leading-relaxed italic">"{report?.summary || 'Analiz raporu henüz detaylandırılmadı.'}"</p>
             </div>
          </div>
       </section>
@@ -132,17 +131,17 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
       <section className="mb-20 relative z-10">
          <SectionHeader title="Boyutsal Analiz Detayları" number="01" />
          <div className="grid grid-cols-2 gap-10">
-            {report && Object.entries(report.deepAnalysis).map(([key, segment]: [string, any]) => (
+            {report?.deepAnalysis && Object.entries(report.deepAnalysis).map(([key, segment]: [string, any]) => (
                <div key={key} className="p-10 border-2 border-slate-100 rounded-[3rem] break-inside-avoid bg-white">
                   <div className="flex justify-between items-center mb-6">
                      <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').trim()}</h5>
-                     <span className="text-2xl font-black text-slate-900">%{segment.score}</span>
+                     <span className="text-2xl font-black text-slate-900">%{segment?.score || 0}</span>
                   </div>
                   <div className="h-1 bg-slate-100 rounded-full mb-6">
-                     <div className="h-full bg-slate-900" style={{ width: `${segment.score}%` }}></div>
+                     <div className="h-full bg-slate-900" style={{ width: `${segment?.score || 0}%` }}></div>
                   </div>
                   <ul className="space-y-2">
-                     {segment.pros.slice(0, 2).map((pro: string, idx: number) => (
+                     {segment?.pros?.slice(0, 2).map((pro: string, idx: number) => (
                         <li key={idx} className="text-[10px] font-bold text-slate-600 leading-tight flex gap-2"><div className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 shrink-0"></div>{pro}</li>
                      ))}
                   </ul>
@@ -158,10 +157,10 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
             <div className="col-span-7 bg-slate-900 p-12 rounded-[4rem] text-white">
                <div className="space-y-8">
                   {[
-                     { l: 'KURUMSAL BAĞLILIK', v: report?.predictiveMetrics.retentionProbability },
-                     { l: 'BURNOUT DİRENCİ', v: 100 - (report?.predictiveMetrics.burnoutRisk || 0) },
-                     { l: 'ÖĞRENME HIZI', v: report?.predictiveMetrics.learningVelocity },
-                     { l: 'LİDERLİK POTANSİYELİ', v: report?.predictiveMetrics.leadershipPotential }
+                     { l: 'KURUMSAL BAĞLILIK', v: report?.predictiveMetrics?.retentionProbability || 0 },
+                     { l: 'BURNOUT DİRENCİ', v: 100 - (report?.predictiveMetrics?.burnoutRisk || 0) },
+                     { l: 'ÖĞRENME HIZI', v: report?.predictiveMetrics?.learningVelocity || 0 },
+                     { l: 'LİDERLİK POTANSİYELİ', v: report?.predictiveMetrics?.leadershipPotential || 0 }
                   ].map((item, idx) => (
                      <div key={idx} className="space-y-3">
                         <div className="flex justify-between items-end">
@@ -179,7 +178,7 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
                <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
                   <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-4">GÜÇLÜ YÖNLER</span>
                   <div className="space-y-4">
-                     {report?.swot.strengths.slice(0, 3).map((s, i) => (
+                     {report?.swot?.strengths?.slice(0, 3).map((s, i) => (
                         <p key={i} className="text-[10px] font-black text-slate-900 leading-tight uppercase tracking-tight">{s}</p>
                      ))}
                   </div>
@@ -187,7 +186,7 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
                <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
                   <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest block mb-4">RİSK ANALİZİ</span>
                   <div className="space-y-4">
-                     {report?.swot.weaknesses.slice(0, 3).map((w, i) => (
+                     {report?.swot?.weaknesses?.slice(0, 3).map((w, i) => (
                         <p key={i} className="text-[10px] font-black text-slate-900 leading-tight uppercase tracking-tight">{w}</p>
                      ))}
                   </div>

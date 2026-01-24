@@ -10,39 +10,40 @@ export const verifyCandidateIntegrity = (candidate: Candidate): { score: number,
   const issues: string[] = [];
   let integrityScore = 100;
 
-  if (!candidate.report || !candidate.algoReport) {
-    return { score: 0, issues: ["Analiz henüz tamamlanmadı."], status: 'warning' };
+  // 1. Temel varlık kontrolü
+  if (!candidate || !candidate.report || !candidate.algoReport) {
+    return { score: 0, issues: ["Analiz henüz tamamlanmadı veya veriler eksik."], status: 'warning' };
   }
 
   const ai = candidate.report;
   const algo = candidate.algoReport;
 
-  // Güvenli Erişim: deepAnalysis mevcut mu?
+  // 2. Yapısal bütünlük kontrolü (DeepAnalysis null/undefined check)
   if (!ai.deepAnalysis || typeof ai.deepAnalysis !== 'object') {
     return { score: 10, issues: ["Kritik Hata: AI raporunda yapısal matris verisi bulunamadı."], status: 'compromised' };
   }
 
-  // 1. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
-  const scoreDiff = Math.abs(ai.score - algo.overallScore);
+  // 3. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
+  const scoreDiff = Math.abs((ai.score || 0) - (algo.overallScore || 0));
   if (scoreDiff > 25) {
     integrityScore -= 25;
     issues.push("AI Muhakemesi ile Algoritmik Veri arasında yüksek sapma tespit edildi.");
   }
 
-  // 2. Deneyim - Yetkinlik Doğrulaması
-  if (candidate.experienceYears < 2 && ai.score > 90) {
+  // 4. Deneyim - Yetkinlik Doğrulaması
+  if ((candidate.experienceYears || 0) < 2 && (ai.score || 0) > 90) {
     integrityScore -= 20;
     issues.push("Düşük deneyim yılına rağmen olağandışı yüksek liyakat skoru (Bilişsel Çelişki).");
   }
 
-  // 3. Etik Sınır Denetimi
-  if (ai.integrityIndex < 40 && ai.socialMaskingScore < 30) {
+  // 5. Etik Sınır Denetimi
+  if ((ai.integrityIndex || 0) < 40 && (ai.socialMaskingScore || 0) < 30) {
     integrityScore -= 15;
     issues.push("Düşük dürüstlük endeksi ile düşük maskeleme skoru mantıksal olarak çelişiyor.");
   }
 
-  // 4. Derin Analiz Kapsam Kontrolü (Hata onarılan bölge)
-  const segments = Object.keys(ai.deepAnalysis);
+  // 6. Derin Analiz Kapsam Kontrolü (Güvenli Object.keys kullanımı)
+  const segments = Object.keys(ai.deepAnalysis || {});
   if (segments.length < 8) {
     integrityScore -= 20;
     issues.push("Boyutsal matris analizinde eksik veri katmanları bulundu. Veri bütünlüğü düşük.");
@@ -63,8 +64,10 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   let reliabilityPoints = 100;
   const riskFlags: string[] = [];
 
+  const answers = candidate.answers || {};
+
   Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
-    const answer = candidate.answers[q.id];
+    const answer = answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
