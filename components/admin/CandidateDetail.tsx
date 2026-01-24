@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, GlobalConfig, IntelligenceSegment } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
@@ -17,14 +18,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const radarData = useMemo(() => {
     if (!candidate.report?.deepAnalysis) return [];
     const d = candidate.report.deepAnalysis;
-    return [
-      { subject: 'ETİK', value: d.workEthics.score },
-      { subject: 'KLİNİK', value: d.technicalExpertise.score },
-      { subject: 'PEDAGOJİ', value: d.pedagogicalAnalysis.score },
-      { subject: 'DİRENÇ', value: d.sustainability.score },
-      { subject: 'RESMİYET', value: d.formality.score },
-      { subject: 'UYUM', value: d.institutionalLoyalty.score },
+    // Segmentlerin varlığını kontrol et
+    const segments = [
+      { key: 'workEthics', label: 'ETİK' },
+      { key: 'technicalExpertise', label: 'KLİNİK' },
+      { key: 'pedagogicalAnalysis', label: 'PEDAGOJİ' },
+      { key: 'sustainability', label: 'DİRENÇ' },
+      { key: 'formality', label: 'RESMİYET' },
+      { key: 'institutionalLoyalty', label: 'UYUM' }
     ];
+
+    return segments.map(s => ({
+      subject: s.label,
+      value: d[s.key]?.score ?? 0
+    }));
   }, [candidate.report]);
 
   const handleRunAnalysis = async () => {
@@ -41,8 +48,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       const algoReport = calculateAlgorithmicAnalysis(candidate);
       const aiReport = await generateCandidateAnalysis(candidate, config);
       onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
-    } catch (e) {
-      alert("AI Analiz Motoru Hatası: Lütfen sinyalleri kontrol edin.");
+    } catch (e: any) {
+      console.error("Analiz Hatası:", e);
+      alert("AI Analiz Motoru Hatası: Liyakat sinyalleri işlenirken bir sorun oluştu.");
     } finally { 
       clearInterval(phaseInterval);
       setIsAnalysing(false); 
@@ -137,10 +145,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           <button 
             key={t.id} 
             onClick={() => setActiveTab(t.id as any)}
-            className={`flex items-center gap-3 px-8 py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-4 px-8 py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
               activeTab === t.id ? 'bg-slate-900 text-white shadow-2xl scale-105' : 'bg-white text-slate-400 border border-slate-100 hover:border-slate-300'
             }`}
           >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d={t.icon} /></svg>
             {t.label}
           </button>
         ))}
@@ -162,22 +171,22 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             {/* MATRIX TAB */}
             {activeTab === 'matrix' && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                {Object.entries(candidate.report.deepAnalysis).map(([key, segment]: [string, any]) => (
+                {candidate.report.deepAnalysis ? Object.entries(candidate.report.deepAnalysis).map(([key, segment]: [string, any]) => (
                   <div key={key} className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
                     <div className="flex justify-between items-center mb-8">
                       <h5 className="text-[11px] font-black text-slate-400 group-hover:text-slate-900 uppercase tracking-widest transition-colors">{key.replace(/([A-Z])/g, ' $1').trim()}</h5>
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black ${segment.score > 70 ? 'bg-emerald-50 text-emerald-600' : segment.score > 40 ? 'bg-orange-50 text-orange-600' : 'bg-rose-50 text-rose-600'}`}>
-                        {segment.score}
+                        {segment.score ?? 0}
                       </div>
                     </div>
                     
                     <div className="space-y-6">
                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                          <p className="text-[12px] font-bold text-slate-700 leading-tight italic">"{segment.pros[0]}"</p>
+                          <p className="text-[12px] font-bold text-slate-700 leading-tight italic">"{segment.pros?.[0] || 'Veri bulunamadı.'}"</p>
                        </div>
                        <div className="flex flex-wrap gap-2">
                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${segment.status === 'optimal' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                            {segment.competencyLevel}
+                            {segment.competencyLevel || 'Belirsiz'}
                           </div>
                           {segment.contradictions?.length > 0 && (
                             <div className="px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-[8px] font-black uppercase tracking-widest animate-pulse">
@@ -186,27 +195,30 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                           )}
                        </div>
                     </div>
-                    {/* Background Subtle Progress */}
                     <div className="absolute bottom-0 left-0 h-1.5 bg-slate-100 w-full">
-                       <div className={`h-full ${segment.score > 70 ? 'bg-emerald-500' : segment.score > 40 ? 'bg-orange-500' : 'bg-rose-500'}`} style={{ width: `${segment.score}%` }}></div>
+                       <div className={`h-full ${segment.score > 70 ? 'bg-emerald-500' : segment.score > 40 ? 'bg-orange-500' : 'bg-rose-500'}`} style={{ width: `${segment.score ?? 0}%` }}></div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="col-span-full p-20 bg-slate-50 rounded-[4rem] text-center border-2 border-dashed border-slate-100">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Matris verisi okunamadı. Lütfen analizi tazeleyin.</p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* PREDICTIONS TAB */}
-            {activeTab === 'predictions' && (
+            {activeTab === 'predictions' && candidate.report.predictiveMetrics && (
               <div className="space-y-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                    <div className="bg-white p-16 rounded-[4rem] shadow-2xl border border-slate-100 relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-2 h-full bg-orange-600"></div>
                       <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-16">24 AY PROJEKSİYONU</h4>
                       <div className="space-y-12">
-                         <PredictBar label="KURUMSAL SADAKAT (RETENTION)" value={candidate.report.predictiveMetrics.retentionProbability} color="text-emerald-500" />
-                         <PredictBar label="TÜKENMİŞLİK DİRENCİ" value={100 - candidate.report.predictiveMetrics.burnoutRisk} color="text-rose-500" />
-                         <PredictBar label="ADAPTASYON & ÖĞRENME HIZI" value={candidate.report.predictiveMetrics.learningVelocity} color="text-sky-500" />
-                         <PredictBar label="GELECEK LİDERLİK POTANSİYELİ" value={candidate.report.predictiveMetrics.leadershipPotential} color="text-amber-500" />
+                         <PredictBar label="KURUMSAL SADAKAT (RETENTION)" value={candidate.report.predictiveMetrics.retentionProbability ?? 0} color="text-emerald-500" />
+                         <PredictBar label="TÜKENMİŞLİK DİRENCİ" value={100 - (candidate.report.predictiveMetrics.burnoutRisk ?? 0)} color="text-rose-500" />
+                         <PredictBar label="ADAPTASYON & ÖĞRENME HIZI" value={candidate.report.predictiveMetrics.learningVelocity ?? 0} color="text-sky-500" />
+                         <PredictBar label="GELECEK LİDERLİK POTANSİYELİ" value={candidate.report.predictiveMetrics.leadershipPotential ?? 0} color="text-amber-500" />
                       </div>
                    </div>
 
@@ -214,17 +226,17 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                       <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-2xl flex flex-col justify-center">
                          <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-6">SWOT - GÜÇLÜ KASLAR</h4>
                          <div className="flex flex-wrap gap-3">
-                            {candidate.report.swot.strengths.map((s, i) => (
+                            {candidate.report.swot?.strengths?.map((s: string, i: number) => (
                               <div key={i} className="px-6 py-3 bg-white/10 rounded-2xl text-[11px] font-bold border border-white/10 hover:bg-white/20 transition-all cursor-default">{s}</div>
-                            ))}
+                            )) || <p className="text-[9px] text-slate-500">Veri yok</p>}
                          </div>
                       </div>
                       <div className="bg-rose-50 p-12 rounded-[4rem] border-2 border-rose-100 flex flex-col justify-center">
                          <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-6">SWOT - KRİTİK RİSKLER</h4>
                          <div className="flex flex-wrap gap-3">
-                            {candidate.report.swot.weaknesses.map((w, i) => (
+                            {candidate.report.swot?.weaknesses?.map((w: string, i: number) => (
                               <div key={i} className="px-6 py-3 bg-white rounded-2xl text-[11px] font-bold text-rose-700 shadow-sm border border-rose-100 hover:scale-105 transition-all cursor-alert">{w}</div>
-                            ))}
+                            )) || <p className="text-[9px] text-slate-500">Veri yok</p>}
                          </div>
                       </div>
                    </div>
@@ -233,20 +245,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             )}
 
             {/* STRATEGY TAB */}
-            {activeTab === 'strategy' && (
+            {activeTab === 'strategy' && candidate.report.interviewGuidance && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                  <div className="lg:col-span-8 space-y-8">
                     <div className="bg-white p-16 rounded-[4.5rem] shadow-2xl border border-slate-100">
                        <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-12 border-l-8 border-orange-600 pl-6">MÜLAKAT SORU SETİ (AI-BASED)</h4>
                        <div className="space-y-6">
-                          {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                          {candidate.report.interviewGuidance.strategicQuestions?.map((q: string, i: number) => (
                             <div key={i} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 group hover:bg-slate-900 hover:text-white transition-all duration-500">
                                <div className="flex gap-6 items-start">
                                   <span className="text-2xl font-black opacity-20 group-hover:opacity-100 transition-opacity">0{i+1}</span>
                                   <p className="text-sm font-black leading-relaxed italic group-hover:translate-x-2 transition-transform">"{q}"</p>
                                </div>
                             </div>
-                          ))}
+                          )) || <p className="text-slate-400">Soru seti üretilemedi.</p>}
                        </div>
                     </div>
                  </div>
@@ -255,23 +267,39 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-2xl">
                        <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-10">KRİTİK GÖZLEM LİSTESİ</h4>
                        <div className="space-y-8">
-                          {candidate.report.interviewGuidance.criticalObservations.map((obs, i) => (
+                          {candidate.report.interviewGuidance.criticalObservations?.map((obs: string, i: number) => (
                             <div key={i} className="flex gap-5 items-start animate-fade-in" style={{ animationDelay: `${i*100}ms` }}>
                                <div className="w-2.5 h-2.5 bg-orange-600 rounded-full mt-1.5 shrink-0 shadow-[0_0_15px_rgba(234,88,12,0.8)]"></div>
                                <p className="text-[11px] font-black uppercase tracking-widest leading-tight opacity-90">{obs}</p>
                             </div>
-                          ))}
+                          )) || <p className="text-slate-400">Gözlem listesi yok.</p>}
                        </div>
                     </div>
                     
                     <div className="bg-orange-600 p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
                        <div className="relative z-10">
                           <h4 className="text-[10px] font-black uppercase tracking-widest mb-6 opacity-70">SİMÜLASYON GÖREVİ</h4>
-                          <p className="text-sm font-black italic leading-relaxed">"{candidate.report.interviewGuidance.simulationTasks[0]}"</p>
+                          <p className="text-sm font-black italic leading-relaxed">
+                            "{candidate.report.interviewGuidance.simulationTasks?.[0] || 'Simülasyon görevi atanmadı.'}"
+                          </p>
                        </div>
                        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
                     </div>
                  </div>
+              </div>
+            )}
+
+            {/* DNA TAB */}
+            {activeTab === 'dna' && (
+              <div className="h-[600px] bg-white p-12 rounded-[4rem] border border-slate-100 shadow-xl flex items-center justify-center">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={radarData}>
+                       <PolarGrid stroke="#f1f5f9" />
+                       <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fontBold: 900, fill: '#94a3b8' }} />
+                       <Radar name={candidate.name} dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.2} strokeWidth={4} />
+                       <Tooltip />
+                    </RadarChart>
+                 </ResponsiveContainer>
               </div>
             )}
 
