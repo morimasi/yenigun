@@ -147,13 +147,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
               <div className="px-4 py-1.5 bg-slate-50 rounded-xl text-[11px] font-black text-slate-400 uppercase tracking-widest border border-slate-100">KLİNİK DOSYA: {candidate.id?.toUpperCase()}</div>
               
               {candidate.report && (
-                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
-                  integrityReport.status === 'valid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 
-                  integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-600' : 
-                  'bg-rose-50 border-rose-100 text-rose-600'
+                <div className={`flex items-center gap-2 px-5 py-2 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  integrityReport.status === 'valid' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 
+                  integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-500 text-amber-700' : 
+                  'bg-rose-50 border-rose-500 text-rose-700'
                 }`}>
-                   <div className={`w-2 h-2 rounded-full ${integrityReport.status === 'valid' ? 'bg-emerald-500' : integrityReport.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500 animate-ping'}`}></div>
-                   Bütünlük: %{integrityReport.score}
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                   VERİ GÜVENLİĞİ: %{integrityReport.score}
                 </div>
               )}
             </div>
@@ -177,21 +177,25 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
       </div>
 
-      {/* INTEGRITY ALERTS (If Warning or Compromised) */}
+      {/* INTEGRITY ALERTS */}
       {candidate.report && integrityReport.status !== 'valid' && (
-        <div className={`mx-12 mt-8 p-6 rounded-3xl border flex items-center gap-6 animate-fade-in ${
-          integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-100' : 'bg-rose-50 border-rose-100'
+        <div className={`mx-12 mt-8 p-10 rounded-[3rem] border-4 flex items-center gap-8 animate-fade-in ${
+          integrityReport.status === 'warning' ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'
         }`}>
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${integrityReport.status === 'warning' ? 'bg-amber-600' : 'bg-rose-600'} text-white shadow-lg`}>
-             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shrink-0 ${integrityReport.status === 'warning' ? 'bg-amber-600' : 'bg-rose-600'} text-white shadow-2xl shadow-rose-600/20`}>
+             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <div>
-            <h4 className={`text-[11px] font-black uppercase tracking-widest ${integrityReport.status === 'warning' ? 'text-amber-800' : 'text-rose-800'}`}>Veri Bütünlüğü Uyarısı Tespiti</h4>
-            <div className="space-y-1 mt-1">
+            <h4 className={`text-[16px] font-black uppercase tracking-[0.3em] ${integrityReport.status === 'warning' ? 'text-amber-800' : 'text-rose-800'}`}>Kritik Veri Bütünlüğü İhlali Saptandı</h4>
+            <div className="space-y-2 mt-4">
               {integrityReport.issues.map((issue, idx) => (
-                <p key={idx} className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">• {issue}</p>
+                <p key={idx} className="text-[12px] font-bold text-slate-600 uppercase tracking-tight flex items-center gap-3">
+                   <span className={`w-2 h-2 rounded-full ${integrityReport.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
+                   {issue}
+                </p>
               ))}
             </div>
+            <p className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Akademik Kurul'un mülakat esnasında bu çelişkileri doğrudan sorgulaması zorunludur.</p>
           </div>
         </div>
       )}

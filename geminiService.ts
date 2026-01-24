@@ -17,12 +17,115 @@ const cleanAndParseJSON = (rawText: string) => {
   }
 };
 
+export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
+  const modelName = "gemini-3-flash-preview";
+  
+  // Algoritmik veriyi AI'ya rehber olarak gönderiyoruz (Cross-Check yeteneği için)
+  const algoContext = candidate.algoReport ? `
+    ALGORİTMİK ÖN-SKORLAR:
+    - Genel Matematiksel Skor: %${candidate.algoReport.overallScore}
+    - Etik Puanı: %${candidate.algoReport.ethicsScore}
+    - Sadakat Tahmini: %${candidate.algoReport.retentionScore}
+  ` : '';
+
+  const systemInstruction = `
+    ROL: Yeni Gün Akademi Baş Klinik Analisti.
+    GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
+    
+    ÖNEMLİ: Sana sağlanan 'ALGORİTMİK ÖN-SKORLAR' ile kendi klinik analizini karşılaştır. 
+    Eğer senin analizin matematiksel skordan %20'den fazla sapıyorsa, bunun nedenini 'summary' kısmında mutlaka rasyonel verilerle açıkla.
+    
+    KURAL: 
+    - Yanıt SADECE geçerli bir JSON olmalıdır.
+    - Dürüstlük endeksi (integrityIndex) ve maskeleme skoru (socialMaskingScore) arasındaki korelasyona dikkat et.
+  `;
+
+  const responseSchema = {
+    type: Type.OBJECT,
+    properties: {
+      score: { type: Type.NUMBER },
+      integrityIndex: { type: Type.NUMBER },
+      socialMaskingScore: { type: Type.NUMBER },
+      summary: { type: Type.STRING },
+      recommendation: { type: Type.STRING },
+      predictiveMetrics: {
+        type: Type.OBJECT,
+        properties: {
+          retentionProbability: { type: Type.NUMBER },
+          burnoutRisk: { type: Type.NUMBER },
+          learningVelocity: { type: Type.NUMBER },
+          leadershipPotential: { type: Type.NUMBER }
+        }
+      },
+      deepAnalysis: {
+        type: Type.OBJECT,
+        properties: {
+          workEthics: { $ref: "#/definitions/segment" },
+          pedagogicalAnalysis: { $ref: "#/definitions/segment" },
+          parentStudentRelations: { $ref: "#/definitions/segment" },
+          formality: { $ref: "#/definitions/segment" },
+          developmentOpenness: { $ref: "#/definitions/segment" },
+          sustainability: { $ref: "#/definitions/segment" },
+          technicalExpertise: { $ref: "#/definitions/segment" },
+          criticismTolerance: { $ref: "#/definitions/segment" },
+          personality: { $ref: "#/definitions/segment" },
+          institutionalLoyalty: { $ref: "#/definitions/segment" }
+        }
+      },
+      swot: {
+        type: Type.OBJECT,
+        properties: {
+          strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+          weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+          opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+          threats: { type: Type.ARRAY, items: { type: Type.STRING } }
+        }
+      },
+      interviewGuidance: {
+        type: Type.OBJECT,
+        properties: {
+          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+          simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
+        }
+      }
+    },
+    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"],
+    definitions: {
+      segment: {
+        type: Type.OBJECT,
+        properties: {
+          score: { type: Type.NUMBER },
+          status: { type: Type.STRING },
+          pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+          cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+          risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+        }
+      }
+    }
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: `ADAY VERILERI: ${JSON.stringify(candidate)} \n ${algoContext}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 4096 },
+        responseSchema: responseSchema
+      }
+    });
+    return cleanAndParseJSON(response.text);
+  } catch (error: any) { throw error; }
+};
+
 export const generateNeuralProjection = async (candidate: Candidate): Promise<any> => {
   const modelName = "gemini-3-flash-preview";
   const systemInstruction = `
     ROL: Yeni Gün Akademi Nöral Projeksiyon Ünitesi.
-    GÖREV: Adayın 12 aylık profesyonel gelişimini analiz et.
-    KURAL: Yanıt sadece geçerli bir JSON olmalıdır. Metin içinde çift tırnak kullanma.
+    GÖREV: Adayın 12 aylık profesyonel gelişimini analiz et. Yanıt sadece JSON olmalıdır.
   `;
 
   try {
@@ -33,7 +136,34 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
         systemInstruction,
         responseMimeType: "application/json",
         maxOutputTokens: 2048,
-        thinkingConfig: { thinkingBudget: 1024 }
+        thinkingConfig: { thinkingBudget: 1024 },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            quarters: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  period: { type: Type.STRING },
+                  performanceScore: { type: Type.NUMBER },
+                  clinicalStability: { type: Type.NUMBER },
+                  insight: { type: Type.STRING },
+                  risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+                }
+              }
+            },
+            finalPrediction: {
+              type: Type.OBJECT,
+              properties: {
+                retentionProbability: { type: Type.NUMBER },
+                burnoutRiskPoint: { type: Type.STRING },
+                suggestedRole: { type: Type.STRING },
+                strategicAdvice: { type: Type.STRING }
+              }
+            }
+          }
+        }
       }
     });
     return cleanAndParseJSON(response.text);
@@ -46,16 +176,7 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
   const systemInstruction = `
     ROL: Yeni Gün Akademi Klinik Laboratuvarı - Deep Reasoning Modu.
     HEDEF: Adayın bilişsel ve etik sınırlarını sarsacak ultra-detaylı bir stres simülasyonu üret.
-    
-    ANALİZ KATMANLARI:
-    1. Senaryo: Çok katmanlı, etik ikilem içeren kriz.
-    2. Nöral Diverjans: Adayın mülakat verileriyle bu krizdeki tepkisi arasındaki çelişkiyi (Contradiction Index) hesapla.
-    3. Mikro-Davranışlar: Adayın o anki sanal "Ses Tonu", "Göz Kontrolü" ve "Sessizlik Eşiği" tahminlerini yap.
-    
-    KURAL: 
-    - Yanıt SADECE JSON olmalıdır. 
-    - Metin içinde çift tırnak (") kullanma, gerekirse (') kullan. 
-    - clinicalTruths ve criticalMistakes alanları EN AZ 3'er adet derinlemesine betimsel cümle içermelidir.
+    KURAL: Yanıt SADECE JSON olmalıdır. 
   `;
 
   try {
@@ -111,111 +232,4 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
   } catch (error: any) {
     throw error;
   }
-};
-
-export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
-  const modelName = "gemini-3-flash-preview";
-  
-  const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Analisti.
-    GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
-    
-    ZORUNLU MATRİS BOYUTLARI (deepAnalysis altında):
-    workEthics, pedagogicalAnalysis, parentStudentRelations, formality, developmentOpenness, 
-    sustainability, technicalExpertise, criticismTolerance, personality, institutionalLoyalty.
-    
-    ANALİZ KRİTERLERİ:
-    - Kurum Tonu: ${config.aiTone}
-    - Şüphecilik Seviyesi: %${config.aiPersona.skepticism}
-    - Resmiyet: %${config.aiPersona.formality}
-    
-    KURAL: 
-    - Yanıt SADECE geçerli bir JSON olmalıdır.
-    - deepAnalysis içindeki her key mutlaka score (0-100), pros (array), cons (array) ve risks (array) içermelidir.
-    - Metin içinde çift tırnak kullanma.
-  `;
-
-  const responseSchema = {
-    type: Type.OBJECT,
-    properties: {
-      score: { type: Type.NUMBER, description: "Genel liyakat skoru (0-100)" },
-      integrityIndex: { type: Type.NUMBER, description: "Dürüstlük ve tutarlılık endeksi (0-100)" },
-      socialMaskingScore: { type: Type.NUMBER, description: "Sosyal maskeleme eğilimi (0-100)" },
-      summary: { type: Type.STRING, description: "Klinik özet metni" },
-      recommendation: { type: Type.STRING, description: "Kurul tavsiyesi" },
-      predictiveMetrics: {
-        type: Type.OBJECT,
-        properties: {
-          retentionProbability: { type: Type.NUMBER },
-          burnoutRisk: { type: Type.NUMBER },
-          learningVelocity: { type: Type.NUMBER },
-          leadershipPotential: { type: Type.NUMBER }
-        },
-        required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential"]
-      },
-      deepAnalysis: {
-        type: Type.OBJECT,
-        properties: {
-          workEthics: { $ref: "#/definitions/segment" },
-          pedagogicalAnalysis: { $ref: "#/definitions/segment" },
-          parentStudentRelations: { $ref: "#/definitions/segment" },
-          formality: { $ref: "#/definitions/segment" },
-          developmentOpenness: { $ref: "#/definitions/segment" },
-          sustainability: { $ref: "#/definitions/segment" },
-          technicalExpertise: { $ref: "#/definitions/segment" },
-          criticismTolerance: { $ref: "#/definitions/segment" },
-          personality: { $ref: "#/definitions/segment" },
-          institutionalLoyalty: { $ref: "#/definitions/segment" }
-        },
-        required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
-      },
-      swot: {
-        type: Type.OBJECT,
-        properties: {
-          strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-          weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-          opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-          threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["strengths", "weaknesses", "opportunities", "threats"]
-      },
-      interviewGuidance: {
-        type: Type.OBJECT,
-        properties: {
-          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
-          simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
-      }
-    },
-    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"],
-    definitions: {
-      segment: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER },
-          status: { type: Type.STRING, enum: ["optimal", "warning", "critical"] },
-          pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-          cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-          risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["score", "status", "pros", "cons", "risks"]
-      }
-    }
-  };
-
-  try {
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: `ADAY VERILERI VE CEVAPLAR: ${JSON.stringify(candidate)}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 4096 }
-      }
-    });
-    return cleanAndParseJSON(response.text);
-  } catch (error: any) { throw error; }
 };

@@ -24,34 +24,37 @@ export const verifyCandidateIntegrity = (candidate: Candidate): { score: number,
   }
 
   // 3. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
+  // Tolerans liyakat koruma protokolü gereği %35'e güncellendi.
   const scoreDiff = Math.abs((ai.score || 0) - (algo.overallScore || 0));
-  if (scoreDiff > 25) {
-    integrityScore -= 25;
-    issues.push("AI Muhakemesi ile Algoritmik Veri arasında yüksek sapma tespit edildi.");
+  if (scoreDiff > 35) {
+    integrityScore -= 30;
+    issues.push(`AI Klinik Görüşü ile Matematiksel Skor arasında yüksek sapma (%${scoreDiff.toFixed(1)}). Adayın cevapları çelişkili veya manipülatif olabilir.`);
   }
 
   // 4. Deneyim - Yetkinlik Doğrulaması
-  if ((candidate.experienceYears || 0) < 2 && (ai.score || 0) > 90) {
+  if ((candidate.experienceYears || 0) < 2 && (ai.score || 0) > 92) {
     integrityScore -= 20;
-    issues.push("Düşük deneyim yılına rağmen olağandışı yüksek liyakat skoru (Bilişsel Çelişki).");
+    issues.push("Düşük deneyim yılına rağmen olağandışı yüksek AI liyakat skoru. (Potansiyel Sosyal Maskeleme)");
   }
 
-  // 5. Etik Sınır Denetimi
-  if ((ai.integrityIndex || 0) < 40 && (ai.socialMaskingScore || 0) < 30) {
-    integrityScore -= 15;
-    issues.push("Düşük dürüstlük endeksi ile düşük maskeleme skoru mantıksal olarak çelişiyor.");
+  // 5. Etik Sınır Denetimi (Mantıksal Korelasyon)
+  // Dürüstlük düşükse, genellikle maskeleme yüksektir (saklama çabası). 
+  // Her ikisi de çok düşükse, aday testte rasyonel bir profil çizememiş demektir.
+  if ((ai.integrityIndex || 0) < 35 && (ai.socialMaskingScore || 0) < 25) {
+    integrityScore -= 25;
+    issues.push("Aday dürüstlük ve kendini ifade etme parametrelerinde mantıksal bir taban oluşturamadı.");
   }
 
-  // 6. Derin Analiz Kapsam Kontrolü (Güvenli Object.keys kullanımı)
+  // 6. Derin Analiz Kapsam Kontrolü
   const segments = Object.keys(ai.deepAnalysis || {});
   if (segments.length < 8) {
     integrityScore -= 20;
-    issues.push("Boyutsal matris analizinde eksik veri katmanları bulundu. Veri bütünlüğü düşük.");
+    issues.push("Boyutsal matris analizinde eksik veri katmanları bulundu.");
   }
 
   let status: 'valid' | 'compromised' | 'warning' = 'valid';
-  if (integrityScore < 50) status = 'compromised';
-  else if (integrityScore < 80) status = 'warning';
+  if (integrityScore < 45) status = 'compromised';
+  else if (integrityScore < 75) status = 'warning';
 
   return { score: integrityScore, issues, status };
 };
