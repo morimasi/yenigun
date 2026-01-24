@@ -14,6 +14,15 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [analysisPhase, setAnalysisPhase] = useState('');
+  
+  // Mülakat Davet State'leri
+  const [isInviting, setIsInviting] = useState(false);
+  const [scheduleData, setScheduleData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    time: '10:00',
+    method: 'Yüz Yüze Görüşme',
+    location: config.institutionName + ' Merkez Yerleşkesi'
+  });
 
   const segments = useMemo(() => [
     { key: 'workEthics', label: 'İŞ AHLAKI' },
@@ -59,6 +68,45 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       clearInterval(phaseInterval);
       setIsAnalysing(false); 
       setAnalysisPhase('');
+    }
+  };
+
+  const handleSendInvitation = async () => {
+    if (!confirm(`${candidate.name} adına resmi mülakat davetiyesi gönderilecektir. Onaylıyor musunuz?`)) return;
+    
+    setIsInviting(true);
+    try {
+      // 1. E-posta Gönderimi
+      const emailRes = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: candidate.email,
+          candidateName: candidate.name,
+          date: scheduleData.date,
+          time: scheduleData.time,
+          location: scheduleData.location
+        })
+      });
+
+      if (!emailRes.ok) throw new Error("Davet e-postası iletilemedi.");
+
+      // 2. Aday Verisini Güncelle
+      const updatedCandidate: Candidate = {
+        ...candidate,
+        status: 'interview_scheduled',
+        interviewSchedule: {
+          ...scheduleData
+        },
+        timestamp: Date.now()
+      };
+      
+      onUpdate(updatedCandidate);
+      alert("BAŞARILI: Mülakat randevusu sisteme işlendi ve aday bilgilendirildi.");
+    } catch (err: any) {
+      alert("HATA: " + err.message);
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -272,22 +320,82 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
             {activeTab === 'strategy' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                 <div className="lg:col-span-8 bg-white p-16 rounded-[4.5rem] shadow-2xl border border-slate-100 relative">
-                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-16 border-l-4 border-orange-600 pl-8">CERRAHİ MÜLAKAT SORULARI</h4>
-                    <div className="space-y-8">
-                       {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
-                         <div key={i} className="group p-10 bg-slate-50 rounded-[3rem] border-2 border-transparent hover:border-orange-500 transition-all duration-500">
-                            <div className="flex gap-6">
-                               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-orange-600 font-black text-xl shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-all">
-                                  {i + 1}
+                 {/* SOL: Mülakat Soruları ve Analiz */}
+                 <div className="lg:col-span-7 space-y-12">
+                    <div className="bg-white p-16 rounded-[4.5rem] shadow-2xl border border-slate-100 relative">
+                       <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-16 border-l-4 border-orange-600 pl-8">CERRAHİ MÜLAKAT SORULARI</h4>
+                       <div className="space-y-8">
+                          {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                            <div key={i} className="group p-10 bg-slate-50 rounded-[3rem] border-2 border-transparent hover:border-orange-500 transition-all duration-500">
+                               <div className="flex gap-6">
+                                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-orange-600 font-black text-xl shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-all">
+                                     {i + 1}
+                                  </div>
+                                  <p className="text-xl font-black text-slate-800 leading-tight italic opacity-90 group-hover:opacity-100">"{q}"</p>
                                </div>
-                               <p className="text-xl font-black text-slate-800 leading-tight italic opacity-90 group-hover:opacity-100">"{q}"</p>
                             </div>
-                         </div>
-                       ))}
+                          ))}
+                       </div>
+                    </div>
+
+                    {/* Mülakat Davet Paneli (NEW) */}
+                    <div className="bg-slate-900 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
+                       <div className="relative z-10">
+                          <h4 className="text-[12px] font-black text-orange-500 uppercase tracking-[0.4em] mb-12">MÜLAKAT DAVET VE RANDEVU</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                             <div className="space-y-4">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">Görüşme Tarihi</label>
+                                <input 
+                                  type="date" 
+                                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-orange-600 transition-all"
+                                  value={scheduleData.date}
+                                  onChange={e => setScheduleData({...scheduleData, date: e.target.value})}
+                                />
+                             </div>
+                             <div className="space-y-4">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">Saat</label>
+                                <input 
+                                  type="time" 
+                                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-orange-600 transition-all"
+                                  value={scheduleData.time}
+                                  onChange={e => setScheduleData({...scheduleData, time: e.target.value})}
+                                />
+                             </div>
+                             <div className="md:col-span-2 space-y-4">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">Yöntem / Konum</label>
+                                <select 
+                                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-orange-600 transition-all mb-4"
+                                  value={scheduleData.method}
+                                  onChange={e => setScheduleData({...scheduleData, method: e.target.value})}
+                                >
+                                   <option value="Yüz Yüze Görüşme">Yüz Yüze Görüşme</option>
+                                   <option value="Online (Google Meet)">Online (Google Meet)</option>
+                                   <option value="Online (Zoom)">Online (Zoom)</option>
+                                   <option value="Telefon Mülakatı">Telefon Mülakatı</option>
+                                </select>
+                                <input 
+                                  type="text" 
+                                  placeholder="Görüşme Adresi veya Link"
+                                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-orange-600 transition-all"
+                                  value={scheduleData.location}
+                                  onChange={e => setScheduleData({...scheduleData, location: e.target.value})}
+                                />
+                             </div>
+                          </div>
+                          <button 
+                            onClick={handleSendInvitation}
+                            disabled={isInviting}
+                            className="w-full py-6 bg-orange-600 hover:bg-white hover:text-slate-900 text-white rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-xl active:scale-95 disabled:opacity-50"
+                          >
+                             {isInviting ? 'BİLGİLENDİRME İLETİLİYOR...' : 'RESMİ DAVETİYEYİ GÖNDER'}
+                          </button>
+                       </div>
+                       <div className="absolute -right-40 -bottom-40 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[150px]"></div>
                     </div>
                  </div>
-                 <div className="lg:col-span-4 space-y-8">
+
+                 {/* SAĞ: Gözlem Alanları */}
+                 <div className="lg:col-span-5 space-y-8">
                     <div className="p-10 bg-orange-600 rounded-[3.5rem] text-white shadow-xl">
                        <h5 className="text-[10px] font-black uppercase tracking-widest mb-8 text-orange-200">Kritik Gözlem Alanları</h5>
                        <ul className="space-y-6">

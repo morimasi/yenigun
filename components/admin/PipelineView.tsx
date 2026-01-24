@@ -79,10 +79,10 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fixed type safety error by simplifying state update logic and resolving array type inference issues with dynamic keys.
+  // Fixed type safety error by adding explicit type assertion for dynamic key access.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current = prev[category];
+      const current = prev[category] as string[];
       const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
