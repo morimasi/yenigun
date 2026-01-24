@@ -64,26 +64,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     if (!candidates || !Array.isArray(candidates)) return [];
 
     return candidates.filter(c => {
-      // 1. Text Search
       const name = (c.name || '').toLocaleLowerCase('tr-TR').trim();
       const term = (appliedSearch || '').toLocaleLowerCase('tr-TR').trim();
       const matchesSearch = term === '' || name.includes(term);
-      
-      // 2. Multi-Select Filters
       const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
       const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
       const matchesGender = filters.genders.length === 0 || (c.gender && filters.genders.includes(c.gender));
-      
-      // 3. Range Filters
       const matchesAge = c.age >= filters.ageRange[0] && c.age <= filters.ageRange[1];
       const matchesExp = (c.experienceYears || 0) >= filters.expRange[0] && (c.experienceYears || 0) <= filters.expRange[1];
       const score = c.report?.score ?? -1;
       const matchesScore = score === -1 ? filters.scoreRange[0] === 0 : (score >= filters.scoreRange[0] && score <= filters.scoreRange[1]);
-      
-      // 4. Department Search
       const matchesDept = filters.deptSearch === '' || (c.department || '').toLocaleLowerCase('tr-TR').includes(filters.deptSearch.toLocaleLowerCase('tr-TR'));
-      
-      // 5. Date Filter
       const matchesDate = filters.dateSince === '' || new Date(c.timestamp) >= new Date(filters.dateSince);
 
       return matchesSearch && matchesBranch && matchesStatus && matchesGender && matchesAge && matchesExp && matchesScore && matchesDept && matchesDate;
@@ -103,7 +94,6 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     });
   }, [candidates, appliedSearch, filters, sortConfig]);
 
-  // Dinamik Sayım Fonksiyonu
   const getCountForFilter = (category: keyof typeof filters, value: any) => {
      return candidates.filter(c => {
         if (category === 'branches') return c.branch === value;
@@ -118,12 +108,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     const next = current.includes(value)
       ? current.filter(v => v !== value)
       : [...current, value];
-
     setFilters(prev => ({ ...prev, [category]: next }));
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-12rem)] min-h-[850px] relative">
+    <div className="flex flex-col lg:flex-row gap-8 min-h-screen relative items-start">
       
       {/* EXPORT OVERLAY */}
       {isExportingSelected && (
@@ -146,8 +135,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
         </div>
       )}
 
-      {/* SOL PANEL (GELİŞMİŞ FİLTRE DÜNYASI) */}
-      <div className="lg:w-[320px] flex flex-col gap-5 h-full shrink-0 overflow-hidden no-print">
+      {/* SOL PANEL (STICKY SIDEBAR) */}
+      <div className="lg:w-[320px] flex flex-col gap-5 shrink-0 no-print sticky top-32 max-h-[calc(100vh-10rem)]">
         
         {/* Arama & Filtre Paneli Toggle */}
         <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 space-y-6">
@@ -173,157 +162,106 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
           </button>
         </div>
 
-        {/* Dinamik Filtre Alanı */}
-        <div className={`flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-5 transition-all duration-500 ${isFilterPanelOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10 pointer-events-none absolute'}`}>
-          
-          {/* Branş Filtresi */}
-          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">KLİNİK BRANŞLAR</h4>
-             <div className="flex flex-wrap gap-2">
-                {Object.values(Branch).map(b => {
-                   const count = getCountForFilter('branches', b);
-                   if (count === 0) return null;
-                   return (
-                      <button
-                        key={b}
-                        onClick={() => toggleFilter('branches', b)}
-                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase border transition-all flex items-center gap-2 ${
-                          filters.branches.includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
-                        }`}
-                      >
-                        {b.split(' ')[0]}
-                        <span className={`px-1.5 py-0.5 rounded-lg text-[8px] ${filters.branches.includes(b) ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
-                      </button>
-                   );
-                })}
-             </div>
-          </div>
+        {/* Dinamik Filtre & Aday Listesi */}
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+          {isFilterPanelOpen ? (
+            <div className="space-y-5 animate-slide-down">
+              {/* Branş Filtresi */}
+              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">KLİNİK BRANŞLAR</h4>
+                 <div className="flex flex-wrap gap-2">
+                    {Object.values(Branch).map(b => {
+                       const count = getCountForFilter('branches', b);
+                       if (count === 0) return null;
+                       return (
+                          <button
+                            key={b}
+                            onClick={() => toggleFilter('branches', b)}
+                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase border transition-all flex items-center gap-2 ${
+                              filters.branches.includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
+                            }`}
+                          >
+                            {b.split(' ')[0]}
+                            <span className={`px-1.5 py-0.5 rounded-lg text-[8px] ${filters.branches.includes(b) ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
+                          </button>
+                       );
+                    })}
+                 </div>
+              </div>
 
-          {/* Sayısal Aralıklar (Bento Grid) */}
-          <div className="grid grid-cols-1 gap-4">
-             {/* Deneyim Yılı */}
-             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100">
-                <div className="flex justify-between items-center mb-4">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">DENEYİM YILI</h4>
-                   <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">{filters.expRange[0]} - {filters.expRange[1]} Yıl</span>
-                </div>
-                <input 
-                  type="range" min="0" max="40" step="1"
-                  className="w-full accent-orange-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
-                  value={filters.expRange[1]}
-                  onChange={e => setFilters(prev => ({ ...prev, expRange: [0, parseInt(e.target.value)] }))}
-                />
-             </div>
+              {/* Sayısal Aralıklar */}
+              <div className="grid grid-cols-1 gap-4">
+                 <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100">
+                    <div className="flex justify-between items-center mb-4">
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">DENEYİM YILI</h4>
+                       <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">{filters.expRange[0]} - {filters.expRange[1]} Yıl</span>
+                    </div>
+                    <input 
+                      type="range" min="0" max="40" step="1"
+                      className="w-full accent-orange-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                      value={filters.expRange[1]}
+                      onChange={e => setFilters(prev => ({ ...prev, expRange: [0, parseInt(e.target.value)] }))}
+                    />
+                 </div>
+                 <div className="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white">
+                    <div className="flex justify-between items-center mb-4">
+                       <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">LİYAKAT SKORU (%)</h4>
+                       <span className="text-[10px] font-black text-white bg-orange-600 px-3 py-1 rounded-lg">%{filters.scoreRange[0]} +</span>
+                    </div>
+                    <input 
+                      type="range" min="0" max="100" step="5"
+                      className="w-full accent-orange-600 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                      value={filters.scoreRange[0]}
+                      onChange={e => setFilters(prev => ({ ...prev, scoreRange: [parseInt(e.target.value), 100] }))}
+                    />
+                 </div>
+              </div>
 
-             {/* Yaş Filtresi */}
-             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100">
-                <div className="flex justify-between items-center mb-4">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">YAŞ ARALIĞI</h4>
-                   <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">{filters.ageRange[0]} - {filters.ageRange[1]}</span>
-                </div>
-                <div className="flex gap-2">
-                   <input 
-                     type="number" placeholder="Min" 
-                     className="w-1/2 p-3 bg-slate-50 rounded-xl text-[11px] font-bold border border-slate-100 outline-none focus:border-orange-400"
-                     value={filters.ageRange[0]}
-                     onChange={e => setFilters(prev => ({ ...prev, ageRange: [parseInt(e.target.value) || 18, prev.ageRange[1]] }))}
-                   />
-                   <input 
-                     type="number" placeholder="Max" 
-                     className="w-1/2 p-3 bg-slate-50 rounded-xl text-[11px] font-bold border border-slate-100 outline-none focus:border-orange-400"
-                     value={filters.ageRange[1]}
-                     onChange={e => setFilters(prev => ({ ...prev, ageRange: [prev.ageRange[0], parseInt(e.target.value) || 65] }))}
-                   />
-                </div>
-             </div>
-
-             {/* Liyakat Skoru (AI Score) */}
-             <div className="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white">
-                <div className="flex justify-between items-center mb-4">
-                   <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">LİYAKAT SKORU (%)</h4>
-                   <span className="text-[10px] font-black text-white bg-orange-600 px-3 py-1 rounded-lg">%{filters.scoreRange[0]} +</span>
-                </div>
-                <input 
-                  type="range" min="0" max="100" step="5"
-                  className="w-full accent-orange-600 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                  value={filters.scoreRange[0]}
-                  onChange={e => setFilters(prev => ({ ...prev, scoreRange: [parseInt(e.target.value), 100] }))}
-                />
-                <p className="text-[8px] text-slate-400 uppercase tracking-widest mt-4">Sadece bu puan üzerindeki adaylar listelenir.</p>
-             </div>
-
-             {/* Departman & Üniversite Arama */}
-             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">BÖLÜM / DEPARTMAN</h4>
-                <input 
-                  type="text" 
-                  placeholder="Bölüm isminde ara..."
-                  className="w-full p-4 bg-slate-50 rounded-xl text-[11px] font-bold border border-slate-100 outline-none focus:border-orange-400"
-                  value={filters.deptSearch}
-                  onChange={e => setFilters(prev => ({ ...prev, deptSearch: e.target.value }))}
-                />
-             </div>
-
-             {/* Kayıt Tarihi Filtresi */}
-             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">KAYIT TARİHİNDEN BERİ</h4>
-                <input 
-                  type="date"
-                  className="w-full p-4 bg-slate-50 rounded-xl text-[11px] font-bold border border-slate-100 outline-none focus:border-orange-400"
-                  value={filters.dateSince}
-                  onChange={e => setFilters(prev => ({ ...prev, dateSince: e.target.value }))}
-                />
-             </div>
-          </div>
-
-          <button 
-            onClick={() => setFilters({
-              branches: [], statuses: [], genders: [], ageRange: [18, 65], expRange: [0, 50], scoreRange: [0, 100], deptSearch: '', dateSince: ''
-            })}
-            className="w-full py-4 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-50 rounded-2xl transition-all"
-          >
-            Tüm Filtreleri Temizle
-          </button>
-        </div>
-
-        {/* Aday Listesi (Mini Görünüm) */}
-        <div className={`flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 ${!isFilterPanelOpen ? 'opacity-100 translate-y-0' : 'opacity-30 scale-95'}`}>
-          {filteredAndSortedCandidates.length === 0 ? (
-            <div className="py-20 text-center px-8 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100">
-               <p className="text-[11px] font-black text-slate-400 uppercase leading-relaxed">Filtrelere Uygun Kayıt Bulunamadı</p>
-               <button onClick={() => setFilters(prev => ({...prev, branches: [], deptSearch: '', scoreRange: [0, 100]}))} className="mt-4 text-[9px] font-black text-orange-600 underline">Filtreleri Esnet</button>
+              <button 
+                onClick={() => setIsFilterPanelOpen(false)}
+                className="w-full py-4 text-slate-900 text-[10px] font-black uppercase tracking-widest bg-slate-100 rounded-2xl transition-all"
+              >
+                Sonuçları Listele
+              </button>
             </div>
           ) : (
-            filteredAndSortedCandidates.map(c => (
-              <div 
-                key={c.id} 
-                onClick={() => setSelectedId(c.id)}
-                className={`p-5 rounded-[2.2rem] border transition-all cursor-pointer relative group ${
-                  selectedId === c.id ? 'bg-white border-orange-600 shadow-2xl translate-x-2 ring-8 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
-                }`}
-              >
-                <div className="flex items-center gap-5">
-                  <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center font-black text-[16px] shadow-sm ${
-                    c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
-                  }`}>
-                    {c.report ? c.report.score : '?'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-black text-slate-900 text-[13px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
-                      <div className={`w-2.5 h-2.5 rounded-full ${c.reminderNote ? 'bg-orange-500 animate-pulse' : 'bg-slate-200'}`}></div>
-                    </div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{c.branch?.split(' ')[0]} • {c.experienceYears}Y DENEYİM • {c.age} YAŞ</p>
-                  </div>
+            <div className="space-y-3 animate-slide-up">
+              {filteredAndSortedCandidates.length === 0 ? (
+                <div className="py-20 text-center px-8 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100">
+                   <p className="text-[11px] font-black text-slate-400 uppercase leading-relaxed">Uygun Kayıt Yok</p>
                 </div>
-              </div>
-            ))
+              ) : (
+                filteredAndSortedCandidates.map(c => (
+                  <div 
+                    key={c.id} 
+                    onClick={() => { setSelectedId(c.id); window.scrollTo({ top: 112, behavior: 'smooth' }); }}
+                    className={`p-5 rounded-[2.2rem] border transition-all cursor-pointer relative group ${
+                      selectedId === c.id ? 'bg-white border-orange-600 shadow-2xl translate-x-2 ring-8 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center font-black text-[16px] shadow-sm ${
+                        c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
+                      }`}>
+                        {c.report ? c.report.score : '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="font-black text-slate-900 text-[13px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{c.branch?.split(' ')[0]} • {c.experienceYears}Y</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* SAĞ PANEL (DEEP-DIVE CANVAS) */}
-      <div className="flex-1 h-full min-w-0">
+      {/* SAĞ PANEL (Sonsuz Kanvas Modeli) */}
+      <div className="flex-1 min-w-0">
         {selectedCandidate ? (
           <CandidateDetail 
             candidate={selectedCandidate}
@@ -332,12 +270,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
             onDelete={() => { if (confirm('Kayıt silinecek. Emin misiniz?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
           />
         ) : (
-          <div className="h-full bg-white border-4 border-dashed border-slate-100 rounded-[5rem] flex flex-col items-center justify-center text-center p-24 opacity-40">
+          <div className="h-[800px] bg-white border-4 border-dashed border-slate-100 rounded-[5rem] flex flex-col items-center justify-center text-center p-24 opacity-40 sticky top-32">
              <div className="w-40 h-40 bg-slate-50 rounded-[4rem] flex items-center justify-center mb-12 shadow-inner">
                 <svg className="w-20 h-20 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
              </div>
              <p className="text-slate-400 font-black uppercase tracking-[1em] text-[14px]">Liyakat Dosyası Bekleniyor</p>
-             <p className="text-slate-300 font-bold text-[10px] mt-6 uppercase tracking-widest">Sol panelden bir aday seçerek derinlemesine analizine ulaşabilirsiniz.</p>
           </div>
         )}
       </div>
