@@ -5,8 +5,71 @@ import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult }
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
- * Adayın liyakat profilini analiz eden ana motor.
+ * Adayın 12 aylık profesyonel projeksiyonunu üreten nöral motor.
  */
+export const generateNeuralProjection = async (candidate: Candidate): Promise<any> => {
+  const modelName = "gemini-3-flash-preview";
+  
+  const systemInstruction = `
+    ROL: Yeni Gün Akademi Nöral Projeksiyon ve Gelecek Tahminleme Ünitesi.
+    HEDEF: Adayın liyakat verilerinden yola çıkarak 12 aylık profesyonel yörüngesini çiz.
+    DİSİPLİN: Tamamen TÜRKÇE, analitik ve klinik bir dil kullan.
+    
+    PARAMETRELER:
+    1. 1-3 Ay: Oryantasyon ve Kurumsal Uyum.
+    2. 3-9 Ay: Klinik Derinleşme ve Veli Güven İnşası.
+    3. 9-12 Ay: Kurumsal Katma Değer ve Liderlik Potansiyeli.
+    
+    ÇIKTI: JSON formatında, her dönem için skorlar ve betimsel "Nöral İçgörüler" üret.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: `PROJEKSIYON TALEBI: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, report: candidate.report })}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 2048 },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            quarters: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  period: { type: Type.STRING },
+                  performanceScore: { type: Type.NUMBER },
+                  clinicalStability: { type: Type.NUMBER },
+                  parentTrustIndex: { type: Type.NUMBER },
+                  insight: { type: Type.STRING },
+                  risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+                }
+              }
+            },
+            finalPrediction: {
+              type: Type.OBJECT,
+              properties: {
+                retentionProbability: { type: Type.NUMBER },
+                burnoutRiskPoint: { type: Type.STRING, description: "Tükenmişlik riski olan ay" },
+                suggestedRole: { type: Type.STRING },
+                strategicAdvice: { type: Type.STRING }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return JSON.parse(response.text.trim());
+  } catch (error) {
+    console.error("Projeksiyon Hatası:", error);
+    return null;
+  }
+};
+
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
 
@@ -117,9 +180,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   }
 };
 
-/**
- * Gelişmiş Klinik Lab Simülasyon Motoru
- */
 export const runStresSimulation = async (candidate: Candidate, testType: ClinicalTestType = ClinicalTestType.DMP_STRESS): Promise<SimulationResult> => {
   const modelName = "gemini-3-flash-preview";
 
