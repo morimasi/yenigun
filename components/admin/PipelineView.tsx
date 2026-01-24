@@ -79,11 +79,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Explicitly casting the current array to string[] and using a functional update with return type cast to resolve inference issues with computed properties.
+  // Fix: Explicitly typing the filter state update to resolve the unknown[] assignment issue with computed property names.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current = prev[category] as string[];
-      const next = current.includes(value)
+      const current: string[] = prev[category];
+      const next: string[] = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
       
