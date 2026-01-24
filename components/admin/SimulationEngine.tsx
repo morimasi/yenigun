@@ -18,28 +18,25 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
     if (!candidate) return;
 
     try {
-      // Pro model mülakat simülasyonu gibi yüksek muhakeme gerektiren işler için en uygunudur
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       
       const systemInstruction = `
-        ROL: Klinik Stres ve Etik Sınır Simülatörü.
-        MODEL: Gemini-3-Pro (Deep Reasoning Mode).
-        GÖREV: Adayın liyakat profilindeki "zayıf halkayı" bul ve oradan vuracak bir senaryo üret.
+        ROL: Gelişmiş Klinik Kriz Simülatörü.
+        MODEL: Gemini-3-Flash (Deep Reasoning Mode).
+        BÜTÇE: 24,576 Thinking Tokens.
         
-        ANALİZ STİLİ: Sokratik, sorgulayıcı ve klinik olarak sert. 
-        Adayın "pedagojik esnekliğini" ve "duygusal dayanıklılığını" ölçen uç senaryolar (Edge Cases) kurgula.
+        GÖREV: Adayın zayıf etik sınırlarını veya pedagojik açıklarını test edecek "kişiye özel" bir stres senaryosu tasarla.
         
-        ADAY PROFİLİ: ${JSON.stringify(candidate)}
+        DÜŞÜNME SÜRECİ: Önce adayın tüm cevaplarını oku. Nerede açık vermiş? Hangi durumda "profesyonel mesafesini" kaybedebilir? Veli personasını adayın en çok zorlanacağı karakter yapısına büründür.
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
-        contents: "Adayın klinik reflekslerini ölçecek 4. seviye bir stres simülasyonu başlat.",
+        model: "gemini-3-flash-preview",
+        contents: "Adayın profesyonel sınırlarını zorlayacak, yüksek stresli bir klinik kriz senaryosu kurgula ve simüle et.",
         config: {
           systemInstruction,
           responseMimeType: "application/json",
-          // Maksimum muhakeme kapasitesi
-          thinkingConfig: { thinkingBudget: 32000 },
+          thinkingConfig: { thinkingBudget: 24576 },
           responseSchema: {
             type: Type.OBJECT,
             properties: {
@@ -64,7 +61,7 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
 
       setSimulationData(JSON.parse(response.text || "{}"));
     } catch (e) {
-      alert("Simülasyon Motoru Hatası: Nöral ağlarda aşırı yüklenme.");
+      alert("Simülasyon Hatası: Derin düşünme motoru geçici olarak yanıt vermiyor.");
     } finally {
       setIsSimulating(false);
     }
@@ -91,19 +88,17 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
          >
            <span className="relative z-10 flex items-center gap-3">
              <svg className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-             {isSimulating ? 'NÖRAL İŞLEME...' : 'LIYAKAT STRES TESTİ'}
+             {isSimulating ? 'DERİN MUHAKEME...' : 'KLİNİK STRES TESTİ'}
            </span>
            <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          </button>
       </div>
 
-      {/* Render logic remain same but styling enhanced */}
       {!simulationData && !isSimulating ? (
         <div className="py-40 text-center relative overflow-hidden rounded-[4rem] bg-slate-50/50 border-2 border-dashed border-slate-100">
-           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/20"></div>
-           <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.8em] animate-pulse">Bilişsel Simülasyon Odası</p>
+           <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.8em]">Flash-3 Nöral Simülasyon</p>
            <p className="max-w-md mx-auto mt-6 text-[10px] font-bold text-slate-300 leading-relaxed uppercase tracking-widest">
-             Adayın dijital ikizi üzerinden stres testleri yapılarak gelecekteki kriz yönetim kapasitesi ölçülür.
+             Adayın dijital kopyası üzerinde yapılan derin muhakeme testleri ile klinik sınır ihlali olasılıkları hesaplanır.
            </p>
         </div>
       ) : isSimulating ? (
@@ -115,23 +110,22 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
               </div>
            </div>
            <div className="text-center space-y-4">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">Gemini-3-Pro Bağlanıyor</h3>
-              <p className="text-[10px] font-black text-orange-600 uppercase tracking-[0.4em]">Derin Muhakeme Analizi Yürütülüyor</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">Flash-3 Muhakeme Ediyor</h3>
+              <p className="text-[10px] font-black text-orange-600 uppercase tracking-[0.4em]">Derin Karar Ağaçları Analiz Ediliyor</p>
            </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-slide-up">
-           {/* Scenario content with Pro styling */}
            <div className="lg:col-span-7 space-y-8">
               <div className="bg-slate-900 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
                  <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-10">
                        <span className="w-3 h-3 bg-orange-600 rounded-full animate-ping"></span>
-                       <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.5em]">KLİNİK VAKA SENARYOSU (PRO-3)</h5>
+                       <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.5em]">KLİNİK VAKA SENARYOSU (DEEP REASONING)</h5>
                     </div>
                     <p className="text-2xl font-black leading-tight italic mb-12 tracking-tight group-hover:text-orange-50 transition-colors">"{simulationData.scenario}"</p>
                     <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md">
-                       <span className="text-[9px] font-black text-slate-400 uppercase block mb-3 tracking-widest">Veli Personası & Psikolojik Profil</span>
+                       <span className="text-[9px] font-black text-slate-400 uppercase block mb-3 tracking-widest">Parent / Clinical Boundary Analysis</span>
                        <p className="text-sm font-bold text-slate-200 leading-relaxed">{simulationData.parentPersona}</p>
                     </div>
                  </div>
@@ -139,17 +133,16 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
               </div>
 
               <div className="bg-white p-16 rounded-[4.5rem] border border-slate-100 shadow-xl relative group">
-                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-10 border-l-4 border-orange-600 pl-4">ÖNGÖRÜLEN ADAY REAKSİYONU</h5>
+                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-10 border-l-4 border-orange-600 pl-4">ÖNGÖRÜLEN ADAY REFLEKSİ</h5>
                  <p className="text-base font-bold text-slate-600 leading-relaxed italic opacity-80 group-hover:opacity-100 transition-opacity">
                     "{simulationData.candidateResponse}"
                  </p>
               </div>
            </div>
 
-           {/* Metrics with Pro styling */}
            <div className="lg:col-span-5 space-y-8">
               <div className="bg-slate-50 p-12 rounded-[4.5rem] border border-slate-100 shadow-inner">
-                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-12">BİLİŞSEL METRİKLER (AI-SCORE)</h5>
+                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-12">REASONING METRİKLERİ</h5>
                  <div className="space-y-10">
                     {[
                       { l: 'ETİK SINIR KORUMA', v: simulationData.aiEvaluation.ethicalBoundaryScore, c: 'bg-slate-900' },
@@ -171,7 +164,7 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
               </div>
 
               <div className="bg-rose-600 p-12 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden">
-                 <h5 className="text-[10px] font-black text-rose-200 uppercase tracking-widest mb-8">KRİTİK HATA ÖNGÖRÜLERİ</h5>
+                 <h5 className="text-[10px] font-black text-rose-200 uppercase tracking-widest mb-8">KRİTİK HATA SİNYALLERİ</h5>
                  <div className="space-y-6 relative z-10">
                     {simulationData.aiEvaluation.criticalMistakes.map((err, i) => (
                       <div key={i} className="flex gap-5 items-start">
@@ -180,7 +173,6 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
                       </div>
                     ))}
                  </div>
-                 <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
               </div>
            </div>
         </div>

@@ -10,7 +10,7 @@ interface DecisionAdvisorChatProps {
 
 const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, onClose }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: `Merhaba Kurul Üyesi. Seçtiğiniz ${candidates.length} aday üzerinde mülakat verileri ve klinik test sonuçları ışığında çapraz sorgulama yapmaya hazırım. (Gemini-3-Pro Motoru Aktif)` }
+    { role: 'ai', text: `Merhaba Kurul Üyesi. Seçtiğiniz ${candidates.length} aday üzerinde derin muhakeme (Deep Reasoning) motoruyla çapraz sorgulama yapmaya hazırım.` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -30,34 +30,34 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
     setIsTyping(true);
 
     try {
-      // Karar destek gibi kritik ve çoklu veri karşılaştırma işleri için PRO model
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const systemInstruction = `
-        ROL: Yeni Gün Akademi Stratejik İK ve Klinik Kurul Danışmanı.
-        MODEL: Gemini-3-Pro.
-        GÖREV: Seçilen adayları (Adaylar: ${candidates.map(c => c.name).join(', ')}) liyakat ve uyum açısından karşılaştır.
+        ROL: Yeni Gün Akademi Stratejik Karar Danışmanı.
+        MODEL: Gemini-3-Flash (Deep Reasoning Mode).
+        BÜTÇE: 24,576 Thinking Tokens.
         
-        KARAR PARAMETRELERİ:
-        1. Klinik Yetkinlik Derinliği.
-        2. Kurumsal Sadakat Projeksiyonu.
-        3. Veli İletişim Riskleri.
+        GÖREV: Adayların (Adaylar: ${candidates.map(c => c.name).join(', ')}) verilerini, mülakat rehberlerini ve kriz testlerini düşünme aşamasında çapraz karşılaştır.
         
-        CEVAP STİLİ: Net, liyakat odaklı, "X adayı şu konuda daha güçlüdür" şeklinde somut kanıtlı.
-        ADAY VERİLERİ: ${JSON.stringify(candidates)}
+        KARAR KRİTERLERİ:
+        - Hangisi daha sürdürülebilir?
+        - Hangisinin sosyal maskesi daha düşük?
+        - Kim Yeni Gün kültürüne daha hızlı adapte olur?
+        
+        STİL: Akademik, sert, liyakat odaklı ve kanıta dayalı.
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: `Analiz Talebi: ${userText}`,
         config: { 
           systemInstruction, 
-          thinkingConfig: { thinkingBudget: 30000 } 
+          thinkingConfig: { thinkingBudget: 24576 } 
         }
       });
 
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Şu an stratejik bir sonuç üretemiyorum." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Şu an stratejik bir sonuç üretilemiyor." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Muhakeme motoruna erişim sağlanamadı." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Muhakeme motoru yanıt vermiyor." }]);
     } finally {
       setIsTyping(false);
     }
@@ -73,7 +73,7 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
               </div>
               <div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Stratejik Karar Paneli</h3>
-                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Gemini-3-Pro Muhakeme Motoru</p>
+                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Gemini-3-Flash Deep Reasoning</p>
               </div>
            </div>
            <button onClick={onClose} className="p-5 hover:bg-rose-50 rounded-[2rem] text-rose-400 transition-all z-10">
@@ -101,7 +101,7 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
                    <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-100"></div>
                    <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-200"></div>
                  </div>
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Sinyal İşleniyor (Pro-3)</span>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Flash-3 Muhakeme Ediyor</span>
                </div>
             </div>
           )}
@@ -112,8 +112,8 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
               <input 
                 autoFocus
                 type="text" 
-                className="flex-1 bg-slate-50 rounded-[2.5rem] p-6 text-base font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all shadow-inner"
-                placeholder="Örn: Bu adaylar arasında sürdürülebilirlik skoru en yüksek olan kim?"
+                className="flex-1 bg-slate-50 rounded-[2.5rem] p-6 text-base font-bold outline-none border-2 border-transparent focus:border-orange-600 shadow-inner"
+                placeholder="Adaylar hakkında stratejik bir karşılaştırma isteyin..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />

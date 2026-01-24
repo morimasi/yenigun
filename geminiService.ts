@@ -3,35 +3,34 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "./types";
 
 /**
- * Yeni Gün Akademi - Multimodal Persepsiyon ve Nöral Muhakeme Servisi
- * Flash: Multimodal & Hızlı Algı
- * Pro: Derin Karar Mekanizması & Psikolojik Modelleme
+ * Yeni Gün Akademi - Nöral Muhakeme ve Klinik Analiz Servisi
+ * Model: Gemini-3-Flash-Preview (Deep Thinking Mode)
+ * Budget: 24,576 Tokens (Flash için maksimum muhakeme sınırı)
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("API_KEY_MISSING");
   const ai = new GoogleGenAI({ apiKey });
   
-  // Doküman varsa Multimodal yetenekleri için Flash kullanıyoruz
-  const hasMultimodal = !!candidate.cvData?.base64;
-  const modelName = "gemini-3-pro-preview"; // Liyakat analizi yüksek muhakeme gerektirir
+  const modelName = "gemini-3-flash-preview";
 
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Analisti ve Liyakat Müfettişi.
-    HEDEF: Adayın 10 boyutlu profesyonel profilini cerrahi bir titizlikle çıkar.
+    ROL: Yeni Gün Akademi Baş Klinik Analisti ve Davranış Bilimci.
+    GÖREV: Adayın liyakat profilini derinlemesine muhakeme ederek analiz et.
     
-    ANALİZ BOYUTLARI:
-    1. Kişilik/Mizaç, 2. Resmiyet/Kurumsallık, 3. Veli-Öğrenci İlişkileri, 4. Sürdürülebilirlik/Burnout, 
-    5. Gelişime Açıklık, 6. Eleştiriye Açıklık, 7. İş Ahlakı, 8. Pedagojik Analiz, 
-    9. Alan Yeterliliği, 10. Kurumsal Sadakat.
+    ANALİZ PROTOKOLÜ:
+    - Yanıtlar arasındaki mikro-çelişkileri (Anomaliler) tespit et.
+    - Adayın akademik dürüstlüğünü ve "sosyal maske" kullanımını ölç.
+    - CV'deki tasarım disiplinini multimodal olarak değerlendir (eğer varsa).
+    - 10 boyutlu matrisi (Personality, Formality, Ethics vs.) nöral simülasyonla puanla.
+    
+    DÜŞÜNME TALİMATI: Cevabı üretmeden önce adayın klinik karakterini bir bütün olarak "düşün". Teorik bilgisi ile pratik etik yaklaşımları uyuşuyor mu? Riskleri asla yüzeysel geçme.
 
-    MULTIMODAL GÖREV: Eğer aday CV/Belge yüklediyse, belgenin tasarım disiplinini, organizasyon şemasını ve görsel profesyonelliğini "Kişilik" ve "Resmiyet" skorlarına dahil et.
-    
     FORMAT: Kesinlikle geçerli JSON.
   `;
 
   try {
-    const parts: any[] = [{ text: `ADAY VERİLERİ: ${JSON.stringify(candidate)}` }];
+    const parts: any[] = [{ text: `ADAY VERİLERİ VE KLİNİK CEVAPLAR: ${JSON.stringify(candidate)}` }];
     if (candidate.cvData?.base64) {
       parts.push({ 
         inlineData: { 
@@ -47,8 +46,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Pro modelde yüksek muhakeme için thinking bütçesi ayrılıyor
-        thinkingConfig: { thinkingBudget: 30000 },
+        // Flash modelinin düşünme kapasitesini sonuna kadar zorluyoruz
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
