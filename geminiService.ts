@@ -5,22 +5,37 @@ import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult }
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
+ * LLM tarafından üretilen kirli JSON çıktılarını temizleyen yardımcı fonksiyon.
+ */
+const cleanAndParseJSON = (rawText: string) => {
+  try {
+    // Markdown bloklarını temizle
+    let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    // JSON içindeki kontrol karakterlerini ve muhtemel yarım kalmış yapıları temizle
+    // (Bazı durumlarda model sondaki parantezi unutabiliyor)
+    if (cleanText.endsWith(',') || cleanText.endsWith('.')) {
+      cleanText = cleanText.slice(0, -1);
+    }
+    
+    return JSON.parse(cleanText);
+  } catch (e) {
+    console.error("JSON Parse Hatası Denetimi:", e, "Ham Metin:", rawText);
+    throw new Error("Sistem çıktısı yapısal olarak bozuk.");
+  }
+};
+
+/**
  * Adayın 12 aylık profesyonel projeksiyonunu üreten nöral motor.
  */
 export const generateNeuralProjection = async (candidate: Candidate): Promise<any> => {
   const modelName = "gemini-3-flash-preview";
   
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Nöral Projeksiyon ve Gelecek Tahminleme Ünitesi.
-    HEDEF: Adayın liyakat verilerinden yola çıkarak 12 aylık profesyonel yörüngesini çiz.
-    DİSİPLİN: Tamamen TÜRKÇE, analitik ve klinik bir dil kullan.
-    
-    PARAMETRELER:
-    1. 1-3 Ay: Oryantasyon ve Kurumsal Uyum.
-    2. 3-9 Ay: Klinik Derinleşme ve Veli Güven İnşası.
-    3. 9-12 Ay: Kurumsal Katma Değer ve Liderlik Potansiyeli.
-    
-    ÇIKTI: JSON formatında, her dönem için skorlar ve betimsel "Nöral İçgörüler" üret.
+    ROL: Yeni Gün Akademi Nöral Projeksiyon Ünitesi.
+    GÖREV: Adayın 12 aylık profesyonel gelişimini analiz et.
+    KURAL: Yanıt sadece geçerli bir JSON olmalıdır. Metinler içinde çift tırnak (") kullanmaktan kaçın, gerekirse tek tırnak (') kullan. 
+    JSON içinde asla yeni satır karakteri (\n) olmasın, tüm metni tek satırda tut.
   `;
 
   try {
@@ -30,8 +45,8 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 2048 },
+        maxOutputTokens: 2048,
+        thinkingConfig: { thinkingBudget: 1024 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -43,7 +58,6 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
                   period: { type: Type.STRING },
                   performanceScore: { type: Type.NUMBER },
                   clinicalStability: { type: Type.NUMBER },
-                  parentTrustIndex: { type: Type.NUMBER },
                   insight: { type: Type.STRING },
                   risks: { type: Type.ARRAY, items: { type: Type.STRING } }
                 }
@@ -53,8 +67,7 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
               type: Type.OBJECT,
               properties: {
                 retentionProbability: { type: Type.NUMBER },
-                burnoutRiskPoint: { type: Type.STRING, description: "Tükenmişlik riski olan ay" },
-                suggestedRole: { type: Type.STRING },
+                burnoutRiskPoint: { type: Type.STRING },
                 strategicAdvice: { type: Type.STRING }
               }
             }
@@ -63,10 +76,10 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
       }
     });
 
-    return JSON.parse(response.text.trim());
+    return cleanAndParseJSON(response.text);
   } catch (error) {
     console.error("Projeksiyon Hatası:", error);
-    return null;
+    throw error;
   }
 };
 
@@ -74,9 +87,9 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const modelName = "gemini-3-flash-preview";
 
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Analisti ve Liyakat Müfettişi.
-    HEDEF: Adayın profesyonel DNA'sını 10 KRİTİK BOYUT üzerinden analiz et.
-    DİSİPLİN: Çıktı tamamen TÜRKÇE, resmi ve akademik olmalıdır. JSON formatında yanıt ver.
+    ROL: Yeni Gün Akademi Baş Analisti.
+    HEDEF: Adayı 10 boyutta analiz et. 
+    KURAL: Kesinlikle geçerli JSON döndür. JSON içinde escape edilmemiş karakter kalmasın.
   `;
 
   try {
@@ -84,13 +97,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       name: candidate.name,
       branch: candidate.branch,
       experienceYears: candidate.experienceYears,
-      university: candidate.university,
-      department: candidate.department,
-      answers: candidate.answers,
-      allTrainings: candidate.allTrainings
+      answers: candidate.answers
     };
 
-    const parts: any[] = [{ text: `ADAY VERİLERİ: ${JSON.stringify(leanCandidate)}` }];
+    const parts: any[] = [{ text: `ADAY: ${JSON.stringify(leanCandidate)}` }];
     if (candidate.cvData?.base64) {
       parts.push({ 
         inlineData: { 
@@ -100,24 +110,14 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       });
     }
 
-    const segmentSchema = {
-      type: Type.OBJECT,
-      properties: {
-        score: { type: Type.NUMBER },
-        pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-        risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-      },
-      required: ["score", "pros", "risks"]
-    };
-
     const response = await ai.models.generateContent({
       model: modelName,
       contents: { parts },
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 8192,
-        thinkingConfig: { thinkingBudget: 4096 },
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 2048 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -129,53 +129,28 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             deepAnalysis: {
               type: Type.OBJECT,
               properties: {
-                workEthics: segmentSchema,
-                pedagogicalAnalysis: segmentSchema,
-                parentStudentRelations: segmentSchema,
-                formality: segmentSchema,
-                developmentOpenness: segmentSchema,
-                sustainability: segmentSchema,
-                technicalExpertise: segmentSchema,
-                criticismTolerance: segmentSchema,
-                personality: segmentSchema,
-                institutionalLoyalty: segmentSchema
-              },
-              required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
-            },
-            predictiveMetrics: { 
-              type: Type.OBJECT,
-              properties: {
-                retentionProbability: { type: Type.NUMBER },
-                burnoutRisk: { type: Type.NUMBER },
-                learningVelocity: { type: Type.NUMBER },
-                leadershipPotential: { type: Type.NUMBER }
+                workEthics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                pedagogicalAnalysis: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                parentStudentRelations: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                formality: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                developmentOpenness: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                sustainability: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                criticismTolerance: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                personality: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                institutionalLoyalty: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } }
               }
             },
-            interviewGuidance: { 
-              type: Type.OBJECT,
-              properties: {
-                strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-                criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
-                simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
-            },
-            swot: { 
-              type: Type.OBJECT,
-              properties: {
-                strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-                weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-                opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-                threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
-            }
+            predictiveMetrics: { type: Type.OBJECT, properties: { retentionProbability: { type: Type.NUMBER }, burnoutRisk: { type: Type.NUMBER }, learningVelocity: { type: Type.NUMBER }, leadershipPotential: { type: Type.NUMBER } } },
+            interviewGuidance: { type: Type.OBJECT, properties: { strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } }, criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+            swot: { type: Type.OBJECT, properties: { strengths: { type: Type.ARRAY, items: { type: Type.STRING } }, weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } }, opportunities: { type: Type.ARRAY, items: { type: Type.STRING } }, threats: { type: Type.ARRAY, items: { type: Type.STRING } } } }
           }
         }
       }
     });
     
-    return JSON.parse(response.text.trim());
+    return cleanAndParseJSON(response.text);
   } catch (error: any) { 
-    console.error("Analiz Hatası:", error);
     throw error; 
   }
 };
@@ -183,50 +158,28 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 export const runStresSimulation = async (candidate: Candidate, testType: ClinicalTestType = ClinicalTestType.DMP_STRESS): Promise<SimulationResult> => {
   const modelName = "gemini-3-flash-preview";
 
-  const testPrompts: Record<string, string> = {
-    [ClinicalTestType.BEP_ADAPTATION]: "Vaka BEP/İEP hazırlama, dinamik hedefleri revize etme ve akademik dürüstlük üzerine olmalı.",
-    [ClinicalTestType.BOUNDARY_INTEGRITY]: "Vaka öğretmen-veli arasındaki sınır ihlalleri, duygusal manipülasyon ve profesyonel mesafe üzerine olmalı.",
-    [ClinicalTestType.CONFLICT_MANAGEMENT]: "Vaka multidisipliner ekip içindeki (fizyoterapist-psikolog vb.) görüş ayrılıkları ve çözümleme üzerine olmalı.",
-    [ClinicalTestType.DATA_LITERACY]: "Vaka klinik raporların yanlış yorumlanması veya veri temelli olmayan kararların riskleri üzerine olmalı.",
-    [ClinicalTestType.COGNITIVE_FLEXIBILITY]: "Vaka seans sırasında beklenmedik bir kriz karşısında metodolojiyi saniyeler içinde değiştirme yetisi üzerine olmalı.",
-    [ClinicalTestType.DMP_STRESS]: "Vaka doğrudan seans içi fiziksel kriz veya ağır agresyon yönetimi üzerine olmalı."
-  };
-
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Klinik Süpervizörü ve Stres Testi Mimarı.
-    HEDEF: Adayın zayıf yönlerini sarsacak, etik ikilemler içeren bir TÜRKÇE kriz senaryosu üret.
-    
-    KURAL: 
-    - Yanıt kesinlikle TÜRKÇE olmalıdır.
-    - 'clinicalTruths' ve 'criticalMistakes' alanları, 2-3 cümlelik, neden-sonuç odaklı betimsel paragraflar olmalıdır. Sadece madde işareti kullanma.
-    - JSON formatını asla bozma.
-    - Test Türü: ${testType}.
-    - Senaryo Odağı: ${testPrompts[testType] || testPrompts[ClinicalTestType.DMP_STRESS]}
+    ROL: Yeni Gün Akademi Klinik Laboratuvarı.
+    HEDEF: Stres testi simülasyonu üret.
+    KURAL: Yanıt sadece JSON olmalıdır. Metin içinde çift tırnak kullanma. Tüm metni tek satıra yay (no newlines).
+    JSON formatını bozacak karakterlerden kaçın.
   `;
 
   try {
-    const simulationInput = {
-      name: candidate.name,
-      branch: candidate.branch,
-      experience: candidate.experienceYears,
-      answers: candidate.answers,
-      allTrainings: candidate.allTrainings
-    };
-
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `ADAY PROFILI VE TEST TIPI: ${JSON.stringify({ input: simulationInput, testType })}`,
+      contents: `SIMULASYON: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, testType })}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 2048 },
+        maxOutputTokens: 2048,
+        thinkingConfig: { thinkingBudget: 1024 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            scenario: { type: Type.STRING, description: "Krizin detaylı betimlemesi" },
-            parentPersona: { type: Type.STRING, description: "Velinin veya vakanın psikolojik profili" },
-            candidateResponse: { type: Type.STRING, description: "Adayın göstermesi beklenen olası nöral tepki" },
+            scenario: { type: Type.STRING },
+            parentPersona: { type: Type.STRING },
+            candidateResponse: { type: Type.STRING },
             stressLevel: { type: Type.NUMBER },
             aiEvaluation: {
               type: Type.OBJECT,
@@ -235,8 +188,8 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
                 empathyCalibration: { type: Type.NUMBER },
                 professionalDistance: { type: Type.NUMBER },
                 crisisResolutionEfficiency: { type: Type.NUMBER },
-                clinicalTruths: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın sergilediği profesyonel doğruların açıklamalı anlatımı" },
-                criticalMistakes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın düştüğü riskli tuzakların açıklamalı anlatımı" }
+                clinicalTruths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                criticalMistakes: { type: Type.ARRAY, items: { type: Type.STRING } }
               }
             }
           }
@@ -244,10 +197,8 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
       }
     });
 
-    const cleanText = response.text.trim().replace(/^```json/, '').replace(/```$/, '').trim();
-    return JSON.parse(cleanText);
+    return cleanAndParseJSON(response.text);
   } catch (error: any) {
-    console.error("Klinik Lab Hatası:", error);
     throw error;
   }
 };

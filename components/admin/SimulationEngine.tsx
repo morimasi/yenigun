@@ -11,26 +11,20 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
   const [activeCandidateId, setActiveCandidateId] = useState<string>(candidates[0]?.id);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationData, setSimulationData] = useState<SimulationResult | null>(null);
-  const [errorCount, setErrorCount] = useState(0);
+  const [hasError, setHasError] = useState(false);
 
   const handleStartSimulation = async () => {
     setIsSimulating(true);
+    setHasError(false);
     const candidate = candidates.find(c => c.id === activeCandidateId);
     if (!candidate) return;
 
     try {
       const result = await runStresSimulation(candidate);
       setSimulationData(result);
-      setErrorCount(0);
     } catch (e: any) {
       console.error("Simulation catch:", e);
-      if (errorCount < 1) {
-        setErrorCount(prev => prev + 1);
-        // Otomatik bir kez daha dene (Retrying once)
-        handleStartSimulation();
-      } else {
-        alert("Muhakeme Motoru Yapılandırma Hatası: Model çok karmaşık bir veri üretti ve JSON yapısı bozuldu. Lütfen tekrar deneyin veya farklı bir aday seçin.");
-      }
+      setHasError(true);
     } finally {
       setIsSimulating(false);
     }
@@ -55,7 +49,7 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
             {candidates.map(c => (
               <button 
                 key={c.id} 
-                onClick={() => { setActiveCandidateId(c.id); setSimulationData(null); setErrorCount(0); }}
+                onClick={() => { setActiveCandidateId(c.id); setSimulationData(null); setHasError(false); }}
                 className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeCandidateId === c.id ? 'bg-slate-900 text-white shadow-xl scale-105' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
               >
                 {c.name}
@@ -74,14 +68,25 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
          </button>
       </div>
 
-      {!simulationData && !isSimulating ? (
+      {hasError ? (
+        <div className="py-32 flex flex-col items-center justify-center bg-rose-50 rounded-[4rem] border-2 border-dashed border-rose-200 animate-fade-in">
+           <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl text-rose-500">
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+           </div>
+           <h3 className="text-2xl font-black text-rose-900 uppercase tracking-tighter mb-4">NÖRAL VERİ BOZULMASI</h3>
+           <p className="max-w-md text-center text-[11px] font-bold text-rose-400 uppercase leading-relaxed mb-8">
+              Model çok yoğun bir muhakeme sürecine girdi ve JSON yapısı bozuldu. Liyakat matrisini yeniden hesaplamak için lütfen tekrar deneyin.
+           </p>
+           <button onClick={handleStartSimulation} className="px-10 py-4 bg-rose-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-rose-700 transition-all">SİSTEMİ YENİDEN KALİBRE ET</button>
+        </div>
+      ) : !simulationData && !isSimulating ? (
         <div className="py-48 text-center bg-slate-50/50 rounded-[4rem] border-4 border-dashed border-slate-100 relative group overflow-hidden">
            <div className="relative z-10">
               <div className="w-32 h-32 bg-white rounded-[3rem] shadow-xl mx-auto mb-10 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
                  <svg className="w-16 h-16 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
               <p className="text-[14px] font-black text-slate-900 uppercase tracking-[0.8em] mb-4">NÖRAL KRİZ LABORATUVARI</p>
-              <p className="max-w-md mx-auto text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-[0.2em]">Adayın cevaplarından yola çıkarak "Digital Twin" modeli üzerinde yüksek stresli klinik vaka simülasyonu uygulayın.</p>
+              <p className="max-w-md mx-auto text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-[0.2em]">Adayın Digital Twin modeli üzerinde yüksek stresli klinik vaka simülasyonu uygulayın.</p>
            </div>
            <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[100px]"></div>
         </div>
@@ -100,7 +105,6 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-scale-in">
-           {/* SOL: VAKA VE PERSONA */}
            <div className="lg:col-span-7 space-y-8">
               <div className="bg-slate-900 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group border border-slate-800">
                  <div className="relative z-10">
@@ -128,13 +132,9 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
                  <p className="text-xl font-bold text-slate-700 leading-relaxed italic opacity-90 group-hover:opacity-100 transition-opacity">
                     "{simulationData.candidateResponse}"
                  </p>
-                 <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-50">
-                    <div className="h-full bg-orange-600 transition-all duration-[2000ms]" style={{ width: '100%' }}></div>
-                 </div>
               </div>
            </div>
 
-           {/* SAĞ: ANALİTİK ÇIKTI */}
            <div className="lg:col-span-5 space-y-8">
               <div className="bg-white p-12 rounded-[4.5rem] border border-slate-100 shadow-2xl relative">
                  <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] mb-12 border-l-4 border-orange-600 pl-6">NÖRAL ANALİZ METRİKLERİ</h5>
@@ -147,23 +147,15 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
               </div>
 
               <div className="bg-rose-600 p-12 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
-                 <h5 className="text-[11px] font-black text-rose-200 uppercase tracking-widest mb-10">TESPİT EDİLEN RİSKLİ DAVRANIŞLAR</h5>
+                 <h5 className="text-[11px] font-black text-rose-200 uppercase tracking-widest mb-10">TESPİT EDİLEN RİSKLER</h5>
                  <div className="space-y-6 relative z-10">
                     {simulationData.aiEvaluation.criticalMistakes.map((err, i) => (
-                      <div key={i} className="flex gap-6 items-start group-hover:translate-x-2 transition-transform">
+                      <div key={i} className="flex gap-6 items-start">
                          <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center font-black text-[12px] shrink-0">!</div>
                          <p className="text-[12px] font-black uppercase tracking-widest leading-tight">{err}</p>
                       </div>
                     ))}
                  </div>
-                 <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
-              </div>
-
-              <div className="p-10 bg-slate-900 rounded-[3.5rem] text-white">
-                 <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">Mülakatçıya Not</p>
-                 <p className="text-[12px] font-bold text-slate-400 italic leading-relaxed uppercase">
-                    Aday bu senaryoda sınır ihlali yapmaya meyilli görünüyor. Mülakat sırasında "veliye hayır deme" kapasitesini bu vaka üzerinden sorgulayın.
-                 </p>
               </div>
            </div>
         </div>
