@@ -14,6 +14,18 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   
   const modelName = "gemini-3-flash-preview";
 
+  const segmentSchema = {
+    type: Type.OBJECT,
+    properties: {
+      score: { type: Type.NUMBER },
+      status: { type: Type.STRING },
+      pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+      cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+      risks: { type: Type.ARRAY, items: { type: Type.STRING } },
+      competencyLevel: { type: Type.STRING }
+    }
+  };
+
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Davranış Bilimci.
     GÖREV: Adayın liyakat profilini derinlemesine muhakeme ederek analiz et.
@@ -46,7 +58,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Flash modelinin düşünme kapasitesini sonuna kadar zorluyoruz
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
@@ -59,16 +70,16 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             deepAnalysis: {
               type: Type.OBJECT,
               properties: {
-                personality: { $ref: "#/definitions/segment" },
-                formality: { $ref: "#/definitions/segment" },
-                parentStudentRelations: { $ref: "#/definitions/segment" },
-                sustainability: { $ref: "#/definitions/segment" },
-                developmentOpenness: { $ref: "#/definitions/segment" },
-                criticismTolerance: { $ref: "#/definitions/segment" },
-                workEthics: { $ref: "#/definitions/segment" },
-                pedagogicalAnalysis: { $ref: "#/definitions/segment" },
-                technicalExpertise: { $ref: "#/definitions/segment" },
-                institutionalLoyalty: { $ref: "#/definitions/segment" }
+                personality: segmentSchema,
+                formality: segmentSchema,
+                parentStudentRelations: segmentSchema,
+                sustainability: segmentSchema,
+                developmentOpenness: segmentSchema,
+                criticismTolerance: segmentSchema,
+                workEthics: segmentSchema,
+                pedagogicalAnalysis: segmentSchema,
+                technicalExpertise: segmentSchema,
+                institutionalLoyalty: segmentSchema
               }
             },
             predictiveMetrics: {
@@ -95,19 +106,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
                 opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
                 threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
-            }
-          },
-          definitions: {
-            segment: {
-              type: Type.OBJECT,
-              properties: {
-                score: { type: Type.NUMBER },
-                status: { type: Type.STRING },
-                pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-                cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-                risks: { type: Type.ARRAY, items: { type: Type.STRING } },
-                competencyLevel: { type: Type.STRING }
               }
             }
           }

@@ -25,7 +25,11 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await fetch('/api/candidates?_ping=1');
+        const token = localStorage.getItem('yeni_gun_admin_token');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const res = await fetch('/api/candidates?_ping=1', { headers });
         setDbStatus(res.ok ? 'online' : 'offline');
       } catch (e) {
         setDbStatus('offline');

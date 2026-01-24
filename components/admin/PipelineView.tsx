@@ -79,17 +79,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fix: Removed the generic type parameter K which was causing "unknown[]" inference issues.
+  // Fix: Explicitly cast current state slice to string[] to prevent unknown type inference during state update.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current = prev[category];
+      const current = prev[category] as string[];
       const next = current.includes(value)
-        ? current.filter((v) => v !== value)
+        ? current.filter((v: string) => v !== value)
         : [...current, value];
       return {
         ...prev,
         [category]: next
-      } as typeof filters;
+      };
     });
   };
 
