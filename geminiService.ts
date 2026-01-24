@@ -6,25 +6,29 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
 
 /**
  * Adayın liyakat profilini analiz eden ana motor.
- * responseSchema içindeki tüm OBJECT tipleri zorunlu özelliklerle dolduruldu.
+ * responseSchema 10 segmentin tamamını kapsayacak şekilde genişletildi.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Liyakat Müfettişi.
-    HEDEF: Adayın profesyonel DNA'sını 16 boyutlu bir matris üzerinden analiz et.
+    HEDEF: Adayın profesyonel DNA'sını 10 KRİTİK BOYUT üzerinden analiz et.
     
-    6 KRİTİK KLİNİK BOYUT (ÖNCELİKLİ):
-    1. BEP/IEP Adaptasyonu: Beklenmedik durumlarda planı revize etme hızı.
-    2. DMP Stres: Kriz anında (ısırma, kendine zarar verme) etik sınırları koruma.
-    3. Multidisipliner Çatışma: Farklı branşlarla (örn: Ergoterapist-Psikolog) liyakatli işbirliği.
-    4. Veri Okuryazarlığı: Gelişim tablolarındaki anomalileri ve sahte ilerlemeyi yakalama.
-    5. Sınır İhlali: Veli ile profesyonel mesafeyi (hediye, özel ders teklifi) koruma.
-    6. Metot Esnekliği: En sevdiği metodun başarısız olduğu vaka karşısındaki klinik esnekliği.
+    ANALİZ EDİLECEK 10 BOYUT:
+    1. workEthics (İş Ahlakı): Sınır ihlalleri ve etik duruş.
+    2. pedagogicalAnalysis (Pedagoji): Çocukla kurulan bağın bilimsel derinliği.
+    3. parentStudentRelations (Veli Dinamiği): Veli manipülasyonuna karşı direnç.
+    4. formality (Resmiyet): Kurumsal hiyerarşi ve raporlama disiplini.
+    5. developmentOpenness (Gelişim): Süpervizyon ve yeni metotlara açıklık.
+    6. sustainability (Direnç): Tükenmişlik riski ve stres yönetimi.
+    7. technicalExpertise (Alan Yeterliliği): Branş bilgisi ve uygulama kalitesi.
+    8. criticismTolerance (Eleştiri): Geri bildirimi alma ve uygulama hızı.
+    9. personality (Karakter): Takım çalışması ve duygusal regülasyon.
+    10. institutionalLoyalty (Sadakat): Kurumsal vizyona bağlılık düzeyi.
 
-    DİSİPLİN: Dahili muhakeme kullanarak adayın "Social Masking" (kendini iyi gösterme) oranını % olarak hesapla.
-    Cevaplardaki mikro-çelişkileri yakala.
+    DİSİPLİN: Her boyut için mutlaka 0-100 arası bir puan, en az bir güçlü yön (pros) ve bir risk (risks) üretilmelidir.
+    Eğer veri kısıtlıysa, mevcut cevaplardan projeksiyon yaparak (inferring) mantıklı bir analiz sun.
   `;
 
   try {
@@ -37,6 +41,17 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         } 
       });
     }
+
+    // Ortak segment şeması tanımı
+    const segmentSchema = {
+      type: Type.OBJECT,
+      properties: {
+        score: { type: Type.NUMBER },
+        pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+        risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+      },
+      required: ["score", "pros", "risks"]
+    };
 
     const response = await ai.models.generateContent({
       model: modelName,
@@ -57,41 +72,22 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             deepAnalysis: {
               type: Type.OBJECT,
               properties: {
-                workEthics: { 
-                  type: Type.OBJECT, 
-                  properties: { 
-                    score: { type: Type.NUMBER }, 
-                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-                  } 
-                },
-                technicalExpertise: { 
-                  type: Type.OBJECT, 
-                  properties: { 
-                    score: { type: Type.NUMBER }, 
-                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-                  } 
-                }
-              }
-            },
-            clinicalTests: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  testType: { type: Type.STRING },
-                  scenario: { type: Type.STRING },
-                  evaluation: {
-                    type: Type.OBJECT,
-                    properties: {
-                      logicScore: { type: Type.NUMBER },
-                      scientificAccuracy: { type: Type.NUMBER },
-                      criticalNotes: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    }
-                  }
-                }
-              }
+                workEthics: segmentSchema,
+                pedagogicalAnalysis: segmentSchema,
+                parentStudentRelations: segmentSchema,
+                formality: segmentSchema,
+                developmentOpenness: segmentSchema,
+                sustainability: segmentSchema,
+                technicalExpertise: segmentSchema,
+                criticismTolerance: segmentSchema,
+                personality: segmentSchema,
+                institutionalLoyalty: segmentSchema
+              },
+              required: [
+                "workEthics", "pedagogicalAnalysis", "parentStudentRelations", 
+                "formality", "developmentOpenness", "sustainability", 
+                "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"
+              ]
             },
             predictiveMetrics: { 
               type: Type.OBJECT,
