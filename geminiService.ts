@@ -2,12 +2,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult } from "./types";
 
-// Always use named parameter and direct process.env.API_KEY reference
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Adayın liyakat profilini analiz eden ana motor.
- * responseSchema 10 segmentin tamamını kapsayacak şekilde genişletildi.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
@@ -17,23 +15,25 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
     HEDEF: Adayın profesyonel DNA'sını 10 KRİTİK BOYUT üzerinden analiz et.
     
     ANALİZ EDİLECEK 10 BOYUT:
-    1. workEthics (İş Ahlakı): Sınır ihlalleri ve etik duruş.
-    2. pedagogicalAnalysis (Pedagoji): Çocukla kurulan bağın bilimsel derinliği.
-    3. parentStudentRelations (Veli Dinamiği): Veli manipülasyonuna karşı direnç.
-    4. formality (Resmiyet): Kurumsal hiyerarşi ve raporlama disiplini.
-    5. developmentOpenness (Gelişim): Süpervizyon ve yeni metotlara açıklık.
-    6. sustainability (Direnç): Tükenmişlik riski ve stres yönetimi.
-    7. technicalExpertise (Alan Yeterliliği): Branş bilgisi ve uygulama kalitesi.
-    8. criticismTolerance (Eleştiri): Geri bildirimi alma ve uygulama hızı.
-    9. personality (Karakter): Takım çalışması ve duygusal regülasyon.
-    10. institutionalLoyalty (Sadakat): Kurumsal vizyona bağlılık düzeyi.
+    1. workEthics, 2. pedagogicalAnalysis, 3. parentStudentRelations, 4. formality, 5. developmentOpenness,
+    6. sustainability, 7. technicalExpertise, 8. criticismTolerance, 9. personality, 10. institutionalLoyalty.
 
-    DİSİPLİN: Her boyut için mutlaka 0-100 arası bir puan, en az bir güçlü yön (pros) ve bir risk (risks) üretilmelidir.
-    Eğer veri kısıtlıysa, mevcut cevaplardan projeksiyon yaparak (inferring) mantıklı bir analiz sun.
+    DİSİPLİN: JSON formatında çıktı ver. Tırnak işaretlerini ve yeni satırları JSON standartlarına uygun şekilde kaçış karakterleri (escape) ile kullan.
   `;
 
   try {
-    const parts: any[] = [{ text: `ADAY VERİLERİ VE CEVAPLARI: ${JSON.stringify(candidate)}` }];
+    // Sadece gerekli verileri gönder (Context tasarrufu)
+    const leanCandidate = {
+      name: candidate.name,
+      branch: candidate.branch,
+      experienceYears: candidate.experienceYears,
+      university: candidate.university,
+      department: candidate.department,
+      answers: candidate.answers,
+      allTrainings: candidate.allTrainings
+    };
+
+    const parts: any[] = [{ text: `ADAY VERİLERİ: ${JSON.stringify(leanCandidate)}` }];
     if (candidate.cvData?.base64) {
       parts.push({ 
         inlineData: { 
@@ -43,7 +43,6 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       });
     }
 
-    // Ortak segment şeması tanımı
     const segmentSchema = {
       type: Type.OBJECT,
       properties: {
@@ -84,11 +83,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 personality: segmentSchema,
                 institutionalLoyalty: segmentSchema
               },
-              required: [
-                "workEthics", "pedagogicalAnalysis", "parentStudentRelations", 
-                "formality", "developmentOpenness", "sustainability", 
-                "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"
-              ]
+              required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
             },
             predictiveMetrics: { 
               type: Type.OBJECT,
@@ -121,9 +116,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       }
     });
     
-    const text = response.text;
-    if (!text) throw new Error("AI yanıtı boş döndü.");
-    return JSON.parse(text);
+    return JSON.parse(response.text.trim());
   } catch (error: any) { 
     console.error("Analiz Hatası:", error);
     throw error; 
@@ -138,19 +131,28 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Kriz Simülatörü.
-    HEDEF: Adayın geçmiş cevaplarını analiz ederek, onu en çok zorlayacak etik/klinik kriz senaryosunu üret ve muhtemel cevabını simüle et.
-    ÇIKTI FORMATI: JSON.
+    HEDEF: Adayın zayıf yönlerini zorlayacak bir etik/klinik kriz senaryosu üret.
+    KURAL: Yanıt kesinlikle geçerli bir JSON olmalıdır. Metin içindeki çift tırnaklar (\") şeklinde kaçırılmalıdır.
+    KAPSAM: Senaryo adayın branşına (${candidate.branch}) ve verdiği cevaplara uygun olmalıdır.
   `;
 
   try {
+    // CV verisi gibi ağır verileri simülasyondan çıkarıyoruz (Sadece cevaplar yeterli)
+    const simulationInput = {
+      name: candidate.name,
+      branch: candidate.branch,
+      experience: candidate.experienceYears,
+      answers: candidate.answers
+    };
+
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `ADAY VERİLERİ: ${JSON.stringify(candidate)}`,
+      contents: `SIMULASYON GIRDISI: ${JSON.stringify(simulationInput)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
         maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 2048 },
+        thinkingConfig: { thinkingBudget: 1536 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -173,9 +175,9 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("Simülasyon yanıtı boş döndü.");
-    return JSON.parse(text);
+    // Ham metni temizle (markdown taglarını temizle)
+    const cleanText = response.text.trim().replace(/^```json/, '').replace(/```$/, '').trim();
+    return JSON.parse(cleanText);
   } catch (error: any) {
     console.error("Simülasyon Hatası:", error);
     throw error;

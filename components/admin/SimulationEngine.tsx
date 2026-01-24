@@ -11,6 +11,7 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
   const [activeCandidateId, setActiveCandidateId] = useState<string>(candidates[0]?.id);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationData, setSimulationData] = useState<SimulationResult | null>(null);
+  const [errorCount, setErrorCount] = useState(0);
 
   const handleStartSimulation = async () => {
     setIsSimulating(true);
@@ -20,8 +21,16 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
     try {
       const result = await runStresSimulation(candidate);
       setSimulationData(result);
-    } catch (e) {
-      alert("Nöral Motor Hatası: Lütfen bağlantınızı kontrol edin.");
+      setErrorCount(0);
+    } catch (e: any) {
+      console.error("Simulation catch:", e);
+      if (errorCount < 1) {
+        setErrorCount(prev => prev + 1);
+        // Otomatik bir kez daha dene (Retrying once)
+        handleStartSimulation();
+      } else {
+        alert("Muhakeme Motoru Yapılandırma Hatası: Model çok karmaşık bir veri üretti ve JSON yapısı bozuldu. Lütfen tekrar deneyin veya farklı bir aday seçin.");
+      }
     } finally {
       setIsSimulating(false);
     }
@@ -46,7 +55,7 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
             {candidates.map(c => (
               <button 
                 key={c.id} 
-                onClick={() => { setActiveCandidateId(c.id); setSimulationData(null); }}
+                onClick={() => { setActiveCandidateId(c.id); setSimulationData(null); setErrorCount(0); }}
                 className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeCandidateId === c.id ? 'bg-slate-900 text-white shadow-xl scale-105' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
               >
                 {c.name}
