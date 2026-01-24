@@ -115,11 +115,100 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
 
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
-  const systemInstruction = `ROL: Yeni Gün Akademi Baş Analisti. JSON döndür.`;
+  
+  const systemInstruction = `
+    ROL: Yeni Gün Akademi Baş Klinik Analisti.
+    GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
+    
+    ZORUNLU MATRİS BOYUTLARI (deepAnalysis altında):
+    workEthics, pedagogicalAnalysis, parentStudentRelations, formality, developmentOpenness, 
+    sustainability, technicalExpertise, criticismTolerance, personality, institutionalLoyalty.
+    
+    ANALİZ KRİTERLERİ:
+    - Kurum Tonu: ${config.aiTone}
+    - Şüphecilik Seviyesi: %${config.aiPersona.skepticism}
+    - Resmiyet: %${config.aiPersona.formality}
+    
+    KURAL: 
+    - Yanıt SADECE geçerli bir JSON olmalıdır.
+    - deepAnalysis içindeki her key mutlaka score (0-100), pros (array), cons (array) ve risks (array) içermelidir.
+    - Metin içinde çift tırnak kullanma.
+  `;
+
+  const responseSchema = {
+    type: Type.OBJECT,
+    properties: {
+      score: { type: Type.NUMBER, description: "Genel liyakat skoru (0-100)" },
+      integrityIndex: { type: Type.NUMBER, description: "Dürüstlük ve tutarlılık endeksi (0-100)" },
+      socialMaskingScore: { type: Type.NUMBER, description: "Sosyal maskeleme eğilimi (0-100)" },
+      summary: { type: Type.STRING, description: "Klinik özet metni" },
+      recommendation: { type: Type.STRING, description: "Kurul tavsiyesi" },
+      predictiveMetrics: {
+        type: Type.OBJECT,
+        properties: {
+          retentionProbability: { type: Type.NUMBER },
+          burnoutRisk: { type: Type.NUMBER },
+          learningVelocity: { type: Type.NUMBER },
+          leadershipPotential: { type: Type.NUMBER }
+        },
+        required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential"]
+      },
+      deepAnalysis: {
+        type: Type.OBJECT,
+        properties: {
+          workEthics: { $ref: "#/definitions/segment" },
+          pedagogicalAnalysis: { $ref: "#/definitions/segment" },
+          parentStudentRelations: { $ref: "#/definitions/segment" },
+          formality: { $ref: "#/definitions/segment" },
+          developmentOpenness: { $ref: "#/definitions/segment" },
+          sustainability: { $ref: "#/definitions/segment" },
+          technicalExpertise: { $ref: "#/definitions/segment" },
+          criticismTolerance: { $ref: "#/definitions/segment" },
+          personality: { $ref: "#/definitions/segment" },
+          institutionalLoyalty: { $ref: "#/definitions/segment" }
+        },
+        required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
+      },
+      swot: {
+        type: Type.OBJECT,
+        properties: {
+          strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+          weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+          opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+          threats: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["strengths", "weaknesses", "opportunities", "threats"]
+      },
+      interviewGuidance: {
+        type: Type.OBJECT,
+        properties: {
+          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+          simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
+      }
+    },
+    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"],
+    definitions: {
+      segment: {
+        type: Type.OBJECT,
+        properties: {
+          score: { type: Type.NUMBER },
+          status: { type: Type.STRING, enum: ["optimal", "warning", "critical"] },
+          pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+          cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+          risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["score", "status", "pros", "cons", "risks"]
+      }
+    }
+  };
+
   try {
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `ADAY: ${JSON.stringify(candidate)}`,
+      contents: `ADAY VERILERI VE CEVAPLAR: ${JSON.stringify(candidate)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
