@@ -23,7 +23,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     location: config.institutionName + ' Merkez Yerleşkesi'
   });
 
-  const integrityReport = useMemo(() => verifyCandidateIntegrity(candidate), [candidate]);
+  const integrityReport = useMemo(() => {
+    try {
+      return verifyCandidateIntegrity(candidate);
+    } catch (e) {
+      return { score: 0, issues: ["Sistemik veri ayrıştırma hatası."], status: 'compromised' as const };
+    }
+  }, [candidate]);
 
   const segments = useMemo(() => [
     { key: 'workEthics', label: 'İŞ AHLAKI' },
@@ -41,7 +47,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const radarData = useMemo(() => {
     const report = candidate?.report;
     const deepAnalysis = report?.deepAnalysis;
-    if (!deepAnalysis) return [];
+    if (!deepAnalysis || typeof deepAnalysis !== 'object') return [];
     
     return segments.map(s => ({
       subject: s.label,
@@ -181,7 +187,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           </div>
           <div>
             <h4 className={`text-[11px] font-black uppercase tracking-widest ${integrityReport.status === 'warning' ? 'text-amber-800' : 'text-rose-800'}`}>Veri Bütünlüğü Uyarısı Tespiti</h4>
-            <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-tight">{integrityReport.issues[0]}</p>
+            <div className="space-y-1 mt-1">
+              {integrityReport.issues.map((issue, idx) => (
+                <p key={idx} className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">• {issue}</p>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -221,24 +231,25 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             {activeTab === 'matrix' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {segments.map(s => {
-                  const segment = candidate.report!.deepAnalysis[s.key];
+                  const segment = candidate.report?.deepAnalysis?.[s.key];
+                  if (!segment) return null;
                   return (
                     <div key={s.key} className="bg-white p-12 rounded-[4rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:border-orange-500 hover:shadow-2xl transition-all duration-500">
                       <div className="flex justify-between items-start mb-10">
                         <div>
                            <h5 className="text-[12px] font-black text-slate-400 group-hover:text-orange-600 uppercase tracking-[0.3em] transition-colors mb-2">{s.label}</h5>
                         </div>
-                        <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center text-2xl font-black ${segment?.score > 70 ? 'bg-emerald-50 text-emerald-600' : segment?.score > 40 ? 'bg-orange-50 text-orange-600' : 'bg-rose-50 text-rose-600'}`}>
-                          {segment?.score || 0}
+                        <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center text-2xl font-black ${segment.score > 70 ? 'bg-emerald-50 text-emerald-600' : segment.score > 40 ? 'bg-orange-50 text-orange-600' : 'bg-rose-50 text-rose-600'}`}>
+                          {segment.score || 0}
                         </div>
                       </div>
                       
                       <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 mb-10 min-h-[120px] flex items-center">
-                          <p className="text-[15px] font-bold text-slate-700 leading-relaxed italic">"{segment?.pros?.[0] || 'Bu alanda yeterli veri derinliği bulunamadı.'}"</p>
+                          <p className="text-[15px] font-bold text-slate-700 leading-relaxed italic">"{segment.pros?.[0] || 'Bu alanda yeterli veri derinliği bulunamadı.'}"</p>
                       </div>
 
                       <div className="space-y-4">
-                        {segment?.risks?.slice(0, 2).map((risk, idx) => (
+                        {segment.risks?.slice(0, 2).map((risk, idx) => (
                            <div key={idx} className="flex gap-4 items-start p-4 bg-rose-50/50 rounded-2xl border border-rose-100">
                               <div className="w-2 h-2 bg-rose-500 rounded-full mt-2 shrink-0"></div>
                               <p className="text-[11px] font-black text-rose-700 uppercase tracking-widest leading-tight">{risk}</p>
@@ -247,7 +258,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                       </div>
 
                       <div className="absolute bottom-0 left-0 h-2 bg-slate-50 w-full">
-                         <div className={`h-full transition-all duration-1000 ease-in-out ${segment?.score > 70 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${segment?.score || 0}%` }}></div>
+                         <div className={`h-full transition-all duration-1000 ease-in-out ${segment.score > 70 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${segment.score || 0}%` }}></div>
                       </div>
                     </div>
                   );
@@ -272,18 +283,18 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                        <span className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] block mb-10 border-b border-white/10 pb-4">DOĞRULUK ANALİZİ</span>
                        <div className="space-y-12">
                           <div className="group/item">
-                             <p className="text-6xl font-black leading-none">%{candidate.report.integrityIndex}</p>
+                             <p className="text-6xl font-black leading-none">%{candidate.report!.integrityIndex}</p>
                              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-4">Şeffaflık Endeksi</p>
                           </div>
                           <div className="group/item">
-                             <p className="text-6xl font-black leading-none">%{candidate.report.socialMaskingScore}</p>
+                             <p className="text-6xl font-black leading-none">%{candidate.report!.socialMaskingScore}</p>
                              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-4">Maskeleme Eğilimi</p>
                           </div>
                        </div>
                     </div>
                     <div className="p-12 bg-white rounded-[4rem] border border-slate-100 shadow-xl">
                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-6">KLİNİK ÖZET</span>
-                       <p className="text-[18px] font-bold text-slate-800 leading-relaxed italic">"{candidate.report.summary}"</p>
+                       <p className="text-[18px] font-bold text-slate-800 leading-relaxed italic">"{candidate.report!.summary}"</p>
                     </div>
                  </div>
               </div>
@@ -294,10 +305,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 <div className="bg-white p-16 rounded-[5rem] shadow-2xl border border-slate-100">
                    <h4 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em] mb-16 border-l-8 border-orange-600 pl-8 uppercase">PREDİKTİF AKADEMİK VERİ</h4>
                    <div className="space-y-8">
-                      <PredictBar label="KURUMSAL SADAKAT" value={candidate.report.predictiveMetrics.retentionProbability} color="text-emerald-500" />
-                      <PredictBar label="PSİKOLOJİK DİRENÇ" value={100 - candidate.report.predictiveMetrics.burnoutRisk} color="text-rose-500" />
-                      <PredictBar label="ADAPTASYON HIZI" value={candidate.report.predictiveMetrics.learningVelocity} color="text-blue-500" />
-                      <PredictBar label="LİDERLİK VİZYONU" value={candidate.report.predictiveMetrics.leadershipPotential} color="text-slate-900" />
+                      <PredictBar label="KURUMSAL SADAKAT" value={candidate.report!.predictiveMetrics.retentionProbability} color="text-emerald-500" />
+                      <PredictBar label="PSİKOLOJİK DİRENÇ" value={100 - candidate.report!.predictiveMetrics.burnoutRisk} color="text-rose-500" />
+                      <PredictBar label="ADAPTASYON HIZI" value={candidate.report!.predictiveMetrics.learningVelocity} color="text-blue-500" />
+                      <PredictBar label="LİDERLİK VİZYONU" value={candidate.report!.predictiveMetrics.leadershipPotential} color="text-slate-900" />
                    </div>
                 </div>
                 <div className="bg-slate-900 p-16 rounded-[5rem] shadow-2xl text-white">
@@ -306,7 +317,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                       <div>
                          <span className="text-[12px] font-black uppercase text-emerald-400 block mb-6 tracking-widest">GÜÇLÜ YÖNLER</span>
                          <div className="space-y-4">
-                            {candidate.report.swot.strengths.slice(0, 4).map((s, i) => (
+                            {candidate.report!.swot.strengths.slice(0, 4).map((s, i) => (
                               <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
                                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                                  <p className="text-[13px] font-bold text-slate-200">{s}</p>
@@ -317,7 +328,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                       <div>
                          <span className="text-[12px] font-black uppercase text-rose-400 block mb-6 tracking-widest">GELİŞİM ALANLARI</span>
                          <div className="space-y-4">
-                            {candidate.report.swot.weaknesses.slice(0, 4).map((w, i) => (
+                            {candidate.report!.swot.weaknesses.slice(0, 4).map((w, i) => (
                               <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
                                  <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
                                  <p className="text-[13px] font-bold text-slate-200">{w}</p>
@@ -336,7 +347,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="bg-white p-20 rounded-[5rem] shadow-2xl border border-slate-100">
                        <h4 className="text-[16px] font-black text-slate-900 uppercase tracking-[0.6em] mb-20 border-l-[12px] border-orange-600 pl-10 leading-none">STRATEJİK MÜLAKAT SORULARI</h4>
                        <div className="space-y-10">
-                          {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                          {candidate.report!.interviewGuidance.strategicQuestions.map((q, i) => (
                             <div key={i} className="group p-12 bg-slate-50 rounded-[4rem] border-2 border-transparent hover:border-orange-500 hover:bg-white transition-all duration-700 shadow-sm hover:shadow-2xl">
                                <div className="flex gap-10">
                                   <div className="w-16 h-16 bg-white rounded-[2rem] flex items-center justify-center text-orange-600 font-black text-2xl shadow-xl group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
@@ -385,7 +396,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="p-16 bg-orange-600 rounded-[5rem] text-white shadow-2xl">
                        <h5 className="text-[12px] font-black uppercase tracking-[0.5em] mb-12 text-orange-100">GÖZLEM ODAĞI</h5>
                        <ul className="space-y-10">
-                          {candidate.report.interviewGuidance.criticalObservations.map((obs, i) => (
+                          {candidate.report!.interviewGuidance.criticalObservations.map((obs, i) => (
                             <li key={i} className="flex gap-6 items-start">
                                <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center font-black text-[14px] shrink-0">!</div>
                                <p className="text-[15px] font-black uppercase tracking-widest leading-snug">{obs}</p>

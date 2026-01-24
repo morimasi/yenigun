@@ -17,35 +17,40 @@ export const verifyCandidateIntegrity = (candidate: Candidate): { score: number,
   const ai = candidate.report;
   const algo = candidate.algoReport;
 
+  // Güvenli Erişim: deepAnalysis mevcut mu?
+  if (!ai.deepAnalysis || typeof ai.deepAnalysis !== 'object') {
+    return { score: 10, issues: ["Kritik Hata: AI raporunda yapısal matris verisi bulunamadı."], status: 'compromised' };
+  }
+
   // 1. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
   const scoreDiff = Math.abs(ai.score - algo.overallScore);
   if (scoreDiff > 25) {
-    integrityScore -= 20;
+    integrityScore -= 25;
     issues.push("AI Muhakemesi ile Algoritmik Veri arasında yüksek sapma tespit edildi.");
   }
 
   // 2. Deneyim - Yetkinlik Doğrulaması
   if (candidate.experienceYears < 2 && ai.score > 90) {
-    integrityScore -= 15;
+    integrityScore -= 20;
     issues.push("Düşük deneyim yılına rağmen olağandışı yüksek liyakat skoru (Bilişsel Çelişki).");
   }
 
   // 3. Etik Sınır Denetimi
   if (ai.integrityIndex < 40 && ai.socialMaskingScore < 30) {
-    integrityScore -= 10;
+    integrityScore -= 15;
     issues.push("Düşük dürüstlük endeksi ile düşük maskeleme skoru mantıksal olarak çelişiyor.");
   }
 
-  // 4. Derin Analiz Kapsam Kontrolü
+  // 4. Derin Analiz Kapsam Kontrolü (Hata onarılan bölge)
   const segments = Object.keys(ai.deepAnalysis);
-  if (segments.length < 10) {
-    integrityScore -= 10;
-    issues.push("10 boyutlu matris analizinde eksik veri katmanları bulundu.");
+  if (segments.length < 8) {
+    integrityScore -= 20;
+    issues.push("Boyutsal matris analizinde eksik veri katmanları bulundu. Veri bütünlüğü düşük.");
   }
 
   let status: 'valid' | 'compromised' | 'warning' = 'valid';
-  if (integrityScore < 60) status = 'compromised';
-  else if (integrityScore < 85) status = 'warning';
+  if (integrityScore < 50) status = 'compromised';
+  else if (integrityScore < 80) status = 'warning';
 
   return { score: integrityScore, issues, status };
 };
