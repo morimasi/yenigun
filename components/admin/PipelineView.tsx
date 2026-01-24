@@ -82,15 +82,17 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   // Fixed type safety error by ensuring the callback uses the inferred state type correctly for dynamic indexing.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current = prev[category];
+      // Explicitly cast current to string[] to resolve the 'unknown[]' inference issue.
+      const current = prev[category] as string[];
       const next = current.includes(value)
         ? current.filter((v) => v !== value)
         : [...current, value];
       
+      // Return the updated state, casting to satisfy the strict typing requirements for dynamic property updates.
       return {
         ...prev,
         [category]: next
-      };
+      } as typeof filters;
     });
   };
 
