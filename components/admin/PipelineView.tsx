@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, Gender, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
@@ -80,10 +79,10 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fixed type safety error by explicitly casting current to string[]
+  // Fixed type safety error by simplifying state update logic and resolving array type inference issues with dynamic keys.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => {
-      const current = prev[category] as string[];
+      const current = prev[category];
       const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
         : [...current, value];
@@ -91,7 +90,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       return {
         ...prev,
         [category]: next
-      } as typeof filters;
+      };
     });
   };
 

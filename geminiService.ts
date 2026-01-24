@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
 
 /**
  * Adayın liyakat profilini analiz eden ana motor.
- * 6 Yeni Derin Klinik Test Boyutu sistem talimatlarına eklendi.
+ * responseSchema içindeki tüm OBJECT tipleri zorunlu özelliklerle dolduruldu.
  */
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
@@ -30,7 +30,12 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   try {
     const parts: any[] = [{ text: `ADAY VERİLERİ VE CEVAPLARI: ${JSON.stringify(candidate)}` }];
     if (candidate.cvData?.base64) {
-      parts.push({ inlineData: { data: candidate.cvData.base64, mimeType: candidate.cvData.mimeType || 'image/jpeg' } });
+      parts.push({ 
+        inlineData: { 
+          data: candidate.cvData.base64, 
+          mimeType: candidate.cvData.mimeType || 'image/jpeg' 
+        } 
+      });
     }
 
     const response = await ai.models.generateContent({
@@ -39,7 +44,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }, // Akıllı derin muhakeme aktif
+        maxOutputTokens: 8192,
+        thinkingConfig: { thinkingBudget: 4096 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -48,7 +54,27 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
             socialMaskingScore: { type: Type.NUMBER },
             summary: { type: Type.STRING },
             recommendation: { type: Type.STRING },
-            deepAnalysis: { type: Type.OBJECT },
+            deepAnalysis: {
+              type: Type.OBJECT,
+              properties: {
+                workEthics: { 
+                  type: Type.OBJECT, 
+                  properties: { 
+                    score: { type: Type.NUMBER }, 
+                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  } 
+                },
+                technicalExpertise: { 
+                  type: Type.OBJECT, 
+                  properties: { 
+                    score: { type: Type.NUMBER }, 
+                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  } 
+                }
+              }
+            },
             clinicalTests: {
               type: Type.ARRAY,
               items: {
@@ -67,15 +93,44 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
                 }
               }
             },
-            predictiveMetrics: { type: Type.OBJECT },
-            interviewGuidance: { type: Type.OBJECT },
-            swot: { type: Type.OBJECT }
+            predictiveMetrics: { 
+              type: Type.OBJECT,
+              properties: {
+                retentionProbability: { type: Type.NUMBER },
+                burnoutRisk: { type: Type.NUMBER },
+                learningVelocity: { type: Type.NUMBER },
+                leadershipPotential: { type: Type.NUMBER }
+              }
+            },
+            interviewGuidance: { 
+              type: Type.OBJECT,
+              properties: {
+                strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+                simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+            },
+            swot: { 
+              type: Type.OBJECT,
+              properties: {
+                strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+                threats: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+            }
           }
         }
       }
     });
-    return JSON.parse(response.text || "{}");
-  } catch (error: any) { throw error; }
+    
+    const text = response.text;
+    if (!text) throw new Error("AI yanıtı boş döndü.");
+    return JSON.parse(text);
+  } catch (error: any) { 
+    console.error("Analiz Hatası:", error);
+    throw error; 
+  }
 };
 
 /**
@@ -87,7 +142,6 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
   const systemInstruction = `
     ROL: Yeni Gün Akademi Kriz Simülatörü.
     HEDEF: Adayın geçmiş cevaplarını analiz ederek, onu en çok zorlayacak etik/klinik kriz senaryosunu üret ve muhtemel cevabını simüle et.
-    
     ÇIKTI FORMATI: JSON.
   `;
 
@@ -98,7 +152,8 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 2048 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -121,8 +176,11 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
       }
     });
 
-    return JSON.parse(response.text || "{}");
+    const text = response.text;
+    if (!text) throw new Error("Simülasyon yanıtı boş döndü.");
+    return JSON.parse(text);
   } catch (error: any) {
+    console.error("Simülasyon Hatası:", error);
     throw error;
   }
 };
