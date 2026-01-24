@@ -20,15 +20,14 @@ export default async function handler(request: Request) {
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
-  // GÜVENLİK KONTROLÜ: Sadece POST (Başvuru) yetki istemez. GET ve DELETE için Auth zorunlu.
   if (method === 'GET' || method === 'DELETE') {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'UNAUTHORIZED', message: 'Bu işlem için yetkiniz bulunmamaktadır.' }), { status: 401, headers });
+      return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401, headers });
     }
   }
 
   try {
-    // UNIFIED SCHEMA INITIALIZATION (Sadece tablo yoksa çalışır)
+    // Tablo şeması kontrolü ve ilklendirme
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -47,10 +46,10 @@ export default async function handler(request: Request) {
         status TEXT DEFAULT 'pending',
         admin_notes TEXT,
         reminder_note TEXT,
-        report JSONB,
-        algo_report JSONB,
-        interview_schedule JSONB,
-        cv_data JSONB,
+        report JSONB DEFAULT NULL,
+        algo_report JSONB DEFAULT NULL,
+        interview_schedule JSONB DEFAULT NULL,
+        cv_data JSONB DEFAULT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -75,10 +74,9 @@ export default async function handler(request: Request) {
         status: row.status || 'pending',
         adminNotes: row.admin_notes || '',
         reminderNote: row.reminder_note || '',
-        interviewSchedule: row.interview_schedule || null,
-        report: row.report || null,
-        algoReport: row.algo_report || null,
-        cvData: row.cv_data || null,
+        report: row.report,
+        algoReport: row.algo_report,
+        cvData: row.cv_data,
         timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
       }));
       return new Response(JSON.stringify(candidates), { status: 200, headers });
@@ -90,21 +88,20 @@ export default async function handler(request: Request) {
       
       const allTrainings = JSON.stringify(body.allTrainings || []);
       const answers = JSON.stringify(body.answers || {});
-      const report = JSON.stringify(body.report || null);
-      const algoReport = JSON.stringify(body.algoReport || null);
-      const interviewSchedule = JSON.stringify(body.interviewSchedule || null);
-      const cvData = JSON.stringify(body.cvData || null);
+      const report = body.report ? JSON.stringify(body.report) : null;
+      const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
+      const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
 
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
           experience_years, previous_institutions, all_trainings, answers, 
-          status, admin_notes, reminder_note, report, algo_report, interview_schedule, cv_data, updated_at
+          status, admin_notes, reminder_note, report, algo_report, cv_data, updated_at
         ) VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
           ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears}, 
           ${body.previousInstitutions}, ${allTrainings}, ${answers}, ${body.status},
-          ${body.adminNotes}, ${body.reminderNote}, ${report}, ${algoReport}, ${interviewSchedule}, ${cvData}, ${now}
+          ${body.adminNotes}, ${body.reminderNote}, ${report}, ${algoReport}, ${cvData}, ${now}
         ) ON CONFLICT (id) DO UPDATE SET 
           name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, age = EXCLUDED.age, 
           gender = EXCLUDED.gender, branch = EXCLUDED.branch, university = EXCLUDED.university, 
@@ -112,7 +109,7 @@ export default async function handler(request: Request) {
           previous_institutions = EXCLUDED.previous_institutions, all_trainings = EXCLUDED.all_trainings, 
           answers = EXCLUDED.answers, status = EXCLUDED.status, admin_notes = EXCLUDED.admin_notes, 
           reminder_note = EXCLUDED.reminder_note, report = EXCLUDED.report, algo_report = EXCLUDED.algo_report, 
-          interview_schedule = EXCLUDED.interview_schedule, cv_data = EXCLUDED.cv_data, updated_at = EXCLUDED.updated_at;
+          cv_data = EXCLUDED.cv_data, updated_at = EXCLUDED.updated_at;
       `;
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
