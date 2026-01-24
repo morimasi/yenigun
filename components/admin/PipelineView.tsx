@@ -79,9 +79,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   }, [candidates, appliedSearch, filters, sortConfig]);
 
   // BRANŞ VE STATÜ FİLTRELEME MANTIĞI
-  // Fixed: Explicitly cast current array to string[] to resolve TypeScript unknown[] mismatch on line 118 when using computed property keys.
+  // Fix: Explicitly cast return object to resolve TypeScript unknown[] mismatch when using computed property keys.
   const toggleFilter = (category: keyof typeof filters, value: string) => {
-    setFilters((prev: typeof filters) => {
+    setFilters((prev) => {
       const current = prev[category] as string[];
       const next = current.includes(value)
         ? current.filter((v: string) => v !== value)
@@ -89,7 +89,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       return {
         ...prev,
         [category]: next
-      };
+      } as typeof filters;
     });
   };
 

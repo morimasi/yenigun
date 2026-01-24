@@ -14,18 +14,30 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
     {
       id: 'clinical_method_integrity',
       text: 'Uyguladığınız yöntem çocukta regresyona (gerileme) sebep oldu. Veli kurumda sizi "mucize yaratan" biri olarak görüyor. Bu krizi nasıl yönetirsiniz?',
-      type: 'text'
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Regresyonu bilimsel verilerle raporlar, veliye dürüstçe açıklar ve disiplinlerarası kurulda planı revize ederim.', weight: 1.0, category: 'clinical' },
+        { label: 'Veliyi kaybetmemek için durumu geçici bir duraksama olarak anlatır, yöntemi gizlice değiştiririm.', weight: 0.4, category: 'ethics' },
+        { label: 'Başarı grafiğimin yüksek olduğunu hatırlatarak veliyi ikna eder, regresyonun ev ortamından kaynaklandığını söylerim.', weight: 0.1, category: 'clinical' },
+        { label: 'Yönetime durumu bildirir, veliyle görüşmeyi kurum psikoloğunun yapmasını talep ederim.', weight: 0.6, category: 'fit' }
+      ]
     },
     {
       id: 'multidisciplinary_conflict',
-      text: 'Seans yaptığınız bir öğrenci için başka bir branş uzmanı (örn. Fizyoterapist) sizin yönteminizin hatalı olduğunu velinin yanında ima etti. Tepkiniz?',
-      type: 'text'
+      text: 'Seans yaptığınız bir öğrenci için başka bir branş uzmanı sizin yönteminizin hatalı olduğunu velinin yanında ima etti. Tepkiniz?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Veli önünde tartışmaya girmem; sonrasında uzmanla baş başa görüşerek mesleki etik ve hiyerarşi sınırlarını netleştiririm.', weight: 1.0, category: 'ethics' },
+        { label: 'Velinin yanında kendimi savunur, diğer uzmanın yetki alanını aştığını net bir dille ifade ederim.', weight: 0.2, category: 'fit' },
+        { label: 'Sessiz kalır, durumu koordinatöre raporlayarak uzman hakkında idari işlem yapılmasını isterim.', weight: 0.7, category: 'fit' },
+        { label: 'Meslektaşımın uyarısını dikkate alıyor gibi yapıp veli nezdinde kurumun itibarını korurum.', weight: 0.5, category: 'pedagogy' }
+      ]
     }
   ],
   character_projection: [
     {
       id: 'personal_boundary_test',
-      text: 'Bir öğrencinizin ebeveyni seans çıkışı size sosyal medyadan arkadaşlık isteği attı ve akşam özelden çocuğun durumuyla ilgili (seans dışı) konuşmak istediğini yazdı.',
+      text: 'Bir öğrencinizin ebeveyni seans çıkışı size sosyal medyadan arkadaşlık isteği attı ve özelden çocuğun durumuyla ilgili konuşmak istediğini yazdı.',
       type: 'radio',
       weightedOptions: [
         { label: 'Nazikçe reddeder, profesyonel sınırları ve kurumsal iletişim kanallarını hatırlatırım.', weight: 1.0, category: 'ethics' },
@@ -51,8 +63,14 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   development: [
     {
       id: 'vulnerability_honesty',
-      text: 'Son 1 yılda mesleki olarak "yetersiz" kaldığınızı hissettiğiniz bir anı ve bu eksikliği nasıl kapattığınızı detaylandırın.',
-      type: 'text'
+      text: 'Mesleki gelişim sürecinizde "yetersiz" kaldığınızı hissettiğiniz bir durumda refleksiniz ne olur?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Durumu derhal süpervizörüme bildirir, vaka için ek eğitim veya dışarıdan klinik destek talep ederim.', weight: 1.0, category: 'pedagogy' },
+        { label: 'Eksikliğimi belli etmeden ilgili literatürü tarar, kendi başıma çözüm bulmaya çalışırım.', weight: 0.6, category: 'clinical' },
+        { label: 'Alanda her zaman yeterliyim; başarısızlıklar genellikle vaka profilinden kaynaklanır.', weight: 0.0, category: 'fit' },
+        { label: 'Vakayı daha tecrübeli bir meslektaşıma devretmeyi, kendimi o konuda geliştirene kadar beklemeyi tercih ederim.', weight: 0.8, category: 'resilience' }
+      ]
     }
   ]
 };

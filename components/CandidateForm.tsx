@@ -8,7 +8,6 @@ interface CandidateFormProps {
   onSubmit: (candidate: Omit<Candidate, 'id' | 'timestamp' | 'report'>) => void;
 }
 
-// Yardımcı Fonksiyon: Şıkları Karıştır
 const shuffleArray = (array: string[]) => {
   const newArr = [...array];
   for (let i = newArr.length - 1; i > 0; i--) {
@@ -38,32 +37,28 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     status: 'pending' as const
   });
 
-  // Şıkların her renderda değişmemesi için memoize edilmiş shuffle listesi
   const [shuffledOptionsMap, setShuffledOptionsMap] = useState<Record<string, string[]>>({});
 
   const progress = useMemo(() => ((currentStep + 1) / FORM_STEPS.length) * 100, [currentStep]);
 
   const currentQuestions = useMemo(() => {
     const stepId = FORM_STEPS[currentStep].id;
-    
-    if (stepId === 'technical_deep_dive') {
-      const selectedWithQuestions = formData.allTrainings.filter(t => TRAINING_VERIFICATION_QUESTIONS[t]);
-      return selectedWithQuestions.map(t => TRAINING_VERIFICATION_QUESTIONS[t]);
-    }
-
     const allQuestionsInStep = BRANCH_QUESTIONS[stepId] || [];
     return allQuestionsInStep.filter((q: Question) => {
       if (!q.requiredBranch || q.requiredBranch.length === 0) return true;
       return q.requiredBranch.includes(formData.branch);
     });
-  }, [currentStep, formData.branch, formData.allTrainings]);
+  }, [currentStep, formData.branch]);
 
-  // Soru şıklarını karıştır ve sakla
   useEffect(() => {
     const newMap: Record<string, string[]> = {};
     currentQuestions.forEach(q => {
-      if (q.type === 'radio' && q.options) {
-        newMap[q.id] = shuffleArray(q.options);
+      if (q.type === 'radio') {
+        // Hem standart options hem de weightedOptions desteği
+        const labels = q.weightedOptions ? q.weightedOptions.map(o => o.label) : (q.options || []);
+        if (labels.length > 0) {
+          newMap[q.id] = shuffleArray(labels);
+        }
       }
     });
     setShuffledOptionsMap(prev => ({ ...prev, ...newMap }));
@@ -100,11 +95,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const handleNext = () => {
     const stepId = FORM_STEPS[currentStep].id;
     
-    if (stepId === 'technical_deep_dive' && currentQuestions.length === 0) {
-      setCurrentStep(currentStep + 1);
-      return;
-    }
-
     if (stepId === 'personal') {
       if (!formData.name || !formData.email || !formData.phone || !formData.university || !formData.department) {
         alert("Lütfen temel ve akademik bilgilerinizi eksiksiz doldurunuz.");
@@ -210,7 +200,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             <div className="pl-0 md:pl-20">
               {q.type === 'radio' ? (
                 <div className="grid grid-cols-1 gap-4">
-                  {(shuffledOptionsMap[q.id] || q.options || []).map((opt: string) => (
+                  {(shuffledOptionsMap[q.id] || []).map((opt: string) => (
                     <button key={opt} onClick={() => updateAnswer(q.id, opt)} className={`text-left p-6 rounded-[2rem] border-2 transition-all font-black text-[13px] uppercase tracking-tight ${formData.answers[q.id] === opt ? 'bg-slate-900 border-slate-900 text-white shadow-2xl scale-[1.02]' : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200'}`}>
                       {opt}
                     </button>
