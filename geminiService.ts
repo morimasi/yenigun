@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult } from "./types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+// Always use named parameter and direct process.env.API_KEY reference
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Adayın liyakat profilini analiz eden ana motor.

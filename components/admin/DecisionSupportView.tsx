@@ -99,7 +99,8 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                             }))
                           }>
                             <PolarGrid stroke="#f1f5f9" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontBold: 900, fill: '#94a3b8' }} />
+                            {/* Fix: Changed 'fontBold' to 'fontWeight' as 'fontBold' is not a valid SVG property */}
+                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 900, fill: '#94a3b8' }} />
                             {selectedCandidates.map((c, i) => (
                               <Radar key={c.id} name={c.name} dataKey={c.name} stroke={['#ea580c', '#0f172a', '#64748b'][i]} fill={['#ea580c', '#0f172a', '#64748b'][i]} fillOpacity={0.2} strokeWidth={3} />
                             ))}

@@ -99,7 +99,8 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
             <ResponsiveContainer width="100%" height="100%">
                <RadarChart data={radarData}>
                   <PolarGrid stroke="#cbd5e1" strokeWidth={1} />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fontBold: 900, fill: '#64748b' }} />
+                  {/* Fix: Changed 'fontBold' to 'fontWeight' as 'fontBold' is not a valid SVG property */}
+                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fontWeight: 900, fill: '#64748b' }} />
                   <Radar dataKey="value" stroke="#000000" fill="#000000" fillOpacity={0.08} strokeWidth={2.5} />
                </RadarChart>
             </ResponsiveContainer>

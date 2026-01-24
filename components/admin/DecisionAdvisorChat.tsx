@@ -30,7 +30,8 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Always create a new instance right before making an API call and use direct process.env.API_KEY reference
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const systemInstruction = `
         ROL: Yeni Gün Akademi Stratejik Karar Danışmanı.
         MODEL: Gemini-3-Flash (Deep Reasoning Mode).

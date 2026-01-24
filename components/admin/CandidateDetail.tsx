@@ -244,7 +244,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <ResponsiveContainer width="100%" height="100%">
                        <RadarChart data={radarData}>
                           <PolarGrid stroke="#f1f5f9" strokeWidth={2} />
-                          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontBold: 900, fill: '#94a3b8' }} />
+                          {/* Fix: Changed 'fontBold' to 'fontWeight' as 'fontBold' is not a valid SVG property */}
+                          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 900, fill: '#94a3b8' }} />
                           <Radar name={candidate.name} dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.15} strokeWidth={4} dot={{ r: 4, fill: '#ea580c' }} />
                           <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 'bold' }} />
                        </RadarChart>
