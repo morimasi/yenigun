@@ -13,16 +13,10 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Liyakat Müfettişi.
     HEDEF: Adayın profesyonel DNA'sını 10 KRİTİK BOYUT üzerinden analiz et.
-    
-    ANALİZ EDİLECEK 10 BOYUT:
-    1. workEthics, 2. pedagogicalAnalysis, 3. parentStudentRelations, 4. formality, 5. developmentOpenness,
-    6. sustainability, 7. technicalExpertise, 8. criticismTolerance, 9. personality, 10. institutionalLoyalty.
-
-    DİSİPLİN: JSON formatında çıktı ver. Tırnak işaretlerini ve yeni satırları JSON standartlarına uygun şekilde kaçış karakterleri (escape) ile kullan.
+    DİSİPLİN: Çıktı tamamen TÜRKÇE, resmi ve akademik olmalıdır. JSON formatında yanıt ver.
   `;
 
   try {
-    // Sadece gerekli verileri gönder (Context tasarrufu)
     const leanCandidate = {
       name: candidate.name,
       branch: candidate.branch,
@@ -124,41 +118,55 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
 };
 
 /**
- * Adayın kriz anındaki reflekslerini simüle eden motor.
+ * Gelişmiş Klinik Lab Simülasyon Motoru
  */
-export const runStresSimulation = async (candidate: Candidate): Promise<SimulationResult> => {
+export const runStresSimulation = async (candidate: Candidate, testType: ClinicalTestType = ClinicalTestType.DMP_STRESS): Promise<SimulationResult> => {
   const modelName = "gemini-3-flash-preview";
 
+  const testPrompts: Record<string, string> = {
+    [ClinicalTestType.BEP_ADAPTATION]: "Vaka BEP/İEP hazırlama, dinamik hedefleri revize etme ve akademik dürüstlük üzerine olmalı.",
+    [ClinicalTestType.BOUNDARY_INTEGRITY]: "Vaka öğretmen-veli arasındaki sınır ihlalleri, duygusal manipülasyon ve profesyonel mesafe üzerine olmalı.",
+    [ClinicalTestType.CONFLICT_MANAGEMENT]: "Vaka multidisipliner ekip içindeki (fizyoterapist-psikolog vb.) görüş ayrılıkları ve çözümleme üzerine olmalı.",
+    [ClinicalTestType.DATA_LITERACY]: "Vaka klinik raporların yanlış yorumlanması veya veri temelli olmayan kararların riskleri üzerine olmalı.",
+    [ClinicalTestType.COGNITIVE_FLEXIBILITY]: "Vaka seans sırasında beklenmedik bir kriz karşısında metodolojiyi saniyeler içinde değiştirme yetisi üzerine olmalı.",
+    [ClinicalTestType.DMP_STRESS]: "Vaka doğrudan seans içi fiziksel kriz veya ağır agresyon yönetimi üzerine olmalı."
+  };
+
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Kriz Simülatörü.
-    HEDEF: Adayın zayıf yönlerini zorlayacak bir etik/klinik kriz senaryosu üret.
-    KURAL: Yanıt kesinlikle geçerli bir JSON olmalıdır. Metin içindeki çift tırnaklar (\") şeklinde kaçırılmalıdır.
-    KAPSAM: Senaryo adayın branşına (${candidate.branch}) ve verdiği cevaplara uygun olmalıdır.
+    ROL: Yeni Gün Akademi Klinik Süpervizörü ve Stres Testi Mimarı.
+    HEDEF: Adayın zayıf yönlerini sarsacak, etik ikilemler içeren bir TÜRKÇE kriz senaryosu üret.
+    
+    KURAL: 
+    - Yanıt kesinlikle TÜRKÇE olmalıdır.
+    - 'clinicalTruths' ve 'criticalMistakes' alanları, 2-3 cümlelik, neden-sonuç odaklı betimsel paragraflar olmalıdır. Sadece madde işareti kullanma.
+    - JSON formatını asla bozma.
+    - Test Türü: ${testType}.
+    - Senaryo Odağı: ${testPrompts[testType] || testPrompts[ClinicalTestType.DMP_STRESS]}
   `;
 
   try {
-    // CV verisi gibi ağır verileri simülasyondan çıkarıyoruz (Sadece cevaplar yeterli)
     const simulationInput = {
       name: candidate.name,
       branch: candidate.branch,
       experience: candidate.experienceYears,
-      answers: candidate.answers
+      answers: candidate.answers,
+      allTrainings: candidate.allTrainings
     };
 
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `SIMULASYON GIRDISI: ${JSON.stringify(simulationInput)}`,
+      contents: `ADAY PROFILI VE TEST TIPI: ${JSON.stringify({ input: simulationInput, testType })}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
         maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 1536 },
+        thinkingConfig: { thinkingBudget: 2048 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            scenario: { type: Type.STRING },
-            parentPersona: { type: Type.STRING },
-            candidateResponse: { type: Type.STRING },
+            scenario: { type: Type.STRING, description: "Krizin detaylı betimlemesi" },
+            parentPersona: { type: Type.STRING, description: "Velinin veya vakanın psikolojik profili" },
+            candidateResponse: { type: Type.STRING, description: "Adayın göstermesi beklenen olası nöral tepki" },
             stressLevel: { type: Type.NUMBER },
             aiEvaluation: {
               type: Type.OBJECT,
@@ -167,7 +175,8 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
                 empathyCalibration: { type: Type.NUMBER },
                 professionalDistance: { type: Type.NUMBER },
                 crisisResolutionEfficiency: { type: Type.NUMBER },
-                criticalMistakes: { type: Type.ARRAY, items: { type: Type.STRING } }
+                clinicalTruths: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın sergilediği profesyonel doğruların açıklamalı anlatımı" },
+                criticalMistakes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın düştüğü riskli tuzakların açıklamalı anlatımı" }
               }
             }
           }
@@ -175,11 +184,10 @@ export const runStresSimulation = async (candidate: Candidate): Promise<Simulati
       }
     });
 
-    // Ham metni temizle (markdown taglarını temizle)
     const cleanText = response.text.trim().replace(/^```json/, '').replace(/```$/, '').trim();
     return JSON.parse(cleanText);
   } catch (error: any) {
-    console.error("Simülasyon Hatası:", error);
+    console.error("Klinik Lab Hatası:", error);
     throw error;
   }
 };
