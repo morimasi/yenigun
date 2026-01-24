@@ -21,26 +21,32 @@ export interface NeuralPrediction {
   longTermCompatibilityScore: number;
 }
 
-// Global tipe yeni alanlar ekle
 export interface AIReport {
   score: number;
   integrityIndex: number;
   socialMaskingScore: number;
   summary: string;
   recommendation: string;
-  deepAnalysis: any;
-  predictiveMetrics: any;
-  interviewGuidance: any;
-  swot: any;
-  // FAZ 4 Eklentileri
+  deepAnalysis: Record<string, IntelligenceSegment>;
+  predictiveMetrics: {
+    retentionProbability: number;
+    burnoutRisk: number;
+    learningVelocity: number;
+    leadershipPotential: number;
+  };
+  interviewGuidance: {
+    strategicQuestions: string[];
+    criticalObservations: string[];
+    simulationTasks: string[];
+  };
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
   simulation?: SimulationResult;
   neuralPrediction?: NeuralPrediction;
-}
-
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
 }
 
 export enum Branch {
@@ -56,18 +62,35 @@ export enum Branch {
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 
+// Added FormStep interface to satisfy constants.tsx imports
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export interface WeightedOption {
   label: string;
-  weight: number; 
-  category: 'ethics' | 'pedagogy' | 'clinical' | 'crisis' | 'resilience' | 'fit';
-  tags?: string[];
+  weights: {
+    ethics?: number;
+    pedagogy?: number;
+    clinical?: number;
+    crisis?: number;
+    resilience?: number;
+    fit?: number;
+    formality?: number;
+    loyalty?: number;
+    // Added risk property to allow specific weighting in clinical logic questions
+    risk?: number;
+  };
+  analysisInsight: string; // AI'ya bu seçeneğin neden seçilmiş olabileceğine dair ipucu
 }
 
 export interface Question {
   id: string;
+  category: keyof AIReport['deepAnalysis'] | 'general';
   text: string;
-  type: 'radio' | 'text' | 'checkbox';
-  options?: string[];
+  type: 'radio' | 'text';
   weightedOptions?: WeightedOption[];
   requiredBranch?: Branch[];
 }
@@ -78,8 +101,6 @@ export interface IntelligenceSegment {
   pros: string[];
   cons: string[];
   risks: string[];
-  contradictions: string[]; 
-  competencyLevel: 'Junior' | 'Mid' | 'Senior' | 'Expert';
 }
 
 export interface AlgorithmicReport {
@@ -89,18 +110,7 @@ export interface AlgorithmicReport {
   experienceWeight: number;
   retentionScore: number;
   burnoutResistance: number;
-  ethicsBreakdown: {
-    confidentiality: number;
-    boundaries: number;
-    loyalty: number;
-    peerSupport: number;
-  };
-  crisisManagementScore: number;
-  pedagogyScore: number;
-  clinicalScore: number;
-  resilienceScore: number;
   fitScore: number;
-  detectedPatterns: string[];
   riskFlags: string[];
 }
 

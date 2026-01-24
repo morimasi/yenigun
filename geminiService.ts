@@ -21,24 +21,33 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       status: { type: Type.STRING },
       pros: { type: Type.ARRAY, items: { type: Type.STRING } },
       cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-      risks: { type: Type.ARRAY, items: { type: Type.STRING } },
-      competencyLevel: { type: Type.STRING }
-    }
+      risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+    },
+    required: ["score", "status", "pros", "cons", "risks"]
   };
 
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Davranış Bilimci.
-    GÖREV: Adayın liyakat profilini derinlemesine muhakeme ederek analiz et.
+    GÖREV: Adayın liyakat profilini 10 Boyutlu Matris (The Decagonal Matrix) üzerinden analiz et.
     
-    ANALİZ PROTOKOLÜ:
-    - Yanıtlar arasındaki mikro-çelişkileri (Anomaliler) tespit et.
-    - Adayın akademik dürüstlüğünü ve "sosyal maske" kullanımını ölç.
-    - CV'deki tasarım disiplinini multimodal olarak değerlendir (eğer varsa).
-    - 10 boyutlu matrisi (Personality, Formality, Ethics vs.) nöral simülasyonla puanla.
-    
-    DÜŞÜNME TALİMATI: Cevabı üretmeden önce adayın klinik karakterini bir bütün olarak "düşün". Teorik bilgisi ile pratik etik yaklaşımları uyuşuyor mu? Riskleri asla yüzeysel geçme.
+    ANALİZ MATRİSİ BOYUTLARI:
+    1. personality (Karakter)
+    2. formality (Resmiyet)
+    3. parentStudentRelations (Veli-Öğrenci)
+    4. sustainability (Tükenmişlik Direnci)
+    5. developmentOpenness (Gelişim)
+    6. criticismTolerance (Eleştiri)
+    7. workEthics (Etik)
+    8. pedagogicalAnalysis (Pedagoji)
+    9. technicalExpertise (Teknik)
+    10. institutionalLoyalty (Sadakat)
 
-    FORMAT: Kesinlikle geçerli JSON.
+    ANALİZ PROTOKOLÜ:
+    - Cevaplar arasındaki mikro-çelişkileri (Anomaliler) tespit et.
+    - Seçilen şıkların ağırlık vektörlerini göz önüne al ama metin cevaplarındaki samimiyeti ölç.
+    - Adayın 'Sosyal Maske' (Dürüstlük) katsayısını % üzerinden hesapla.
+    
+    DÜŞÜNME TALİMATI: Cevabı üretmeden önce adayın tüm cevaplarını bir "Klinik Karakter" olarak simüle et. Adayın stres anındaki muhtemel tepkilerini düşün.
   `;
 
   try {

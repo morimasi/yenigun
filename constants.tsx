@@ -3,73 +3,131 @@ import { FormStep, Question, Branch } from './types';
 
 export const FORM_STEPS: FormStep[] = [
   { id: 'personal', title: 'Akademik Kimlik', description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz.' },
-  { id: 'academic_proficiency', title: 'Klinik Uygulama Profili', description: 'Branşınıza özel derinlikli vaka analizleri.' },
-  { id: 'character_projection', title: 'Klinik Karakter Projeksiyonu', description: 'Gri alan senaryoları ile profesyonel sınır ve etik refleksi ölçümü.' },
-  { id: 'professional_cases', title: 'Kurumsal Etik ve Ahlak', description: 'Kurum içi gizlilik, hediye kabulü ve profesyonel sınırlar.' },
-  { id: 'development', title: 'Özeleştiri & Vizyon', description: 'Mesleki gelişim dürüstlüğü.' }
+  { id: 'clinical_logic', title: 'Klinik Muhakeme Matrisi', description: 'Bilginin uygulamadaki yansımaları.' },
+  { id: 'ethical_boundaries', title: 'Sınırlar ve Etik', description: 'Profesyonel mahremiyet ve hiyerarşi testi.' },
+  { id: 'stress_resilience', title: 'Direnç ve Kriz', description: 'Tükenmişlik ve kriz yönetimi projeksiyonu.' },
+  { id: 'vision_loyalty', title: 'Vizyon ve Sadakat', description: 'Kurumsal aidiyet ve gelecek planlama.' }
 ];
 
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
-  academic_proficiency: [
+  clinical_logic: [
     {
-      id: 'clinical_method_integrity',
-      text: 'Uyguladığınız yöntem çocukta regresyona (gerileme) sebep oldu. Veli kurumda sizi "mucize yaratan" biri olarak görüyor. Bu krizi nasıl yönetirsiniz?',
+      id: 'cl_1',
+      category: 'pedagogicalAnalysis',
+      text: 'Uyguladığınız bilimsel metodun çocukta kısa vadeli bir gerileme (regresyon) yarattığını fark ettiniz. Veli ise "Hani düzelecekti, çocuk daha kötü oldu" diyerek kurumda sesini yükseltiyor. İlk refleksiniz?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Regresyonu bilimsel verilerle raporlar, veliye dürüstçe açıklar ve disiplinlerarası kurulda planı revize ederim.', weight: 1.0, category: 'clinical' },
-        { label: 'Veliyi kaybetmemek için durumu geçici bir duraksama olarak anlatır, yöntemi gizlice değiştiririm.', weight: 0.4, category: 'ethics' },
-        { label: 'Başarı grafiğimin yüksek olduğunu hatırlatarak veliyi ikna eder, regresyonun ev ortamından kaynaklandığını söylerim.', weight: 0.1, category: 'clinical' },
-        { label: 'Yönetime durumu bildirir, veliyle görüşmeyi kurum psikoloğunun yapmasını talep ederim.', weight: 0.6, category: 'fit' }
+        { 
+          label: 'Verileri sakinlikle önüne koyar, bu regresyonun öğrenme sürecinin doğal bir parçası olduğunu literatürle açıklarım.', 
+          weights: { clinical: 1.0, crisis: 0.9, pedagogy: 1.0 },
+          analysisInsight: 'Bilimsel dürüstlük ve yüksek özgüven.'
+        },
+        { 
+          label: 'Veliyi teskin etmek için yöntemde küçük bir değişiklik yapacağımı söyler, süreci zamana yayarım.', 
+          weights: { clinical: 0.5, crisis: 0.7, fit: 0.8 },
+          analysisInsight: 'Popülist yaklaşım, çatışmadan kaçınma.'
+        },
+        { 
+          label: 'Durumu derhal koordinatöre bildirir, veli görüşmesini onun yapmasını isterim.', 
+          weights: { formality: 1.0, resilience: 0.4, clinical: 0.3 },
+          analysisInsight: 'Sorumluluk transferi, düşük stres toleransı.'
+        }
       ]
     },
     {
-      id: 'multidisciplinary_conflict',
-      text: 'Seans yaptığınız bir öğrenci için başka bir branş uzmanı sizin yönteminizin hatalı olduğunu velinin yanında ima etti. Tepkiniz?',
+      id: 'cl_2',
+      category: 'technicalExpertise',
+      text: 'Seans esnasında çocuğun tıbbi/nörolojik bir risk taşıdığını (örn: nöbet başlangıcı şüphesi) hissettiniz ancak bu alan sizin yetkinliğiniz dışı. Ne yaparsınız?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Veli önünde tartışmaya girmem; sonrasında uzmanla baş başa görüşerek mesleki etik ve hiyerarşi sınırlarını netleştiririm.', weight: 1.0, category: 'ethics' },
-        { label: 'Velinin yanında kendimi savunur, diğer uzmanın yetki alanını aştığını net bir dille ifade ederim.', weight: 0.2, category: 'fit' },
-        { label: 'Sessiz kalır, durumu koordinatöre raporlayarak uzman hakkında idari işlem yapılmasını isterim.', weight: 0.7, category: 'fit' },
-        { label: 'Meslektaşımın uyarısını dikkate alıyor gibi yapıp veli nezdinde kurumun itibarını korurum.', weight: 0.5, category: 'pedagogy' }
+        { 
+          label: 'Seansı durdurur, kurum doktoru/psikoloğu ile çapraz konsültasyon isterim.', 
+          weights: { clinical: 1.0, ethics: 1.0, formality: 0.9 },
+          analysisInsight: 'Multidisipliner bilinç ve etik sınır tanıma.'
+        },
+        { 
+          label: 'Gözlemimi seans sonuna kadar sürdürür, notlarıma ekleyip sonraki toplantıda paylaşırım.', 
+          weights: { clinical: 0.4, ethics: 0.2, risk: 1.0 },
+          analysisInsight: 'Yüksek risk toleransı, geç müdahale.'
+        }
       ]
     }
   ],
-  character_projection: [
+  ethical_boundaries: [
     {
-      id: 'personal_boundary_test',
-      text: 'Bir öğrencinizin ebeveyni seans çıkışı size sosyal medyadan arkadaşlık isteği attı ve özelden çocuğun durumuyla ilgili konuşmak istediğini yazdı.',
+      id: 'eb_1',
+      category: 'workEthics',
+      text: 'Ağır bir vakanın velisi, çocuğundaki gelişimden dolayı size çok minnettar olduğunu söyleyip, pahalı bir hediye veya "özel ders" teklifiyle geldi. Tavrınız?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Nazikçe reddeder, profesyonel sınırları ve kurumsal iletişim kanallarını hatırlatırım.', weight: 1.0, category: 'ethics' },
-        { label: 'İsteği kabul ederim ama sadece işle ilgili sorulara kısa cevaplar veririm.', weight: 0.3, category: 'ethics' },
-        { label: 'Görmezden gelirim, bir sonraki seansta yüz yüze uyarırım.', weight: 0.6, category: 'ethics' },
-        { label: 'Kabul ederim, veli ile iyi ilişkiler seans verimini artırır.', weight: 0.0, category: 'ethics' }
+        { 
+          label: 'Hediyeyi kurumsal kurallar gereği nazikçe reddeder, mülkiyetin çocukta kalması gerektiğini (eğitim materyali ise) belirtirim.', 
+          weights: { ethics: 1.0, formality: 1.0, loyalty: 1.0 },
+          analysisInsight: 'Çelik gibi sınırlar, yüksek kurumsal sadakat.'
+        },
+        { 
+          label: 'Veliyi kırmamak için hediyeyi kabul eder ama kurumun haberi olması için yönetime bildiririm.', 
+          weights: { ethics: 0.3, formality: 0.6, fit: 0.5 },
+          analysisInsight: 'Esnek sınırlar, onaylanma ihtiyacı.'
+        }
+      ]
+    },
+    {
+      id: 'eb_2',
+      category: 'parentStudentRelations',
+      text: 'Bir meslektaşınızın, seansında etik olmayan bir davranışına (örn: çocuğa sert mizaç) şahit oldunuz. Ne yaparsınız?',
+      type: 'radio',
+      weightedOptions: [
+        { 
+          label: 'Önce meslektaşımla baş başa durumu konuşur, hatasını düzeltmesi için uyarırım; düzelmezse raporlarım.', 
+          weights: { ethics: 0.8, fit: 1.0, loyalty: 0.7 },
+          analysisInsight: 'Kolektif koruma içgüdüsü.'
+        },
+        { 
+          label: 'Hiç vakit kaybetmeden kurumsal disiplin mekanizmasını çalıştırır ve yönetime raporlarım.', 
+          weights: { ethics: 1.0, formality: 1.0, fit: 0.4 },
+          analysisInsight: 'Katı kuralcı, düşük tolerans.'
+        }
       ]
     }
   ],
-  professional_cases: [
+  stress_resilience: [
     {
-      id: 'institution_critique',
-      text: 'Kurumun bir uygulama politikasını (örn. raporlama şekli) klinik olarak yanlış buluyorsunuz. Nasıl bir yol izlersiniz?',
+      id: 'sr_1',
+      category: 'sustainability',
+      text: 'Aynı gün içinde arka arkaya krizli seanslar geçirdiniz ve son seansta çocuk size fiziksel olarak zarar verdi (ısırma/vurma). O anki duygusal durumunuzu nasıl yönetirsiniz?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Kanıt ve makalelerle destekleyerek yönetime iyileştirme önerisi sunarım.', weight: 1.0, category: 'fit' },
-        { label: 'Kendi seanslarımda doğru bildiğimi uygularım, ses çıkarmam.', weight: 0.2, category: 'ethics' },
-        { label: 'İş arkadaşlarım arasında durumu tartışır, ortak tepki geliştiririm.', weight: 0.5, category: 'fit' },
-        { label: 'Yönetim ne diyorsa sorgulamadan uygularım.', weight: 0.4, category: 'fit' }
+        { 
+          label: 'Bunun çocuğun engel grubuna ait bir davranış olduğunu bilir, duygusal nötrlüğümü koruyarak seansa devam ederim.', 
+          weights: { resilience: 1.0, clinical: 0.9, pedagogy: 0.8 },
+          analysisInsight: 'Yüksek duygusal regülasyon (Optimal Burnout Resistance).'
+        },
+        { 
+          label: 'Seansı o an sonlandırır, sakinleşmek için kısa bir mola isterim.', 
+          weights: { resilience: 0.6, formality: 0.8, fit: 0.7 },
+          analysisInsight: 'Kendini tanıma, ancak düşük stres tavanı.'
+        }
       ]
     }
   ],
-  development: [
+  vision_loyalty: [
     {
-      id: 'vulnerability_honesty',
-      text: 'Mesleki gelişim sürecinizde "yetersiz" kaldığınızı hissettiğiniz bir durumda refleksiniz ne olur?',
+      id: 'vl_1',
+      category: 'institutionalLoyalty',
+      text: 'Rakip bir kurumdan, şu anki maaşınızın %40 fazlası ve daha az çalışma saati ile teklif aldınız. Karar verme süreciniz nasıl işler?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Durumu derhal süpervizörüme bildirir, vaka için ek eğitim veya dışarıdan klinik destek talep ederim.', weight: 1.0, category: 'pedagogy' },
-        { label: 'Eksikliğimi belli etmeden ilgili literatürü tarar, kendi başıma çözüm bulmaya çalışırım.', weight: 0.6, category: 'clinical' },
-        { label: 'Alanda her zaman yeterliyim; başarısızlıklar genellikle vaka profilinden kaynaklanır.', weight: 0.0, category: 'fit' },
-        { label: 'Vakayı daha tecrübeli bir meslektaşıma devretmeyi, kendimi o konuda geliştirene kadar beklemeyi tercih ederim.', weight: 0.8, category: 'resilience' }
+        { 
+          label: 'Mevcut öğrencilerimin gelişim evresini ve kurumun bana sağladığı akademik vizyonu ön planda tutar, teklifi reddederim.', 
+          weights: { loyalty: 1.0, ethics: 0.9, fit: 1.0 },
+          analysisInsight: 'Vizyoner bağlılık (Mission-driven).'
+        },
+        { 
+          label: 'Teklifi mevcut yönetimle paylaşır, şartlarımın iyileştirilmesini talep ederim.', 
+          weights: { loyalty: 0.4, fit: 0.7, ethics: 0.5 },
+          analysisInsight: 'Pazarlıkçı sadakat (Mercenary-leaning).'
+        }
       ]
     }
   ]
