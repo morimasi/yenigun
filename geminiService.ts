@@ -20,7 +20,6 @@ const cleanAndParseJSON = (rawText: string) => {
 export const generateCandidateAnalysis = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const modelName = "gemini-3-flash-preview";
   
-  // Algoritmik veriyi AI'ya rehber olarak gönderiyoruz (Cross-Check yeteneği için)
   const algoContext = candidate.algoReport ? `
     ALGORİTMİK ÖN-SKORLAR:
     - Genel Matematiksel Skor: %${candidate.algoReport.overallScore}
@@ -31,13 +30,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti.
     GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
-    
-    ÖNEMLİ: Sana sağlanan 'ALGORİTMİK ÖN-SKORLAR' ile kendi klinik analizini karşılaştır. 
-    Eğer senin analizin matematiksel skordan %20'den fazla sapıyorsa, bunun nedenini 'summary' kısmında mutlaka rasyonel verilerle açıkla.
-    
-    KURAL: 
-    - Yanıt SADECE geçerli bir JSON olmalıdır.
-    - Dürüstlük endeksi (integrityIndex) ve maskeleme skoru (socialMaskingScore) arasındaki korelasyona dikkat et.
+    KURAL: Yanıt SADECE geçerli bir JSON olmalıdır.
   `;
 
   const responseSchema = {
@@ -55,7 +48,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           burnoutRisk: { type: Type.NUMBER },
           learningVelocity: { type: Type.NUMBER },
           leadershipPotential: { type: Type.NUMBER }
-        }
+        },
+        required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential"]
       },
       deepAnalysis: {
         type: Type.OBJECT,
@@ -70,7 +64,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           criticismTolerance: { $ref: "#/definitions/segment" },
           personality: { $ref: "#/definitions/segment" },
           institutionalLoyalty: { $ref: "#/definitions/segment" }
-        }
+        },
+        required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
       },
       swot: {
         type: Type.OBJECT,
@@ -79,7 +74,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
           opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
           threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+        },
+        required: ["strengths", "weaknesses", "opportunities", "threats"]
       },
       interviewGuidance: {
         type: Type.OBJECT,
@@ -87,7 +83,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
           criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
           simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+        },
+        required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
       }
     },
     required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"],
@@ -100,7 +97,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
           pros: { type: Type.ARRAY, items: { type: Type.STRING } },
           cons: { type: Type.ARRAY, items: { type: Type.STRING } },
           risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+        },
+        required: ["score", "status", "pros", "cons", "risks"]
       }
     }
   };
