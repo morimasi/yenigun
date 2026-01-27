@@ -8,82 +8,29 @@ export enum ClinicalTestType {
   COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
 }
 
-export interface Certification {
-  id: string;
-  label: string;
-  description: string;
-  category: string;
-  verificationQuestion: Question;
+// Branch enum'ı eklendi
+export enum Branch {
+  OzelEgitim = 'Özel Eğitim',
+  DilKonusma = 'Dil ve Konuşma Terapisi',
+  Ergoterapi = 'Ergoterapi',
+  Fizyoterapi = 'Fizyoterapi',
+  Psikoloji = 'Psikoloji',
+  OkulOncesi = 'Okul Öncesi',
+  SinifOgretmenligi = 'Sınıf Öğretmenliği'
 }
 
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
-}
+// Gender tipi eklendi
+export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 
-export interface Question {
-  id: string;
-  category: string;
-  text: string;
-  type: 'radio' | 'text';
-  weightedOptions?: {
-    label: string;
-    weights: Record<string, number>;
-    analysisInsight?: string;
-  }[];
-  options?: string[];
-  requiredBranch?: Branch[];
-}
-
-export interface ClinicalTestResult {
-  testType: ClinicalTestType;
-  scenario: string;
-  candidateResponse: string;
-  evaluation: {
-    logicScore: number;
-    empathyScore: number;
-    professionalismScore: number;
-    scientificAccuracy: number;
-    criticalNotes: string[];
-  };
-}
-
-export interface SimulationResult {
-  scenario: string;
-  parentPersona: string;
-  candidateResponse: string;
-  stressLevel: number;
-  aiEvaluation: {
-    ethicalBoundaryScore: number;
-    empathyCalibration: number;
-    professionalDistance: number;
-    crisisResolutionEfficiency: number;
-    clinicalTruths: string[];
-    criticalMistakes: string[];
-    neuralDivergence: {
-      decisionPath: string;
-      contradictionIndex: number;
-      dominantEmotion: string;
-      alternativeOutcome: string;
-    };
-    microBehaviors: {
-      toneAnalysis: string;
-      nonVerbalPrediction: string;
-      silenceTolerance: string;
-    };
-  };
-}
-
-export interface AlgorithmicReport {
-  overallScore: number;
-  reliabilityIndex: number;
-  ethicsScore: number;
-  experienceWeight: number;
-  retentionScore: number;
-  burnoutResistance: number;
-  fitScore: number;
-  riskFlags: string[];
+export interface IntelligenceSegment {
+  score: number;
+  status: 'optimal' | 'warning' | 'critical';
+  reasoning: string; // Skorun neden verildiğinin klinik açıklaması
+  behavioralIndicators: string[]; // Cevaplardan saptanan somut davranışlar
+  institutionalImpact: string; // Bu özelliğin kuruma uzun vadeli etkisi
+  pros: string[];
+  cons: string[];
+  risks: string[];
 }
 
 export interface AIReport {
@@ -91,14 +38,15 @@ export interface AIReport {
   integrityIndex: number;
   socialMaskingScore: number;
   summary: string;
+  detailedAnalysisNarrative: string; // Genel akademik portre yorumu
   recommendation: string;
   deepAnalysis: Record<string, IntelligenceSegment>;
-  clinicalTests?: ClinicalTestResult[];
   predictiveMetrics: {
     retentionProbability: number;
     burnoutRisk: number;
     learningVelocity: number;
     leadershipPotential: number;
+    evolutionPath: string; // Adayın 2 yıl sonraki muhtemel konumu
   };
   interviewGuidance: {
     strategicQuestions: string[];
@@ -113,26 +61,75 @@ export interface AIReport {
   };
 }
 
-export interface IntelligenceSegment {
-  score: number;
-  status: 'optimal' | 'warning' | 'critical';
-  pros: string[];
-  cons: string[];
-  risks: string[];
+// AlgorithmicReport arayüzü eklendi
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number;
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
+  fitScore: number;
+  riskFlags: string[];
 }
 
-export enum Branch {
-  OzelEgitim = 'Özel Eğitim Öğretmeni',
-  Psikolog = 'Psikolog',
-  Fizyoterapist = 'Fizyoterapist',
-  Ergoterapist = 'Ergoterapist',
-  DilKonusma = 'Dil ve Konuşma Terapisti',
-  OkulOncesi = 'Okul Öncesi Öğretmeni',
-  Odyolog = 'Odyolog',
-  SinifOgretmeni = 'Sınıf Öğretmeni'
+// Question arayüzü eklendi
+export interface Question {
+  id: string;
+  category: string;
+  text: string;
+  type: 'radio' | 'text' | 'checkbox';
+  options?: string[];
+  weightedOptions?: Array<{
+    label: string;
+    weights: Record<string, number | string>;
+    analysisInsight: string;
+  }>;
+  requiredBranch?: string[];
 }
 
-export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
+// FormStep arayüzü eklendi
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
+// Certification arayüzü eklendi
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestion: Question;
+}
+
+// SimulationResult arayüzü eklendi
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    criticalMistakes: string[];
+    clinicalTruths: string[];
+    neuralDivergence: {
+      contradictionIndex: number;
+      decisionPath: string;
+      alternativeOutcome: string;
+      dominantEmotion: string;
+    };
+    microBehaviors: {
+      toneAnalysis: string;
+      nonVerbalPrediction: string;
+      silenceTolerance: string;
+    };
+  };
+}
 
 export interface Candidate {
   id: string;
@@ -141,7 +138,7 @@ export interface Candidate {
   phone?: string;
   age: number;
   gender: Gender;
-  branch: Branch;
+  branch: string;
   university: string;
   department: string;
   experienceYears: number;

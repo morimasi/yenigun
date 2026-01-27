@@ -53,8 +53,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       const name = (c.name || '').toLocaleLowerCase('tr-TR').trim();
       const term = (appliedSearch || '').toLocaleLowerCase('tr-TR').trim();
       const matchesSearch = term === '' || name.includes(term);
-      const matchesBranch = filters.branches.length === 0 || (c.branch && filters.branches.includes(c.branch));
-      const matchesStatus = filters.statuses.length === 0 || (c.status && filters.statuses.includes(c.status));
+      const matchesBranch = filters.branches.length === 0 || (c.branch && (filters.branches as string[]).includes(c.branch));
+      const matchesStatus = filters.statuses.length === 0 || (c.status && (filters.statuses as string[]).includes(c.status));
       const matchesAge = c.age >= filters.ageRange[0] && c.age <= filters.ageRange[1];
       const matchesExp = (c.experienceYears || 0) >= filters.expRange[0] && (c.experienceYears || 0) <= filters.expRange[1];
       const score = c.report?.score ?? -1;
@@ -79,9 +79,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
 
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     const current = filters[category];
-    const next = current.includes(value)
-      ? current.filter(v => v !== value)
-      : [...current, value];
+    const next = (current as string[]).includes(value)
+      ? (current as string[]).filter(v => v !== value)
+      : [...(current as string[]), value];
     setFilters(prev => ({ ...prev, [category]: next }));
   };
 
@@ -118,7 +118,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                         key={b}
                         onClick={() => toggleFilter('branches', b)}
                         className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase border transition-all ${
-                          filters.branches.includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
+                          (filters.branches as string[]).includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
                         }`}
                       >
                         {b.split(' ')[0]}
@@ -129,7 +129,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
             </div>
           ) : (
             <div className="space-y-3 animate-slide-up">
-              {filteredAndSortedCandidates.map(c => (
+              {filteredAndSortedCandidates.map((c: Candidate) => (
                 <div 
                   key={c.id} 
                   onClick={() => { setSelectedId(c.id); window.scrollTo({ top: 112, behavior: 'smooth' }); }}
@@ -145,7 +145,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-black text-slate-900 text-[13px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{c.branch?.split(' ')[0]} • {c.experienceYears}Y</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{(c.branch as string)?.split(' ')[0]} • {c.experienceYears}Y</p>
                     </div>
                   </div>
                 </div>

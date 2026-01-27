@@ -106,8 +106,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
     const current = filters[category];
     const next = current.includes(value)
-      ? current.filter(v => v !== value)
-      : [...current, value];
+      ? (current as string[]).filter(v => v !== value)
+      : [...(current as string[]), value];
     setFilters(prev => ({ ...prev, [category]: next }));
   };
 
@@ -231,7 +231,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                    <p className="text-[11px] font-black text-slate-400 uppercase leading-relaxed">Uygun Kayıt Yok</p>
                 </div>
               ) : (
-                filteredAndSortedCandidates.map(c => (
+                filteredAndSortedCandidates.map((c: Candidate) => (
                   <div 
                     key={c.id} 
                     onClick={() => { setSelectedId(c.id); window.scrollTo({ top: 112, behavior: 'smooth' }); }}
@@ -249,7 +249,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="font-black text-slate-900 text-[13px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
                         </div>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{c.branch?.split(' ')[0]} • {c.experienceYears}Y</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{(c.branch as string)?.split(' ')[0]} • {c.experienceYears}Y</p>
                       </div>
                     </div>
                   </div>
