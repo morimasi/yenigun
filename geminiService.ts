@@ -30,13 +30,21 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti.
     GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
-    
-    KRİTİK ANALİZ PARAMETRELERİ:
-    1. Integrity Index: Adayın verdiği cevapların birbiriyle tutarlılığı (%0-%100).
-    2. Social Masking: Adayın "ideal öğretmen" rolü yapmak için gerçekçi olmayan cevaplar verip vermediği (%0-%100).
-    
     KURAL: Yanıt SADECE geçerli bir JSON olmalıdır.
   `;
+
+  // Schema flattening for better API compatibility
+  const segmentSchema = {
+    type: Type.OBJECT,
+    properties: {
+      score: { type: Type.NUMBER },
+      status: { type: Type.STRING },
+      pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+      cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+      risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+    },
+    required: ["score", "status", "pros", "cons", "risks"]
+  };
 
   const responseSchema = {
     type: Type.OBJECT,
@@ -59,18 +67,22 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       deepAnalysis: {
         type: Type.OBJECT,
         properties: {
-          workEthics: { $ref: "#/definitions/segment" },
-          pedagogicalAnalysis: { $ref: "#/definitions/segment" },
-          parentStudentRelations: { $ref: "#/definitions/segment" },
-          formality: { $ref: "#/definitions/segment" },
-          developmentOpenness: { $ref: "#/definitions/segment" },
-          sustainability: { $ref: "#/definitions/segment" },
-          technicalExpertise: { $ref: "#/definitions/segment" },
-          criticismTolerance: { $ref: "#/definitions/segment" },
-          personality: { $ref: "#/definitions/segment" },
-          institutionalLoyalty: { $ref: "#/definitions/segment" }
+          workEthics: segmentSchema,
+          pedagogicalAnalysis: segmentSchema,
+          parentStudentRelations: segmentSchema,
+          formality: segmentSchema,
+          developmentOpenness: segmentSchema,
+          sustainability: segmentSchema,
+          technicalExpertise: segmentSchema,
+          criticismTolerance: segmentSchema,
+          personality: segmentSchema,
+          institutionalLoyalty: segmentSchema
         },
-        required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
+        required: [
+          "workEthics", "pedagogicalAnalysis", "parentStudentRelations", 
+          "formality", "developmentOpenness", "sustainability", 
+          "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"
+        ]
       },
       swot: {
         type: Type.OBJECT,
@@ -92,20 +104,7 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
         required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
       }
     },
-    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"],
-    definitions: {
-      segment: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER },
-          status: { type: Type.STRING },
-          pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-          cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-          risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["score", "status", "pros", "cons", "risks"]
-      }
-    }
+    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
   };
 
   try {
@@ -115,7 +114,8 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 4096,
+        // Toplam bütçe düşünme bütçesinden büyük olmalıdır.
+        maxOutputTokens: 12000, 
         thinkingConfig: { thinkingBudget: 4096 },
         responseSchema: responseSchema
       }
@@ -138,7 +138,7 @@ export const generateNeuralProjection = async (candidate: Candidate): Promise<an
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4000,
         thinkingConfig: { thinkingBudget: 1024 },
         responseSchema: {
           type: Type.OBJECT,
@@ -189,7 +189,8 @@ export const runStresSimulation = async (candidate: Candidate, testType: Clinica
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 4096,
+        // thinkingBudget 24k ise, maxOutputTokens en az 28k-30k civarı olmalıdır.
+        maxOutputTokens: 30000, 
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
