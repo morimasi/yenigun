@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis, verifyCandidateIntegrity } from '../../analysisUtils';
@@ -15,7 +15,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [analysisPhase, setAnalysisPhase] = useState('');
-  const [selectedSegment, setSelectedSegment] = useState<string | null>('workEthics');
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
 
   const integrityReport = useMemo(() => verifyCandidateIntegrity(candidate), [candidate]);
 
@@ -24,13 +24,21 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     { key: 'technicalExpertise', label: 'KLİNİK DERİNLİK' },
     { key: 'pedagogicalAnalysis', label: 'PEDAGOJİ' },
     { key: 'parentStudentRelations', label: 'VELİ YÖNETİMİ' },
-    { key: 'sustainability', label: 'BURNOUT DİRENCİ' },
+    { key: 'sustainability', label: 'DİRENÇ' },
     { key: 'formality', label: 'RESMİYET' },
     { key: 'developmentOpenness', label: 'GELİŞİM' },
     { key: 'criticismTolerance', label: 'ELEŞTİRİ' },
     { key: 'personality', label: 'KARAKTER' },
     { key: 'institutionalLoyalty', label: 'SADAKAT' }
   ], []);
+
+  // Rapor yüklendiğinde otomatik ilk segmenti seç ve map hatalarını önle
+  useEffect(() => {
+    if (candidate.report?.deepAnalysis && !selectedSegment) {
+      const firstKey = Object.keys(candidate.report.deepAnalysis)[0];
+      setSelectedSegment(firstKey || 'workEthics');
+    }
+  }, [candidate.report, selectedSegment]);
 
   const radarData = useMemo(() => {
     const report = candidate?.report;
@@ -44,7 +52,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
-    const phases = ['Semantik Analiz...', 'Klinik Muhakeme...', 'Nedensellik Bağı Kuruluyor...', 'Gelecek Projeksiyonu...'];
+    const phases = ['Nöral Semantik Çözümleme...', 'Klinik Muhakeme Motoru...', 'Nedensellik Bağı Kuruluyor...', 'Gelecek Projeksiyonu...'];
     let phaseIdx = 0;
     const phaseInterval = setInterval(() => {
       setAnalysisPhase(phases[phaseIdx % phases.length]);
@@ -56,7 +64,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       const aiReport = await generateCandidateAnalysis(candidate, config);
       onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
     } catch (e: any) {
-      alert("AI Analiz Motoru Hatası: Lütfen bağlantınızı kontrol edin.");
+      alert("AI Analiz Hatası: Model çok yoğun muhakeme yapıyor, lütfen tekrar deneyin.");
     } finally { 
       clearInterval(phaseInterval);
       setIsAnalysing(false); 
@@ -64,12 +72,14 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }
   };
 
+  const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
+
   return (
     <div className="bg-white rounded-[4.5rem] shadow-xl border border-slate-100 flex flex-col relative overflow-hidden animate-scale-in">
       {isAnalysing && (
         <div className="fixed inset-0 z-[100] bg-slate-900/98 backdrop-blur-3xl flex flex-col items-center justify-center text-center p-20">
            <div className="w-40 h-40 border-[10px] border-orange-600/10 border-t-orange-600 rounded-full animate-spin mb-10 shadow-[0_0_100px_rgba(234,88,12,0.3)]"></div>
-           <h3 className="text-4xl font-black text-white uppercase tracking-[0.5em] mb-4">Nöral Muhakeme Motoru Aktif</h3>
+           <h3 className="text-4xl font-black text-white uppercase tracking-[0.5em] mb-4">Muhakeme Motoru Aktif</h3>
            <p className="text-orange-500 font-black text-[14px] uppercase tracking-[0.3em] animate-pulse">{analysisPhase}</p>
         </div>
       )}
@@ -79,7 +89,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         <div className="flex gap-10 items-center">
           <div className="w-28 h-28 bg-slate-900 rounded-[3.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl relative overflow-hidden group">
             {candidate.name?.charAt(0)}
-            <div className="absolute inset-0 bg-orange-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
           </div>
           <div>
             <div className="flex items-center gap-5 mb-4">
@@ -89,7 +98,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 <div className={`px-5 py-2 rounded-2xl border-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 ${
                   integrityReport.status === 'valid' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-rose-50 border-rose-500 text-rose-700'
                 }`}>
-                   <div className={`w-2 h-2 rounded-full ${integrityReport.status === 'valid' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`}></div>
                    VERİ GÜVENLİĞİ: %{integrityReport.score}
                 </div>
               )}
@@ -104,7 +112,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
         <div className="flex gap-4 no-print">
            <button onClick={handleRunAnalysis} disabled={isAnalysing} className="px-12 py-6 bg-orange-600 text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-2xl">
-             {isAnalysing ? 'İŞLENİYOR...' : 'DERİN ANALİZİ BAŞLAT'}
+             {isAnalysing ? 'İŞLENİYOR...' : 'AÇIKLAMALI ANALİZİ BAŞLAT'}
            </button>
         </div>
       </div>
@@ -112,12 +120,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       {/* TABS */}
       <div className="px-12 py-6 bg-white border-b border-slate-50 flex gap-6 overflow-x-auto no-print sticky top-28 z-40">
         {[
-          { id: 'matrix', label: 'LİYAKAT MATRİSİ' },
+          { id: 'matrix', label: '10 BOYUTLU MATRİS' },
           { id: 'dna', label: 'KLİNİK DNA' },
           { id: 'predictions', label: 'PROJEKSİYON' },
           { id: 'strategy', label: 'KARAR REHBERİ' }
         ].map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`px-10 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === t.id ? 'bg-slate-900 border-slate-900 text-white shadow-2xl' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
+          <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`px-10 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === t.id ? 'bg-slate-900 border-slate-900 text-white shadow-2xl' : 'bg-white text-slate-400 border-slate-100'}`}>
             {t.label}
           </button>
         ))}
@@ -126,18 +134,14 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="p-16 bg-[#FAFAFA] min-h-[700px]">
         {!candidate.report ? (
           <div className="h-[400px] flex flex-col items-center justify-center opacity-30 text-center">
-             <div className="w-40 h-40 bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-200 mb-8 flex items-center justify-center">
-                <svg className="w-16 h-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-             </div>
-             <h3 className="text-3xl font-black uppercase tracking-[0.8em] text-slate-400">Veri İşlenmedi</h3>
-             <p className="text-[10px] font-black text-slate-300 mt-4 uppercase tracking-[0.2em]">Adayın cevapları AI muhakeme motoru tarafından analiz edilmelidir.</p>
+             <h3 className="text-3xl font-black uppercase tracking-[0.8em] text-slate-400">Analiz Verisi Bekleniyor</h3>
           </div>
         ) : (
           <div className="max-w-7xl mx-auto space-y-24 animate-fade-in">
             
             {activeTab === 'matrix' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <div className="lg:col-span-5 space-y-4">
+                <div className="lg:col-span-4 space-y-4">
                   {segments.map(s => (
                     <button 
                       key={s.key} 
@@ -146,53 +150,45 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         selectedSegment === s.key ? 'bg-slate-900 border-slate-900 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-100 text-slate-400 hover:border-orange-200'
                       }`}
                     >
-                      <div>
-                         <h5 className="text-[11px] font-black uppercase tracking-[0.2em] mb-1">{s.label}</h5>
-                         <div className="flex gap-1">
-                            {[1,2,3,4,5].map(dot => (
-                              <div key={dot} className={`w-1.5 h-1.5 rounded-full ${candidate.report!.deepAnalysis[s.key].score >= dot * 20 ? (selectedSegment === s.key ? 'bg-orange-500' : 'bg-orange-600') : 'bg-slate-200'}`}></div>
-                            ))}
-                         </div>
-                      </div>
-                      <span className={`text-2xl font-black ${selectedSegment === s.key ? 'text-orange-500' : 'text-slate-900'}`}>%{candidate.report!.deepAnalysis[s.key].score}</span>
+                      <h5 className="text-[11px] font-black uppercase tracking-[0.2em]">{s.label}</h5>
+                      <span className={`text-2xl font-black ${selectedSegment === s.key ? 'text-orange-500' : 'text-slate-900'}`}>%{candidate.report?.deepAnalysis?.[s.key]?.score || 0}</span>
                     </button>
                   ))}
                 </div>
 
-                <div className="lg:col-span-7">
-                  {selectedSegment && candidate.report!.deepAnalysis[selectedSegment] && (
+                <div className="lg:col-span-8">
+                  {currentData && (
                     <div className="bg-white p-16 rounded-[5rem] shadow-2xl border border-slate-100 sticky top-48 animate-slide-up h-fit">
                        <div className="flex justify-between items-start mb-12">
-                          <h4 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em] border-l-8 border-orange-600 pl-8">BOYUTSAL MUHAKEME NOTU</h4>
-                          <span className="px-6 py-2 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">{selectedSegment.toUpperCase()}</span>
+                          <h4 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em] border-l-8 border-orange-600 pl-8">NEDENSEL MUHAKEME</h4>
+                          <span className="px-6 py-2 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">{selectedSegment?.toUpperCase()}</span>
                        </div>
                        
-                       <div className="space-y-10">
-                          <div className="p-10 bg-orange-50 rounded-[3.5rem] border border-orange-100 relative overflow-hidden">
-                             <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest block mb-4">Analiz & Nedensellik</span>
+                       <div className="space-y-12">
+                          <div className="p-10 bg-orange-50 rounded-[3.5rem] border border-orange-100">
+                             <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest block mb-4">Analiz & Nedenler</span>
                              <p className="text-xl font-bold text-slate-800 leading-relaxed italic relative z-10">
-                                "{candidate.report!.deepAnalysis[selectedSegment].reasoning}"
+                                "{currentData.reasoning || 'Veri işlenemedi.'}"
                              </p>
-                             <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-orange-600/5 rounded-full blur-3xl"></div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-8">
-                             <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-10">
+                             <div className="space-y-6">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-2">Gözlemlenen Emareler</span>
-                                <div className="space-y-2">
-                                   {candidate.report!.deepAnalysis[selectedSegment].behavioralIndicators.map((item, i) => (
-                                      <div key={i} className="flex gap-3 items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                         <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                         <p className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{item}</p>
+                                <div className="space-y-3">
+                                   {(currentData.behavioralIndicators || []).map((item, i) => (
+                                      <div key={i} className="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                         <div className="w-1.5 h-1.5 rounded-full bg-orange-600"></div>
+                                         <p className="text-[11px] font-bold text-slate-600 uppercase leading-tight">{item}</p>
                                       </div>
                                    ))}
                                 </div>
                              </div>
-                             <div className="space-y-4">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-2">Kurumsal Etki (1 Yıl)</span>
-                                <div className="p-6 bg-slate-900 rounded-[2.5rem] text-white">
+                             <div className="space-y-6">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-2">Kurumsal Etki (12 Ay)</span>
+                                <div className="p-8 bg-slate-900 rounded-[3rem] text-white">
                                    <p className="text-[12px] font-bold text-slate-300 leading-relaxed italic">
-                                      "{candidate.report!.deepAnalysis[selectedSegment].institutionalImpact}"
+                                      "{currentData.institutionalImpact || 'Etki simülasyonu henüz hazır değil.'}"
                                    </p>
                                 </div>
                              </div>
@@ -246,18 +242,18 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                        <span className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] block mb-10">BÜTÜNLÜK ENDEKSİ</span>
                        <div className="space-y-12">
                           <div>
-                             <p className="text-6xl font-black leading-none">%{candidate.report!.integrityIndex}</p>
+                             <p className="text-6xl font-black leading-none">%{candidate.report?.integrityIndex || 0}</p>
                              <p className="text-[11px] font-bold text-slate-400 uppercase mt-4 tracking-widest">Şeffaflık Puanı</p>
                           </div>
                           <div>
-                             <p className="text-6xl font-black leading-none">%{candidate.report!.socialMaskingScore}</p>
+                             <p className="text-6xl font-black leading-none">%{candidate.report?.socialMaskingScore || 0}</p>
                              <p className="text-[11px] font-bold text-slate-400 uppercase mt-4 tracking-widest">Sosyal Maskeleme</p>
                           </div>
                        </div>
                     </div>
                     <div className="p-12 bg-orange-600 rounded-[4rem] text-white shadow-2xl">
                        <h5 className="text-[11px] font-black uppercase tracking-[0.4em] mb-6">ÖZET KARAR</h5>
-                       <p className="text-[18px] font-bold leading-relaxed italic">"{candidate.report!.summary}"</p>
+                       <p className="text-[18px] font-bold leading-relaxed italic">"{candidate.report?.summary || 'Rapor özeti hazır değil.'}"</p>
                     </div>
                  </div>
               </div>
@@ -269,7 +265,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="bg-white p-20 rounded-[5rem] shadow-2xl border border-slate-100">
                        <h4 className="text-[16px] font-black text-slate-900 uppercase tracking-[0.6em] mb-20 border-l-[12px] border-orange-600 pl-10">STRATEJİK MÜLAKAT SORULARI</h4>
                        <div className="space-y-10">
-                          {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                          {(candidate.report?.interviewGuidance?.strategicQuestions || []).map((q, i) => (
                             <div key={i} className="group p-12 bg-slate-50 rounded-[4rem] border-2 border-transparent hover:border-orange-500 hover:bg-white transition-all duration-700">
                                <div className="flex gap-10">
                                   <div className="w-16 h-16 bg-white rounded-[2rem] flex items-center justify-center text-orange-600 font-black text-2xl shadow-xl group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
@@ -286,7 +282,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="p-16 bg-slate-900 rounded-[5rem] text-white shadow-2xl">
                        <h5 className="text-[12px] font-black uppercase tracking-[0.5em] mb-12 text-orange-500">KRİTİK GÖZLEM ODAĞI</h5>
                        <ul className="space-y-10">
-                          {candidate.report.interviewGuidance.criticalObservations.map((obs, i) => (
+                          {(candidate.report?.interviewGuidance?.criticalObservations || []).map((obs, i) => (
                             <li key={i} className="flex gap-6 items-start">
                                <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center font-black text-[14px] shrink-0 border border-white/10">!</div>
                                <p className="text-[15px] font-black uppercase tracking-widest leading-snug text-slate-300">{obs}</p>

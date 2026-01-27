@@ -7,9 +7,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const cleanAndParseJSON = (rawText: string) => {
   try {
     let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    if (cleanText.endsWith(',') || cleanText.endsWith('.')) {
-      cleanText = cleanText.slice(0, -1);
-    }
     return JSON.parse(cleanText);
   } catch (e) {
     console.error("MIA AI Engine: JSON Parse Hatası", e);
@@ -22,22 +19,27 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
+    reasoning: { type: Type.STRING, description: "Bu puanın adayın hangi cevaplarına ve hangi klinik literatüre dayandığının derin analizi." },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan somut tutum emareleri." },
+    institutionalImpact: { type: Type.STRING, description: "Bu aday kurumda çalışırsa 1 yıl içinde klinik kaliteyi nasıl etkiler?" },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
   },
-  required: ["score", "status", "pros", "cons", "risks"]
+  required: ["score", "status", "reasoning", "behavioralIndicators", "institutionalImpact", "pros", "cons", "risks"]
 };
 
 export const aiService = {
-  /**
-   * Liyakat Matrisi Analizi
-   */
   async analyzeCandidate(candidate: Candidate, config: GlobalConfig): Promise<AIReport> {
     const systemInstruction = `
-      ROL: Yeni Gün Akademi Baş Klinik Analisti.
-      GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
-      KRİTER: Sertifika-Cevap uyumu, liyakat dürüstlüğü ve teknik derinlik.
+      ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
+      GÖREV: Adayın liyakat matrisini "Açıklamalı ve Nedensel Analiz" yöntemiyle işle.
+      
+      KRİTİK TALİMATLAR:
+      1. Sadece sayısal veri verme; skorun ARKASINDAKİ klinik mantığı açıkla.
+      2. 'Reasoning' kısmında adayın verdiği spesifik cevaplara atıfta bulun (Örn: "Adayın 2. soruya verdiği 'ABC kaydı tutarım' yanıtı, metodolojik derinliğini kanıtlıyor").
+      3. 'Institutional Impact' kısmında, bu adayın kurumda neyi iyileştireceğini veya hangi krizlere yol açabileceğini (burnout riski vb.) açıkça yaz.
+      4. Dil: Profesyonel, analitik ve akademik.
     `;
 
     const responseSchema = {
@@ -47,6 +49,7 @@ export const aiService = {
         integrityIndex: { type: Type.NUMBER },
         socialMaskingScore: { type: Type.NUMBER },
         summary: { type: Type.STRING },
+        detailedAnalysisNarrative: { type: Type.STRING, description: "Genel akademik portrenin 200 kelimelik klinik yorumu." },
         recommendation: { type: Type.STRING },
         predictiveMetrics: {
           type: Type.OBJECT,
@@ -54,9 +57,10 @@ export const aiService = {
             retentionProbability: { type: Type.NUMBER },
             burnoutRisk: { type: Type.NUMBER },
             learningVelocity: { type: Type.NUMBER },
-            leadershipPotential: { type: Type.NUMBER }
+            leadershipPotential: { type: Type.NUMBER },
+            evolutionPath: { type: Type.STRING, description: "Adayın 2. yılındaki muhtemel profesyonel konumu." }
           },
-          required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential"]
+          required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
         },
         deepAnalysis: {
           type: Type.OBJECT,
@@ -94,17 +98,16 @@ export const aiService = {
           required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
         }
       },
-      required: ["score", "integrityIndex", "socialMaskingScore", "summary", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
+      required: ["score", "integrityIndex", "socialMaskingScore", "summary", "detailedAnalysisNarrative", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `ADAY VERILERI: ${JSON.stringify(candidate)}`,
+      model: 'gemini-3-pro-preview',
+      contents: `ADAY VERİLERİ: ${JSON.stringify(candidate)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        maxOutputTokens: 12000,
-        thinkingConfig: { thinkingBudget: 4096 },
+        thinkingConfig: { thinkingBudget: 16000 },
         responseSchema: responseSchema
       }
     });
@@ -112,34 +115,13 @@ export const aiService = {
     return cleanAndParseJSON(response.text);
   },
 
-  /**
-   * Nöral Projeksiyon
-   */
-  async predictFuture(candidate: Candidate): Promise<any> {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `PROJEKSIYON: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, report: candidate.report })}`,
-      config: {
-        systemInstruction: "Yeni Gün Akademi Nöral Projeksiyon Ünitesi. Adayın 12 aylık gelişimini analiz et.",
-        responseMimeType: "application/json",
-        maxOutputTokens: 4000,
-        thinkingConfig: { thinkingBudget: 1024 }
-      }
-    });
-    return cleanAndParseJSON(response.text);
-  },
-
-  /**
-   * Stres Simülasyonu
-   */
   async simulateCrisis(candidate: Candidate, testType: ClinicalTestType): Promise<SimulationResult> {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `ADAY PROFILI: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, answers: candidate.answers, testType })}`,
+      model: 'gemini-3-pro-preview',
+      contents: `ADAY: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, answers: candidate.answers, testType })}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Klinik Laboratuvarı. Adayın etik sınırlarını sarsacak stres simülasyonu üret.",
+        systemInstruction: "Yeni Gün Akademi Klinik Laboratuvarı. Adayın kriz anındaki nöral sapmalarını ve etik sınırlarını test eden bir simülasyon üret. Yanıtı sadece JSON formatında ver.",
         responseMimeType: "application/json",
-        maxOutputTokens: 30000,
         thinkingConfig: { thinkingBudget: 24576 }
       }
     });

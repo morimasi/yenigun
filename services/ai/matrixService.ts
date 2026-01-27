@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik cevaplarına dayandığının klinik analizi." },
+    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik cevaplarına dayandığının klinik analizi. Neden bu puan verildi?" },
     behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve operasyonel verimlilik üzerindeki somut etkisi." },
+    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve operasyonel verimlilik üzerindeki 12 aylık somut etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -21,14 +21,15 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
-    GÖREV: Adayın liyakat matrisini "Açıklamalı ve Nedensel Analiz" yöntemiyle işle.
+    ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
+    MODEL: Gemini 3 Flash Thinking Mode.
+    GÖREV: Adayın liyakat matrisini "Açıklamalı, Nedensel ve Prediktif Analiz" yöntemiyle işle.
     
     YÖNERGE:
-    1. Sadece puan verme; puanın ARKASINDAKI mantığı pedagojik ve klinik literatüre dayandırarak açıkla.
-    2. Adayın cevaplarındaki tutarsızlıkları (örn: idealist söylem vs pratik hata) 'Bilişsel Çelişki' olarak raporla.
-    3. 'Institutional Impact' kısmında, bu adayın 1 yıl sonra kurumda neyi değiştireceğini veya neyi bozacağını açıkça yaz.
-    4. Dil: Profesyonel, sert, analitik ve akademik.
+    1. SADECE SKOR VERME: Skorun ARKASINDAKİ mantığı (neden?) pedagojik literatüre dayandırarak açıkla.
+    2. CEVAPLARA ATIF YAP: "Adayın X sorusuna verdiği Y cevabı, Z riskini taşımaktadır" şeklinde direkt analiz yap.
+    3. KURUMSAL ETKİ: Adayın 1 yıl sonra kurumda neyi iyileştireceğini veya hangi krizlere yol açacağını net belirt.
+    4. DİL: Akademik, sert, analitik ve kesin hüküm içeren bir üslup kullan.
   `;
 
   const responseSchema = {
@@ -38,7 +39,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       integrityIndex: { type: Type.NUMBER },
       socialMaskingScore: { type: Type.NUMBER },
       summary: { type: Type.STRING },
-      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın genel akademik ve klinik karakterinin 250-400 kelimelik derin analizi." },
+      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın genel akademik ve klinik karakterinin 300 kelimelik derin analizi." },
       recommendation: { type: Type.STRING },
       predictiveMetrics: {
         type: Type.OBJECT,
@@ -92,13 +93,19 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERILERI VE CEVAPLAR: ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ VE KLİNİK YANITLAR: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
+      thinkingConfig: { thinkingBudget: 24576 }, // Flash için max bütçe
       responseSchema: responseSchema
     }
   });
 
-  return JSON.parse(response.text || '{}');
+  try {
+    return JSON.parse(response.text || '{}');
+  } catch (e) {
+    console.error("AI Rapor Parse Hatası:", e);
+    throw new Error("Analiz raporu oluşturulurken yapısal bir hata oluştu.");
+  }
 };

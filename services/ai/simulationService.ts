@@ -7,12 +7,18 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const simulateCrisis = async (candidate: Candidate, testType: ClinicalTestType): Promise<SimulationResult> => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY PROFILI: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, testType })}`,
+    contents: `ADAY PROFILI VE GEÇMİŞ YANITLARI: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, answers: candidate.answers, testType })}`,
     config: {
-      systemInstruction: "Yeni Gün Akademi Klinik Laboratuvarı. Adayın etik sınırlarını sarsacak stres simülasyonu üret. Yanıtı sadece JSON formatında ver.",
+      systemInstruction: "Yeni Gün Akademi Klinik Laboratuvarı. Adayın dürüstlüğünü ve etik sınırlarını sarsacak, mülakat cevaplarıyla çelişen bir stres simülasyonu üret. Yanıtı sadece JSON formatında ver.",
       responseMimeType: "application/json",
       thinkingConfig: { thinkingBudget: 16000 }
     }
   });
-  return JSON.parse(response.text || '{}');
+  
+  try {
+    return JSON.parse(response.text || '{}');
+  } catch (e) {
+    console.error("Simülasyon Parse Hatası:", e);
+    throw new Error("Kriz senaryosu nöral olarak derlenemedi.");
+  }
 };
