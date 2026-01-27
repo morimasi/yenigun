@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { FORM_STEPS, BRANCH_QUESTIONS, CERTIFICATIONS, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../constants';
-import { Branch, Candidate, Gender, Question, Certification } from '../types';
-import SearchableSelect from './SearchableSelect';
+import { FORM_STEPS, BRANCH_QUESTIONS, CERTIFICATIONS, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../../constants';
+import { Branch, Candidate, Gender, Question, Certification } from '../../types';
+import { SearchableSelect } from '../../shared/ui/SearchableSelect';
 
 interface CandidateFormProps {
   onSubmit: (candidate: Omit<Candidate, 'id' | 'timestamp' | 'report'>) => void;
@@ -41,12 +41,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
   const progress = useMemo(() => ((currentStep + 1) / FORM_STEPS.length) * 100, [currentStep]);
 
-  // Adayın seçtiği eğitimlere özel doğrulama sorularını filtreleyen ve klinik adıma ekleyen mantık
   const currentQuestions = useMemo(() => {
     const stepId = FORM_STEPS[currentStep].id;
     let baseQuestions = BRANCH_QUESTIONS[stepId] || [];
     
-    // Sadece klinik_logic adımında seçilen eğitimlere özel soruları enjekte et
     if (stepId === 'clinical_logic') {
       const trainingQuestions = CERTIFICATIONS
         .filter(cert => formData.allTrainings.includes(cert.label))

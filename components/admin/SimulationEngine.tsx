@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Candidate, SimulationResult } from '../../types';
+import { Candidate, SimulationResult, ClinicalTestType } from '../../types';
 import { runStresSimulation } from '../../geminiService';
 
 interface SimulationEngineProps {
@@ -20,7 +20,9 @@ const SimulationEngine: React.FC<SimulationEngineProps> = ({ candidates }) => {
     if (!candidate) return;
 
     try {
-      const result = await runStresSimulation(candidate);
+      // runStresSimulation requires both a candidate and a testType.
+      // DMP_STRESS is used as the default protocol for this view.
+      const result = await runStresSimulation(candidate, ClinicalTestType.DMP_STRESS);
       setSimulationData(result);
     } catch (e: any) {
       console.error("Simulation catch:", e);

@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
 import AdminTopNav from './AdminTopNav';
-import PipelineView from './PipelineView';
+import PipelineView from '../../features/academic-pipeline/PipelineView';
 import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
 import SettingsView from './SettingsView';
 import DecisionSupportView from './DecisionSupportView';
-import ClinicalLabView from './ClinicalLabView';
-import { exportService } from '../../services/exportService';
+import ClinicalLabView from '../../features/clinical-lab/ClinicalLabView';
+import { InterviewAssistant } from '../../features/interview-assistant/InterviewAssistant';
 
 interface DashboardLayoutProps {
   candidates: Candidate[];
@@ -21,7 +21,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab' | 'assistant'>('pipeline');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -30,6 +30,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
       case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
       case 'lab': return <ClinicalLabView candidates={props.candidates} />;
+      case 'assistant': return <InterviewAssistant candidates={props.candidates} />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
       default: return <PipelineView {...props} />;
     }

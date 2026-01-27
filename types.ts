@@ -8,6 +8,14 @@ export enum ClinicalTestType {
   COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
 }
 
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestion: Question;
+}
+
 export interface FormStep {
   id: string;
   title: string;
@@ -67,7 +75,6 @@ export interface SimulationResult {
   };
 }
 
-// @google/genai guidelines: Define the structure for algorithmic analysis results to ensure type safety
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -146,7 +153,6 @@ export interface Candidate {
   adminNotes?: string;
   reminderNote?: string;
   report?: AIReport;
-  // @google/genai guidelines: Using AlgorithmicReport interface instead of 'any' for the analysis result
   algoReport?: AlgorithmicReport;
   interviewSchedule?: {
     date: string;

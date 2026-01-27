@@ -10,7 +10,7 @@ interface DecisionAdvisorChatProps {
 
 const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, onClose }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: `Merhaba Kurul Üyesi. Seçtiğiniz ${candidates.length} aday üzerinde derin muhakeme (Deep Reasoning) motoruyla çapraz sorgulama yapmaya hazırım.` }
+    { role: 'ai', text: `Yeni Gün Akademi Stratejik Danışmanlık Ünitesi. Seçtiğiniz ${candidates.length} aday üzerinde derin muhakeme (Deep Reasoning) protokolü aktif. Hangi aday kurum kültürümüze daha yüksek liyakatle hizmet edebilir?` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -30,21 +30,20 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
     setIsTyping(true);
 
     try {
-      // Always create a new instance right before making an API call and use direct process.env.API_KEY reference
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const systemInstruction = `
         ROL: Yeni Gün Akademi Stratejik Karar Danışmanı.
-        MODEL: Gemini-3-Flash (Deep Reasoning Mode).
-        BÜTÇE: 24,576 Thinking Tokens.
+        MODEL: Gemini-3-Flash Deep Reasoning.
+        BÜTÇE: 32,768 Thinking Tokens.
         
-        GÖREV: Adayların (Adaylar: ${candidates.map(c => c.name).join(', ')}) verilerini, mülakat rehberlerini ve kriz testlerini düşünme aşamasında çapraz karşılaştır.
+        GÖREV: Karşılaştırılacak Adaylar: ${candidates.map(c => `${c.name} (${c.branch})`).join(', ')}.
         
-        KARAR KRİTERLERİ:
-        - Hangisi daha sürdürülebilir?
-        - Hangisinin sosyal maskesi daha düşük?
-        - Kim Yeni Gün kültürüne daha hızlı adapte olur?
+        ANALİZ PROTOKOLÜ:
+        1. Liyakat Dürüstlüğü: Kimin cevapları klinik olarak daha tutarlı?
+        2. Sosyal Maske Analizi: Kim kendini daha fazla parlatmaya çalışıyor?
+        3. Kültürel Fit: Yeni Gün'ün akademik sertliğine kim daha dayanıklı?
         
-        STİL: Akademik, sert, liyakat odaklı ve kanıta dayalı.
+        STİL: Sert akademik dil, kanıta dayalı yargı, net tavsiye.
       `;
 
       const response = await ai.models.generateContent({
@@ -52,29 +51,29 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
         contents: `Analiz Talebi: ${userText}`,
         config: { 
           systemInstruction, 
-          thinkingConfig: { thinkingBudget: 24576 } 
+          thinkingConfig: { thinkingBudget: 32768 } 
         }
       });
 
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Şu an stratejik bir sonuç üretilemiyor." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Muhakeme motoru bu senaryoda karar veremedi." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Muhakeme motoru yanıt vermiyor." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Stratejik bağlantı hatası: Sunucu meşgul." }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-2xl flex items-center justify-end p-8 animate-fade-in no-print">
+    <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-3xl flex items-center justify-end p-8 animate-fade-in no-print">
       <div className="w-full max-w-3xl bg-white h-full rounded-[4.5rem] shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-slide-right relative">
-        <div className="p-10 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center relative overflow-hidden">
+        <div className="p-10 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center relative">
            <div className="flex items-center gap-6 relative z-10">
-              <div className="w-14 h-14 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white shadow-2xl">
+              <div className="w-14 h-14 bg-slate-900 rounded-[2rem] flex items-center justify-center text-orange-600 shadow-2xl">
                 <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/></svg>
               </div>
               <div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Stratejik Karar Paneli</h3>
-                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Gemini-3-Flash Deep Reasoning</p>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Muhakeme Ünitesi</h3>
+                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Deep Reasoning Mode Active</p>
               </div>
            </div>
            <button onClick={onClose} className="p-5 hover:bg-rose-50 rounded-[2rem] text-rose-400 transition-all z-10">
@@ -83,14 +82,14 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
            <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/5 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar bg-[#FAFAFA]" ref={scrollRef}>
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                <div className={`max-w-[85%] p-8 rounded-[3rem] shadow-sm relative ${
-                 m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-slate-50 border border-slate-100 text-slate-800'
+                 m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-white border border-slate-100 text-slate-800'
                }`}>
                   <p className="text-[13px] font-bold leading-relaxed whitespace-pre-wrap">{m.text}</p>
-                  {m.role === 'ai' && <div className="absolute -left-2 top-8 w-4 h-4 bg-slate-50 rotate-45 border-l border-b border-slate-100"></div>}
+                  {m.role === 'ai' && <div className="absolute -left-2 top-8 w-4 h-4 bg-white rotate-45 border-l border-b border-slate-100"></div>}
                </div>
             </div>
           ))}
@@ -98,23 +97,23 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
             <div className="flex justify-start">
                <div className="bg-slate-900/5 p-8 rounded-[2.5rem] flex items-center gap-4">
                  <div className="flex gap-2">
-                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce"></div>
-                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-100"></div>
-                   <div className="w-2.5 h-2.5 bg-orange-600 rounded-full animate-bounce delay-200"></div>
+                   <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce"></div>
+                   <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce delay-100"></div>
+                   <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce delay-200"></div>
                  </div>
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Flash-3 Muhakeme Ediyor</span>
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Zeka Katmanı Sorgulanıyor</span>
                </div>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleAsk} className="p-10 border-t border-slate-50 bg-white">
+        <form onSubmit={handleAsk} className="p-10 border-t border-slate-50 bg-white shadow-inner">
            <div className="flex gap-5">
               <input 
                 autoFocus
                 type="text" 
                 className="flex-1 bg-slate-50 rounded-[2.5rem] p-6 text-base font-bold outline-none border-2 border-transparent focus:border-orange-600 shadow-inner"
-                placeholder="Adaylar hakkında stratejik bir karşılaştırma isteyin..."
+                placeholder="Adaylar arasındaki kritik farkları sorgulayın..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />
