@@ -45,17 +45,25 @@ const App: React.FC = () => {
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await storageService.login(loginForm.username, loginForm.password);
-    if (result.success) {
-      setIsLoggedIn(true);
-      loadData();
-    } else alert(result.error || "Giriş başarısız.");
+    try {
+      const result = await storageService.login(loginForm.username, loginForm.password);
+      if (result.success) {
+        setIsLoggedIn(true);
+        loadData();
+      } else alert(result.error || "Giriş başarısız.");
+    } catch (err) {
+      alert("Kimlik doğrulama sunucusu şu an meşgul.");
+    }
   };
 
   const onCandidateSubmit = async (data: any) => {
-    const res = await submitCandidate(data);
-    if (res.success) alert("Başvurunuz Yeni Gün Akademi sistemine kaydedildi.");
-    else alert(`Hata: ${res.error}`);
+    try {
+      const res = await submitCandidate(data);
+      if (res.success) alert("Başvurunuz Akademi sistemine kaydedildi.");
+      else alert(`Hata: ${res.error}`);
+    } catch (err) {
+      alert("Başvuru gönderilirken bir ağ hatası oluştu.");
+    }
   };
 
   if (view === 'admin' && !isLoggedIn) {
@@ -67,8 +75,8 @@ const App: React.FC = () => {
            <form onSubmit={handleAdminLogin} className="space-y-6">
               <input type="text" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Yönetici Kimliği" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
               <input type="password" className="w-full p-6 rounded-3xl bg-slate-50 font-bold outline-none border-2 border-transparent focus:border-orange-600 transition-all" placeholder="Giriş Anahtarı" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" disabled={isProcessing} className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-50">
-                {isProcessing ? 'İŞLENİYOR...' : 'SİSTEMİ AÇ'}
+              <button type="submit" disabled={isProcessing} className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest hover:bg-black shadow-xl disabled:opacity-50">
+                {isProcessing ? 'SİSTEM AÇILIYOR...' : 'SİSTEMİ AÇ'}
               </button>
            </form>
            <button onClick={() => setView('candidate')} className="w-full mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-colors">Aday Sayfasına Dön</button>
@@ -113,12 +121,12 @@ const App: React.FC = () => {
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center" aria-live="assertive">
           <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
             <div className="text-center">
               <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Sunucu Etkileşimi</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Lütfen Bekleyiniz...</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Veri Bütünlüğü Doğrulanıyor...</p>
             </div>
           </div>
         </div>
