@@ -140,7 +140,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black text-slate-400 uppercase ml-2">AD SOYAD</label>
-                    <input type="text" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/30 outline-none focus:ring-2 focus:ring-orange-100" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Dr. Ahmet Yılmaz" />
+                    <input type="text" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/30 outline-none focus:ring-2 focus:ring-orange-100" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Uzm. Ergoterapist Ayşe Can" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-black text-slate-400 uppercase ml-2">KLİNİK BRANŞ</label>
@@ -166,11 +166,18 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
           <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm">
             <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] mb-8 border-l-4 border-orange-600 pl-4">Metodolojik Akreditasyon ve Sertifikasyon</h3>
             <div className="space-y-12">
-               {['LANGUAGE_SPEECH', 'OCCUPATIONAL_THERAPY', 'PHYSIOTHERAPY', 'SPECIAL_ED_ABA'].map(cat => (
-                 <div key={cat} className="space-y-4">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{cat.replace('_', ' ')}</h4>
+               {[
+                 { id: 'SPECIAL_LEARNING_DISABILITIES', label: 'Özel Öğrenme Güçlüğü (Disleksi/Diskalkuli)' },
+                 { id: 'LANGUAGE_SPEECH', label: 'Dil ve Konuşma Terapisi' },
+                 { id: 'OCCUPATIONAL_THERAPY', label: 'Ergoterapi / Duyu Bütünleme' },
+                 { id: 'PHYSIOTHERAPY', label: 'Fizyoterapi / Rehabilitasyon' },
+                 { id: 'SPECIAL_ED_ABA', label: 'Otizm / Davranış Analizi' },
+                 { id: 'PSYCHOLOGY_PEDAGOGY', label: 'Psikoloji / Değerlendirme' }
+               ].map(cat => (
+                 <div key={cat.id} className="space-y-4">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{cat.label}</h4>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                     {CERTIFICATIONS.filter(c => c.category === cat).map(cert => (
+                     {CERTIFICATIONS.filter(c => c.category === cat.id).map(cert => (
                        <button 
                          key={cert.id} 
                          type="button" 
@@ -178,7 +185,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                          className={`p-5 rounded-2xl text-left transition-all border group relative ${
                            formData.allTrainings.includes(cert.label) 
                            ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]' 
-                           : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-300'
+                           : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-300 shadow-sm'
                          }`}
                        >
                          <p className="text-[11px] font-black uppercase tracking-tight mb-2">{cert.label}</p>

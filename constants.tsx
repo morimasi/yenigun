@@ -12,33 +12,23 @@ export const FORM_STEPS: FormStep[] = [
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   clinical_logic: [
     {
-      id: 'te_1',
+      id: 'sld_eval_1',
       category: 'technicalExpertise',
-      text: 'Seans esnasında uyguladığınız metodun o anki vaka için riskli olabileceğine dair bir emare sezdiniz. Literatür bilgisi ile o anki gözleminiz çelişiyor. Kararınız?',
+      text: 'Okuma akıcılığı (fluency) düşük bir vakada, müdahale planında "Fonolojik Farkındalık" mı yoksa "Hızlı İsimlendirme" (RAN) çalışmaları mı önceliklendirilmelidir? Neden?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Literatürü baz alır, seansı planlandığı gibi tamamlarım.', weights: { technical: 0.6, clinical: 0.5, resilience: 0.8 }, analysisInsight: 'Kuralcı akademik yaklaşım.' },
-        { label: 'Seansı durdurur, risk analizi yapıp metodu modifiye ederim.', weights: { technical: 1.0, clinical: 1.0, development: 0.9 }, analysisInsight: 'Yüksek klinik muhakeme.' }
+        { label: 'Fonolojik farkındalık, okumanın temelidir; RAN ise süreçtir.', weights: { technical: 0.7, clinical: 0.6, pedagogy: 0.9 }, analysisInsight: 'Geleneksel akademik bakış.' },
+        { label: 'Vakanın profiline göre (çift açık teorisi); RAN zayıfsa hız, fonoloji zayıfsa kodlama önceliklendirilir.', weights: { technical: 1.0, clinical: 1.0, development: 1.0 }, analysisInsight: 'Üst düzey klinik muhakeme.' }
       ]
     },
     {
-      id: 'te_2',
+      id: 'sld_eval_2',
       category: 'technicalExpertise',
-      text: 'Yeni bir vaka aldınız ve tanı dosyası ile sizin ilk gözleminiz arasında ciddi bir uçurum var. Nasıl ilerlersiniz?',
+      text: 'Diskalkuli vakalarında CRA hiyerarşisinde "Temsili" (Representational) aşamayı atlayıp doğrudan "Soyut" (Abstract) işleme geçmenin nörobilişsel maliyeti nedir?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Tanı dosyasını kabul eder, programı ona göre hazırlarım.', weights: { technical: 0.4, formality: 1.0, clinical: 0.3 }, analysisInsight: 'Düşük inisiyatif, yüksek hiyerarşi uyumu.' },
-        { label: 'Kendi değerlendirme araçlarımı kullanır, tanıyı sorgulayan bir rapor hazırlarım.', weights: { technical: 1.0, criticism: 0.8, clinical: 0.9 }, analysisInsight: 'Eleştirel klinik düşünme.' }
-      ]
-    },
-    {
-      id: 'pa_1',
-      category: 'pedagogicalAnalysis',
-      text: 'Çocuğun seansta sergilediği problem davranışın fonksiyonunu belirleyemediniz. Stratejiniz?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Davranışı o an söndürmeye odaklanırım, analizi sonra yaparım.', weights: { pedagogy: 0.5, technical: 0.4, clinical: 0.4 }, analysisInsight: 'Müdahale odaklı, analiz zayıf.' },
-        { label: 'ABC (Öncül-Davranış-Sonuç) kaydı tutmaya başlar, süpervizyon talep ederim.', weights: { pedagogy: 1.0, technical: 0.9, development: 1.0 }, analysisInsight: 'Bilimsel metodolojiye bağlılık.' }
+        { label: 'Öğrenci sayı kavramını somutlaştıramaz, ezberci işlem yapar.', weights: { technical: 1.0, clinical: 0.9, pedagogy: 0.8 }, analysisInsight: 'Bilişsel gelişim basamaklarına hakim.' },
+        { label: 'Ödevleri yapmakta zorlanır ve matematikten soğur.', weights: { technical: 0.3, clinical: 0.2, formality: 0.5 }, analysisInsight: 'Yüzeysel pedagojik yaklaşım.' }
       ]
     }
   ],
@@ -46,21 +36,11 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
     {
       id: 'we_1',
       category: 'workEthics',
-      text: 'Bir meslektaşınızın etik kuralları esnettiğini fark ettiniz. İlk adımınız?',
+      text: 'Veli, sosyal medya üzerinden mülakat dosyanıza girmeyen ama öğrenciyi ilgilendiren özel bir durum paylaştı. Yaklaşımınız?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Durumu doğrudan yönetime raporlarım.', weights: { ethics: 1.0, formality: 1.0, loyalty: 0.6 }, analysisInsight: 'Radikal kuralcılık.' },
-        { label: 'Önce meslektaşımla konuşur, hatasını fark etmesini sağlarım.', weights: { ethics: 0.7, personality: 1.0, fit: 0.9 }, analysisInsight: 'Yapıcı takım oyuncusu.' }
-      ]
-    },
-    {
-      id: 'pr_1',
-      category: 'parentStudentRelations',
-      text: 'Veli, sosyal medyada sizinle arkadaşlık isteği gönderdi ve oradan çocuğun durumuyla ilgili sorular sormaya başladı.',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'İsteği kabul etmem, iletişim için kurumsal kanalları hatırlatırım.', weights: { parentRelations: 1.0, formality: 1.0, workEthics: 0.9 }, analysisInsight: 'Profesyonel mesafe koruma.' },
-        { label: 'Kabul ederim ama sadece genel konularda konuşurum.', weights: { parentRelations: 0.4, formality: 0.5, workEthics: 0.3 }, analysisInsight: 'Sınır aşımı riski.' }
+        { label: 'Durumu mülahaza ederek profesyonel çerçevede kurumsal kanala taşırım.', weights: { ethics: 1.0, formality: 1.0, loyalty: 0.8 }, analysisInsight: 'Yüksek etik bütünlük.' },
+        { label: 'Veliyle samimiyeti artırıp güven kazanmak için oradan devam ederim.', weights: { ethics: 0.3, formality: 0.2, personality: 0.6 }, analysisInsight: 'Sınır ihlali riski.' }
       ]
     }
   ],
@@ -69,119 +49,80 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
 };
 
 export const CERTIFICATIONS: Certification[] = [
-  // LANGUAGE & SPEECH
+  // SPECIAL LEARNING DISABILITIES (SLD) - OKUMA / YAZMA / MATEMATİK
   {
-    id: 'prompt',
-    label: 'PROMPT',
-    description: 'Motor konuşma bozuklukları için dokunsal-kinestetik girdi sistemi.',
-    category: 'LANGUAGE_SPEECH',
+    id: 'orton_gillingham',
+    label: 'Orton-Gillingham (Disleksi)',
+    description: 'Çok duyulu (VAKT), yapılandırılmış ve sıralı okuma-yazma öğretim protokolü.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_prompt',
+      id: 'vq_orton',
       category: 'technicalExpertise',
-      text: 'PROMPT uygulamasında "Parametre İstemi" ile "Yüzey İstemi" arasındaki temel ayrım klinik pratikte neyi belirler?',
+      text: 'Orton-Gillingham sisteminde "Simultane Çok Duyulu Girdi"nin disleksi vakalarındaki nöral yollar üzerindeki etkisini klinik olarak açıklayınız.',
       type: 'text'
     }
   },
   {
-    id: 'lsvt',
-    label: 'LSVT Loud',
-    description: 'Parkinson ve nörolojik vakalar için yüksek yoğunluklu ses terapisi.',
-    category: 'LANGUAGE_SPEECH',
+    id: 'prep_pass',
+    label: 'PREP (PASS Teorisi)',
+    description: 'Okumayı geliştirme ve bilişsel süreçleri (ardıl/eş zamanlı) iyileştirme programı.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_lsvt',
+      id: 'vq_prep',
       category: 'technicalExpertise',
-      text: 'LSVT Loud protokolünün "tek hedef" (Single Focus) prensibi nöroplastisite açısından nasıl açıklanır?',
+      text: 'PASS teorisindeki "Ardıl İşlemleme" zayıflığı, disleksi vakasının "Kod Çözme" (Decoding) performansını nasıl etkiler?',
       type: 'text'
     }
   },
   {
-    id: 'etecom',
-    label: 'ETEÇOM',
-    description: 'Etkileşim Temelli Erken Çocuklukta Müdahale Programı.',
-    category: 'LANGUAGE_SPEECH',
+    id: 'cra_math',
+    label: 'CRA (Diskalkuli)',
+    description: 'Matematiksel kavramları somuttan soyuta aktaran kanıta dayalı öğretim stratejisi.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_etecom',
+      id: 'vq_cra',
       category: 'technicalExpertise',
-      text: 'ETEÇOM seansında "karşılıklı etkileşim" döngüsünün kırıldığı bir anda uzmanın birincil stratejisi ne olmalıdır?',
-      type: 'text'
-    }
-  },
-  // OCCUPATIONAL THERAPY
-  {
-    id: 'ayres',
-    label: 'Ayres Duyu Bütünleme',
-    description: 'Nörobiyolojik temelli duyusal işlemleme müdahalesi.',
-    category: 'OCCUPATIONAL_THERAPY',
-    verificationQuestion: {
-      id: 'vq_ayres',
-      category: 'technicalExpertise',
-      text: 'Vestibüler ve Proprioseptif girdilerin "adaptif yanıt" üzerindeki modülatör etkisi klinik olarak nasıl gözlemlenir?',
+      text: 'CRA modelinde "Temsili" (Representational) aşamanın "Sayı Hissi" (Number Sense) oluşumundaki kritik rolünü belirtiniz.',
       type: 'text'
     }
   },
   {
-    id: 'floortime',
-    label: 'DIR Floortime',
-    description: 'Gelişimsel, bireysel farklılıklara dayalı ilişki temelli model.',
-    category: 'OCCUPATIONAL_THERAPY',
+    id: 'touch_math',
+    label: 'TouchMath',
+    description: 'Diskalkuli ve öğrenme güçlüğü için görsel/dokunsal matematik öğretim sistemi.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_floortime',
+      id: 'vq_touch',
       category: 'technicalExpertise',
-      text: 'Adayın "Duygusal Gelişim Basamakları"nda (FEDL) 4. basamaktan 5. basamağa geçişte sembolik oyunun rolü nedir?',
-      type: 'text'
-    }
-  },
-  // PHYSIOTHERAPY
-  {
-    id: 'vojta',
-    label: 'Vojta',
-    description: 'Refleks lokomosyon temelli nörofizyolojik tedavi.',
-    category: 'PHYSIOTHERAPY',
-    verificationQuestion: {
-      id: 'vq_vojta',
-      category: 'technicalExpertise',
-      text: 'Vojta terapisinde tetikleme noktalarına uygulanan basıncın MSS üzerindeki otomatik yanıt mekanizmasını açıklayınız.',
+      text: 'TouchMath noktalarının (TouchPoints) sayı-miktar ilişkisi kurmadaki "Bilişsel Çapa" etkisini açıklayınız.',
       type: 'text'
     }
   },
   {
-    id: 'schroth',
-    label: 'Schroth',
-    description: 'Skolyoz için üç boyutlu egzersiz ve solunum terapisi.',
-    category: 'PHYSIOTHERAPY',
+    id: 'srsd_writing',
+    label: 'SRSD (Disgrafi & Yazma)',
+    description: 'Yazılı anlatım bozuklukları için öz-düzenleme ve strateji geliştirme modeli.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_schroth',
+      id: 'vq_srsd',
       category: 'technicalExpertise',
-      text: 'Schroth metodunda "rotasyonel solunum" tekniğinin kavisli segmentlerdeki düzeltici etkisi nedir?',
-      type: 'text'
-    }
-  },
-  // SPECIAL ED / ABA
-  {
-    id: 'aba_bcba',
-    label: 'ABA (BCBA Onaylı)',
-    description: 'Uygulamalı Davranış Analizi - Bilimsel davranış müdahalesi.',
-    category: 'SPECIAL_ED_ABA',
-    verificationQuestion: {
-      id: 'vq_aba',
-      category: 'technicalExpertise',
-      text: 'Ayrı Denemelerle Öğretim (DTT) ile Doğal Öğretim Süreçleri (NET) arasındaki genelleme farkını klinik bir örnekle açıklayınız.',
+      text: 'SRSD modelinde "Self-Monitoring" (Öz-İzleme) basamağının öğrencinin "Metin Planlama" becerisine katkısı nedir?',
       type: 'text'
     }
   },
   {
-    id: 'pecs',
-    label: 'PECS (Faz 1-6)',
-    description: 'Resim Değiş Tokuşuna Dayalı İletişim Sistemi.',
-    category: 'SPECIAL_ED_ABA',
+    id: 'wj4_eval',
+    label: 'Woodcock-Johnson IV',
+    description: 'Bilişsel yetenekler ve akademik başarı ölçümü için altın standart batarya.',
+    category: 'SPECIAL_LEARNING_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_pecs',
+      id: 'vq_wj4',
       category: 'technicalExpertise',
-      text: 'PECS 4. Fazda "Cümle Şeridi" kullanımı ile 5. Fazdaki "Sorulara Yanıt Verme" arasındaki bilişsel eşik nedir?',
+      text: 'WJ-IV raporunda "İşlemleme Hızı" ile "Başarı" arasındaki anlamlı farkın disleksi alt tipi belirlemedeki rolü nedir?',
       type: 'text'
     }
   }
 ];
 
-export const TURKISH_UNIVERSITIES = ["Hacettepe Üniversitesi", "İstanbul Üniversitesi", "Ankara Üniversitesi", "Gazi Üniversitesi", "Marmara Üniversitesi", "Ege Üniversitesi"];
-export const TURKISH_DEPARTMENTS = ["Özel Eğitim Öğretmenliği", "Ergoterapi", "Dil ve Konuşma Terapisi", "Fizyoterapi ve Rehabilitasyon", "Psikoloji"];
+export const TURKISH_UNIVERSITIES = ["Hacettepe Üniversitesi", "Anadolu Üniversitesi", "Gazi Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "Ankara Üniversitesi", "Marmara Üniversitesi", "Ege Üniversitesi", "Dokuz Eylül Üniversitesi"];
+export const TURKISH_DEPARTMENTS = ["Özel Eğitim Öğretmenliği", "Dil ve Konuşma Terapisi", "Ergoterapi", "Psikoloji", "PDR", "Okul Öncesi Öğretmenliği", "Sınıf Öğretmenliği"];

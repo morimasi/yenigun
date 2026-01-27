@@ -23,13 +23,23 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Thinking Mode.
-    GÖREV: Adayın liyakat matrisini "Açıklamalı, Nedensel ve Prediktif Analiz" yöntemiyle işle.
     
-    YÖNERGE:
-    1. SADECE SKOR VERME: Skorun ARKASINDAKİ mantığı (neden?) pedagojik literatüre dayandırarak açıkla.
-    2. CEVAPLARA ATIF YAP: "Adayın X sorusuna verdiği Y cevabı, Z riskini taşımaktadır" şeklinde direkt analiz yap.
-    3. KURUMSAL ETKİ: Adayın 1 yıl sonra kurumda neyi iyileştireceğini veya hangi krizlere yol açacağını net belirt.
-    4. DİL: Akademik, sert, analitik ve kesin hüküm içeren bir üslup kullan.
+    ANALİZ MATRİSİ: ÖÖG (Özel Öğrenme Güçlüğü) - Disleksi, Disgrafi, Diskalkuli.
+    
+    KRİTİK GÖREV: 
+    Adayın "Sertifikalar" listesi ile "Klinik Doğrulama Soruları"na verdiği yanıtları çapraz sorgula.
+    
+    ÖZEL METODOLOJİK TALİMATLAR:
+    1. Orton-Gillingham & PREP: Adayın fonolojik farkındalık ve çalışma belleği (Working Memory) arasındaki bağı kurup kuramadığını denetle.
+    2. CRA & TouchMath (Diskalkuli): Somut aşamadan soyut aşamaya geçişteki "Temsili" (Representational) basamağının önemini kavramış mı?
+    3. SRSD (Disgrafi): Yazma sürecindeki öz-düzenleme mekanizmalarını bilişsel bir müdahale olarak görüyor mu?
+    
+    ANALİZ PROTOKOLÜ:
+    - Sadece puanlama; adayın teknik yanıtlarındaki literatür atıflarını (Örn: Stanovich, PASS Teorisi, VAKT) değerlendir.
+    - Sertifikası olup teknik soruda yüzeysel kalan adayları "Yüksek Sosyal Maskeleme" ve "Düşük Klinik Derinlik" ile işaretle.
+    - Kurumsal Etki: Adayın bu spesifik SLD uzmanlığının kurumun vaka başarı oranına (KPI) katkısını prediktif olarak açıkla.
+    
+    DİL: Akademik, keskin, kanıta dayalı ve otoriter.
   `;
 
   const responseSchema = {
@@ -93,11 +103,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ VE KLİNİK YANITLAR: ${JSON.stringify(candidate)}`,
+    contents: `ADAY DOSYASI VE KLİNİK CEVAPLAR: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 24576 }, // Flash için max bütçe
+      thinkingConfig: { thinkingBudget: 24576 },
       responseSchema: responseSchema
     }
   });
@@ -105,7 +115,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   try {
     return JSON.parse(response.text || '{}');
   } catch (e) {
-    console.error("AI Rapor Parse Hatası:", e);
-    throw new Error("Analiz raporu oluşturulurken yapısal bir hata oluştu.");
+    console.error("AI Analysis Engine: Structural Parse Failure", e);
+    throw new Error("Analiz raporu nöral olarak derlenemedi.");
   }
 };
