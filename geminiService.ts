@@ -30,6 +30,11 @@ export const generateCandidateAnalysis = async (candidate: Candidate, config: Gl
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti.
     GÖREV: Adayın liyakat, etik ve klinik derinliğini analiz ederek 10 boyutlu matris raporu üret.
+    
+    KRİTİK ANALİZ PARAMETRELERİ:
+    1. Integrity Index: Adayın verdiği cevapların birbiriyle tutarlılığı (%0-%100).
+    2. Social Masking: Adayın "ideal öğretmen" rolü yapmak için gerçekçi olmayan cevaplar verip vermediği (%0-%100).
+    
     KURAL: Yanıt SADECE geçerli bir JSON olmalıdır.
   `;
 

@@ -18,43 +18,33 @@ export const verifyCandidateIntegrity = (candidate: Candidate): { score: number,
   const ai = candidate.report;
   const algo = candidate.algoReport;
 
-  // 2. Yapısal bütünlük kontrolü (DeepAnalysis null/undefined check)
-  if (!ai.deepAnalysis || typeof ai.deepAnalysis !== 'object') {
-    return { score: 10, issues: ["Kritik Hata: AI raporunda yapısal matris verisi bulunamadı."], status: 'compromised' };
+  // 2. Yapısal bütünlük kontrolü
+  if (!ai.deepAnalysis) {
+     return { score: 10, issues: ["AI raporunda yapısal matris verisi bulunamadı."], status: 'compromised' };
   }
 
   // 3. Skor Tutarlılığı Kontrolü (AI vs Algorithmic)
-  // Tolerans liyakat koruma protokolü gereği %35'e güncellendi.
   const scoreDiff = Math.abs((ai.score || 0) - (algo.overallScore || 0));
-  if (scoreDiff > 35) {
+  if (scoreDiff > 25) {
     integrityScore -= 30;
     issues.push(`AI Klinik Görüşü ile Matematiksel Skor arasında yüksek sapma (%${scoreDiff.toFixed(1)}). Adayın cevapları çelişkili veya manipülatif olabilir.`);
   }
 
   // 4. Deneyim - Yetkinlik Doğrulaması
-  if ((candidate.experienceYears || 0) < 2 && (ai.score || 0) > 92) {
+  if ((candidate.experienceYears || 0) < 2 && (ai.score || 0) > 90) {
     integrityScore -= 20;
-    issues.push("Düşük deneyim yılına rağmen olağandışı yüksek AI liyakat skoru. (Potansiyel Sosyal Maskeleme)");
+    issues.push("Düşük deneyim yılına rağmen olağandışı yüksek AI liyakat skoru. (Potansiyel Sosyal Maskeleme tespiti)");
   }
 
-  // 5. Etik Sınır Denetimi (Mantıksal Korelasyon)
-  // Dürüstlük düşükse, genellikle maskeleme yüksektir (saklama çabası). 
-  // Her ikisi de çok düşükse, aday testte rasyonel bir profil çizememiş demektir.
-  if ((ai.integrityIndex || 0) < 35 && (ai.socialMaskingScore || 0) < 25) {
+  // 5. Etik Sınır Denetimi
+  if ((ai.integrityIndex || 0) < 50 && (ai.socialMaskingScore || 0) > 60) {
     integrityScore -= 25;
-    issues.push("Aday dürüstlük ve kendini ifade etme parametrelerinde mantıksal bir taban oluşturamadı.");
-  }
-
-  // 6. Derin Analiz Kapsam Kontrolü
-  const segments = Object.keys(ai.deepAnalysis || {});
-  if (segments.length < 8) {
-    integrityScore -= 20;
-    issues.push("Boyutsal matris analizinde eksik veri katmanları bulundu.");
+    issues.push("Düşük dürüstlük endeksi ile yüksek maskeleme skoru arasında korelasyon hatası. Aday testi manipüle etmiş olabilir.");
   }
 
   let status: 'valid' | 'compromised' | 'warning' = 'valid';
-  if (integrityScore < 45) status = 'compromised';
-  else if (integrityScore < 75) status = 'warning';
+  if (integrityScore < 50) status = 'compromised';
+  else if (integrityScore < 80) status = 'warning';
 
   return { score: integrityScore, issues, status };
 };
