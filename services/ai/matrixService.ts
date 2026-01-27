@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik cevaplarına dayandığının klinik analizi. Neden bu puan verildi?" },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve operasyonel verimlilik üzerindeki 12 aylık somut etkisi." },
+    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik metodolojik cevaplarına dayandığının klinik analizi. Neden bu puan verildi?" },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve metodolojik tutum emareleri." },
+    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve vaka başarı oranları üzerindeki 12 aylık somut etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -24,22 +24,19 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Thinking Mode.
     
-    ANALİZ MATRİSİ: ÖÖG (Özel Öğrenme Güçlüğü) - Disleksi, Disgrafi, Diskalkuli.
-    
-    KRİTİK GÖREV: 
-    Adayın "Sertifikalar" listesi ile "Klinik Doğrulama Soruları"na verdiği yanıtları çapraz sorgula.
-    
-    ÖZEL METODOLOJİK TALİMATLAR:
-    1. Orton-Gillingham & PREP: Adayın fonolojik farkındalık ve çalışma belleği (Working Memory) arasındaki bağı kurup kuramadığını denetle.
-    2. CRA & TouchMath (Diskalkuli): Somut aşamadan soyut aşamaya geçişteki "Temsili" (Representational) basamağının önemini kavramış mı?
-    3. SRSD (Disgrafi): Yazma sürecindeki öz-düzenleme mekanizmalarını bilişsel bir müdahale olarak görüyor mu?
+    ÖZEL EĞİTİM ANALİZ HAVUZU: 
+    - Davranışçı: ABA, BCBA, ESDM, OÇİDEP, PECS.
+    - İlişki/Gelişimsel: DIR Floortime, ETEÇOM, Etkileşim Temelli Müdahale.
+    - Bilişsel/Akademik: PASS Teorisi (CAS, PREP), Orton-Gillingham, Disleksi/Diskalkuli Protokolleri.
+    - Ölçme: WISC-IV, MOXO, WJ-IV.
     
     ANALİZ PROTOKOLÜ:
-    - Sadece puanlama; adayın teknik yanıtlarındaki literatür atıflarını (Örn: Stanovich, PASS Teorisi, VAKT) değerlendir.
-    - Sertifikası olup teknik soruda yüzeysel kalan adayları "Yüksek Sosyal Maskeleme" ve "Düşük Klinik Derinlik" ile işaretle.
-    - Kurumsal Etki: Adayın bu spesifik SLD uzmanlığının kurumun vaka başarı oranına (KPI) katkısını prediktif olarak açıkla.
+    1. KLİNİK ÇAPRAZ SORGULAMA: Adayın sahip olduğunu iddia ettiği sertifikalar ile "Klinik Doğrulama Soruları"na (vq_*) verdiği metin yanıtlarını karşılaştır.
+    2. METODOLOJİK TUTARLILIK: Aday hem ABA (katı davranışçı) hem Floortime (ilişki temelli) iddia ediyorsa, bu iki ekolü sentezleme yeteneğini veya çelişkisini ölç.
+    3. MASKELENMİŞ CEHALET TESPİTİ: Sertifikası olan ancak teknik soruda yüzeysel/pedagojik klişe cevaplar veren adayları "Düşük Klinik Derinlik" olarak işaretle.
+    4. KURUMSAL KPI TAHMİNİ: Adayın bu uzmanlık setiyle kurumdaki vaka progresini (ilerlemesini) nasıl hızlandıracağını net belirt.
     
-    DİL: Akademik, keskin, kanıta dayalı ve otoriter.
+    DİL: Akademik, sert, analitik ve kesin hüküm içeren bir üslup kullan.
   `;
 
   const responseSchema = {
@@ -103,7 +100,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY DOSYASI VE KLİNİK CEVAPLAR: ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ VE KLİNİK YANITLAR: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",

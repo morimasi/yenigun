@@ -167,12 +167,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] mb-8 border-l-4 border-orange-600 pl-4">Metodolojik Akreditasyon ve Sertifikasyon</h3>
             <div className="space-y-12">
                {[
-                 { id: 'SPECIAL_LEARNING_DISABILITIES', label: 'Özel Öğrenme Güçlüğü (Disleksi/Diskalkuli)' },
-                 { id: 'LANGUAGE_SPEECH', label: 'Dil ve Konuşma Terapisi' },
-                 { id: 'OCCUPATIONAL_THERAPY', label: 'Ergoterapi / Duyu Bütünleme' },
-                 { id: 'PHYSIOTHERAPY', label: 'Fizyoterapi / Rehabilitasyon' },
-                 { id: 'SPECIAL_ED_ABA', label: 'Otizm / Davranış Analizi' },
-                 { id: 'PSYCHOLOGY_PEDAGOGY', label: 'Psikoloji / Değerlendirme' }
+                 { id: 'SPECIAL_ED_ABA', label: 'Otizm / Davranış Analizi (ABA/ESDM/PECS)' },
+                 { id: 'OCCUPATIONAL_THERAPY', label: 'Duyu / Etkileşim / Gelişim (DIR/ETEÇOM)' },
+                 { id: 'SPECIAL_LEARNING_DISABILITIES', label: 'Öğrenme Güçlüğü (Disleksi/PREP/Orton)' },
+                 { id: 'PSYCHOLOGY_PEDAGOGY', label: 'Psikoloji / Bilişsel Ölçme (WISC/CAS/MOXO)' }
                ].map(cat => (
                  <div key={cat.id} className="space-y-4">
                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{cat.label}</h4>
