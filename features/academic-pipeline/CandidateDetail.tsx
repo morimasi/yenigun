@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Candidate, GlobalConfig } from '../../types';
+import { Candidate, GlobalConfig, ArchiveCategory } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis, verifyCandidateIntegrity } from '../../analysisUtils';
 import { exportService } from '../../services/exportService';
@@ -16,6 +16,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [analysisPhase, setAnalysisPhase] = useState('');
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [archiveForm, setArchiveForm] = useState<{ category: ArchiveCategory, note: string }>({
+    category: 'FUTURE_REFERENCE',
+    note: ''
+  });
 
   const integrityReport = useMemo(() => verifyCandidateIntegrity(candidate), [candidate]);
 
@@ -70,6 +76,18 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }
   };
 
+  const handleArchiveSubmit = () => {
+    onUpdate({
+      ...candidate,
+      status: 'archived',
+      archiveCategory: archiveForm.category,
+      archiveNote: archiveForm.note,
+      timestamp: Date.now()
+    });
+    setIsArchiveModalOpen(false);
+    alert("Aday akademik arşive mühürlendi.");
+  };
+
   const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
 
   return (
@@ -108,7 +126,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
       </div>
 
-      {/* TABS - Stacked Sticky (Top-24 AppNav + Top-16 AdminNav) */}
+      {/* TABS */}
       <div className="px-4 md:px-8 py-3 bg-white/95 backdrop-blur-xl border-b border-slate-50 flex gap-3 overflow-x-auto no-print sticky top-[10.5rem] z-40 no-scrollbar shadow-sm">
         {[
           { id: 'matrix', label: 'MATRİS' },
@@ -130,7 +148,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           </div>
         ) : (
           <div className="w-full space-y-12 animate-fade-in pb-20">
-            
             {activeTab === 'matrix' && (
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                 <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2">
@@ -147,7 +164,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     </button>
                   ))}
                 </div>
-
                 <div className="xl:col-span-9">
                   {currentData && (
                     <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-slate-100 sticky top-[15rem] animate-slide-up">
@@ -155,15 +171,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                           <h4 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.6em] border-l-[10px] border-orange-600 pl-6 leading-none py-2">NEDENSEL ANALİZ</h4>
                           <span className="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">{selectedSegment?.toUpperCase()}</span>
                        </div>
-                       
                        <div className="space-y-10">
                           <div className="p-8 bg-orange-50 rounded-[2.5rem] border border-orange-100 relative group overflow-hidden">
                              <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-4">Gözlem & Muhakeme</p>
-                             <p className="text-xl md:text-3xl font-bold text-slate-800 leading-tight italic tracking-tight">
-                                "{currentData.reasoning || 'Yorum üretiliyor...'}"
-                             </p>
+                             <p className="text-xl md:text-3xl font-bold text-slate-800 leading-tight italic tracking-tight">"{currentData.reasoning || 'Yorum üretiliyor...'}"</p>
                           </div>
-
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                              <div className="space-y-6">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Klinik Emareler</span>
@@ -179,9 +191,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                              <div className="space-y-6">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kurumsal Etki</span>
                                 <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-xl h-full flex items-center">
-                                   <p className="text-[14px] font-bold text-slate-300 leading-relaxed italic opacity-95">
-                                      "{currentData.institutionalImpact || 'Etki analizi beklemede.'}"
-                                   </p>
+                                   <p className="text-[14px] font-bold text-slate-300 leading-relaxed italic opacity-95">"{currentData.institutionalImpact || 'Etki analizi beklemede.'}"</p>
                                 </div>
                              </div>
                           </div>
@@ -191,7 +201,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 </div>
               </div>
             )}
-
             {activeTab === 'dna' && (
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch w-full">
                  <div className="xl:col-span-8 bg-white p-8 rounded-[4rem] border border-slate-100 shadow-2xl h-[700px] relative overflow-hidden">
@@ -225,16 +234,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                  </div>
               </div>
             )}
-
             {activeTab === 'predictions' && (
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div className="xl:col-span-12 bg-slate-900 p-10 md:p-16 rounded-[4rem] shadow-3xl text-white relative overflow-hidden min-h-[500px] flex items-center border border-white/5">
                    <div className="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-16 w-full items-center">
                       <div className="space-y-8">
                          <h4 className="text-[14px] font-black text-orange-500 uppercase tracking-[0.6em] border-b border-white/10 pb-6">PROFESYONEL EVRİM</h4>
-                         <p className="text-4xl md:text-6xl font-black leading-[0.95] tracking-tighter uppercase italic">
-                           "{candidate.report.detailedAnalysisNarrative}"
-                         </p>
+                         <p className="text-4xl md:text-6xl font-black leading-[0.95] tracking-tighter uppercase italic">"{candidate.report.detailedAnalysisNarrative}"</p>
                          <div className="p-8 bg-white/5 rounded-[3rem] border border-white/10 max-w-2xl backdrop-blur-md">
                             <span className="text-[10px] font-black text-orange-500 uppercase block mb-4 tracking-[0.3em]">24 AY PROJEKSİYONU</span>
                             <p className="text-xl font-bold text-slate-300 leading-relaxed italic opacity-90">"{candidate.report.predictiveMetrics.evolutionPath}"</p>
@@ -251,7 +257,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 </div>
               </div>
             )}
-
             {activeTab === 'strategy' && (
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                  <div className="xl:col-span-8 space-y-10">
@@ -284,12 +289,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                        </ul>
                     </div>
                     <div className="p-10 bg-emerald-50 rounded-[3rem] border-2 border-emerald-100 shadow-xl relative group overflow-hidden">
-                       <h5 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
-                          AI KARAR DESTEĞİ
-                       </h5>
-                       <p className="text-[13px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight relative z-10 italic">
-                         Bu aday için kurgulanan sorular, nöral sapmaları minimize etmek amacıyla Gemini-3 motoru tarafından özel olarak kurgulanmıştır.
-                       </p>
+                       <h5 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">AI KARAR DESTEĞİ</h5>
+                       <p className="text-[13px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight relative z-10 italic">Bu aday için kurgulanan sorular, nöral sapmaları minimize etmek amacıyla Gemini-3 motoru tarafından özel olarak kurgulanmıştır.</p>
                     </div>
                  </div>
               </div>
@@ -302,7 +303,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="p-8 md:p-12 bg-white border-t border-slate-50 flex flex-col md:flex-row justify-between items-center rounded-b-[3rem] gap-8 no-print">
          <div className="flex gap-4 w-full md:w-auto">
             <button onClick={onDelete} className="flex-1 md:flex-none px-10 py-4 text-rose-500 text-[10px] font-black uppercase hover:bg-rose-50 rounded-[1.5rem] border-2 border-rose-100 transition-all shadow-sm">SİSTEMDEN KALDIR</button>
-            <button className="flex-1 md:flex-none px-10 py-4 text-slate-400 text-[10px] font-black uppercase hover:bg-slate-50 rounded-[1.5rem] border-2 border-slate-100 transition-all">ARŞİVLE</button>
+            <button onClick={() => setIsArchiveModalOpen(true)} className="flex-1 md:flex-none px-10 py-4 text-orange-600 text-[10px] font-black uppercase hover:bg-orange-50 rounded-[1.5rem] border-2 border-orange-100 transition-all">ARŞİVE TAŞI</button>
          </div>
          <button 
            onClick={() => exportService.exportSingleCandidatePDF(candidate, { 
@@ -313,6 +314,50 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
            TAM ANALİZ RAPORUNU PDF OLARAK AL
          </button>
       </div>
+
+      {/* ARCHIVE MODAL */}
+      {isArchiveModalOpen && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in no-print">
+           <div className="bg-white rounded-[4rem] w-full max-w-lg p-12 shadow-2xl border border-white/20 animate-scale-in">
+              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8">Arşivleme Protokolü</h3>
+              <div className="space-y-8">
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Arşiv Kategorisi</label>
+                    <div className="grid grid-cols-1 gap-2">
+                       {[
+                         { id: 'TALENT_POOL', label: 'Yetenek Havuzu (Premium)' },
+                         { id: 'FUTURE_REFERENCE', label: 'Gelecek Başvuru Dönemi' },
+                         { id: 'DISQUALIFIED', label: 'Diskalifiye / Uygun Değil' },
+                         { id: 'BLACK_LIST', label: 'Etik Risk / Kara Liste' },
+                         { id: 'HIRED_CONTRACTED', label: 'Sözleşmeli / Atanmış' }
+                       ].map(cat => (
+                         <button 
+                           key={cat.id}
+                           onClick={() => setArchiveForm({...archiveForm, category: cat.id as ArchiveCategory})}
+                           className={`px-6 py-4 rounded-2xl text-[11px] font-bold text-left transition-all border ${archiveForm.category === cat.id ? 'bg-orange-600 border-orange-600 text-white shadow-xl' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}
+                         >
+                            {cat.label}
+                         </button>
+                       ))}
+                    </div>
+                 </div>
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Arşivleme Notu (Opsiyonel)</label>
+                    <textarea 
+                       className="w-full bg-slate-50 rounded-3xl p-6 border border-slate-100 font-bold text-sm outline-none focus:border-orange-500 transition-all h-32"
+                       placeholder="Karar gerekçesini kurumsal bellek için not edin..."
+                       value={archiveForm.note}
+                       onChange={e => setArchiveForm({...archiveForm, note: e.target.value})}
+                    />
+                 </div>
+                 <div className="flex gap-4 pt-4">
+                    <button onClick={() => setIsArchiveModalOpen(false)} className="flex-1 py-5 text-slate-400 text-[11px] font-black uppercase tracking-widest">Vazgeç</button>
+                    <button onClick={handleArchiveSubmit} className="flex-2 px-10 py-5 bg-slate-900 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-black">Arşivi Onayla</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

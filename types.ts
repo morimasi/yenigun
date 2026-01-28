@@ -23,12 +23,11 @@ export enum Branch {
   SinifOgretmenligi = 'Sınıf Öğretmenliği'
 }
 
+export type ArchiveCategory = 'TALENT_POOL' | 'DISQUALIFIED' | 'FUTURE_REFERENCE' | 'HIRED_CONTRACTED' | 'BLACK_LIST';
+
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
 
-/**
- * @fix Added FormStep interface to resolve import error in constants.tsx
- */
 export interface FormStep {
   id: string;
   title: string;
@@ -54,12 +53,9 @@ export interface Certification {
   label: string;
   description: string;
   category: string;
-  verificationQuestions: Question[]; // YENİ: Tek soru yerine 5'li test seti
+  verificationQuestions: Question[];
 }
 
-/**
- * @fix Added SimulationResult interface to resolve missing type errors in multiple components
- */
 export interface SimulationResult {
   scenario: string;
   parentPersona: string;
@@ -152,7 +148,9 @@ export interface Candidate {
   allTrainings: string[];
   answers: Record<string, string | string[]>;
   timestamp: number;
-  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn';
+  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
+  archiveCategory?: ArchiveCategory;
+  archiveNote?: string;
   adminNotes?: string;
   reminderNote?: string;
   report?: AIReport;

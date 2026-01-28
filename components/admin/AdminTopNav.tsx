@@ -33,9 +33,15 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       ]
     },
     {
+      label: 'BELLEK',
+      items: [
+        { id: 'archive', label: 'ARŞİV', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
+        { id: 'methodology', label: 'ENVANTER', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+      ]
+    },
+    {
       label: 'SİSTEM',
       items: [
-        { id: 'methodology', label: 'ENVANTER', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
         { id: 'settings', label: 'AYARLAR', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066c-1.543.94-3.31.826-4.74 0a1.724 1.724 0 00-2.573-1.066c.426 1.756 2.924 1.756 3.35 0' }
       ]
     }
@@ -44,7 +50,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   return (
     <div className="flex flex-col bg-white border border-slate-200 shadow-2xl rounded-[2.5rem] mt-2 p-2">
       <div className="flex items-center justify-between gap-4 px-6 h-16">
-        {/* BRAND UNIT - LEFT */}
         <div className="flex items-center gap-4 py-2 px-4 bg-slate-900 rounded-2xl shadow-lg border border-slate-800">
           <div className="w-8 h-8 bg-orange-600 text-white rounded-lg flex items-center justify-center font-black text-sm">YG</div>
           <div className="hidden md:block">
@@ -53,7 +58,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
           </div>
         </div>
 
-        {/* NAVIGATION LINKS - CENTER */}
         <nav className="flex-1 flex items-center justify-center gap-1 md:gap-4 overflow-x-auto no-scrollbar">
           {GROUPS.map((group, gIdx) => (
             <div key={gIdx} className="flex items-center gap-1 md:gap-2 px-2 md:px-4 border-r last:border-0 border-slate-100 h-10">
@@ -80,7 +84,6 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
           ))}
         </nav>
 
-        {/* ACTIONS - RIGHT */}
         <div className="flex items-center gap-3">
            <button
               onClick={onRefresh}
