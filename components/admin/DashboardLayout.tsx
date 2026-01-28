@@ -8,6 +8,7 @@ import CalendarView from './CalendarView';
 import SettingsView from './SettingsView';
 import DecisionSupportView from './DecisionSupportView';
 import ClinicalLabView from '../../features/clinical-lab/ClinicalLabView';
+import MethodologyInventoryView from './MethodologyInventoryView';
 
 interface DashboardLayoutProps {
   candidates: Candidate[];
@@ -20,7 +21,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab' | 'methodology'>('pipeline');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -29,6 +30,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
       case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
       case 'lab': return <ClinicalLabView candidates={props.candidates} />;
+      case 'methodology': return <MethodologyInventoryView />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
       default: return <PipelineView {...props} />;
     }

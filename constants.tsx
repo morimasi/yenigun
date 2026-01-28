@@ -18,7 +18,6 @@ export const CERTIFICATION_CATEGORIES = [
 ];
 
 export const CERTIFICATIONS: Certification[] = [
-  // --- ÖZEL EĞİTİM & ABA ---
   {
     id: 'aba_bcba',
     label: 'ABA (BCBA/QBA Standartları)',
@@ -51,7 +50,6 @@ export const CERTIFICATIONS: Certification[] = [
       ]
     }
   },
-  // --- DİL VE KONUŞMA ---
   {
     id: 'prompt',
     label: 'PROMPT Tekniği',
@@ -84,7 +82,6 @@ export const CERTIFICATIONS: Certification[] = [
       ]
     }
   },
-  // --- ERGOTERAPİ & GELİŞİM ---
   {
     id: 'sensory_integration',
     label: 'Duyu Bütünleme (Ayres)',
@@ -117,7 +114,6 @@ export const CERTIFICATIONS: Certification[] = [
       ]
     }
   },
-  // --- PSİKOLOJİ & PEDAGOJİ ---
   {
     id: 'wisc_4_psk',
     label: 'WISC-IV Uygulayıcısı',
@@ -155,30 +151,62 @@ export const CERTIFICATIONS: Certification[] = [
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   clinical_logic: [
     {
-      id: 'gen_1',
+      id: 'cl_1',
       category: 'technicalExpertise',
-      text: 'Çok ağır problem davranış (self-injury) sergileyen bir vakada, müdahale planınızdaki "Öncül Kontrolü" (Antecedent Control) ile "Sonuç Yönetimi" arasındaki dengeyi klinik olarak nasıl kurarsınız?',
+      text: 'Çok ağır problem davranış (self-injury) sergileyen bir vakada, müdahale planınızdaki "Öncül Kontrolü" ile "Sonuç Yönetimi" dengesini klinik olarak nasıl kurarsınız?',
       type: 'radio',
       weightedOptions: [
         { label: 'Önce davranışı durdurmak için sonuç odaklı (ceza/mola) çalışırım.', weights: { technical: 0.4, clinical: 0.3, ethics: 0.5 }, analysisInsight: 'Geleneksel/Davranışçı katı tutum.' },
         { label: 'İşlevsel analiz yapar, öncülleri düzenleyerek alternatif davranış öğretirim.', weights: { technical: 1.0, clinical: 1.0, development: 0.9 }, analysisInsight: 'Modern kanıta dayalı klinik muhakeme.' }
       ]
+    },
+    {
+      id: 'ped_1',
+      category: 'pedagogicalAnalysis',
+      text: 'Ebeveyn katılımı düşük olan bir vakada, ev programının sürdürülebilirliğini sağlamak için yaklaşımınız ne olur?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Programı basitleştirir ve ebeveynin küçük başarılarını pekiştiririm.', weights: { pedagogy: 1.0, development: 0.9, personality: 0.8 }, analysisInsight: 'Aile merkezli empatik yaklaşım.' },
+        { label: 'Veliyi uyarır ve kurum disiplinine uyması gerektiğini hatırlatırım.', weights: { pedagogy: 0.3, formality: 1.0, personality: 0.4 }, analysisInsight: 'Otoriter ve düşük empatik bağ.' }
+      ]
     }
   ],
   ethics_parent: [
     {
-      id: 'we_1',
+      id: 'eth_1',
       category: 'workEthics',
-      text: 'Veli, kurum dışı özel ders talebinde bulundu ve etik sınırları zorluyor. Tepkiniz?',
+      text: 'Veli, kurum prosedürleri dışında size "özel bir hediye" veya "ekstra ödeme" teklif ettiğinde profesyonel sınırınızı nasıl korursunuz?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Kurum prosedürlerini hatırlatır ve talebi net bir dille reddederim.', weights: { ethics: 1.0, formality: 1.0, loyalty: 1.0 }, analysisInsight: 'Yüksek profesyonel bütünlük.' },
-        { label: 'Veliyle aramdaki güvenin sarsılmaması için durumu geçiştiririm.', weights: { ethics: 0.2, formality: 0.3, personality: 0.5 }, analysisInsight: 'Sınır aşımı ve manipülasyon riski.' }
+        { label: 'Nazikçe reddeder ve kurumun etik ilkelerini veliye açıklarım.', weights: { ethics: 1.0, formality: 1.0, loyalty: 1.0 }, analysisInsight: 'Yüksek profesyonel bütünlük.' },
+        { label: 'Güven ilişkisinin bozulmaması için bir defaya mahsus kabul ederim.', weights: { ethics: 0.1, formality: 0.2, institutionalLoyalty: 0.1 }, analysisInsight: 'Kritik sınır ihlali riski.' }
       ]
     }
   ],
-  resilience_team: [],
-  vision_loyalty: []
+  resilience_team: [
+    {
+      id: 'res_1',
+      category: 'sustainability',
+      text: 'Multidisipliner toplantıda bir meslektaşınız sizin klinik kararınıza sert ve haksız bir eleştiri getirdiğinde tepkiniz ne olur?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Eleştirinin teknik dayanağını sorar ve verilerimle açıklama yaparım.', weights: { sustainability: 1.0, criticismTolerance: 1.0, personality: 0.9 }, analysisInsight: 'Yüksek kognitif esneklik ve direnç.' },
+        { label: 'Kişisel saldırı olarak algılar ve toplantıyı terk ederim.', weights: { sustainability: 0.2, criticismTolerance: 0.1, personality: 0.2 }, analysisInsight: 'Düşük stres toleransı.' }
+      ]
+    }
+  ],
+  vision_loyalty: [
+    {
+      id: 'vis_1',
+      category: 'institutionalLoyalty',
+      text: 'Kurumun yeni uygulamaya koyduğu bir metodun verimsiz olduğunu düşünüyorsanız nasıl aksiyon alırsınız?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Alternatif verileri sunarak idare ile yapıcı bir toplantı talep ederim.', weights: { institutionalLoyalty: 1.0, formality: 0.9, development: 0.8 }, analysisInsight: 'Sorumlu kurumsal aidiyet.' },
+        { label: 'Metodu uygulamayı bırakır ve diğer öğretmenlerle şikayetimi paylaşırım.', weights: { institutionalLoyalty: 0.2, personality: 0.3, ethics: 0.4 }, analysisInsight: 'Kurumsal huzuru bozma potansiyeli.' }
+      ]
+    }
+  ]
 };
 
 export const TURKISH_UNIVERSITIES = ["Hacettepe Üniversitesi", "Anadolu Üniversitesi", "Gazi Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "Ankara Üniversitesi", "Marmara Üniversitesi", "Ege Üniversitesi", "Dokuz Eylül Üniversitesi"];
