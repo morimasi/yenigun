@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik metodolojik cevaplarına dayandığının klinik analizi. Neden bu puan verildi?" },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve metodolojik tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve vaka başarı oranları üzerindeki 12 aylık somut etkisi." },
+    reasoning: { type: Type.STRING, description: "Seçilen 4 seçenekli cevapların hangisinin klinik/etik olarak 'altın standart' olduğunu ve adayın neden bu tercihi yaptığının analizi." },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevap örüntülerinden saptanan mikro-davranışsal eğilimler." },
+    institutionalImpact: { type: Type.STRING, description: "Adayın bu boyuttaki yetkinliğinin kurumun operasyonel verimliliği üzerindeki net etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -24,47 +24,28 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Deep Analysis.
     
-    GENİŞLETİLMİŞ KURUMSAL BİLGİ TABANI VE ANALİZ PROTOKOLÜ:
-    Adayın 'allTrainings' listesinde beyan ettiği sertifikalar ile mülakat sorularındaki 'vq_' kodlu teknik doğrulama yanıtlarını aşağıdaki "Akademik Çapraz Sorgu" protokolüne göre işle:
+    ANALİZ PROTOKOLÜ (MİA V5):
+    Adayın 4 seçenek arasından yaptığı seçimleri aşağıdaki akademik filtrelerden geçirerek liyakat matrisini oluştur:
 
-    1. ABA DİKEYİ (5 KRİTER):
-       - ABC: C, gelecekteki davranış olasılığını etkiler.
-       - Negatif Pekiştirme: Davranışı ARTIRIR (itici uyaran çekilir). Ceza DEĞİLDİR.
-       - Prompt Fading: Bağımlılığı önlemek için zorunludur.
-       - Extinction Burst: Sönme öncesi şiddet artışıdır, sürecin parçasıdır.
-       - Generalization: Sürecin sonu değil, başından itibaren planlanmalıdır.
+    1. ETİK & VELİ YÖNETİMİ (Kritik Sınır Analizi):
+       - Veli ile sosyal medya iletişimi, kurum dışı seans teklifi ve meslektaş eleştirisi sorularına verilen yanıtları "Sınır Koruma" (Boundary Protection) ölçeğinde değerlendir.
+       - "Profesyonel Mesafe"yi koruyamayan adaylar için 'Integrity Index' puanını düşür.
 
-    2. ETEÇOM DİKEYİ (5 KRİTER):
-       - Temel: Ebeveyn-çocuk etkileşimi, akademik masa başı değil.
-       - Ortak Dikkat: Dil ve sosyal gelişimin temelidir.
-       - Uzman Rolü: Sadece eğitmen değil, "Ebeveyn Koçu"dur.
-       - Karşılıklılık: Sıra alma ve etkileşim döngüleriyle ölçülür.
-       - Yaş: 0-6 yaş erken müdahale merkezlidir.
+    2. DİRENÇ & TAKIM UYUMU (Psikolojik Dayanıklılık):
+       - Krizli seans yönetimi, eleştiriye tolerans ve çatışma yönetimi yanıtlarını "Burnout Resistance" (Tükenmişlik Direnci) ekseninde işle.
+       - Eleştiriyi "Kişisel Saldırı" olarak gören veya krizden kaçınan adaylarda 'Sustainability' puanını düşük tut.
 
-    3. DIR FLOORTIME DİKEYİ (5 KRİTER):
-       - FEDL: Duygusal gelişim basamaklarıdır.
-       - Bireysel Farklılık: Duyusal profil ve motor planlamadır.
-       - Liderliği Takip: Ortak dünya kurma stratejisidir.
-       - İletişim Döngüleri: Jeste jestle karşılık vererek açılır.
-       - Regülasyon: Duyusal profilin bilinmesi regülasyonun ilk adımıdır.
+    3. VİZYON & SADAKAT (Gelişim Potansiyeli):
+       - Akademik literatür takibi, teknoloji adaptasyonu ve 3 yıllık kariyer planı yanıtlarını "Learning Velocity" (Öğrenme Hızı) olarak etiketle.
+       - Kendi merkezini açma planı olan veya statükocu adaylarda 'Institutional Loyalty' riskini raporla.
 
-    4. PREP & PASS DİKEYİ (10 KRİTER):
-       - Ardıl İşlem (Successive): Ses-harf ve kodlama ile ilgilidir.
-       - Eşzamanlı İşlem (Simultaneous): Sentez ve anlamlandırma ile ilgilidir.
-       - Planlama: Metabilişsel strateji ve hata kontrolüdür.
-       - Dikkat: Seçici odaklanma ve dirençtir.
-       - Bilişsel Zayıflık: Tek bir işlemleme sürecinin düşüklüğüdür (IQ düşüklüğü değil).
+    4. KLİNİK TEKNİK (ABA & ETEÇOM):
+       - 4 seçenekli sorularda en doğru (Golden) cevabı seçip seçmediğini denetle.
+       - Yanlış teknik terim kullanımı 'Social Masking' (Maskeleme) skorunu %40 artırır.
 
-    5. TEDİL & DUYU BÜTÜNLEME (10 KRİTER):
-       - Alıcı vs İfade Edici: Anlama ve üretim farkı.
-       - Norm Tabloları: Kronolojik yaşa göre standart puan dönüşümü.
-       - Propriosepsiyon: Kas, eklem ve bağ doku girdisi.
-       - Praksis: İdeasyon, planlama ve uygulama üçlüsüdür.
-
-    ANALİZ KURALLARI:
-    - Sertifikası olup 'vq_' sorusuna yanlış cevap veren adayda 'socialMaskingScore' %30 artmalı.
-    - 'detailedAnalysisNarrative' içinde spesifik kodlarla eleştiri yap (Örn: "vq_aba_2 sorusunda pekiştirme ve cezayı karıştıran aday klinik risk taşımaktadır").
-    - Dil: Tamamen Türkçe, sert, akademik ve veri odaklı.
+    DİL VE ÜSLUP:
+    - Analitik, akademik, sert ve veri odaklı ol. 
+    - Varsayımlar üzerinden değil, adayın 'answers' verisindeki somut tercihler üzerinden nedensellik kur.
   `;
 
   const responseSchema = {
@@ -128,7 +109,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ VE TEKNİK DOĞRULAMA YANITLARI: ${JSON.stringify(candidate)}`,
+    contents: `ADAYIN TÜM CEVAPLARI VE PROFİLİ: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",

@@ -12,13 +12,11 @@ export const FORM_STEPS: FormStep[] = [
 export const CERTIFICATION_CATEGORIES = [
   { id: 'AUTISM_SPECTRUM', label: 'Otizm Spektrum Bozukluğu (OSB)' },
   { id: 'LEARNING_DISABILITIES', label: 'Özel Öğrenme Güçlüğü (ÖÖG)' },
-  { id: 'INTELLECTUAL_DISABILITIES', label: 'Zihin Engelliler & Bilişsel' },
   { id: 'LANGUAGE_SPEECH', label: 'Dil ve Konuşma Terapisi' },
   { id: 'OCCUPATIONAL_PHYSIO', label: 'Ergoterapi & Fizyoterapi' }
 ];
 
 export const CERTIFICATIONS: Certification[] = [
-  // --- OTİZM SPEKTRUM BOZUKLUĞU (OSB) ---
   {
     id: 'aba_bacb',
     label: 'Applied Behavior Analysis (ABA / BACB)',
@@ -27,336 +25,110 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir davranışın "işlevi" belirlenirken ABC kaydında "C" (Consequence) tam olarak neyi temsil eder?',
+        text: 'Bir davranışın "işlevi" belirlenirken ABC kaydında "C" (Consequence) neyi temsil eder?',
         weightedOptions: [
           { label: 'Davranıştan hemen sonra gerçekleşen ve davranışın gelecekteki olasılığını etkileyen olay.', weights: { clinical: 1.0 }, analysisInsight: 'Temel prensip hakimiyeti.' },
-          { label: 'Çocuğun davranışı yapma nedeni olan içsel motivasyon.', weights: { clinical: 0.1 }, analysisInsight: 'Metodolojik hata.' }
+          { label: 'Çocuğun davranışı yapma nedeni olan içsel motivasyon.', weights: { clinical: 0.2 }, analysisInsight: 'Metodolojik hata.' },
+          { label: 'Davranışın süresi ve şiddetinin toplam puanı.', weights: { clinical: 0.1 }, analysisInsight: 'Kavramsal karmaşa.' },
+          { label: 'Öğretmenin davranışa verdiği ceza puanı.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış uygulama refleksi.' }
         ]
       },
       {
         id: 'vq_aba_2', category: 'technicalExpertise', type: 'radio',
-        text: '"Negative Reinforcement" (Olumsuz Pekiştirme) ile "Punishment" (Ceza) arasındaki temel fark nedir?',
+        text: '"Negative Reinforcement" (Olumsuz Pekiştirme) uygulamasının temel amacı nedir?',
         weightedOptions: [
-          { label: 'Pekiştirme hedef davranışı artırırken, ceza davranışı azaltmayı hedefler.', weights: { clinical: 1.0 }, analysisInsight: 'Kritik kavram ayrımı.' },
-          { label: 'Her ikisi de çocuğun istemediği bir durumun ortama eklenmesidir.', weights: { clinical: 0.0 }, analysisInsight: 'Teorik yetersizlik.' }
+          { label: 'İtici bir uyaranı ortamdan çekerek hedef davranışın sıklığını artırmak.', weights: { clinical: 1.0 }, analysisInsight: 'Kritik teknik ayrım.' },
+          { label: 'İstenmeyen davranışı azaltmak için çocuğa sevmediği bir ödev vermek.', weights: { clinical: 0.0 }, analysisInsight: 'Ceza ile karıştırma.' },
+          { label: 'Çocuğun yaptığı hatayı görmezden gelerek sönmesini sağlamak.', weights: { clinical: 0.3 }, analysisInsight: 'Sönme ile karıştırma.' },
+          { label: 'Pekiştireçleri azaltarak çocuğun bağımsızlaşmasını sağlamak.', weights: { clinical: 0.2 }, analysisInsight: 'Eksik bilgi.' }
         ]
       },
       {
         id: 'vq_aba_3', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir beceri öğretiminde "Prompt Fading" (İpucu Silikleştirme) neden zorunludur?',
+        text: 'Beceri öğretiminde "Hata Düzeltme" (Error Correction) ne zaman uygulanmalıdır?',
         weightedOptions: [
-          { label: 'İpucu bağımlılığını önleyerek becerinin bağımsız sergilenmesini sağlamak için.', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama etiği.' },
-          { label: 'Öğretmenin daha az yorulması ve seansın hızlanması için.', weights: { clinical: 0.2 }, analysisInsight: 'Zayıf klinik bakış.' }
+          { label: 'Hata gerçekleştikten hemen sonra, öğrenciye doğru tepkiyi modelleyerek.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru zamanlama.' },
+          { label: 'Seansın sonunda tüm hataları toplu olarak anlatarak.', weights: { clinical: 0.1 }, analysisInsight: 'Gecikmiş müdahale.' },
+          { label: 'Öğrenci 3 kez üst üste hata yapana kadar bekleyerek.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış protokol.' },
+          { label: 'Hata yapıldığında seansı durdurup mola vererek.', weights: { clinical: 0.0 }, analysisInsight: 'Klinik risk.' }
         ]
       },
       {
         id: 'vq_aba_4', category: 'technicalExpertise', type: 'radio',
-        text: 'Problem davranışlarda kullanılan "Extinction" (Sönme) uygulamasında "Extinction Burst" nedir?',
+        text: '"Discrete Trial Training" (DTT) ve "Natural Environment Training" (NET) arasındaki temel fark?',
         weightedOptions: [
-          { label: 'Pekiştirilmeyen davranışın sönmeden hemen önce şiddetinin geçici olarak artması.', weights: { clinical: 1.0 }, analysisInsight: 'Süreç yönetimi bilgisi.' },
-          { label: 'Çocuğun davranışı tamamen bırakıp ağlama krizine girmesidir.', weights: { clinical: 0.3 }, analysisInsight: 'Eksik tanımlama.' }
+          { label: 'DTT yapılandırılmış ve masa başı iken, NET doğal bağlamda motivasyon temellidir.', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama çeşitliliği.' },
+          { label: 'DTT sadece ağır otizmliler içindir, NET ise hafif vakalar içindir.', weights: { clinical: 0.1 }, analysisInsight: 'Klinik önyargı.' },
+          { label: 'NET sadece oyun oynamaktır, DTT ise gerçek derstir.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ yaklaşım.' },
+          { label: 'Her iki metot da aynıdır, sadece isimleri farklıdır.', weights: { clinical: 0.0 }, analysisInsight: 'Teorik yetersizlik.' }
         ]
       },
       {
         id: 'vq_aba_5', category: 'technicalExpertise', type: 'radio',
-        text: '"Generalization" (Genelleme) çalışması ne zaman başlamalıdır?',
+        text: 'Bir davranışın "Sönmesi" (Extinction) sürecinde izlenmesi gereken en kritik adım?',
         weightedOptions: [
-          { label: 'Beceri edinimi başlar başlamaz, farklı kişiler ve ortamlarla eş zamanlı.', weights: { clinical: 1.0 }, analysisInsight: 'Modern ABA yaklaşımı.' },
-          { label: 'Beceri klinikte %100 oranında öğrenildikten sonra.', weights: { clinical: 0.5 }, analysisInsight: 'Klasik/Gecikmeli yaklaşım.' }
+          { label: 'Daha önce pekiştirilen davranışın pekiştirilmesine tamamen son verilmesi.', weights: { clinical: 1.0 }, analysisInsight: 'Süreç hakimiyeti.' },
+          { label: 'Çocuğa neden pekiştirilmediğinin her seferinde açıklanması.', weights: { clinical: 0.3 }, analysisInsight: 'Sözel uyaran hatası.' },
+          { label: 'Davranış şiddetlenirse (burst) hemen pekiştireç verilmesi.', weights: { clinical: 0.0 }, analysisInsight: 'Uygulama fiyaskosu.' },
+          { label: 'Davranış sırasında çocukla göz teması kurup uyarılması.', weights: { clinical: 0.1 }, analysisInsight: 'İlgi pekiştireci hatası.' }
         ]
       }
     ]
   },
   {
     id: 'etecom',
-    label: 'ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale)',
-    description: 'Türkiye merkezli etkileşim temelli müdahale programı.',
+    label: 'ETEÇOM',
+    description: 'Etkileşim Temelli Erken Çocuklukta Müdahale Programı.',
     category: 'AUTISM_SPECTRUM',
     verificationQuestions: [
       {
-        id: 'vq_etecom_1', category: 'technicalExpertise', type: 'radio',
-        text: 'ETEÇOM modelinde "İlişkisel Stratejiler"in birincil amacı nedir?',
+        id: 'vq_etc_1', category: 'technicalExpertise', type: 'radio',
+        text: 'ETEÇOM\'da "Duyarlı Öğretmen" profili neyi ifade eder?',
         weightedOptions: [
-          { label: 'Ebeveyn-çocuk etkileşiminin niteliğini artırarak gelişimsel çıktıları desteklemek.', weights: { clinical: 1.0, pedagogy: 0.9 }, analysisInsight: 'Model felsefesi uyumu.' },
-          { label: 'Çocuğun akademik becerilerini masa başında öğretmek.', weights: { clinical: 0.2 }, analysisInsight: 'Model dışı yaklaşım.' }
+          { label: 'Çocuğun ipuçlarını doğru okuyan ve etkileşimi onun liderliğinde sürdüren.', weights: { clinical: 1.0 }, analysisInsight: 'Model felsefesi.' },
+          { label: 'Çocuğun her ağlamasında ona sarılan ve teselli eden.', weights: { clinical: 0.2 }, analysisInsight: 'Duygusal aşırılık.' },
+          { label: 'Seans boyunca hiç konuşmadan çocuğu izleyen.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış yorum.' },
+          { label: 'Disiplini en üst düzeyde tutan ve kuralları uygulatan.', weights: { clinical: 0.0 }, analysisInsight: 'Model dışı tutum.' }
         ]
       },
       {
-        id: 'vq_etecom_2', category: 'technicalExpertise', type: 'radio',
-        text: 'ETEÇOM\'da "Ortak Dikkat" (Joint Attention) neden müdahalenin merkezindedir?',
+        id: 'vq_etc_2', category: 'technicalExpertise', type: 'radio',
+        text: 'ETEÇOM uygulamasında "Sıra Alma" (Turn-taking) neden kritiktir?',
         weightedOptions: [
-          { label: 'Sosyal-iletişimsel gelişimin ve dil öğreniminin temel taşı olduğu için.', weights: { clinical: 1.0 }, analysisInsight: 'Gelişimsel psikoloji hakimiyeti.' },
-          { label: 'Çocuğun sadece öğretmene bakmasını sağlamak için.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış yorum.' }
+          { label: 'Karşılıklı iletişimin ve sosyal etkileşim döngülerinin temeli olduğu için.', weights: { clinical: 1.0 }, analysisInsight: 'Gelişimsel bakış.' },
+          { label: 'Çocuğun sadece bekleme becerisini geliştirmek için.', weights: { clinical: 0.3 }, analysisInsight: 'Eksik analiz.' },
+          { label: 'Öğretmenin seansı kontrol etmesini kolaylaştırdığı için.', weights: { clinical: 0.1 }, analysisInsight: 'Otoriter odak.' },
+          { label: 'Akademik becerilere hazırlık aşaması olduğu için.', weights: { clinical: 0.4 }, analysisInsight: 'Kısmi doğruluk.' }
         ]
       },
       {
-        id: 'vq_etecom_3', category: 'technicalExpertise', type: 'radio',
-        text: 'ETEÇOM uygulamasında uzmanın "Koçluk" rolü neyi kapsar?',
+        id: 'vq_etc_3', category: 'technicalExpertise', type: 'radio',
+        text: 'Etkileşimsel stratejilerden "Genişletme" ne anlama gelir?',
         weightedOptions: [
-          { label: 'Ebeveynin çocukla etkileşimini seans dışında da sürdürebilmesi için rehberlik etmek.', weights: { clinical: 1.0, pedagogy: 1.0 }, analysisInsight: 'Sistemik yaklaşım.' },
-          { label: 'Ebeveyne sadece ev ödevi listesi verip kontrol etmek.', weights: { clinical: 0.3 }, analysisInsight: 'Eksik koçluk tanımı.' }
+          { label: 'Çocuğun tepkisine bir üst düzeyde anlamlı bir öğe ekleyerek karşılık vermek.', weights: { clinical: 1.0 }, analysisInsight: 'Dil stratejisi.' },
+          { label: 'Seans süresini çocuğun isteğine göre uzatmak.', weights: { clinical: 0.0 }, analysisInsight: 'Kavramsal hata.' },
+          { label: 'Aynı oyuncağı farklı odalarda oynamak.', weights: { clinical: 0.1 }, analysisInsight: 'Zayıf teknik.' },
+          { label: 'Çocuğun yanına daha fazla oyuncak getirmek.', weights: { clinical: 0.1 }, analysisInsight: 'Materyal odaklı hata.' }
         ]
       },
       {
-        id: 'vq_etecom_4', category: 'technicalExpertise', type: 'radio',
-        text: '"Karşılıklılık" (Reciprocity) kavramı ETEÇOM\'da nasıl ölçülür?',
+        id: 'vq_etc_4', category: 'technicalExpertise', type: 'radio',
+        text: 'ETEÇOM müdahalesi hangi gelişim kuramına dayanır?',
         weightedOptions: [
-          { label: 'Etkileşim döngülerinin (sıra alma) sayısı ve süresi ile.', weights: { clinical: 1.0 }, analysisInsight: 'Ölçme değerlendirme yetkinliği.' },
-          { label: 'Çocuğun komutlara uyum hızı ile.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış metrik.' }
+          { label: 'Sosyal İnşacı Kuram (Vygotsky) ve İlişkisel Müdahale.', weights: { clinical: 1.0 }, analysisInsight: 'Teorik altyapı.' },
+          { label: 'Klasik Koşullanma (Pavlov).', weights: { clinical: 0.0 }, analysisInsight: 'Temel hata.' },
+          { label: 'Bilişsel Gelişim (Piaget) - Bireysel Odak.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik eşleşme.' },
+          { label: 'Psikanalitik Yaklaşım.', weights: { clinical: 0.0 }, analysisInsight: 'Alakasız.' }
         ]
       },
       {
-        id: 'vq_etecom_5', category: 'technicalExpertise', type: 'radio',
-        text: 'ETEÇOM hangi yaş aralığındaki çocuklar için "Altın Standart" kabul edilir?',
+        id: 'vq_etc_5', category: 'technicalExpertise', type: 'radio',
+        text: 'Ebeveyn katılımı ETEÇOM\'da nasıl konumlandırılır?',
         weightedOptions: [
-          { label: '0-6 yaş (Erken Çocukluk Dönemi).', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama alanı bilgisi.' },
-          { label: 'Sadece okul çağı çocukları için.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik hata.' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'floortime_dir',
-    label: 'DIR Floortime (201/202)',
-    description: 'Gelişimsel, Bireysel Farklılıklara Dayalı, İlişki Temelli Model.',
-    category: 'AUTISM_SPECTRUM',
-    verificationQuestions: [
-      {
-        id: 'vq_floor_1', category: 'technicalExpertise', type: 'radio',
-        text: 'DIR modelinde "FEDL" (Fonksiyonel Duygusal Gelişim Basamakları) neyi ifade eder?',
-        weightedOptions: [
-          { label: 'Çocuğun etkileşim ve iletişim kurma kapasitesinin hiyerarşik aşamalarını.', weights: { clinical: 1.0 }, analysisInsight: 'Terminoloji hakimiyeti.' },
-          { label: 'Duyu bütünleme seansında kullanılan fiziksel materyalleri.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış branş eşleşmesi.' }
-        ]
-      },
-      {
-        id: 'vq_floor_2', category: 'technicalExpertise', type: 'radio',
-        text: 'DIR modelindeki "Individual Differences" (Bireysel Farklılıklar) bileşeni birincil olarak neye odaklanır?',
-        weightedOptions: [
-          { label: 'Çocuğun duyusal işlemleme profiline ve motor planlama kapasitesine.', weights: { clinical: 1.0 }, analysisInsight: 'Bütüncül analiz.' },
-          { label: 'Çocuğun sadece IQ puanına.', weights: { clinical: 0.0 }, analysisInsight: 'Reddedilen yaklaşım.' }
-        ]
-      },
-      {
-        id: 'vq_floor_3', category: 'technicalExpertise', type: 'radio',
-        text: '"Following the Lead" (Liderliği Takip Etmek) Floortime\'da ne anlama gelir?',
-        weightedOptions: [
-          { label: 'Çocuğun ilgisini kullanarak onunla ortak bir dünya kurmak ve etkileşimi genişletmek.', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama felsefesi.' },
-          { label: 'Çocuğun her istediğini yapıp onu serbest bırakmak.', weights: { clinical: 0.2 }, analysisInsight: 'Yüzeysel yorum.' }
-        ]
-      },
-      {
-        id: 'vq_floor_4', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir Floortime seansında "Circles of Communication" (İletişim Döngüleri) nasıl açılır?',
-        weightedOptions: [
-          { label: 'Çocuğun bir jestine veya sesine anlamlı bir sosyal karşılık vererek.', weights: { clinical: 1.0 }, analysisInsight: 'Mikro etkileşim bilgisi.' },
-          { label: 'Çocuğa yüksek sesle komut vererek.', weights: { clinical: 0.0 }, analysisInsight: 'Model dışı müdahale.' }
-        ]
-      },
-      {
-        id: 'vq_floor_5', category: 'technicalExpertise', type: 'radio',
-        text: 'DIR modelinde "Sensory Profile" neden mülakatın en başında değerlendirilir?',
-        weightedOptions: [
-          { label: 'Çocuğun regülasyon kapasitesini anlamak ve etkileşimi buna göre kalibre etmek için.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik strateji.' },
-          { label: 'Sadece hangi oyuncakları sevdiğini anlamak için.', weights: { clinical: 0.3 }, analysisInsight: 'Yetersiz klinik derinlik.' }
-        ]
-      }
-    ]
-  },
-
-  // --- ÖZEL ÖĞRENME GÜÇLÜĞÜ (ÖÖG) ---
-  {
-    id: 'prep_disleksi',
-    label: 'PREP (Pass Reading Enhancement Program)',
-    description: 'PASS Teorisi tabanlı okumayı iyileştirme programı.',
-    category: 'LEARNING_DISABILITIES',
-    verificationQuestions: [
-      {
-        id: 'vq_prep_1', category: 'technicalExpertise', type: 'radio',
-        text: 'PREP müdahalesinde "Ardıl İşlem" (Successive Processing) hangi beceriyle doğrudan ilişkilidir?',
-        weightedOptions: [
-          { label: 'Ses-harf eşlemesi ve kelime çözümleme.', weights: { clinical: 1.0 }, analysisInsight: 'Teorik derinlik.' },
-          { label: 'Görsel şekilleri ayırt etme ve boyama.', weights: { clinical: 0.2 }, analysisInsight: 'Yüzeysel bilgi.' }
-        ]
-      },
-      {
-        id: 'vq_prep_2', category: 'technicalExpertise', type: 'radio',
-        text: 'PREP\'te kullanılan "Global Stratejiler"in amacı nedir?',
-        weightedOptions: [
-          { label: 'Çocuğun okuma sırasında kendi bilişsel süreçlerini fark etmesi ve strateji geliştirmesi.', weights: { clinical: 1.0 }, analysisInsight: 'Metabilişsel yetkinlik.' },
-          { label: 'Çocuğun sadece hızlı okumasını sağlamak.', weights: { clinical: 0.3 }, analysisInsight: 'Yanlış odak.' }
-        ]
-      },
-      {
-        id: 'vq_prep_3', category: 'technicalExpertise', type: 'radio',
-        text: 'PREP müdahalesi neden "Anlamadan" ziyade "Süreç" odaklıdır?',
-        weightedOptions: [
-          { label: 'Okumanın nöral alt yapısındaki işlemleme hatalarını düzeltmeyi hedeflediği için.', weights: { clinical: 1.0 }, analysisInsight: 'Nöropsikolojik bakış.' },
-          { label: 'Çocuklar hikaye dinlemeyi sevmediği için.', weights: { clinical: 0.0 }, analysisInsight: 'Akademik olmayan yanıt.' }
-        ]
-      },
-      {
-        id: 'vq_prep_4', category: 'technicalExpertise', type: 'radio',
-        text: '"Simultaneous Processing" (Eşzamanlı İşlem) eksikliği okumada nasıl gözlenir?',
-        weightedOptions: [
-          { label: 'Metnin bütününü kavrama ve sentez yapma zorluğu olarak.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik gözlem gücü.' },
-          { label: 'Harfleri ters yazma olarak.', weights: { clinical: 0.4 }, analysisInsight: 'Sığ bilgi.' }
-        ]
-      },
-      {
-        id: 'vq_prep_5', category: 'technicalExpertise', type: 'radio',
-        text: 'PREP uygulaması hangi yaş grubu için bilimsel olarak kanıta dayalıdır?',
-        weightedOptions: [
-          { label: 'İlkokul dönemi (Okuma-yazma başlangıcı ve sonrası).', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama standardı.' },
-          { label: 'Sadece 0-3 yaş arası.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik hata.' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'pass_theory',
-    label: 'PASS Teorisi Bilişsel Müdahale',
-    description: 'Planlama, Dikkat, Eşzamanlı ve Ardıl İşlem temelli yaklaşım.',
-    category: 'LEARNING_DISABILITIES',
-    verificationQuestions: [
-      {
-        id: 'vq_pass_1', category: 'technicalExpertise', type: 'radio',
-        text: 'CAS testinde düşük puan alan bir öğrenci için "Planlama" becerisini geliştirmek neyi sağlar?',
-        weightedOptions: [
-          { label: 'Strateji geliştirme ve kendi hatalarını kontrol etme yetisi.', weights: { clinical: 1.0 }, analysisInsight: 'Analitik muhakeme.' },
-          { label: 'Daha hızlı koşma ve fiziksel koordinasyon.', weights: { clinical: 0.0 }, analysisInsight: 'Alakasız yanıt.' }
-        ]
-      },
-      {
-        id: 'vq_pass_2', category: 'technicalExpertise', type: 'radio',
-        text: 'PASS teorisine göre "Attention" (Dikkat) mekanizması neyi kontrol eder?',
-        weightedOptions: [
-          { label: 'Dış uyaranlar arasından ilgili olanı seçme ve direnç gösterme.', weights: { clinical: 1.0 }, analysisInsight: 'Kognitif psikoloji bilgisi.' },
-          { label: 'Sadece öğretmenin gözünün içine bakmayı.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ yaklaşım.' }
-        ]
-      },
-      {
-        id: 'vq_pass_3', category: 'technicalExpertise', type: 'radio',
-        text: 'Luria\'nın beyin blokları kuramı ile PASS teorisi arasındaki bağ nedir?',
-        weightedOptions: [
-          { label: 'Bilişsel işlemlerin beynin farklı fonksiyonel üniteleriyle eşleşmesi.', weights: { clinical: 1.0 }, analysisInsight: 'Yüksek akademik altyapı.' },
-          { label: 'Beynin sadece sağ ve sol olarak ikiye ayrılmasıdır.', weights: { clinical: 0.1 }, analysisInsight: 'Bilim dışı basitleştirme.' }
-        ]
-      },
-      {
-        id: 'vq_pass_4', category: 'technicalExpertise', type: 'radio',
-        text: 'Matematiksel işlemlerde zorlanan bir öğrencide hangi PASS süreci öncelikli sorgulanmalıdır?',
-        weightedOptions: [
-          { label: 'Eşzamanlı İşlem (Simultaneous) - Uzamsal ilişkiler için.', weights: { clinical: 1.0 }, analysisInsight: 'Branşlar arası transfer.' },
-          { label: 'Sadece Planlama.', weights: { clinical: 0.5 }, analysisInsight: 'Eksik analiz.' }
-        ]
-      },
-      {
-        id: 'vq_pass_5', category: 'technicalExpertise', type: 'radio',
-        text: 'CAS test raporunda "Bilişsel Zayıflık" neyi ifade eder?',
-        weightedOptions: [
-          { label: 'Dört işlemleme sürecinden birinin normun çok altında olması.', weights: { clinical: 1.0 }, analysisInsight: 'Test yorumlama gücü.' },
-          { label: 'Çocuğun düşük IQ\'lu olması.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış ve tehlikeli tanım.' }
-        ]
-      }
-    ]
-  },
-
-  // --- DİL VE KONUŞMA TERAPİSİ ---
-  {
-    id: 'tedil',
-    label: 'TEDİL (Türkçe Erken Dil Gelişimi Testi)',
-    description: 'TEMA-3 standardında ulusal dil değerlendirme ölçeği.',
-    category: 'LANGUAGE_SPEECH',
-    verificationQuestions: [
-      {
-        id: 'vq_tedil_1', category: 'technicalExpertise', type: 'radio',
-        text: 'TEDİL testinde "Alıcı Dil" ve "İfade Edici Dil" arasındaki temel fark nedir?',
-        weightedOptions: [
-          { label: 'Alıcı dil anlamayı, ifade edici dil sözel üretimi temsil eder.', weights: { clinical: 1.0 }, analysisInsight: 'Mesleki temel.' },
-          { label: 'Alıcı dil duymayı, ifade edici dil ise bağırmayı temsil eder.', weights: { clinical: 0.0 }, analysisInsight: 'Cahil cesareti.' }
-        ]
-      },
-      {
-        id: 'vq_tedil_2', category: 'technicalExpertise', type: 'radio',
-        text: 'TEDİL testinde "Ham Puan" (Raw Score) nasıl standart puana dönüştürülür?',
-        weightedOptions: [
-          { label: 'Çocuğun kronolojik yaşına göre hazırlanan norm tabloları kullanılarak.', weights: { clinical: 1.0 }, analysisInsight: 'Psikometrik yetkinlik.' },
-          { label: 'Soru sayısını 2 ile çarparak.', weights: { clinical: 0.0 }, analysisInsight: 'Metodolojik fiyasko.' }
-        ]
-      },
-      {
-        id: 'vq_tedil_3', category: 'technicalExpertise', type: 'radio',
-        text: 'TEDİL testi hangi yaş aralığındaki çocuklarda dil gecikmesini saptamak içindir?',
-        weightedOptions: [
-          { label: '2-0 ile 7-11 yaş arası.', weights: { clinical: 1.0 }, analysisInsight: 'Uygulama bilgisi.' },
-          { label: 'Sadece 12 yaş üstü.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik hata.' }
-        ]
-      },
-      {
-        id: 'vq_tedil_4', category: 'technicalExpertise', type: 'radio',
-        text: 'Test sırasında çocuğun yorulması durumunda ne yapılmalıdır?',
-        weightedOptions: [
-          { label: 'Test protokolüne uygun şekilde ara verilmeli veya ikinci bir oturum planlanmalıdır.', weights: { clinical: 1.0 }, analysisInsight: 'Etik uygulama.' },
-          { label: 'Hızlıca bitirmek için sorular geçilmelidir.', weights: { clinical: 0.1 }, analysisInsight: 'Test geçerlilik ihlali.' }
-        ]
-      },
-      {
-        id: 'vq_tedil_5', category: 'technicalExpertise', type: 'radio',
-        text: 'TEDİL sonuçları "Dil Bozukluğu" tanısı koymak için tek başına yeterli midir?',
-        weightedOptions: [
-          { label: 'Hayır, klinik gözlem ve diğer değerlendirme araçlarıyla desteklenmelidir.', weights: { clinical: 1.0 }, analysisInsight: 'Profesyonel disiplin.' },
-          { label: 'Evet, test skoru kesin tanıdır.', weights: { clinical: 0.3 }, analysisInsight: 'Hatalı klinik yaklaşım.' }
-        ]
-      }
-    ]
-  },
-
-  // --- ERGOTERAPİ & FİZYOTERAPİ ---
-  {
-    id: 'ayres_si',
-    label: 'Ayres Duyu Bütünleme (Sensory Integration)',
-    description: 'Nörobiyolojik temelli duyusal işlemleme müdahalesi.',
-    category: 'OCCUPATIONAL_PHYSIO',
-    verificationQuestions: [
-      {
-        id: 'vq_si_1', category: 'technicalExpertise', type: 'radio',
-        text: '"Proprioseptif" sistem birincil olarak nereden bilgi alır?',
-        weightedOptions: [
-          { label: 'Kaslar, eklemler ve bağ dokulardan.', weights: { clinical: 1.0 }, analysisInsight: 'Anatomi/Fizyoloji hakimiyeti.' },
-          { label: 'Sadece kulaktaki denge merkezinden.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik bilgi.' }
-        ]
-      },
-      {
-        id: 'vq_si_2', category: 'technicalExpertise', type: 'radio',
-        text: 'Duyusal savunmacılığı (Sensory Defensiveness) olan bir çocukta ilk gözlenen tepki nedir?',
-        weightedOptions: [
-          { label: 'Zararsız duyusal uyaranlara karşı aşırı kaçınma veya korku tepkisi.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik gözlem gücü.' },
-          { label: 'Çocuğun sürekli uyumak istemesi.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış klinik tanım.' }
-        ]
-      },
-      {
-        id: 'vq_si_3', category: 'technicalExpertise', type: 'radio',
-        text: 'Ayres S.I. müdahalesinde "Just Right Challenge" neyi ifade eder?',
-        weightedOptions: [
-          { label: 'Çocuğun becerisinin hemen üstünde ama başarabileceği zorluk seviyesi.', weights: { clinical: 1.0 }, analysisInsight: 'Müdahale stratejisi.' },
-          { label: 'Çocuğu en zor parkurda terletmektir.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış ergoterapi bakışı.' }
-        ]
-      },
-      {
-        id: 'vq_si_4', category: 'technicalExpertise', type: 'radio',
-        text: '"Praksis" becerisinin üç aşaması nedir?',
-        weightedOptions: [
-          { label: 'İdeasyon, Motor Planlama, Uygulama.', weights: { clinical: 1.0 }, analysisInsight: 'Teorik tamlık.' },
-          { label: 'Zıplama, Koşma, Durma.', weights: { clinical: 0.1 }, analysisInsight: 'Branş dışı basitlik.' }
-        ]
-      },
-      {
-        id: 'vq_si_5', category: 'technicalExpertise', type: 'radio',
-        text: 'Vestibüler sistem aşırı hassas olan bir çocukta hangi aktivite risklidir?',
-        weightedOptions: [
-          { label: 'Hızlı ve doğrusal olmayan salınım/dönme hareketleri.', weights: { clinical: 1.0 }, analysisInsight: 'Güvenlik ve klinik bilinç.' },
-          { label: 'Sadece masa başı boyama yapmak.', weights: { clinical: 0.0 }, analysisInsight: 'Alakasız risk analizi.' }
+          { label: 'Ebeveyn, çocuğun birincil etkileşim ortağı ve müdahalenin uygulayıcısıdır.', weights: { clinical: 1.0 }, analysisInsight: 'Sistemik yaklaşım.' },
+          { label: 'Ebeveyn sadece seansları kapıdan izleyen gözlemcidir.', weights: { clinical: 0.0 }, analysisInsight: 'Hatalı uygulama.' },
+          { label: 'Ebeveyn sadece ev ödevlerini kontrol eden denetçidir.', weights: { clinical: 0.2 }, analysisInsight: 'Eksik rol.' },
+          { label: 'Ebeveyn seans dışında çocukla çalışmamalıdır.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik metodolojik hata.' }
         ]
       }
     ]
@@ -364,28 +136,162 @@ export const CERTIFICATIONS: Certification[] = [
 ];
 
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
-  clinical_logic: [
+  ethics_parent: [
     {
-      id: 'gen_1', category: 'technicalExpertise', type: 'radio',
-      text: 'Multidisipliner bir toplantıda farklı branştan bir arkadaşınızın görüşüne katılmadığınızda tutumunuz ne olur?',
+      id: 'ep_1', category: 'workEthics', type: 'radio',
+      text: 'Bir veli, seans sırasında diğer öğretmenlerin veya yönetimin "yetersiz" olduğunu iddia ederse tutumunuz ne olur?',
       weightedOptions: [
-        { label: 'Veriye dayalı klinik kanıtlarımı sunar ve ortak paydada buluşmayı öneririm.', weights: { institutionalLoyalty: 1.0, formality: 1.0 }, analysisInsight: 'Profesyonel işbirliği.' },
-        { label: 'Kendi seansımdan ben sorumluyum diyerek tartışmayı kapatırım.', weights: { institutionalLoyalty: 0.0, personality: 0.2 }, analysisInsight: 'Zayıf takım uyumu.' }
+        { label: 'Kurumsal aidiyet gereği meslektaşlarımı savunur ve konuyu yönetime yönlendiririm.', weights: { institutionalLoyalty: 1.0, formality: 1.0 }, analysisInsight: 'Yüksek profesyonellik.' },
+        { label: 'Veliyi haklı bulduğumu hissettirip kendi başarılarımı anlatırım.', weights: { personality: 0.2, ethics: 0.0 }, analysisInsight: 'Narsistik/Etik risk.' },
+        { label: 'Sessiz kalıp sadece kendi işime odaklanırım.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Pasif tutum.' },
+        { label: 'Velinin bu eleştirilerini mülahaza edip rapor haline getiririm.', weights: { formality: 0.7 }, analysisInsight: 'Bürokratik yaklaşım.' }
+      ]
+    },
+    {
+      id: 'ep_2', category: 'workEthics', type: 'radio',
+      text: 'Seans dışında bir veli size sosyal medya üzerinden kişisel mesaj gönderdiğinde?',
+      weightedOptions: [
+        { label: 'Kurumsal iletişim kanallarını hatırlatarak profesyonel sınırı korurum.', weights: { workEthics: 1.0, formality: 1.0 }, analysisInsight: 'Sınır disiplini.' },
+        { label: 'Veli mağdur olmasın diye hemen yanıt veririm.', weights: { workEthics: 0.2 }, analysisInsight: 'Sınır ihlali eğilimi.' },
+        { label: 'Mesajı görüp hiç cevap vermem.', weights: { parentStudentRelations: 0.3 }, analysisInsight: 'Zayıf kriz yönetimi.' },
+        { label: 'Sadece acil durumlarda yanıt verebileceğimi söylerim.', weights: { workEthics: 0.5 }, analysisInsight: 'Esnek sınır riski.' }
+      ]
+    },
+    {
+      id: 'ep_3', category: 'workEthics', type: 'radio',
+      text: 'Veli, çocuğun gelişiminin yavaş olduğunu söyleyip sizi suçladığında?',
+      weightedOptions: [
+        { label: 'Veriye dayalı grafiklerle gelişim basamaklarını ve süreci sakince açıklarım.', weights: { technicalExpertise: 1.0, criticismTolerance: 1.0 }, analysisInsight: 'Klinik özgüven.' },
+        { label: 'Kendi yetkinliğimi sorgulayıp moralimi bozarım.', weights: { sustainability: 0.2 }, analysisInsight: 'Burnout riski.' },
+        { label: 'Çocuğun evdeki performansının yetersiz olduğunu söyleyerek veliyi suçlarım.', weights: { parentStudentRelations: 0.0 }, analysisInsight: 'Agresif savunma.' },
+        { label: 'Konuyu hemen koordinatöre aktarırım.', weights: { resilience: 0.5 }, analysisInsight: 'Sorumluluk transferi.' }
+      ]
+    },
+    {
+      id: 'ep_4', category: 'workEthics', type: 'radio',
+      text: 'Velinin mülkiyetine/özel hayatına dair bir sır öğrendiğinizde?',
+      weightedOptions: [
+        { label: 'Gizlilik ilkeleri gereği sadece çocukla ilgili olan kısımları klinik ekipte tutarım.', weights: { workEthics: 1.0 }, analysisInsight: 'Etik dürüstlük.' },
+        { label: 'Diğer öğretmenlerle paylaşarak durumu değerlendiririm.', weights: { workEthics: 0.1 }, analysisInsight: 'Gizlilik ihlali.' },
+        { label: 'Veliye akıl vererek kişisel hayatına müdahale ederim.', weights: { formality: 0.0 }, analysisInsight: 'Rol karmaşası.' },
+        { label: 'Sisteme not düşerim ama kimseye söylemem.', weights: { formality: 0.8 }, analysisInsight: 'Güvenli yaklaşım.' }
+      ]
+    },
+    {
+      id: 'ep_5', category: 'workEthics', type: 'radio',
+      text: 'Veli, kurum dışı (evde) özel ders teklif ettiğinde?',
+      weightedOptions: [
+        { label: 'Etik kurallar ve kurumsal anlaşmam gereği bu teklifi net bir dille reddederim.', weights: { institutionalLoyalty: 1.0, ethics: 1.0 }, analysisInsight: 'Tam sadakat.' },
+        { label: 'Kurumun haberi olmazsa yapabileceğimi söylerim.', weights: { ethics: 0.0, institutionalLoyalty: 0.0 }, analysisInsight: 'Kritik güven kaybı.' },
+        { label: 'Ücreti düşük bulduğum için reddederim.', weights: { personality: 0.1 }, analysisInsight: 'Yanlış motivasyon.' },
+        { label: 'Sadece ücretsiz destek olabileceğimi belirtirim.', weights: { ethics: 0.3 }, analysisInsight: 'Yanıltıcı iyi niyet.' }
       ]
     }
   ],
-  ethics_parent: [
+  resilience_team: [
     {
-        id: 'eth_1', category: 'workEthics', type: 'radio',
-        text: 'Kurum dışı bir velinin size "kurumdan habersiz seans" teklif etmesi durumunda ilk refleksiniz?',
-        weightedOptions: [
-          { label: 'Etik kurallar gereği reddeder ve kurumu bilgilendiririm.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek sadakat.' },
-          { label: 'Veli mağdur olmasın diye kabul edebilirim.', weights: { workEthics: 0.0, institutionalLoyalty: 0.0 }, analysisInsight: 'Kritik güven ihlali.' }
-        ]
+      id: 'rt_1', category: 'sustainability', type: 'radio',
+      text: 'Arka arkaya 4 saat boyunca krizli (problem davranışlı) seans yönettiğinizde?',
+      weightedOptions: [
+        { label: 'Profesyonel bir rutin olarak görür, seans sonrası regüle olup devam ederim.', weights: { sustainability: 1.0, resilience: 1.0 }, analysisInsight: 'Yüksek direnç.' },
+        { label: 'O günkü verimim düşer ve işten soğurum.', weights: { sustainability: 0.2 }, analysisInsight: 'Düşük tolerans.' },
+        { label: 'Seansları kısa kesmeye başlarım.', weights: { workEthics: 0.0 }, analysisInsight: 'Uygulama riski.' },
+        { label: 'Bir sonraki gün için rapor almayı düşünürüm.', weights: { sustainability: 0.0 }, analysisInsight: 'Kaçınma davranışı.' }
+      ]
+    },
+    {
+      id: 'rt_2', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Takım arkadaşınızın bir seans hatasını fark ettiğinizde?',
+      weightedOptions: [
+        { label: 'Uygun bir dille kendisiyle paylaşır, çözüm bulamazsak koordinatöre danışırım.', weights: { institutionalLoyalty: 1.0, personality: 0.8 }, analysisInsight: 'Yapıcı işbirliği.' },
+        { label: 'Hemen yönetime şikayet ederim.', weights: { personality: 0.3 }, analysisInsight: 'Rekabetçi/Agresif.' },
+        { label: 'Beni ilgilendirmediği için görmezden gelirim.', weights: { institutionalLoyalty: 0.1 }, analysisInsight: 'Zayıf aidiyet.' },
+        { label: 'Veliye bu durumu hissettiririm.', weights: { ethics: 0.0 }, analysisInsight: 'Ağır etik kusur.' }
+      ]
+    },
+    {
+      id: 'rt_3', category: 'criticismTolerance', type: 'radio',
+      text: 'Koordinatörünüz seans yönetiminizle ilgili sert bir eleştiri getirdiğinde?',
+      weightedOptions: [
+        { label: 'Gelişim fırsatı olarak görür, metodolojik hatalarımı düzeltmeye odaklanırım.', weights: { developmentOpenness: 1.0, criticismTolerance: 1.0 }, analysisInsight: 'Gelişime açık.' },
+        { label: 'Kişisel saldırı olarak algılar ve savunmaya geçerim.', weights: { criticismTolerance: 0.1 }, analysisInsight: 'Kırılgan ego.' },
+        { label: 'Motivasyonum çöker ve istifa etmeyi düşünürüm.', weights: { sustainability: 0.0 }, analysisInsight: 'Duygusal dayanıksızlık.' },
+        { label: 'Haklı olduğunu söyler ama bildiğimi yapmaya devam ederim.', weights: { formality: 0.2 }, analysisInsight: 'Pasif-agresif.' }
+      ]
+    },
+    {
+      id: 'rt_4', category: 'sustainability', type: 'radio',
+      text: 'Kurumda yoğun bir etkinlik dönemi ve mesai artışı olduğunda?',
+      weightedOptions: [
+        { label: 'Kurumsal başarının parçası olarak görür, enerjimi planlı kullanırım.', weights: { institutionalLoyalty: 1.0, sustainability: 0.8 }, analysisInsight: 'Sorumluluk bilinci.' },
+        { label: 'Sadece zorunlu olduğum kadarını yaparım.', weights: { institutionalLoyalty: 0.3 }, analysisInsight: 'Düşük motivasyon.' },
+        { label: 'Sürekli şikayet ederek çalışma ortamını etkilerim.', weights: { personality: 0.0 }, analysisInsight: 'Toksik eğilim.' },
+        { label: 'Ek ücret almazsam çalışmam.', weights: { institutionalLoyalty: 0.1 }, analysisInsight: 'Materyalist odak.' }
+      ]
+    },
+    {
+      id: 'rt_5', category: 'personality', type: 'radio',
+      text: 'Multidisipliner bir vaka toplantısında kendi branşınızın görüşü reddedildiğinde?',
+      weightedOptions: [
+        { label: 'Bilimsel kanıtlarımı sunarım ama ekibin ortak kararına saygı duyarım.', weights: { personality: 1.0, formality: 0.9 }, analysisInsight: 'Takım oyuncusu.' },
+        { label: 'Toplantıyı terk ederim.', weights: { personality: 0.0 }, analysisInsight: 'Zayıf regülasyon.' },
+        { label: 'Karara uyarım ama uygulamada kendi bildiğimi yaparım.', weights: { formality: 0.0 }, analysisInsight: 'Gizli direnç.' },
+        { label: 'Bir daha o ekip toplantılarına katılmam.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'İzolasyon eğilimi.' }
+      ]
     }
   ],
-  resilience_team: [],
-  vision_loyalty: []
+  vision_loyalty: [
+    {
+      id: 'vl_1', category: 'developmentOpenness', type: 'radio',
+      text: 'Yeni bir bilimsel makale veya metot yayınlandığında ilk refleksiniz?',
+      weightedOptions: [
+        { label: 'Hemen okur, mevcut uygulamalarımı nasıl geliştirebileceğimi analiz ederim.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Akademik iştah.' },
+        { label: 'Eski yöntemlerin her zaman daha güvenli olduğunu düşünürüm.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Gelenekçi direnç.' },
+        { label: 'Kurum eğitim verirse öğrenirim.', weights: { developmentOpenness: 0.4 }, analysisInsight: 'Reaktif gelişim.' },
+        { label: 'Sadece sınavda çıkacaksa çalışırım.', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Amaca yönelik öğrenme.' }
+      ]
+    },
+    {
+      id: 'vl_2', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Bu kurumda 3 yıl sonra kendinizi nerede görüyorsunuz?',
+      weightedOptions: [
+        { label: 'Klinik derinliği artmış, kurumda mentorluk yapan bir uzman olarak.', weights: { institutionalLoyalty: 1.0, leadershipPotential: 0.9 }, analysisInsight: 'Vizyoner sadakat.' },
+        { label: 'Kendi merkezimi açmış olarak.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Geçici aday.' },
+        { label: 'Aynı pozisyonda ama daha az yorularak.', weights: { sustainability: 0.3 }, analysisInsight: 'Durgunluk eğilimi.' },
+        { label: 'Başka bir sektörde çalışıyor olarak.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Sektörel aidiyetsizlik.' }
+      ]
+    },
+    {
+      id: 'vl_3', category: 'developmentOpenness', type: 'radio',
+      text: 'Teknoloji tabanlı bir takip sistemi (CRM/ERP) getirilirse?',
+      weightedOptions: [
+        { label: 'Hızla adapte olur, veri odaklı çalışmanın avantajlarını kullanırım.', weights: { formality: 1.0, developmentOpenness: 0.9 }, analysisInsight: 'Dijital yetkinlik.' },
+        { label: 'Kağıt-kalem sisteminin daha "samimi" olduğunu savunup direnirim.', weights: { formality: 0.1 }, analysisInsight: 'Teknolojik direnç.' },
+        { label: 'Zorunlu olduğu için yarım yamalak kullanırım.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Düşük uyum.' },
+        { label: 'Ek iş yükü olduğu için reddederim.', weights: { sustainability: 0.1 }, analysisInsight: 'Yük odaklı bakış.' }
+      ]
+    },
+    {
+      id: 'vl_4', category: 'leadershipPotential', type: 'radio',
+      text: 'Kurumda bir "problem" fark ettiğinizde çözüm yolunuz?',
+      weightedOptions: [
+        { label: 'Çözüm önerimle birlikte yönetime yazılı ve sözlü bildirim yaparım.', weights: { leadershipPotential: 1.0, institutionalLoyalty: 0.8 }, analysisInsight: 'Proaktif liderlik.' },
+        { label: 'Arkadaşlarımla kulis yapıp sorunu büyütürüm.', weights: { personality: 0.0 }, analysisInsight: 'Manipülatif.' },
+        { label: 'Başkası çözer diye beklerim.', weights: { leadershipPotential: 0.1 }, analysisInsight: 'Pasif izleyici.' },
+        { label: 'Sorun beni etkilemiyorsa ilgilenmem.', weights: { institutionalLoyalty: 0.1 }, analysisInsight: 'Bireysel odak.' }
+      ]
+    },
+    {
+      id: 'vl_5', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Kurumun bir sosyal sorumluluk projesine hafta sonu katılmanız istendiğinde?',
+      weightedOptions: [
+        { label: 'Kurumsal marka değerine katkı sunmak için gönüllü katılırım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Marka elçisi.' },
+        { label: 'Hafta sonu benim özel zamanım, asla katılmam.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Zayıf aidiyet.' },
+        { label: 'Sadece mazeret bulamazsam katılırım.', weights: { formality: 0.4 }, analysisInsight: 'Mecburi uyum.' },
+        { label: 'Kurumun reklam yaptığını düşünüp eleştiririm.', weights: { personality: 0.0 }, analysisInsight: 'Negatif/Şüpheci.' }
+      ]
+    }
+  ]
 };
 
 export const TURKISH_UNIVERSITIES = ["Hacettepe Üniversitesi", "Anadolu Üniversitesi", "Gazi Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "Ankara Üniversitesi", "Marmara Üniversitesi", "Ege Üniversitesi", "Dokuz Eylül Üniversitesi", "Biruni Üniversitesi", "Üsküdar Üniversitesi", "Bezmialem Vakıf Üniversitesi"];
