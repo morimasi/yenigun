@@ -24,16 +24,18 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Thinking Mode.
     
-    ANALİZ KRİTERLERİ (GENİŞLETİLMİŞ):
-    1. KLİNİK ÇAPRAZ SORGULAMA: Adayın iddia ettiği sertifikalar ile doğrulama sorularına (vq_*) verdiği "radio" yanıtlarını karşılaştır.
-    2. DEMOGRAFİK RİSK ANALİZİ: Adayın yaşı, medeni durumu ve deneyim yılı verilerini "Kurumsal Stabilite" (Retention) açısından değerlendir.
-       - Bekar ve çok genç adaylar için eğitim hızı vs. sirkülasyon riski.
-       - Evli ve deneyimli adaylar için uzun vadeli sadakat vs. tükenmişlik direnci.
-    3. METODOLOJİK TUTARLILIK: ABA, Floortime veya WISC gibi ekoller arasındaki teorik çelişkileri denetle.
+    KRİTİK ANALİZ PROTOKOLÜ (METODOLOJİK DOĞRULAMA):
+    1. SERTİFİKA VALIDASYONU (FARZETME ANALİZİ): Adayın 'allTrainings' listesinde beyan ettiği her uzmanlık için, mülakatın sonunda sorulan 'vq_' (Verification Question) kodlu soruları bul.
+       - Aday bir sertifikaya sahip olduğunu söyleyip, o sertifikanın doğrulama sorusuna 'Eksik' veya 'Hatalı' yanıt verdiyse; bu durumu 'Sosyal Maskeleme' (socialMaskingScore) olarak işaretle.
+       - Doğru yanıtlar adayın 'technicalExpertise' (Alan Yeterliliği) skorunu doğrudan %20 artırır.
+    
+    2. DEMOGRAFİK STABİLİTE: Yaş, medeni durum ve deneyim korelasyonunu kurumsal sadakat tahmini için kullan.
+    
+    3. TUTARLILIK DENETİMİ: Adayın farklı branş sorularındaki etik duruşu ile sertifika sorularındaki teknik bilgisi çelişiyor mu?
     
     VERİ GİRİŞİ: ${JSON.stringify(candidate)}
     
-    DİL: Akademik, sert, analitik ve kesin hüküm içeren bir üslup kullan.
+    DİL: Akademik, kesin hüküm içeren ve analitik bir üslup kullan.
   `;
 
   const responseSchema = {
@@ -43,7 +45,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       integrityIndex: { type: Type.NUMBER },
       socialMaskingScore: { type: Type.NUMBER },
       summary: { type: Type.STRING },
-      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın genel akademik ve klinik karakterinin 300 kelimelik derin analizi." },
+      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın beyan ettiği sertifikalar ile teknik doğruluğu arasındaki korelasyonu içeren 300 kelimelik analiz." },
       recommendation: { type: Type.STRING },
       predictiveMetrics: {
         type: Type.OBJECT,
@@ -76,7 +78,6 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         type: Type.OBJECT,
         properties: {
           strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-          // Fixed invalid items schema for weaknesses
           weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
           opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
           threats: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -98,7 +99,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ VE KLİNİK YANITLAR: ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ VE TEKNİK DOĞRULAMA YANITLARI: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { FORM_STEPS, BRANCH_QUESTIONS, CERTIFICATIONS, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../../constants';
+import { FORM_STEPS, BRANCH_QUESTIONS, CERTIFICATIONS, CERTIFICATION_CATEGORIES, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../../constants';
 import { Branch, Candidate, Gender, MaritalStatus, Question, Certification } from '../../types';
 import { SearchableSelect } from '../../shared/ui/SearchableSelect';
 
@@ -19,7 +19,7 @@ const shuffleArray = (array: string[]) => {
 
 const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeCertCategory, setActiveCertCategory] = useState(CERTIFICATION_CATEGORIES[0].id);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -82,26 +82,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        setFormData(prev => ({
-          ...prev,
-          cvData: { base64: base64String, mimeType: file.type, fileName: file.name }
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleNext = () => {
     const stepId = FORM_STEPS[currentStep].id;
     if (stepId === 'personal') {
       if (!formData.name || !formData.email || !formData.phone || !formData.university) {
-        alert("Lütfen tüm zorunlu alanları doldurunuz.");
+        alert("Lütfen zorunlu alanları (Ad, E-posta, Telefon, Üniversite) doldurunuz.");
         return;
       }
     } else {
@@ -126,24 +111,21 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     if (step.id === 'personal') {
       return (
         <div className="space-y-8 animate-fade-in">
-          {/* MODÜL: KİŞİSEL PROFİL BİLGİLERİ */}
+          {/* MODÜL: KİŞİSEL PROFİL */}
           <div className="bg-slate-900 p-8 md:p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:rotate-12 transition-transform">
-               <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-            </div>
-            <h3 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-500 pl-4">01. Kişisel Profil & Karakteristik</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+            <h3 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-500 pl-4">01. Kişisel Profil & Demografi</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                <div className="space-y-2">
-                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">İLETİŞİM HATTI</label>
-                 <input type="tel" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500 text-white" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+90 5xx" />
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">İLETİŞİM TELEFONU</label>
+                 <input type="tel" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="05xx xxx xx xx" />
                </div>
                <div className="space-y-2">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">GÜNCEL YAŞ</label>
-                 <input type="number" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500 text-white" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
+                 <input type="number" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
                </div>
                <div className="space-y-2">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">DENEYİM (YIL)</label>
-                 <input type="number" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500 text-white" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
+                 <input type="number" className="w-full rounded-2xl border border-white/10 p-4 font-bold bg-white/5 outline-none focus:ring-2 focus:ring-orange-500" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
                </div>
                <div className="space-y-2">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">CİNSİYET</label>
@@ -170,26 +152,38 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             </div>
           </div>
 
-          {/* AKADEMİK KİMLİK */}
+          {/* AKADEMİK KİMLİK & SERTİFİKA */}
           <div className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-xl">
-            <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-600 pl-4">02. Akademik Geçmiş & Sertifikasyon</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-600 pl-4">02. Akademik Kimlik & Uzmanlık</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                <div className="space-y-2">
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-2">AD SOYAD</label>
-                  <input type="text" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/50 outline-none focus:ring-2 focus:ring-orange-200" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Dr. Ayşe Yılmaz" />
+                  <input type="text" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/50 outline-none focus:ring-2 focus:ring-orange-200" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Ad Soyad" />
                </div>
                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">E-POSTA ADRESİ</label>
-                  <input type="email" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/50 outline-none focus:ring-2 focus:ring-orange-200" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="mail@akademi.com" />
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">E-POSTA</label>
+                  <input type="email" className="w-full rounded-2xl border border-slate-100 p-4 font-bold bg-slate-50/50 outline-none focus:ring-2 focus:ring-orange-200" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="mail@example.com" />
                </div>
                <SearchableSelect label="MEZUN OLUNAN ÜNİVERSİTE" options={TURKISH_UNIVERSITIES} value={formData.university} onChange={(v) => setFormData({...formData, university: v})} />
                <SearchableSelect label="MEZUNİYET BÖLÜMÜ" options={TURKISH_DEPARTMENTS} value={formData.department} onChange={(v) => setFormData({...formData, department: v})} />
             </div>
 
             <div className="space-y-8">
-               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Elde Edilen Uzmanlıklar</h4>
+               <div className="flex items-center gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                  {CERTIFICATION_CATEGORIES.map(cat => (
+                    <button 
+                      key={cat.id} 
+                      type="button" 
+                      onClick={() => setActiveCertCategory(cat.id)}
+                      className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeCertCategory === cat.id ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+               </div>
+
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {CERTIFICATIONS.map(cert => (
+                  {CERTIFICATIONS.filter(c => c.category === activeCertCategory).map(cert => (
                     <button 
                       key={cert.id} 
                       type="button" 
@@ -221,7 +215,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
         {currentQuestions.map((q: Question, idx: number) => (
           <div key={q.id} className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden group">
             <div className="flex items-start gap-6 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-lg font-black shrink-0 shadow-lg shadow-orange-600/20">
+              <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-lg font-black shrink-0 shadow-lg">
                 {idx + 1}
               </div>
               <h4 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter pt-1 uppercase">
@@ -260,7 +254,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
           <div className="absolute right-0 top-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px]"></div>
           <div className="max-w-3xl relative z-10">
             <div className="flex items-center gap-4 mb-6">
-               <span className="px-4 py-1.5 bg-orange-600 text-[11px] font-black uppercase rounded-xl tracking-widest shadow-lg shadow-orange-600/30">ADIM {currentStep + 1} / {FORM_STEPS.length}</span>
+               <span className="px-4 py-1.5 bg-orange-600 text-[11px] font-black uppercase rounded-xl tracking-widest">ADIM {currentStep + 1} / {FORM_STEPS.length}</span>
                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-orange-600 transition-all duration-1000 ease-out" style={{ width: `${progress}%` }}></div>
                </div>
@@ -274,7 +268,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
         </div>
         <div className="p-8 md:p-12 bg-white border-t border-slate-50 flex justify-between items-center sticky bottom-0 z-50 backdrop-blur-md bg-white/80">
           <button onClick={() => currentStep > 0 && setCurrentStep(c => c - 1)} className={`px-10 py-5 font-black text-[11px] uppercase tracking-widest transition-all rounded-2xl ${currentStep === 0 ? 'opacity-0' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}>← ÖNCEKİ ADIM</button>
-          <button onClick={handleNext} className="px-12 md:px-20 py-5 bg-orange-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-xl shadow-orange-600/20 active:scale-95">
+          <button onClick={handleNext} className="px-12 md:px-20 py-5 bg-orange-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-xl active:scale-95">
             {currentStep === FORM_STEPS.length - 1 ? 'ANALİZİ TAMAMLA' : 'SONRAKİ ADIM →'}
           </button>
         </div>
