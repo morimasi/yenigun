@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu puanın adayın hangi metodolojik yanıtlarına ve klinik literatüre dayandığının analizi." },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve metodolojik tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu adayın kurumda çalışması durumunda vaka başarı oranları ve klinik kalite üzerindeki 12 aylık etkisi." },
+    reasoning: { type: Type.STRING, description: "Bu puanın adayın hangi metodolojik yanıtlarına (özellikle 20 soruluk fundamental set ve dikey VQ-X soruları) dayandığının analizi." },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve teknik tutum emareleri." },
+    institutionalImpact: { type: Type.STRING, description: "Bu adayın kurumda çalışması durumunda klinik kalite ve vaka yönetimi üzerindeki 12 aylık etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -24,18 +24,17 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı ve Akademik Akreditasyon Denetçisi.
     MODEL: Gemini 3 Flash Deep Analysis Engine.
     
-    ANALİZ PROTOKOLÜ (KLİNİK OTOPSİ):
-    1. AKREDİTASYON DENETİMİ (KRİTİK): Adayın 'allTrainings' listesindeki sertifikalar (ABA, DIR Floortime, CAS, PROMPT, WISC-V, Orton-Gillingham vb.) ile 'answers' içindeki 'vq_' (Verification Questions) yanıtlarını çapraz sorgula. 
-       - Sertifikası olup teknik soruda (VQ) hatalı veya yüzeysel yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını %50 artır.
-       - Sertifika beyanına rağmen temel terminolojiyi (örn: ABA'da sönme, CAS'ta ardıl işlem) yanlış kullanan adayları 'Metodolojik Risk' olarak mühürle.
+    ANALİZ PROTOKOLÜ:
+    1. AKREDİTASYON DOĞRULAMA (VQ-X CHECK): Adayın 'allTrainings' listesindeki sertifikalar (ABA, CAS, WISC-V, PROMPT, Ayres SI vb.) ile mülakat sorularına verdiği yanıtları çapraz sorgula. 
+       - Sertifika beyanına rağmen temel teknik terminolojiyi (Örn: ABA'da işlevsel analiz, CAS'ta PASS teorisi) yanlış işaretleyen adayların 'integrityIndex' puanını %50 düşür.
+       - Bu adayları "Kâğıt Üstü Uzman" riskiyle işaretle.
 
-    2. DİKEY ALAN ANALİZİ:
-       - OSB: Davranışçı (ABA) vs Gelişimsel (DIR) ekol dengesini ve uygulama esnekliğini ölç.
-       - ÖÖG/Akademik: Çok duyulu (Multisensory) öğretim ve bilişsel müdahale derinliğini süz.
-       - OT/PT: Duyusal profil analizi ve nöro-motor gelişim hakimiyetini analiz et.
-       - Psikoloji: BDT ve Oyun Terapisi arasındaki klinik sınırı ve etik duruşu incele.
+    2. DİKEY ALAN YETKİNLİĞİ:
+       - OSB: ABA ve DIR Floortime arasındaki ekol farkını yönetebiliyor mu?
+       - ÖÖG: Akademik hedefler ile bilişsel süreçleri (PASS) entegre edebiliyor mu?
+       - DKT/OT: Anatomi ve nöro-müsküler hiyerarşi bilgisi ne düzeyde?
 
-    3. KURUMSAL VİZYON TAHMİNİ: Adayın 2 yıllık süreçte "Tükenmişlik" mi yoksa "Akademik Liderlik" mi geliştireceğini tahmin et.
+    3. PERFORMANS PROJEKSİYONU: Adayın 2 yıllık süreçte kuruma sağlayacağı akademik katma değeri ve 'Burnout' (tükenmişlik) riskini 'resilience_team' yanıtlarına dayanarak tahmin et.
 
     YARGI TONU: Sert, akademik, kanıta dayalı ve prediktif. 
     DİL: Tamamen Türkçe.
@@ -102,7 +101,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ (BEYANLAR VE YANITLAR): ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ (BEYANLAR + FUNDAMENTAL 20 SORU + VQ-X YANITLARI): ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
