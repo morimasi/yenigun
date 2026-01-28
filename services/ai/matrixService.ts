@@ -24,18 +24,31 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Thinking Mode.
     
-    KRİTİK ANALİZ PROTOKOLÜ (METODOLOJİK DOĞRULAMA):
-    1. SERTİFİKA VALIDASYONU (FARZETME ANALİZİ): Adayın 'allTrainings' listesinde beyan ettiği her uzmanlık için, mülakatın sonunda sorulan 'vq_' (Verification Question) kodlu soruları bul.
-       - Aday bir sertifikaya sahip olduğunu söyleyip, o sertifikanın doğrulama sorusuna 'Eksik' veya 'Hatalı' yanıt verdiyse; bu durumu 'Sosyal Maskeleme' (socialMaskingScore) olarak işaretle.
-       - Doğru yanıtlar adayın 'technicalExpertise' (Alan Yeterliliği) skorunu doğrudan %20 artırır.
+    KURUMSAL BİLGİ TABANI VE ANALİZ PROTOKOLÜ:
+    Adayın beyan ettiği sertifikalar ile mülakat sorularındaki yanıtlarını aşağıdaki "Altın Standart" kriterlerine göre kıyasla:
+
+    1. OTİZM (OSB) DİKEYİ:
+       - ABA/BACB: ABC kaydında 'C' (Sonuç) davranışın gelecekteki olasılığını etkileyen olaydır. Olumsuz pekiştirme (Negative Reinforcement) itici uyaranın çekilmesidir, ceza DEĞİLDİR.
+       - ETEÇOM: İlişkisel stratejiler ebeveyn-çocuk etkileşimini hedefler, masa başı akademik öğretimi değil.
+       - DIR FLOORTIME: FEDL basamakları çocuğun duygusal ve iletişimsel kapasitesini ölçer.
+
+    2. ÖĞRENME GÜÇLÜĞÜ (ÖÖG) DİKEYİ:
+       - PREP/PASS: Ardıl işlem ses-harf eşlemesiyle; planlama ise strateji geliştirmeyle ilgilidir.
+       - DMP: Fonolojik farkındalık okumanın nöral temelidir.
+
+    3. DİL VE KONUŞMA DİKEYİ:
+       - TEDİL: Alıcı dil (anlama) ile İfade edici dil (üretim) farkı kritiktir.
+       - LIDCOMBE: Sözel tepkiler ebeveyn tarafından akıcı konuşmaları pekiştirmek için uygulanır.
+
+    4. FİZİKSEL / DUYUSAL DİKEY:
+       - AYRES S.I.: Proprioseptif sistem kas ve eklemlerden bilgi alır. Duyusal savunmacılık aşırı kaçınma tepkisidir.
+       - BOBATH/NDT: Kontrol noktaları anormal tonusu inhibe etmek, normali fasilite etmek içindir.
+
+    KRİTİK GÖREV:
+    - Adayın 'allTrainings' listesinde olan bir eğitim için sorulan 'vq_' kodlu soruda hata yapması, 'socialMaskingScore'u (Sosyal Maskeleme) %30 artırmalı ve 'integrityIndex'i düşürmelidir.
+    - 'detailedAnalysisNarrative' kısmında spesifik olarak: "Aday ABA uzmanı olduğunu belirtmiş ancak vq_aba_2 sorusunda olumsuz pekiştirmeyi yanlış tanımlayarak teorik bir risk teşkil etmiştir" gibi net kanıtlar sun.
     
-    2. DEMOGRAFİK STABİLİTE: Yaş, medeni durum ve deneyim korelasyonunu kurumsal sadakat tahmini için kullan.
-    
-    3. TUTARLILIK DENETİMİ: Adayın farklı branş sorularındaki etik duruşu ile sertifika sorularındaki teknik bilgisi çelişiyor mu?
-    
-    VERİ GİRİŞİ: ${JSON.stringify(candidate)}
-    
-    DİL: Akademik, kesin hüküm içeren ve analitik bir üslup kullan.
+    DİL: Tamamen Türkçe, akademik, sert ve analitik.
   `;
 
   const responseSchema = {
