@@ -1,7 +1,5 @@
 {
   "name": "Yeni Gün Akademi: Uzmanlık ve Liyakat Filtresi",
   "description": "Özel Eğitim ve Rehabilitasyon merkezleri için tasarlanmış, yapay zeka destekli üst düzey akademik aday seçme ve analiz platformu.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "requestFramePermissions": []
 }
