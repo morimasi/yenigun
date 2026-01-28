@@ -17,6 +17,8 @@ type SortOrder = 'asc' | 'desc';
 
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredCandidate, setHoveredCandidate] = useState<Candidate | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -85,8 +87,74 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     setFilters(prev => ({ ...prev, [category]: next }));
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-8 min-h-screen relative items-start">
+    <div className="flex flex-col lg:flex-row gap-8 min-h-screen relative items-start" onMouseMove={handleMouseMove}>
+      
+      {/* HOVER PREVIEW POPUP */}
+      {hoveredCandidate && (
+        <div 
+          className="fixed z-[999] pointer-events-none transition-all duration-300 animate-scale-in"
+          style={{ left: mousePos.x + 20, top: mousePos.y - 100 }}
+        >
+          <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.3)] border border-white/10 w-[320px] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-20">
+               <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+            </div>
+            
+            <div className="relative z-10 space-y-6">
+              <div>
+                <h5 className="text-[9px] font-black text-orange-500 uppercase tracking-[0.4em] mb-2">AKADEMİK ÖNİZLEME</h5>
+                <p className="text-xl font-black tracking-tight leading-none uppercase">{hoveredCandidate.name}</p>
+                <div className="flex items-center gap-3 mt-3">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">{hoveredCandidate.gender}</span>
+                  <div className="w-1 h-1 rounded-full bg-slate-700"></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">{hoveredCandidate.age} Yaş</span>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="flex flex-col gap-1">
+                   <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">MEZUNİYET</span>
+                   <p className="text-[11px] font-bold text-slate-200 leading-tight uppercase">{hoveredCandidate.university}</p>
+                   <p className="text-[9px] font-bold text-slate-400 uppercase opacity-60">{hoveredCandidate.department}</p>
+                </div>
+
+                <div className="flex justify-between items-end">
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">KLİNİK DENEYİM</span>
+                      <p className="text-[11px] font-black text-orange-500 uppercase tracking-widest">{hoveredCandidate.experienceYears} YIL SAHA TECRÜBESİ</p>
+                   </div>
+                   {hoveredCandidate.report && (
+                     <div className="text-right">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">LİYAKAT</span>
+                        <p className="text-2xl font-black text-white leading-none">%{hoveredCandidate.report.score}</p>
+                     </div>
+                   )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-4">
+                 {hoveredCandidate.allTrainings.slice(0, 3).map((t, idx) => (
+                   <span key={idx} className="px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase text-slate-400 border border-white/5">
+                      {t.split(' ')[0]}
+                   </span>
+                 ))}
+                 {hoveredCandidate.allTrainings.length > 3 && (
+                   <span className="text-[8px] font-black text-slate-600 uppercase mt-1">+{hoveredCandidate.allTrainings.length - 3} Diğer</span>
+                 )}
+              </div>
+            </div>
+            
+            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl"></div>
+          </div>
+        </div>
+      )}
+
+      {/* SOL PANEL (LISTE) */}
       <div className="lg:w-[320px] flex flex-col gap-5 shrink-0 no-print sticky top-32 max-h-[calc(100vh-10rem)]">
         <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 space-y-6">
           <form onSubmit={handleSearchSubmit} className="relative">
@@ -133,6 +201,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                 <div 
                   key={c.id} 
                   onClick={() => { setSelectedId(c.id); window.scrollTo({ top: 112, behavior: 'smooth' }); }}
+                  onMouseEnter={() => setHoveredCandidate(c)}
+                  onMouseLeave={() => setHoveredCandidate(null)}
                   className={`p-5 rounded-[2.2rem] border transition-all cursor-pointer relative group ${
                     selectedId === c.id ? 'bg-white border-orange-600 shadow-2xl translate-x-2 ring-8 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
                   }`}
@@ -155,6 +225,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
         </div>
       </div>
 
+      {/* SAĞ PANEL (DETAY) */}
       <div className="flex-1 min-w-0">
         {selectedCandidate ? (
           <CandidateDetail 
