@@ -22,33 +22,49 @@ const SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
-    MODEL: Gemini 3 Flash Thinking Mode.
+    MODEL: Gemini 3 Flash Deep Analysis.
     
-    KURUMSAL BİLGİ TABANI VE ANALİZ PROTOKOLÜ:
-    Adayın beyan ettiği sertifikalar ile mülakat sorularındaki yanıtlarını aşağıdaki "Altın Standart" kriterlerine göre kıyasla:
+    GENİŞLETİLMİŞ KURUMSAL BİLGİ TABANI VE ANALİZ PROTOKOLÜ:
+    Adayın 'allTrainings' listesinde beyan ettiği sertifikalar ile mülakat sorularındaki 'vq_' kodlu teknik doğrulama yanıtlarını aşağıdaki "Akademik Çapraz Sorgu" protokolüne göre işle:
 
-    1. OTİZM (OSB) DİKEYİ:
-       - ABA/BACB: ABC kaydında 'C' (Sonuç) davranışın gelecekteki olasılığını etkileyen olaydır. Olumsuz pekiştirme (Negative Reinforcement) itici uyaranın çekilmesidir, ceza DEĞİLDİR.
-       - ETEÇOM: İlişkisel stratejiler ebeveyn-çocuk etkileşimini hedefler, masa başı akademik öğretimi değil.
-       - DIR FLOORTIME: FEDL basamakları çocuğun duygusal ve iletişimsel kapasitesini ölçer.
+    1. ABA DİKEYİ (5 KRİTER):
+       - ABC: C, gelecekteki davranış olasılığını etkiler.
+       - Negatif Pekiştirme: Davranışı ARTIRIR (itici uyaran çekilir). Ceza DEĞİLDİR.
+       - Prompt Fading: Bağımlılığı önlemek için zorunludur.
+       - Extinction Burst: Sönme öncesi şiddet artışıdır, sürecin parçasıdır.
+       - Generalization: Sürecin sonu değil, başından itibaren planlanmalıdır.
 
-    2. ÖĞRENME GÜÇLÜĞÜ (ÖÖG) DİKEYİ:
-       - PREP/PASS: Ardıl işlem ses-harf eşlemesiyle; planlama ise strateji geliştirmeyle ilgilidir.
-       - DMP: Fonolojik farkındalık okumanın nöral temelidir.
+    2. ETEÇOM DİKEYİ (5 KRİTER):
+       - Temel: Ebeveyn-çocuk etkileşimi, akademik masa başı değil.
+       - Ortak Dikkat: Dil ve sosyal gelişimin temelidir.
+       - Uzman Rolü: Sadece eğitmen değil, "Ebeveyn Koçu"dur.
+       - Karşılıklılık: Sıra alma ve etkileşim döngüleriyle ölçülür.
+       - Yaş: 0-6 yaş erken müdahale merkezlidir.
 
-    3. DİL VE KONUŞMA DİKEYİ:
-       - TEDİL: Alıcı dil (anlama) ile İfade edici dil (üretim) farkı kritiktir.
-       - LIDCOMBE: Sözel tepkiler ebeveyn tarafından akıcı konuşmaları pekiştirmek için uygulanır.
+    3. DIR FLOORTIME DİKEYİ (5 KRİTER):
+       - FEDL: Duygusal gelişim basamaklarıdır.
+       - Bireysel Farklılık: Duyusal profil ve motor planlamadır.
+       - Liderliği Takip: Ortak dünya kurma stratejisidir.
+       - İletişim Döngüleri: Jeste jestle karşılık vererek açılır.
+       - Regülasyon: Duyusal profilin bilinmesi regülasyonun ilk adımıdır.
 
-    4. FİZİKSEL / DUYUSAL DİKEY:
-       - AYRES S.I.: Proprioseptif sistem kas ve eklemlerden bilgi alır. Duyusal savunmacılık aşırı kaçınma tepkisidir.
-       - BOBATH/NDT: Kontrol noktaları anormal tonusu inhibe etmek, normali fasilite etmek içindir.
+    4. PREP & PASS DİKEYİ (10 KRİTER):
+       - Ardıl İşlem (Successive): Ses-harf ve kodlama ile ilgilidir.
+       - Eşzamanlı İşlem (Simultaneous): Sentez ve anlamlandırma ile ilgilidir.
+       - Planlama: Metabilişsel strateji ve hata kontrolüdür.
+       - Dikkat: Seçici odaklanma ve dirençtir.
+       - Bilişsel Zayıflık: Tek bir işlemleme sürecinin düşüklüğüdür (IQ düşüklüğü değil).
 
-    KRİTİK GÖREV:
-    - Adayın 'allTrainings' listesinde olan bir eğitim için sorulan 'vq_' kodlu soruda hata yapması, 'socialMaskingScore'u (Sosyal Maskeleme) %30 artırmalı ve 'integrityIndex'i düşürmelidir.
-    - 'detailedAnalysisNarrative' kısmında spesifik olarak: "Aday ABA uzmanı olduğunu belirtmiş ancak vq_aba_2 sorusunda olumsuz pekiştirmeyi yanlış tanımlayarak teorik bir risk teşkil etmiştir" gibi net kanıtlar sun.
-    
-    DİL: Tamamen Türkçe, akademik, sert ve analitik.
+    5. TEDİL & DUYU BÜTÜNLEME (10 KRİTER):
+       - Alıcı vs İfade Edici: Anlama ve üretim farkı.
+       - Norm Tabloları: Kronolojik yaşa göre standart puan dönüşümü.
+       - Propriosepsiyon: Kas, eklem ve bağ doku girdisi.
+       - Praksis: İdeasyon, planlama ve uygulama üçlüsüdür.
+
+    ANALİZ KURALLARI:
+    - Sertifikası olup 'vq_' sorusuna yanlış cevap veren adayda 'socialMaskingScore' %30 artmalı.
+    - 'detailedAnalysisNarrative' içinde spesifik kodlarla eleştiri yap (Örn: "vq_aba_2 sorusunda pekiştirme ve cezayı karıştıran aday klinik risk taşımaktadır").
+    - Dil: Tamamen Türkçe, sert, akademik ve veri odaklı.
   `;
 
   const responseSchema = {
@@ -58,7 +74,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       integrityIndex: { type: Type.NUMBER },
       socialMaskingScore: { type: Type.NUMBER },
       summary: { type: Type.STRING },
-      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın beyan ettiği sertifikalar ile teknik doğruluğu arasındaki korelasyonu içeren 300 kelimelik analiz." },
+      detailedAnalysisNarrative: { type: Type.STRING },
       recommendation: { type: Type.STRING },
       predictiveMetrics: {
         type: Type.OBJECT,
@@ -67,7 +83,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
           burnoutRisk: { type: Type.NUMBER },
           learningVelocity: { type: Type.NUMBER },
           leadershipPotential: { type: Type.NUMBER },
-          evolutionPath: { type: Type.STRING, description: "Adayın kurumdaki 2. yılında geleceği muhtemel profesyonel seviye tahmini." }
+          evolutionPath: { type: Type.STRING }
         },
         required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
       },

@@ -47,9 +47,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
       .sort((a, b) => (a.interviewSchedule?.time || '').localeCompare(b.interviewSchedule?.time || ''));
   };
 
-  const handleStatusUpdate = (candidate: Candidate, newStatus: Candidate['status']) => {
-    if (confirm(`Adayın durumu '${newStatus}' olarak güncellenecektir. Onaylıyor musunuz?`)) {
-      onUpdateCandidate({ ...candidate, status: newStatus, timestamp: Date.now() });
+  const handleStatusUpdate = (candidate: Candidate, newStatus: 'hired' | 'rejected') => {
+    const label = newStatus === 'hired' ? 'İşe Alındı' : 'Reddedildi';
+    if (confirm(`Aday '${label}' olarak işaretlenecek ve otomatik olarak akademik arşive taşınacaktır. Onaylıyor musunuz?`)) {
+      onUpdateCandidate({ 
+        ...candidate, 
+        status: 'archived', 
+        archiveCategory: newStatus === 'hired' ? 'HIRED_CONTRACTED' : 'DISQUALIFIED',
+        archiveNote: `OTOMATİK KARAR: Mülakat sonucu '${label}' olarak sisteme işlendi. İşlem Tarihi: ${new Date().toLocaleString('tr-TR')}`,
+        timestamp: Date.now() 
+      });
       setSelectedId(null);
     }
   };
@@ -169,7 +176,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
       {/* DETAIL DRAWER / OVERLAY */}
       {selectedId && selectedCandidate && (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-center justify-end p-8 no-print animate-fade-in">
-           <div className="w-full max-w-2xl bg-white h-full rounded-[4.5rem] shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-slide-right">
+           <div className="w-full max-w-2xl bg-white h-full rounded-[4.5rem] shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-slide-right relative">
               <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
                  <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white text-2xl font-black shadow-xl">

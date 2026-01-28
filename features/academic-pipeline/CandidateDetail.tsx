@@ -76,6 +76,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }
   };
 
+  const handleQuickDecision = (decision: 'hired' | 'rejected') => {
+    const label = decision === 'hired' ? 'İşe Alındı' : 'Reddedildi';
+    if (confirm(`${candidate.name} için '${label}' kararı verilecek ve dosya otomatik olarak arşive mühürlenecektir. Onaylıyor musunuz?`)) {
+      onUpdate({
+        ...candidate,
+        status: 'archived',
+        archiveCategory: decision === 'hired' ? 'HIRED_CONTRACTED' : 'DISQUALIFIED',
+        archiveNote: `Hızlı Karar: Aday ${label} olarak işaretlenerek havuza taşındı.`,
+        timestamp: Date.now()
+      });
+      alert(`Aday ${label} kategorisiyle akademik arşive taşındı.`);
+    }
+  };
+
   const handleArchiveSubmit = () => {
     onUpdate({
       ...candidate,
@@ -120,7 +134,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           </div>
         </div>
         <div className="flex gap-3 no-print w-full xl:w-auto">
-           <button onClick={handleRunAnalysis} disabled={isAnalysing} className="flex-1 xl:flex-none px-8 py-4 bg-orange-600 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.1em] hover:bg-slate-900 transition-all shadow-lg active:scale-95">
+           <div className="flex bg-slate-100 p-1 rounded-2xl">
+              <button onClick={() => handleQuickDecision('hired')} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase hover:bg-slate-900 hover:text-white transition-all shadow-sm">İŞE AL</button>
+              <button onClick={() => handleQuickDecision('rejected')} className="px-6 py-3 text-rose-500 rounded-xl text-[9px] font-black uppercase hover:bg-rose-50 transition-all">REDDET</button>
+           </div>
+           <button onClick={handleRunAnalysis} disabled={isAnalysing} className="px-8 py-4 bg-orange-600 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.1em] hover:bg-slate-900 transition-all shadow-lg active:scale-95">
              {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZİ BAŞLAT'}
            </button>
         </div>
