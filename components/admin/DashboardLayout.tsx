@@ -37,20 +37,44 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in pb-20 max-w-[1600px] mx-auto w-full relative">
-      <AdminTopNav 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        institutionName={props.config.institutionName}
-        onRefresh={props.onRefresh}
-        isProcessing={props.isProcessing}
-      />
+    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in min-h-[90vh] max-w-[1700px] mx-auto w-full relative">
+      {/* SOL DİKEY KOMUTA DOCK'I */}
+      <aside className="no-print">
+        <AdminTopNav 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          institutionName={props.config.institutionName}
+          onRefresh={props.onRefresh}
+          isProcessing={props.isProcessing}
+        />
+      </aside>
       
-      <main className="flex-1 w-full min-w-0 px-2 md:px-0">
-        <div className="bg-white/40 backdrop-blur-sm rounded-[4rem] border border-slate-100/50 p-2 md:p-6 shadow-inner min-h-[700px]">
+      {/* ANA İÇERİK KANVASI */}
+      <main className="flex-1 w-full min-w-0">
+        {/* ÜST ARAÇ ÇUBUĞU (Mobil ve Refresh için) */}
+        <div className="flex justify-between items-center mb-6 lg:hidden">
+           <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{props.config.institutionName}</h2>
+        </div>
+
+        <div className="bg-white/60 backdrop-blur-md rounded-[3rem] border border-slate-200/50 p-6 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] min-h-screen">
           {renderContent()}
         </div>
       </main>
+
+      {/* FLOATING REFRESH BUTTON (Desktop only) */}
+      <div className="fixed top-32 right-12 z-[70] hidden lg:block no-print">
+         <button
+            onClick={props.onRefresh}
+            disabled={props.isProcessing}
+            className={`flex flex-col items-center justify-center w-16 h-16 rounded-full bg-slate-900 text-white shadow-2xl transition-all hover:bg-orange-600 group active:scale-90 ${props.isProcessing ? 'opacity-70 rotate-180' : ''}`}
+            title="Sistemi Tazele"
+         >
+            <svg className={`w-6 h-6 text-orange-500 transition-transform duration-700 ${props.isProcessing ? 'animate-spin' : 'group-hover:rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
+            </svg>
+            <span className="text-[7px] font-black uppercase mt-1 tracking-tighter text-white opacity-40 group-hover:opacity-100">TAZELA</span>
+         </button>
+      </div>
     </div>
   );
 };

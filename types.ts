@@ -1,4 +1,5 @@
 
+// Types definition for Yeni Gün Akademi MIA (Modular Intelligence Architecture)
 export enum ClinicalTestType {
   BEP_ADAPTATION = 'BEP/IEP Dinamik Adaptasyon',
   DMP_STRESS = 'DMP Stres Simülatörü',
@@ -24,6 +25,66 @@ export enum Branch {
 
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
+
+/**
+ * @fix Added FormStep interface to resolve import error in constants.tsx
+ */
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface Question {
+  id: string;
+  category: string;
+  text: string;
+  type: 'radio' | 'text' | 'checkbox';
+  options?: string[];
+  weightedOptions?: Array<{
+    label: string;
+    weights: Record<string, number | string>;
+    analysisInsight: string;
+  }>;
+  requiredBranch?: string[];
+}
+
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestions: Question[]; // YENİ: Tek soru yerine 5'li test seti
+}
+
+/**
+ * @fix Added SimulationResult interface to resolve missing type errors in multiple components
+ */
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    clinicalTruths: string[];
+    criticalMistakes: string[];
+    neuralDivergence: {
+      contradictionIndex: number;
+      decisionPath: string;
+      alternativeOutcome: string;
+      dominantEmotion: string;
+    };
+    microBehaviors: {
+      toneAnalysis: string;
+      nonVerbalPrediction: string;
+      silenceTolerance: string;
+    };
+  };
+}
 
 export interface IntelligenceSegment {
   score: number;
@@ -73,62 +134,6 @@ export interface AlgorithmicReport {
   burnoutResistance: number;
   fitScore: number;
   riskFlags: string[];
-}
-
-export interface Question {
-  id: string;
-  category: string;
-  text: string;
-  type: 'radio' | 'text' | 'checkbox';
-  options?: string[];
-  weightedOptions?: Array<{
-    label: string;
-    weights: Record<string, number | string>;
-    analysisInsight: string;
-  }>;
-  requiredBranch?: string[];
-}
-
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
-}
-
-export interface Certification {
-  id: string;
-  label: string;
-  description: string;
-  category: string;
-  verificationQuestion: Question;
-}
-
-export interface SimulationResult {
-  scenario: string;
-  parentPersona: string;
-  candidateResponse: string;
-  stressLevel: number;
-  aiEvaluation: {
-    ethicalBoundaryScore: number;
-    empathyCalibration: number;
-    professionalDistance: number;
-    crisisResolutionEfficiency: number;
-    cognitiveLoadIndex: number; // YENİ: Adayın zihinsel yorulma hızı
-    ethicalStabilityScore: number; // YENİ: Baskı altında etik taviz verme eğilimi
-    criticalMistakes: string[];
-    clinicalTruths: string[];
-    neuralDivergence: {
-      contradictionIndex: number;
-      decisionPath: string;
-      alternativeOutcome: string;
-      dominantEmotion: string;
-    };
-    microBehaviors: {
-      toneAnalysis: string;
-      nonVerbalPrediction: string;
-      silenceTolerance: string;
-    };
-  };
 }
 
 export interface Candidate {

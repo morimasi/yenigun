@@ -44,12 +44,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
   const currentQuestions = useMemo(() => {
     const stepId = FORM_STEPS[currentStep].id;
-    let baseQuestions = BRANCH_QUESTIONS[stepId] || [];
+    let baseQuestions = [...(BRANCH_QUESTIONS[stepId] || [])];
     
+    // Klinik Mantık adımında seçilen sertifikaların TÜM sorularını (5er tane) ekle
     if (stepId === 'clinical_logic') {
       const trainingQuestions = CERTIFICATIONS
         .filter(cert => formData.allTrainings.includes(cert.label))
-        .map(cert => cert.verificationQuestion);
+        .flatMap(cert => cert.verificationQuestions); // FlatMap kullanarak tüm soruları çek
       
       baseQuestions = [...baseQuestions, ...trainingQuestions];
     }
@@ -92,7 +93,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     } else {
       const unanswered = currentQuestions.filter((q: Question) => !formData.answers[q.id]);
       if (unanswered.length > 0) {
-        alert("Lütfen bu adımdaki tüm soruları yanıtlayınız.");
+        alert("Lütfen bu adımdaki tüm soruları (" + unanswered.length + " adet yanıtlanmadı) yanıtlayınız.");
         return;
       }
     }
@@ -111,7 +112,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     if (step.id === 'personal') {
       return (
         <div className="space-y-8 animate-fade-in">
-          {/* MODÜL: KİŞİSEL PROFİL */}
           <div className="bg-slate-900 p-8 md:p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
             <h3 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-500 pl-4">01. Kişisel Profil & Demografi</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -152,7 +152,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             </div>
           </div>
 
-          {/* AKADEMİK KİMLİK & SERTİFİKA */}
           <div className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-xl">
             <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mb-10 border-l-4 border-orange-600 pl-4">02. Akademik Kimlik & Uzmanlık</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">

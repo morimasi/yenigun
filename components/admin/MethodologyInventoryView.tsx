@@ -3,9 +3,13 @@ import React from 'react';
 import { BRANCH_QUESTIONS, CERTIFICATIONS } from '../../constants';
 
 const MethodologyInventoryView: React.FC = () => {
+  /**
+   * @fix Line 8: verificationQuestion -> verificationQuestions.
+   * We use flatMap because verificationQuestions is now an array for each certification.
+   */
   const allQuestions = [
     ...Object.values(BRANCH_QUESTIONS).flat(),
-    ...CERTIFICATIONS.map(c => c.verificationQuestion)
+    ...CERTIFICATIONS.flatMap(c => c.verificationQuestions)
   ];
 
   const categories = [

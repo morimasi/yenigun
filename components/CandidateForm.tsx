@@ -46,11 +46,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     const stepId = FORM_STEPS[currentStep].id;
     let baseQuestions = BRANCH_QUESTIONS[stepId] || [];
     
-    // Sadece klinik_logic adımında seçilen eğitimlere özel soruları enjekte et
+    /**
+     * @fix Line 53: verificationQuestion -> verificationQuestions. 
+     * Since verificationQuestions is an array, we use flatMap to merge them into the questions list.
+     */
     if (stepId === 'clinical_logic') {
       const trainingQuestions = CERTIFICATIONS
         .filter(cert => formData.allTrainings.includes(cert.label))
-        .map(cert => cert.verificationQuestion);
+        .flatMap(cert => cert.verificationQuestions);
       
       baseQuestions = [...baseQuestions, ...trainingQuestions];
     }
