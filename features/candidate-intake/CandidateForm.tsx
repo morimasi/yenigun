@@ -119,37 +119,37 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
       return (
         <div className="space-y-6 animate-fade-in">
           {/* KOMPAKT PROFİL PANELİ */}
-          <div className="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+          <div className="bg-white border border-slate-200/60 p-6 rounded-3xl shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
               <div className="w-1.5 h-6 bg-orange-500 rounded-full"></div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Temel Kimlik & Klinik Branş</h3>
+              <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.2em]">Temel Kimlik & Klinik Branş</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Tam Ad Soyad</label>
-                <input type="text" className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/20 transition-all" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Ahmet Yılmaz" />
+                <input type="text" className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/10 transition-all outline-none" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Ahmet Yılmaz" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">E-Posta</label>
-                <input type="email" className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/20 transition-all" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="ornek@mail.com" />
+                <input type="email" className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/10 transition-all outline-none" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="ornek@mail.com" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">İletişim</label>
-                <input type="tel" className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/20 transition-all" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="05XX" />
+                <input type="tel" className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-500/10 transition-all outline-none" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="05XX" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Klinik Branş</label>
-                <select className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold outline-none" value={formData.branch} onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}>
+                <select className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold outline-none cursor-pointer" value={formData.branch} onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}>
                   {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Deneyim (Yıl)</label>
-                <input type="number" className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
+                <input type="number" className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Yaş</label>
-                <input type="number" className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm font-bold" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
+                <input type="number" className="w-full bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-sm font-bold" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,14 +158,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             </div>
           </div>
 
-          {/* KOMPAKT SERTİFİKA PANELİ */}
-          <div className="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm">
+          {/* SERTİFİKA PANELİ - OPTİMİZE EDİLMİŞ OKUNURLUK */}
+          <div className="bg-white border border-slate-200/60 p-6 rounded-3xl shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-1.5 h-6 bg-slate-900 rounded-full"></div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Uzmanlık Akreditasyonları</h3>
+                <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.2em]">Uzmanlık Akreditasyonları</h3>
               </div>
-              <div className="px-3 py-1 bg-orange-50 rounded-lg text-[10px] font-black text-orange-600 border border-orange-100">
+              <div className="px-3 py-1 bg-orange-600 rounded-lg text-[10px] font-black text-white shadow-sm">
                 {formData.allTrainings.length} SEÇİLEN
               </div>
             </div>
@@ -176,13 +176,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                   key={cat.id} 
                   type="button" 
                   onClick={() => setActiveCertCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap text-[10px] font-black uppercase tracking-widest border ${
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap text-[11px] font-black uppercase tracking-widest border-2 ${
                     activeCertCategory === cat.id 
-                    ? 'bg-slate-900 text-white border-slate-900' 
-                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md' 
+                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
                   }`}
                 >
-                   <span>{cat.icon}</span>
+                   <span className="text-sm">{cat.icon}</span>
                    <span>{cat.label.split(' ')[0]}</span>
                 </button>
               ))}
@@ -191,15 +191,15 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             <div className="mb-4 relative">
                <input 
                  type="text" 
-                 placeholder="Sertifika ara..." 
-                 className="w-full bg-slate-50 border-0 rounded-xl p-3 pl-10 text-xs font-bold"
+                 placeholder="Sertifika veya eğitim sorgula..." 
+                 className="w-full bg-slate-50/80 border border-slate-100 rounded-xl p-4 pl-12 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500/10 transition-all"
                  value={certSearch}
                  onChange={e => setCertSearch(e.target.value)}
                />
-               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredCerts.map(cert => {
                 const isSelected = formData.allTrainings.includes(cert.label);
                 return (
@@ -207,16 +207,25 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                     key={cert.id} 
                     type="button" 
                     onClick={() => toggleTraining(cert.label)} 
-                    className={`p-4 rounded-2xl text-left transition-all border-2 flex flex-col justify-between group ${
+                    className={`p-5 rounded-2xl text-left transition-all border-2 flex flex-col justify-start gap-2 group relative overflow-hidden ${
                       isSelected 
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
-                      : 'bg-white border-slate-50 text-slate-400 hover:border-orange-200'
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.01]' 
+                      : 'bg-white border-slate-200/50 text-slate-600 hover:border-orange-400/50 hover:bg-slate-50/30'
                     }`}
                   >
-                    <div className="space-y-1">
-                      <p className="text-[11px] font-black uppercase tracking-tight leading-tight">{cert.label}</p>
-                      <p className={`text-[9px] font-bold opacity-60 line-clamp-1`}>{cert.description}</p>
+                    <div className="relative z-10 space-y-1.5">
+                      <p className={`text-[13px] font-black uppercase tracking-tight leading-[1.2] ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+                        {cert.label}
+                      </p>
+                      <p className={`text-[11px] font-bold leading-relaxed ${isSelected ? 'text-slate-400' : 'text-slate-500/90'}`}>
+                        {cert.description}
+                      </p>
                     </div>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 text-orange-500">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -229,24 +238,24 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     return (
       <div className="space-y-4 animate-fade-in">
         {currentQuestions.map((q: Question, idx: number) => (
-          <div key={q.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group">
+          <div key={q.id} className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200/60 shadow-sm group">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xs font-black shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm font-black shrink-0 shadow-lg">
                 {idx + 1}
               </div>
-              <h4 className="text-lg font-black text-slate-900 leading-tight uppercase tracking-tight">
+              <h4 className="text-[19px] font-black text-slate-900 leading-tight uppercase tracking-tight italic">
                 {q.text}
               </h4>
             </div>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2.5">
               {(shuffledOptionsMap[q.id] || []).map((opt: string) => (
                 <button 
                   key={opt} 
                   onClick={() => setFormData(prev => ({ ...prev, answers: { ...prev.answers, [q.id]: opt } }))} 
-                  className={`text-left px-5 py-4 rounded-2xl border-2 transition-all text-xs font-bold uppercase tracking-tight ${
+                  className={`text-left px-6 py-5 rounded-2xl border-2 transition-all text-[13px] font-bold uppercase tracking-tight leading-snug ${
                     formData.answers[q.id] === opt 
-                    ? 'bg-orange-600 border-orange-600 text-white shadow-lg translate-x-1' 
-                    : 'bg-slate-50 border-transparent text-slate-500 hover:border-slate-200 hover:bg-white'
+                    ? 'bg-orange-600 border-orange-600 text-white shadow-xl translate-x-1' 
+                    : 'bg-slate-50/50 border-transparent text-slate-600 hover:border-orange-500/30 hover:bg-white'
                   }`}
                 >
                   {opt}
@@ -261,57 +270,58 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 mt-6 mb-12">
-      <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-xl overflow-hidden border border-white flex flex-col min-h-[70vh]">
+      <div className="bg-white/90 backdrop-blur-3xl rounded-[3rem] shadow-2xl overflow-hidden border border-white/50 flex flex-col min-h-[70vh]">
         
         {/* ULTRA-MINIMAL PROGRESS FLOW */}
-        <div className="bg-slate-950 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[8px] font-black text-orange-500 uppercase tracking-[0.3em]">MİA KLİNİK ADAPTASYON</span>
-              <span className="text-[8px] font-black text-white/20 uppercase">/ ETAP {currentStep + 1}</span>
+        <div className="bg-slate-950 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 relative overflow-hidden">
+          <div className="relative z-10 flex flex-col">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[9px] font-black text-orange-500 uppercase tracking-[0.4em]">MİA KLİNİK ADAPTASYON</span>
+              <span className="text-[9px] font-black text-white/20 uppercase">/ ETAP {currentStep + 1}</span>
             </div>
-            <h1 className="text-lg md:text-xl font-black text-white uppercase tracking-tighter italic leading-none">
+            <h1 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter italic leading-none">
               {FORM_STEPS[currentStep].title}
             </h1>
           </div>
           
           {/* SLIM PROGRESS LINE */}
-          <div className="flex items-center gap-1.5 w-full md:w-64">
+          <div className="relative z-10 flex items-center gap-1.5 w-full md:w-64">
             {FORM_STEPS.map((_, i) => (
               <div 
                 key={i} 
-                className={`h-1 flex-1 rounded-full transition-all duration-1000 ${
-                  i <= currentStep ? 'bg-orange-500' : 'bg-white/10'
+                className={`h-1.5 flex-1 rounded-full transition-all duration-1000 ${
+                  i <= currentStep ? 'bg-orange-500 shadow-[0_0_10px_rgba(234,88,12,0.5)]' : 'bg-white/10'
                 }`}
               />
             ))}
           </div>
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px] pointer-events-none"></div>
         </div>
         
         {/* COMPACT DESCRIPTION BAR */}
-        <div className="bg-slate-50/50 px-6 py-2 border-b border-slate-100">
-           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+        <div className="bg-slate-50/80 px-6 py-3 border-b border-slate-100">
+           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
              {FORM_STEPS[currentStep].description}
            </p>
         </div>
 
-        <div className="p-4 md:p-8 flex-1 bg-[#FDFDFD]">
+        <div className="p-4 md:p-10 flex-1 bg-[#FDFDFD]">
           {renderStepContent()}
         </div>
 
         {/* COMPACT FOOTER ACTIONS */}
-        <div className="p-6 bg-white border-t border-slate-50 flex justify-between items-center sticky bottom-0 z-50">
+        <div className="p-8 bg-white border-t border-slate-100 flex justify-between items-center sticky bottom-0 z-50 backdrop-blur-md bg-white/95">
           <button 
             onClick={() => currentStep > 0 && setCurrentStep(c => c - 1)} 
-            className={`px-6 py-3 font-black text-[10px] uppercase tracking-widest transition-all rounded-xl ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900'}`}
+            className={`px-8 py-4 font-black text-[11px] uppercase tracking-widest transition-all rounded-xl ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
           >
-            ← GERİ
+            ← GERİ DÖN
           </button>
           <button 
             onClick={handleNext} 
-            className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl active:scale-95"
+            className="px-10 py-5 bg-slate-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-orange-600 transition-all shadow-2xl active:scale-95"
           >
-            {currentStep === FORM_STEPS.length - 1 ? 'MÜHÜRLE VE GÖNDER' : 'SONRAKİ →'}
+            {currentStep === FORM_STEPS.length - 1 ? 'MÜHÜRLE VE GÖNDER' : 'SONRAKİ ADIM →'}
           </button>
         </div>
       </div>
