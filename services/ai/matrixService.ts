@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik metodolojik veya etik cevaplarına dayandığının klinik analizi." },
+    reasoning: { type: Type.STRING, description: "Bu puanın adayın hangi metodolojik yanıtlarına ve klinik literatüre dayandığının analizi." },
     behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve metodolojik tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve vaka başarı oranları üzerindeki 12 aylık somut etkisi." },
+    institutionalImpact: { type: Type.STRING, description: "Bu adayın kurumda çalışması durumunda vaka başarı oranları ve klinik kalite üzerindeki 12 aylık etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -21,23 +21,23 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
-    MODEL: Gemini 3 Flash Deep Analysis.
+    ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı ve Akademik Akreditasyon Denetçisi.
+    MODEL: Gemini 3 Flash Deep Analysis Engine.
     
-    ANALİZ PROTOKOLÜ (4 SEÇENEKLİ SORGULAMA):
-    Adayın verdiği her yanıt, 4 seçenekli bir matris üzerinden değerlendirilmeli:
-    1. 'Altın Standart' yanıtlar liyakat skorunu artırır.
-    2. 'Kaçınmacı' veya 'Sorumluluk Devreden' yanıtlar 'Direnç (Resilience)' skorunu düşürür.
-    3. 'Etik Zafiyet' içeren yanıtlar dürüstlük endeksini (integrityIndex) %40 oranında baltalar.
-    4. 'Gelişime Kapalı' yanıtlar vizyon puanını düşürür.
+    ANALİZ PROTOKOLÜ (KLİNİK OTOPSİ):
+    1. SERTİFİKA DOĞRULAMA (Kritik): Adayın 'allTrainings' listesindeki her sertifika için 'answers' içindeki 'vq_' ile başlayan soruları çapraz sorgula. 
+       - Sertifikası olup 'vq_' sorusunda hatalı veya yüzeysel yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını %30 artır.
+       - Sertifika beyanına rağmen temel terminolojiyi yanlış kullanan adayları 'Kritik Risk' olarak işaretle.
 
-    DİKEY ALAN TALİMATLARI:
-    - ETİK: Veli ile profesyonel mesafe, hediye kabulü ve kurum sırlarını koruma sadakati.
-    - DİRENÇ: Kriz anında regülasyon kapasitesi, ekip içindeki toksikleşme potansiyeli.
-    - VİZYON: Teknoloji adaptasyonu ve kurumda kalıcı olma (Retention) projeksiyonu.
-    - TEKNİK DOĞRULAMA (vq_): Sertifikası olup teknik soruda 'hatalı' veya 'yüzeysel' yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını artır.
+    2. DİKEY ALAN ANALİZİ:
+       - OSB: ABA, ESDM, ETEÇOM bilgisi.
+       - ÖÖG: PASS, DISREK, PREP bilgisi.
+       - AKADEMİK: Okuma-yazma müdahalesi (Orton-Gillingham vb.) ve Diskalkuli bilgisi.
+       - PSİKOLOJİ: Oyun terapisi ve BDT temelli sınırlar.
 
-    DİL: Tamamen Türkçe, sert akademik ton, veri odaklı ve nedensel.
+    3. YARGI TONU: Sert, akademik, kanıta dayalı ve prediktif. Sadece mevcut hali değil, kurumdaki 2. yılını tahmin et.
+
+    DİL: Tamamen Türkçe.
   `;
 
   const responseSchema = {
@@ -56,7 +56,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
           burnoutRisk: { type: Type.NUMBER },
           learningVelocity: { type: Type.NUMBER },
           leadershipPotential: { type: Type.NUMBER },
-          evolutionPath: { type: Type.STRING }
+          evolutionPath: { type: Type.STRING, description: "Adayın 2 yıl sonraki akademik yetkinlik projeksiyonu." }
         },
         required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
       },
@@ -101,11 +101,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ VE TÜM YANITLAR: ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ (BEYANLAR VE YANITLAR): ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 24576 },
+      thinkingConfig: { thinkingBudget: 32768 },
       responseSchema: responseSchema
     }
   });
