@@ -37,9 +37,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in min-h-screen max-w-full mx-auto w-full relative pt-6 pb-12 px-4 md:px-8">
-      {/* SOL KOMUTA MERKEZİ - Optimize edilmiş genişlik */}
-      <aside className="no-print shrink-0">
+    <div className="flex flex-col gap-4 animate-fade-in min-h-screen w-full relative">
+      {/* ÜST KOMUTA MERKEZİ (ARTIK YATAY) */}
+      <header className="no-print w-full sticky top-0 z-[70] px-4">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -47,15 +47,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
           onRefresh={props.onRefresh}
           isProcessing={props.isProcessing}
         />
-      </aside>
+      </header>
       
-      {/* ANA İÇERİK KANVASI - Maksimum yayılım */}
-      <main className="flex-1 w-full min-w-0">
-        <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.05)] p-4 md:p-8 min-h-[92vh] relative overflow-hidden flex flex-col">
+      {/* ANA İÇERİK KANVASI - PANORAMİK YAYILIM */}
+      <main className="flex-1 w-full px-2 md:px-4 pb-8">
+        <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-slate-200 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.05)] p-2 md:p-10 min-h-[90vh] relative overflow-hidden flex flex-col w-full">
           {/* Arka plan derinlik efekti */}
-          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-slate-50 rounded-full blur-[100px] -mr-80 -mt-80 opacity-40 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-[60rem] h-[60rem] bg-slate-50 rounded-full blur-[120px] -mr-96 -mt-96 opacity-40 pointer-events-none"></div>
           
-          <div className="relative z-10 flex-1 flex flex-col">
+          <div className="relative z-10 flex-1 flex flex-col w-full">
             {renderContent()}
           </div>
         </div>

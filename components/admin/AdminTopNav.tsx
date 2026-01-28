@@ -42,57 +42,58 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   ];
 
   return (
-    <div className="flex flex-row lg:flex-col gap-4 w-full lg:w-[240px] lg:sticky lg:top-8 no-print z-[60] animate-fade-in h-fit">
-      {/* BRAND UNIT */}
-      <div className="hidden lg:flex items-center gap-3 p-5 bg-slate-900 rounded-[2rem] shadow-xl border border-slate-800 overflow-hidden relative group">
-        <div className="w-10 h-10 bg-orange-600 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg relative z-10">YG</div>
-        <div className="relative z-10 min-w-0">
-          <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest leading-none">AKADEMİ</p>
-          <h2 className="text-[12px] font-black text-white uppercase tracking-tighter mt-1 truncate">{institutionName}</h2>
-        </div>
-      </div>
-
-      {/* NAV LINKS */}
-      <nav className="flex-1 flex flex-row lg:flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-xl p-2 lg:p-3 space-y-0 lg:space-y-4 overflow-x-auto lg:overflow-x-hidden">
-        {GROUPS.map((group, gIdx) => (
-          <div key={gIdx} className="flex flex-row lg:flex-col px-1 lg:px-0 gap-1 lg:gap-1">
-            <span className="hidden lg:block text-[8px] font-black text-slate-300 uppercase tracking-[0.3em] mb-1 ml-4">{group.label}</span>
-            {group.items.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`group flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 ${
-                  activeTab === item.id 
-                  ? 'bg-orange-600 text-white shadow-xl shadow-orange-600/20 translate-x-1' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <svg className={`w-5 h-5 shrink-0 ${activeTab === item.id ? 'text-white' : 'text-slate-300 group-hover:text-orange-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={item.icon} />
-                </svg>
-                <span className={`text-[11px] font-black uppercase tracking-tight whitespace-nowrap ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
-            {gIdx !== GROUPS.length - 1 && <div className="hidden lg:block h-[1px] bg-slate-50 mx-4 my-2"></div>}
+    <div className="flex flex-col bg-white border border-slate-200 shadow-2xl rounded-[2.5rem] mt-2 p-2">
+      <div className="flex items-center justify-between gap-4 px-6 h-16">
+        {/* BRAND UNIT - LEFT */}
+        <div className="flex items-center gap-4 py-2 px-4 bg-slate-900 rounded-2xl shadow-lg border border-slate-800">
+          <div className="w-8 h-8 bg-orange-600 text-white rounded-lg flex items-center justify-center font-black text-sm">YG</div>
+          <div className="hidden md:block">
+            <h2 className="text-[10px] font-black text-white uppercase tracking-tighter leading-none">{institutionName}</h2>
+            <p className="text-[7px] font-black text-orange-500 uppercase tracking-widest mt-1">YÖNETİM KOMUTASI</p>
           </div>
-        ))}
+        </div>
 
-        {/* REFRESH BOTTOM */}
-        <div className="hidden lg:block pt-2 mt-auto border-t border-slate-50">
+        {/* NAVIGATION LINKS - CENTER */}
+        <nav className="flex-1 flex items-center justify-center gap-1 md:gap-4 overflow-x-auto no-scrollbar">
+          {GROUPS.map((group, gIdx) => (
+            <div key={gIdx} className="flex items-center gap-1 md:gap-2 px-2 md:px-4 border-r last:border-0 border-slate-100 h-10">
+              <span className="hidden xl:block text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">{group.label}</span>
+              {group.items.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === item.id 
+                    ? 'bg-orange-600 text-white shadow-lg' 
+                    : 'text-slate-500 hover:bg-slate-50'
+                  }`}
+                >
+                  <svg className={`w-4 h-4 shrink-0 ${activeTab === item.id ? 'text-white' : 'text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={item.icon} />
+                  </svg>
+                  <span className={`text-[10px] font-black uppercase tracking-tight whitespace-nowrap ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`}>
+                    {item.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        {/* ACTIONS - RIGHT */}
+        <div className="flex items-center gap-3">
            <button
               onClick={onRefresh}
               disabled={isProcessing}
-              className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-500 bg-slate-50 text-slate-400 hover:bg-orange-600 hover:text-white ${isProcessing ? 'opacity-70' : ''}`}
+              className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 bg-slate-50 text-slate-400 hover:bg-orange-600 hover:text-white ${isProcessing ? 'opacity-70' : ''}`}
+              title="Sistemi Tazela"
            >
               <svg className={`w-5 h-5 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
               </svg>
-              <span className="text-[11px] font-black uppercase tracking-tight">SİSTEMİ TAZELA</span>
            </button>
         </div>
-      </nav>
+      </div>
     </div>
   );
 };

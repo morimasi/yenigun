@@ -87,26 +87,26 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
-      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[60] h-28 flex items-center no-print shadow-sm">
-        <div className="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
+      <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[100] h-20 md:h-24 flex items-center no-print shadow-sm">
+        <div className="w-full max-w-[98vw] mx-auto px-4 md:px-10 flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setView('candidate')}>
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black" style={{ backgroundColor: config.accentColor }}>YG</div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tighter uppercase text-slate-900">{config.institutionName}</span>
-              <span className="text-[8px] font-black text-orange-600 uppercase tracking-[0.3em] opacity-60">Bulut Tabanlı Akademik Takip</span>
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black" style={{ backgroundColor: config.accentColor }}>YG</div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-xl md:text-2xl font-black tracking-tighter uppercase text-slate-900 leading-none">{config.institutionName}</span>
+              <span className="text-[7px] md:text-[8px] font-black text-orange-600 uppercase tracking-[0.3em] opacity-60 mt-1">Bulut Tabanlı Akademik Takip</span>
             </div>
           </div>
-          <div className="flex bg-slate-100 p-1.5 rounded-full border border-slate-200">
-            <button onClick={() => setView('candidate')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru</button>
-            <button onClick={() => setView('admin')} className={`px-10 py-3 rounded-full text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Yönetim</button>
+          <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200">
+            <button onClick={() => setView('candidate')} className={`px-6 md:px-10 py-2 md:py-3 rounded-full text-[10px] md:text-[11px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru</button>
+            <button onClick={() => setView('admin')} className={`px-6 md:px-10 py-2 md:py-3 rounded-full text-[10px] md:text-[11px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-slate-400 hover:text-slate-600'}`}>Yönetim</button>
           </div>
           {isLoggedIn && view === 'admin' && (
-            <button onClick={() => { logout(); setView('candidate'); }} className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-700 ml-4">Güvenli Çıkış</button>
+            <button onClick={() => { logout(); setView('candidate'); }} className="text-[9px] md:text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-700 ml-2 md:ml-4">Çıkış</button>
           )}
         </div>
       </nav>
 
-      <main className="py-20 px-8 max-w-7xl mx-auto min-h-[calc(100vh-112px)] relative">
+      <main className={`mx-auto relative transition-all duration-700 ${view === 'admin' ? 'max-w-full px-2 md:px-4' : 'max-w-7xl px-8 py-12'}`}>
         {view === 'candidate' ? (
           <CandidateForm onSubmit={onCandidateSubmit} />
         ) : (
@@ -121,13 +121,10 @@ const App: React.FC = () => {
       </main>
 
       {isProcessing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center" aria-live="assertive">
-          <div className="bg-white p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center" aria-live="assertive">
+          <div className="bg-white p-12 md:p-16 rounded-[4rem] shadow-2xl flex flex-col items-center gap-8 animate-scale-in">
             <div className="w-16 h-16 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
-            <div className="text-center">
-              <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm">Sunucu Etkileşimi</p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Veri Bütünlüğü Doğrulanıyor...</p>
-            </div>
+            <p className="font-black text-slate-900 uppercase tracking-[0.3em] text-sm text-center">Veri Bütünlüğü Doğrulanıyor...</p>
           </div>
         </div>
       )}

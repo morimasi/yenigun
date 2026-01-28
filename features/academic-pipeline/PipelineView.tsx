@@ -2,7 +2,6 @@
 import React, { useState, useMemo } from 'react';
 import { Candidate, Branch, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
-import { StatusBadge } from '../../shared/ui/StatusBadge';
 
 interface PipelineViewProps {
   candidates: Candidate[];
@@ -12,221 +11,81 @@ interface PipelineViewProps {
   onRefresh: () => void;
 }
 
-type SortKey = 'score' | 'age' | 'experience' | 'timestamp' | 'name';
-type SortOrder = 'asc' | 'desc';
-
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [hoveredCandidate, setHoveredCandidate] = useState<Candidate | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [searchInput, setSearchInput] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   
-  const [filters, setFilters] = useState({
-    branches: [] as string[],
-    statuses: [] as string[],
-    genders: [] as string[],
-    ageRange: [18, 65] as [number, number],
-    expRange: [0, 50] as [number, number],
-    scoreRange: [0, 100] as [number, number],
-    deptSearch: '',
-    dateSince: ''
-  });
-
-  const [sortConfig] = useState<{ key: SortKey; order: SortOrder }[]>([
-    { key: 'timestamp', order: 'desc' }
-  ]);
-
   const selectedCandidate = useMemo(() => 
     candidates.find(c => c.id === selectedId), 
     [candidates, selectedId]
   );
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAppliedSearch(searchInput.trim());
-  };
-
-  const filteredAndSortedCandidates = useMemo(() => {
-    if (!candidates || !Array.isArray(candidates)) return [];
-
+  const filteredCandidates = useMemo(() => {
     return candidates.filter(c => {
-      const name = (c.name || '').toLocaleLowerCase('tr-TR').trim();
-      const term = (appliedSearch || '').toLocaleLowerCase('tr-TR').trim();
-      const matchesSearch = term === '' || name.includes(term);
-      const matchesBranch = filters.branches.length === 0 || (c.branch && (filters.branches as string[]).includes(c.branch));
-      const matchesStatus = filters.statuses.length === 0 || (c.status && (filters.statuses as string[]).includes(c.status));
-      const matchesAge = c.age >= filters.ageRange[0] && c.age <= filters.ageRange[1];
-      const matchesExp = (c.experienceYears || 0) >= filters.expRange[0] && (c.experienceYears || 0) <= filters.expRange[1];
-      const score = c.report?.score ?? -1;
-      const matchesScore = score === -1 ? filters.scoreRange[0] === 0 : (score >= filters.scoreRange[0] && score <= filters.scoreRange[1]);
-
-      return matchesSearch && matchesBranch && matchesStatus && matchesAge && matchesExp && matchesScore;
-    }).sort((a, b) => {
-      for (const { key, order } of sortConfig) {
-        let valA: any, valB: any;
-        switch (key) {
-          case 'score': valA = a.report?.score ?? -1; valB = b.report?.score ?? -1; break;
-          case 'age': valA = a.age ?? 0; valB = b.age ?? 0; break;
-          case 'experience': valA = a.experienceYears ?? 0; valB = b.experienceYears ?? 0; break;
-          case 'name': valA = (a.name || '').toLocaleLowerCase('tr-TR'); valB = (b.name || '').toLocaleLowerCase('tr-TR'); break;
-          default: valA = a.timestamp ?? 0; valB = b.timestamp ?? 0; break;
-        }
-        if (valA !== valB) return order === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-      }
-      return 0;
+      const name = (c.name || '').toLocaleLowerCase('tr-TR');
+      return name.includes(searchInput.toLocaleLowerCase('tr-TR'));
     });
-  }, [candidates, appliedSearch, filters, sortConfig]);
-
-  const toggleFilter = (category: 'branches' | 'statuses' | 'genders', value: string) => {
-    const current = filters[category];
-    const next = (current as string[]).includes(value)
-      ? (current as string[]).filter(v => v !== value)
-      : [...(current as string[]), value];
-    setFilters(prev => ({ ...prev, [category]: next }));
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
-  };
+  }, [candidates, searchInput]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-screen relative items-start flex-1" onMouseMove={handleMouseMove}>
+    <div className="flex flex-col lg:flex-row gap-4 min-h-[85vh] w-full relative items-stretch">
       
-      {/* HOVER PREVIEW POPUP */}
-      {hoveredCandidate && (
-        <div 
-          className="fixed z-[999] pointer-events-none transition-all duration-300 animate-scale-in"
-          style={{ left: mousePos.x + 20, top: mousePos.y - 100 }}
-        >
-          <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.3)] border border-white/10 w-[320px] relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-20">
-               <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
-            </div>
-            
-            <div className="relative z-10 space-y-6">
-              <div>
-                <h5 className="text-[9px] font-black text-orange-500 uppercase tracking-[0.4em] mb-2">AKADEMİK ÖNİZLEME</h5>
-                <p className="text-xl font-black tracking-tight leading-none uppercase">{hoveredCandidate.name}</p>
-                <div className="flex items-center gap-3 mt-3">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">{hoveredCandidate.gender}</span>
-                  <div className="w-1 h-1 rounded-full bg-slate-700"></div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">{hoveredCandidate.age} Yaş</span>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-white/5">
-                <div className="flex flex-col gap-1">
-                   <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">MEZUNİYET</span>
-                   <p className="text-[11px] font-bold text-slate-200 leading-tight uppercase truncate">{hoveredCandidate.university}</p>
-                </div>
-
-                <div className="flex justify-between items-end">
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">DENEYİM</span>
-                      <p className="text-[11px] font-black text-orange-500 uppercase tracking-widest">{hoveredCandidate.experienceYears} YIL</p>
-                   </div>
-                   {hoveredCandidate.report && (
-                     <div className="text-right">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">LİYAKAT</span>
-                        <p className="text-2xl font-black text-white leading-none">%{hoveredCandidate.report.score}</p>
-                     </div>
-                   )}
-                </div>
-              </div>
-            </div>
-            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl"></div>
-          </div>
-        </div>
-      )}
-
-      {/* SOL PANEL - Optimize edilmiş genişlik */}
-      <div className="lg:w-[300px] flex flex-col gap-4 shrink-0 no-print sticky top-8 max-h-[90vh]">
-        <div className="bg-slate-50/50 p-4 rounded-[2rem] border border-slate-100 space-y-4">
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <input 
+      {/* SOL: KOMPAKT ADAY LİSTESİ */}
+      <div className="lg:w-[260px] shrink-0 no-print flex flex-col gap-4">
+        <div className="bg-slate-50/80 p-3 rounded-[2rem] border border-slate-100 shadow-inner">
+           <input 
               type="text" 
-              placeholder="Arama..." 
-              className="w-full bg-white rounded-xl p-4 text-[12px] font-bold outline-none border border-slate-100 shadow-sm focus:border-orange-500 transition-all"
+              placeholder="Hızlı Bul..." 
+              className="w-full bg-white rounded-xl p-3 text-[11px] font-bold outline-none border border-slate-100 focus:border-orange-500 transition-all shadow-sm"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
             />
-          </form>
-
-          <button 
-            onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-            className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-orange-600 transition-all shadow-md"
-          >
-            {isFilterPanelOpen ? 'GİZLE' : `FİLTRELE (${filteredAndSortedCandidates.length})`}
-          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2">
-          {isFilterPanelOpen ? (
-            <div className="space-y-4 animate-slide-down">
-              <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
-                 <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">KLİNİK BRANŞLAR</h4>
-                 <div className="flex flex-wrap gap-1.5">
-                    {Object.values(Branch).map(b => (
-                      <button
-                        key={b}
-                        onClick={() => toggleFilter('branches', b)}
-                        className={`px-3 py-2 rounded-lg text-[8px] font-black uppercase border transition-all ${
-                          (filters.branches as string[]).includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
-                        }`}
-                      >
-                        {b.split(' ')[0]}
-                      </button>
-                    ))}
-                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2 animate-slide-up">
-              {filteredAndSortedCandidates.map((c: Candidate) => (
-                <div 
-                  key={c.id} 
-                  onClick={() => { setSelectedId(c.id); }}
-                  onMouseEnter={() => setHoveredCandidate(c)}
-                  onMouseLeave={() => setHoveredCandidate(null)}
-                  className={`p-4 rounded-[1.5rem] border transition-all cursor-pointer relative group ${
-                    selectedId === c.id ? 'bg-white border-orange-600 shadow-xl translate-x-1 ring-4 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center font-black text-[13px] shadow-sm ${
-                      c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
-                    }`}>
-                      {c.report ? c.report.score : '?'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-slate-900 text-[11px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
-                      <p className="text-[8px] font-bold text-slate-400 uppercase truncate mt-1 tracking-widest">{(c.branch as string)?.split(' ')[0]} • {c.experienceYears}Y</p>
-                    </div>
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] pr-1 custom-scrollbar space-y-2">
+           {filteredCandidates.map(c => (
+              <div 
+                key={c.id} 
+                onClick={() => setSelectedId(c.id)}
+                className={`p-3 rounded-[1.5rem] border transition-all cursor-pointer group ${
+                  selectedId === c.id 
+                  ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]' 
+                  : 'bg-white border-slate-50 hover:border-slate-200 text-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center font-black text-[10px] ${
+                    selectedId === c.id ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {c.report ? c.report.score : '?'}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-black text-[10px] truncate uppercase leading-none">{c.name}</h4>
+                    <p className="text-[7px] font-bold opacity-60 uppercase mt-1 truncate">{c.branch.split(' ')[0]}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+           ))}
         </div>
       </div>
 
-      {/* SAĞ PANEL - Maksimum Genişlik ve Esneklik */}
-      <div className="flex-1 min-w-0 w-full h-full">
+      {/* SAĞ: PANORAMİK DETAYLI ANALİZ KANVASI */}
+      <div className="flex-1 min-w-0 w-full flex flex-col">
         {selectedCandidate ? (
-          <CandidateDetail 
-            candidate={selectedCandidate}
-            config={config}
-            onUpdate={onUpdateCandidate}
-            onDelete={() => { if (confirm('Kayıt silinecek. Emin misiniz?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
-          />
+          <div className="animate-scale-in flex-1 flex flex-col">
+            <CandidateDetail 
+              candidate={selectedCandidate}
+              config={config}
+              onUpdate={onUpdateCandidate}
+              onDelete={() => { if (confirm('Aday sistemden silinsin mi?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
+            />
+          </div>
         ) : (
-          <div className="flex-1 min-h-[80vh] bg-slate-50/50 border-2 border-dashed border-slate-100 rounded-[4rem] flex flex-col items-center justify-center text-center p-12 opacity-40 sticky top-8">
-             <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl">
+          <div className="flex-1 min-h-[600px] bg-slate-50/50 border-4 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center opacity-30 text-center p-12">
+             <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center mb-6 shadow-xl">
                 <svg className="w-10 h-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
              </div>
-             <p className="text-slate-400 font-black uppercase tracking-[0.8em] text-[12px]">Liyakat Dosyası Bekleniyor</p>
+             <p className="text-slate-400 font-black uppercase tracking-[0.6em] text-[12px]">BİR ADAY DOSYASI SEÇEREK ANALİZE BAŞLAYIN</p>
           </div>
         )}
       </div>
