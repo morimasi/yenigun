@@ -90,8 +90,12 @@ const StaffAssessmentPortal: React.FC = () => {
 
   const handleModuleComplete = async () => {
     setIsSaving(true);
-    // Explicitly type arithmetic operands as numbers to prevent TypeScript unknown inference errors.
-    const totalScore = Object.values(answers).reduce((a: number, b: number) => a + b, 0) / activeModule!.questions.length;
+    
+    // Fix: Aritmetik işlem öncesi tipleri açıkça belirleyerek 'unknown' çıkarım hatasını gideriyoruz.
+    const answerValues: number[] = Object.values(answers);
+    const sum: number = answerValues.reduce((a: number, b: number): number => a + b, 0);
+    const divisor: number = activeModule?.questions.length || 1;
+    const totalScore: number = sum / divisor;
     
     try {
       await fetch(`/api/staff?action=save_assessment`, {
@@ -276,7 +280,7 @@ const StaffAssessmentPortal: React.FC = () => {
                       className={`p-10 rounded-[3rem] border-4 text-left transition-all relative group/opt flex items-center gap-8 ${
                         answers[q.id] === opt.clinicalValue 
                         ? 'bg-slate-950 border-slate-950 text-white shadow-4xl translate-x-6' 
-                        : 'bg-slate-50/50 border-transparent text-slate-500 hover:border-orange-500/40 hover:bg-white'
+                        : 'bg-slate-50/50 border-transparent text-slate-600 hover:border-orange-500/40 hover:bg-white'
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center shrink-0 transition-all ${

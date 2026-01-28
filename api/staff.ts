@@ -16,10 +16,49 @@ export default async function handler(request: Request) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
+    // --- OTOMATİK ŞEMA KURULUMU (SELF-HEALING) ---
+    await sql`
+      CREATE TABLE IF NOT EXISTS staff (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        university TEXT,
+        department TEXT,
+        experience_years INTEGER DEFAULT 0,
+        all_trainings JSONB DEFAULT '[]'::jsonb,
+        onboarding_complete BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS staff_assessments (
+        id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
+        staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
+        battery_id TEXT NOT NULL,
+        answers JSONB NOT NULL,
+        score INTEGER NOT NULL,
+        ai_tags JSONB DEFAULT '[]'::jsonb,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS staff_idp (
+        id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
+        staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
+        data JSONB NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // 1. STAFF AUTH (LOGIN)
     if (method === 'POST' && searchParams.get('action') === 'login') {
       const { email, password } = await request.json();
-      // Gerçek senaryoda bcrypt kullanılmalı, burada demo amaçlı basit kontrol yapıyoruz.
       const { rows } = await sql`SELECT * FROM staff WHERE email = ${email} AND password_hash = ${password}`;
       
       if (rows.length > 0) {
@@ -55,16 +94,17 @@ export default async function handler(request: Request) {
     // 4. GET STAFF DATA
     if (method === 'GET') {
       const staffId = searchParams.get('staffId');
-      const { rows: staff } = await sql`SELECT * FROM staff WHERE id = ${staffId}`;
+      const { rows: staffRows } = await sql`SELECT * FROM staff WHERE id = ${staffId}`;
       const { rows: assessments } = await sql`SELECT * FROM staff_assessments WHERE staff_id = ${staffId} ORDER BY timestamp DESC`;
       
       return new Response(JSON.stringify({ 
-        profile: staff[0], 
+        profile: staffRows[0], 
         assessments: assessments 
       }), { status: 200, headers });
     }
 
   } catch (error: any) {
+    console.error("Staff API Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
   }
   return new Response(null, { status: 405 });
