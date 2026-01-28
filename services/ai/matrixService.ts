@@ -9,9 +9,9 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Seçilen 4 seçenekli cevapların hangisinin klinik/etik olarak 'altın standart' olduğunu ve adayın neden bu tercihi yaptığının analizi." },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevap örüntülerinden saptanan mikro-davranışsal eğilimler." },
-    institutionalImpact: { type: Type.STRING, description: "Adayın bu boyuttaki yetkinliğinin kurumun operasyonel verimliliği üzerindeki net etkisi." },
+    reasoning: { type: Type.STRING, description: "Bu skorun adayın hangi spesifik metodolojik veya etik cevaplarına dayandığının klinik analizi." },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve metodolojik tutum emareleri." },
+    institutionalImpact: { type: Type.STRING, description: "Bu yetkinlik düzeyinin kurum kültürü ve vaka başarı oranları üzerindeki 12 aylık somut etkisi." },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -24,28 +24,20 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Deep Analysis.
     
-    ANALİZ PROTOKOLÜ (MİA V5):
-    Adayın 4 seçenek arasından yaptığı seçimleri aşağıdaki akademik filtrelerden geçirerek liyakat matrisini oluştur:
+    ANALİZ PROTOKOLÜ (4 SEÇENEKLİ SORGULAMA):
+    Adayın verdiği her yanıt, 4 seçenekli bir matris üzerinden değerlendirilmeli:
+    1. 'Altın Standart' yanıtlar liyakat skorunu artırır.
+    2. 'Kaçınmacı' veya 'Sorumluluk Devreden' yanıtlar 'Direnç (Resilience)' skorunu düşürür.
+    3. 'Etik Zafiyet' içeren yanıtlar dürüstlük endeksini (integrityIndex) %40 oranında baltalar.
+    4. 'Gelişime Kapalı' yanıtlar vizyon puanını düşürür.
 
-    1. ETİK & VELİ YÖNETİMİ (Kritik Sınır Analizi):
-       - Veli ile sosyal medya iletişimi, kurum dışı seans teklifi ve meslektaş eleştirisi sorularına verilen yanıtları "Sınır Koruma" (Boundary Protection) ölçeğinde değerlendir.
-       - "Profesyonel Mesafe"yi koruyamayan adaylar için 'Integrity Index' puanını düşür.
+    DİKEY ALAN TALİMATLARI:
+    - ETİK: Veli ile profesyonel mesafe, hediye kabulü ve kurum sırlarını koruma sadakati.
+    - DİRENÇ: Kriz anında regülasyon kapasitesi, ekip içindeki toksikleşme potansiyeli.
+    - VİZYON: Teknoloji adaptasyonu ve kurumda kalıcı olma (Retention) projeksiyonu.
+    - TEKNİK DOĞRULAMA (vq_): Sertifikası olup teknik soruda 'hatalı' veya 'yüzeysel' yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını artır.
 
-    2. DİRENÇ & TAKIM UYUMU (Psikolojik Dayanıklılık):
-       - Krizli seans yönetimi, eleştiriye tolerans ve çatışma yönetimi yanıtlarını "Burnout Resistance" (Tükenmişlik Direnci) ekseninde işle.
-       - Eleştiriyi "Kişisel Saldırı" olarak gören veya krizden kaçınan adaylarda 'Sustainability' puanını düşük tut.
-
-    3. VİZYON & SADAKAT (Gelişim Potansiyeli):
-       - Akademik literatür takibi, teknoloji adaptasyonu ve 3 yıllık kariyer planı yanıtlarını "Learning Velocity" (Öğrenme Hızı) olarak etiketle.
-       - Kendi merkezini açma planı olan veya statükocu adaylarda 'Institutional Loyalty' riskini raporla.
-
-    4. KLİNİK TEKNİK (ABA & ETEÇOM):
-       - 4 seçenekli sorularda en doğru (Golden) cevabı seçip seçmediğini denetle.
-       - Yanlış teknik terim kullanımı 'Social Masking' (Maskeleme) skorunu %40 artırır.
-
-    DİL VE ÜSLUP:
-    - Analitik, akademik, sert ve veri odaklı ol. 
-    - Varsayımlar üzerinden değil, adayın 'answers' verisindeki somut tercihler üzerinden nedensellik kur.
+    DİL: Tamamen Türkçe, sert akademik ton, veri odaklı ve nedensel.
   `;
 
   const responseSchema = {
@@ -109,7 +101,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAYIN TÜM CEVAPLARI VE PROFİLİ: ${JSON.stringify(candidate)}`,
+    contents: `ADAY VERİLERİ VE TÜM YANITLAR: ${JSON.stringify(candidate)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
