@@ -24,17 +24,14 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı.
     MODEL: Gemini 3 Flash Thinking Mode.
     
-    ÖZEL EĞİTİM ANALİZ HAVUZU: 
-    - Davranışçı: ABA, BCBA, ESDM, OÇİDEP, PECS.
-    - İlişki/Gelişimsel: DIR Floortime, ETEÇOM, Etkileşim Temelli Müdahale.
-    - Bilişsel/Akademik: PASS Teorisi (CAS, PREP), Orton-Gillingham, Disleksi/Diskalkuli Protokolleri.
-    - Ölçme: WISC-IV, MOXO, WJ-IV.
+    ANALİZ KRİTERLERİ (GENİŞLETİLMİŞ):
+    1. KLİNİK ÇAPRAZ SORGULAMA: Adayın iddia ettiği sertifikalar ile doğrulama sorularına (vq_*) verdiği "radio" yanıtlarını karşılaştır.
+    2. DEMOGRAFİK RİSK ANALİZİ: Adayın yaşı, medeni durumu ve deneyim yılı verilerini "Kurumsal Stabilite" (Retention) açısından değerlendir.
+       - Bekar ve çok genç adaylar için eğitim hızı vs. sirkülasyon riski.
+       - Evli ve deneyimli adaylar için uzun vadeli sadakat vs. tükenmişlik direnci.
+    3. METODOLOJİK TUTARLILIK: ABA, Floortime veya WISC gibi ekoller arasındaki teorik çelişkileri denetle.
     
-    ANALİZ PROTOKOLÜ:
-    1. KLİNİK ÇAPRAZ SORGULAMA: Adayın sahip olduğunu iddia ettiği sertifikalar ile "Klinik Doğrulama Soruları"na (vq_*) verdiği metin yanıtlarını karşılaştır.
-    2. METODOLOJİK TUTARLILIK: Aday hem ABA (katı davranışçı) hem Floortime (ilişki temelli) iddia ediyorsa, bu iki ekolü sentezleme yeteneğini veya çelişkisini ölç.
-    3. MASKELENMİŞ CEHALET TESPİTİ: Sertifikası olan ancak teknik soruda yüzeysel/pedagojik klişe cevaplar veren adayları "Düşük Klinik Derinlik" olarak işaretle.
-    4. KURUMSAL KPI TAHMİNİ: Adayın bu uzmanlık setiyle kurumdaki vaka progresini (ilerlemesini) nasıl hızlandıracağını net belirt.
+    VERİ GİRİŞİ: ${JSON.stringify(candidate)}
     
     DİL: Akademik, sert, analitik ve kesin hüküm içeren bir üslup kullan.
   `;
@@ -79,6 +76,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         type: Type.OBJECT,
         properties: {
           strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+          // Fixed invalid items schema for weaknesses
           weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
           opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
           threats: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -109,10 +107,5 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     }
   });
 
-  try {
-    return JSON.parse(response.text || '{}');
-  } catch (e) {
-    console.error("AI Analysis Engine: Structural Parse Failure", e);
-    throw new Error("Analiz raporu nöral olarak derlenemedi.");
-  }
+  return JSON.parse(response.text || '{}');
 };

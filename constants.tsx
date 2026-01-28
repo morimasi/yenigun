@@ -2,7 +2,7 @@
 import { FormStep, Question, Branch, Certification } from './types';
 
 export const FORM_STEPS: FormStep[] = [
-  { id: 'personal', title: 'Akademik Kimlik', description: 'Yeni Gün Akademi uzmanlık filtresine hoş geldiniz.' },
+  { id: 'personal', title: 'Profil & Akademik Kimlik', description: 'Uzmanlık yolculuğunuzun dijital izini oluşturun.' },
   { id: 'clinical_logic', title: 'Klinik & Teknik Analiz', description: 'Alan yeterliliği ve bilimsel uygulama refleksi.' },
   { id: 'ethics_parent', title: 'Etik & Veli Yönetimi', description: 'Sınır ihlalleri ve manipülasyon direnci.' },
   { id: 'resilience_team', title: 'Direnç & Takım Uyumu', description: 'Tükenmişlik yönetimi ve kurumsal hiyerarşi.' },
@@ -19,16 +19,6 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       weightedOptions: [
         { label: 'Önce davranışı durdurmak için sonuç odaklı (ceza/mola) çalışırım.', weights: { technical: 0.4, clinical: 0.3, ethics: 0.5 }, analysisInsight: 'Geleneksel/Davranışçı katı tutum.' },
         { label: 'İşlevsel analiz yapar, öncülleri düzenleyerek alternatif davranış öğretirim.', weights: { technical: 1.0, clinical: 1.0, development: 0.9 }, analysisInsight: 'Modern kanıta dayalı klinik muhakeme.' }
-      ]
-    },
-    {
-      id: 'gen_2',
-      category: 'pedagogicalAnalysis',
-      text: 'Vakanın kronolojik yaşı 10, ancak gelişimsel yaşı 3. Akademik beceri mi yoksa özbakım/sosyal beceri mi önceliklendirilmelidir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Yaşıtlarını yakalaması için yoğun akademik program uygularım.', weights: { pedagogy: 0.4, fit: 0.5 }, analysisInsight: 'Sonuç odaklı ama gelişimsel gerçeklikten uzak.' },
-        { label: 'Bağımsız yaşam için işlevsel becerileri ve özbakımı merkeze alırım.', weights: { pedagogy: 1.0, clinical: 0.9, ethics: 1.0 }, analysisInsight: 'İşlevsel ve vaka odaklı pedagoji.' }
       ]
     }
   ],
@@ -49,7 +39,6 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
 };
 
 export const CERTIFICATIONS: Certification[] = [
-  // OTİZM VE DAVRANIŞ ANALİZİ (ABA & BEHAVIORAL)
   {
     id: 'aba_bcba',
     label: 'ABA (Uygulamalı Davranış Analizi)',
@@ -58,146 +47,44 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestion: {
       id: 'vq_aba',
       category: 'technicalExpertise',
-      text: 'Davranışın "İşlevsel Analizi"nde (Functional Analysis) elde edilen verinin, "Müdahale Planı"na (BIP) transformasyon sürecini vaka bazlı açıklayınız.',
-      type: 'text'
+      text: 'Davranışın "İşlevsel Analizi"nde (FA) elde edilen verinin Müdahale Planına (BIP) transformasyonunda en kritik adım hangisidir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Sadece sıklık verisine bakarak mola prosedürü uygulamak.', weights: { technical: 0.2 }, analysisInsight: 'Yüzeysel davranışçılık.' },
+        { label: 'Davranışın işlevini (Kaçma, Dikkat vb.) belirleyip "İşlevsel Değiştirme" odaklı protokol yazmak.', weights: { technical: 1.0 }, analysisInsight: 'Uzman seviye ABA bilgisi.' }
+      ]
     }
   },
-  {
-    id: 'esdm_denver',
-    label: 'ESDM (Early Start Denver Model)',
-    description: 'Erken çocukluk otizm müdahalesinde gelişimsel-davranışçı model.',
-    category: 'SPECIAL_ED_ABA',
-    verificationQuestion: {
-      id: 'vq_esdm',
-      category: 'technicalExpertise',
-      text: 'ESDM müfredatında "Ortak İlgi" (Joint Attention) basamaklarının, dil öncesi iletişimdeki stratejik rolünü belirtiniz.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'ocidep',
-    label: 'OÇİDEP / GOBİ',
-    description: 'Otistik çocuklar için bireyselleştirilmiş eğitim ve doğal öğretim programları.',
-    category: 'SPECIAL_ED_ABA',
-    verificationQuestion: {
-      id: 'vq_ocidep',
-      category: 'technicalExpertise',
-      text: 'OÇİDEP kapsamında "Doğal Öğretim" tekniklerinin "Genelleme" (Generalization) fazındaki avantajlarını literatürle açıklayınız.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'pecs_pyramid',
-    label: 'PECS (Resim Değiş Tokuşuna Dayalı İletişim)',
-    description: 'Alternatif ve Destekleyici İletişim (ADİ) protokolü.',
-    category: 'SPECIAL_ED_ABA',
-    verificationQuestion: {
-      id: 'vq_pecs',
-      category: 'technicalExpertise',
-      text: 'PECS 4. Aşamada (Cümle Kurma) öğrencinin "İstem" (Mand) becerisinin "Niteleyiciler" ile zenginleştirilmesindeki kritik hata paylarını yazınız.',
-      type: 'text'
-    }
-  },
-
-  // GELİŞİMSEL VE İLİŞKİ TEMELLİ (DEVELOPMENTAL)
   {
     id: 'dir_floortime',
-    label: 'DIR Floortime (101/201+)',
-    description: 'İlişki temelli, gelişimsel ve bireysel farklılıklara dayalı müdahale modeli.',
+    label: 'DIR Floortime',
+    description: 'İlişki temelli, gelişimsel müdahale modeli.',
     category: 'OCCUPATIONAL_THERAPY',
     verificationQuestion: {
       id: 'vq_floortime',
       category: 'technicalExpertise',
-      text: 'FEDL 3 (Karşılıklı İletişim) basamağında takılı kalan bir vakada, "Daireleri Kapatmak" için kullanılan duyusal-regülatif stratejileri açıklayınız.',
-      type: 'text'
+      text: 'FEDL 3 (Karşılıklı İletişim) basamağında "Daireleri Kapatmak" neyi ifade eder?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Çocuğun odadaki oyuncakları toplaması.', weights: { technical: 0.1 }, analysisInsight: 'Yanlış kavramsal bilgi.' },
+        { label: 'Çocuğun açtığı bir iletişim girişimine uzmanın yanıt vermesi ve çocuğun tekrar yanıtla etkileşimi sürdürmesi.', weights: { technical: 1.0 }, analysisInsight: 'Kavramsal hakimiyet.' }
+      ]
     }
   },
-  {
-    id: 'etecom',
-    label: 'ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale)',
-    description: 'Ebeveyn ve uzman odaklı etkileşimsel gelişim programı.',
-    category: 'OCCUPATIONAL_THERAPY',
-    verificationQuestion: {
-      id: 'vq_etecom',
-      category: 'technicalExpertise',
-      text: 'ETEÇOM protokolündeki "Cevaplayıcılık" (Responsiveness) kavramının, çocuğun bilişsel yürütücü işlevleri üzerindeki etkisini tanımlayınız.',
-      type: 'text'
-    }
-  },
-
-  // ÖĞRENME GÜÇLÜĞÜ & AKADEMİK (ACADEMIC)
-  {
-    id: 'orton_gillingham',
-    label: 'Orton-Gillingham (Disleksi)',
-    description: 'Çok duyulu, yapılandırılmış okuma-yazma öğretim sistemi.',
-    category: 'SPECIAL_LEARNING_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_orton',
-      category: 'technicalExpertise',
-      text: 'Orton-Gillingham "Simultane Çok Duyulu Girdi" prensibinin nöroplastisite üzerindeki kanıta dayalı etkisini açıklayınız.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'prep_pass',
-    label: 'PREP / COGENT (PASS Teorisi)',
-    description: 'PASS Teorisi tabanlı okuma ve bilişsel işlemleme programı.',
-    category: 'SPECIAL_LEARNING_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_prep',
-      category: 'technicalExpertise',
-      text: 'Ardıl İşlemleme (Successive Processing) zayıflığı olan bir vakada, PREP stratejilerinin kod çözme üzerindeki etkisini örneklendiriniz.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'tovari_diskalkuli',
-    label: 'TOVARİ / Diskalkuli Müdahalesi',
-    description: 'Matematik öğrenme güçlüğü değerlendirme ve müdahale bataryası.',
-    category: 'SPECIAL_LEARNING_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_tovari',
-      category: 'technicalExpertise',
-      text: 'CRA (Somut-Temsili-Soyut) hiyerarşisinde "Temsili" aşamanın sayı hissi (Number Sense) oluşumundaki rolünü belirtiniz.',
-      type: 'text'
-    }
-  },
-
-  // ÖLÇME VE DEĞERLENDİRME (ASSESSMENT)
   {
     id: 'wisc_4',
     label: 'WISC-IV Uygulayıcısı',
-    description: 'Wechsler Çocuklar için Zeka Ölçeği 4. Versiyon.',
+    description: 'Zeka ölçeği uygulayıcı sertifikası.',
     category: 'PSYCHOLOGY_PEDAGOGY',
     verificationQuestion: {
       id: 'vq_wisc',
       category: 'technicalExpertise',
-      text: 'WISC-IV profil analizinde "Çalışma Belleği" ile "İşlemleme Hızı" arasındaki anlamlı farkın öğrenme stili üzerindeki klinik yorumunu yapınız.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'cas_assessment',
-    label: 'CAS (Cognitive Assessment System)',
-    description: 'Bilişsel Değerlendirme Sistemi (PASS Modeli).',
-    category: 'PSYCHOLOGY_PEDAGOGY',
-    verificationQuestion: {
-      id: 'vq_cas',
-      category: 'technicalExpertise',
-      text: 'CAS raporunda "Planlama" ölçeğindeki düşüklüğün, çocuğun serbest zaman yönetimindeki davranışsal yansımasını açıklayınız.',
-      type: 'text'
-    }
-  },
-  {
-    id: 'moxo_test',
-    label: 'MOXO Dikkat Testi',
-    description: 'Objektif dikkat, zamanlama, dürtüsellik ve hiperaktivite ölçümü.',
-    category: 'PSYCHOLOGY_PEDAGOGY',
-    verificationQuestion: {
-      id: 'vq_moxo',
-      category: 'technicalExpertise',
-      text: 'MOXO profilindeki "Görsel Çeldirici" hassasiyetinin, sınıf içi akademik performansa etkisini klinik olarak analiz ediniz.',
-      type: 'text'
+      text: 'WISC-IV profil analizinde "Çalışma Belleği" ve "İşlemleme Hızı" arasındaki anlamlı düşük fark neyi işaret eder?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Zeka geriliğini kesin olarak kanıtlar.', weights: { technical: 0.2 }, analysisInsight: 'Hatalı klinik yorum.' },
+        { label: 'Bilişsel verimlilikte düşüş ve potansiyelin performansa yansımasında engel olduğunu gösterir.', weights: { technical: 1.0 }, analysisInsight: 'Doğru psikometrik yorum.' }
+      ]
     }
   }
 ];

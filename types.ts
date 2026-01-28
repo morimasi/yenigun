@@ -8,26 +8,27 @@ export enum ClinicalTestType {
   COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
 }
 
-// Branch enum'ı eklendi
 export enum Branch {
   OzelEgitim = 'Özel Eğitim',
   DilKonusma = 'Dil ve Konuşma Terapisi',
   Ergoterapi = 'Ergoterapi',
   Fizyoterapi = 'Fizyoterapi',
   Psikoloji = 'Psikoloji',
+  PDR = 'PDR',
+  CocukGelimi = 'Çocuk Gelişimi',
   OkulOncesi = 'Okul Öncesi',
   SinifOgretmenligi = 'Sınıf Öğretmenliği'
 }
 
-// Gender tipi eklendi
 export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
+export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
 
 export interface IntelligenceSegment {
   score: number;
   status: 'optimal' | 'warning' | 'critical';
-  reasoning: string; // Skorun neden verildiğinin klinik açıklaması
-  behavioralIndicators: string[]; // Cevaplardan saptanan somut davranışlar
-  institutionalImpact: string; // Bu özelliğin kuruma uzun vadeli etkisi
+  reasoning: string;
+  behavioralIndicators: string[];
+  institutionalImpact: string;
   pros: string[];
   cons: string[];
   risks: string[];
@@ -38,7 +39,7 @@ export interface AIReport {
   integrityIndex: number;
   socialMaskingScore: number;
   summary: string;
-  detailedAnalysisNarrative: string; // Genel akademik portre yorumu
+  detailedAnalysisNarrative: string;
   recommendation: string;
   deepAnalysis: Record<string, IntelligenceSegment>;
   predictiveMetrics: {
@@ -46,7 +47,7 @@ export interface AIReport {
     burnoutRisk: number;
     learningVelocity: number;
     leadershipPotential: number;
-    evolutionPath: string; // Adayın 2 yıl sonraki muhtemel konumu
+    evolutionPath: string;
   };
   interviewGuidance: {
     strategicQuestions: string[];
@@ -61,7 +62,6 @@ export interface AIReport {
   };
 }
 
-// AlgorithmicReport arayüzü eklendi
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -73,7 +73,6 @@ export interface AlgorithmicReport {
   riskFlags: string[];
 }
 
-// Question arayüzü eklendi
 export interface Question {
   id: string;
   category: string;
@@ -88,14 +87,12 @@ export interface Question {
   requiredBranch?: string[];
 }
 
-// FormStep arayüzü eklendi
 export interface FormStep {
   id: string;
   title: string;
   description: string;
 }
 
-// Certification arayüzü eklendi
 export interface Certification {
   id: string;
   label: string;
@@ -104,7 +101,6 @@ export interface Certification {
   verificationQuestion: Question;
 }
 
-// SimulationResult arayüzü eklendi
 export interface SimulationResult {
   scenario: string;
   parentPersona: string;
@@ -135,9 +131,10 @@ export interface Candidate {
   id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone: string;
   age: number;
   gender: Gender;
+  maritalStatus: MaritalStatus;
   branch: string;
   university: string;
   department: string;
@@ -169,6 +166,7 @@ export interface GlobalConfig {
   primaryColor: string;
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
+  // Fixed duplicate aiWeights property
   aiWeights: { ethics: number; clinical: number; experience: number; fit: number; };
   aiPersona: { skepticism: number; empathy: number; formality: number; };
   automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; };
