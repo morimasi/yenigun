@@ -22,6 +22,9 @@ const DEFAULT_CONFIG: GlobalConfig = {
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin'>('candidate');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [resetTrigger, setResetTrigger] = useState(0); // Formu sıfırlamak için key trigger
+
   const {
     candidates, config, isProcessing, isLoading, isLoggedIn,
     setIsLoggedIn, loadData, submitCandidate, analyzeCandidate, logout
@@ -59,8 +62,17 @@ const App: React.FC = () => {
   const onCandidateSubmit = async (data: any) => {
     try {
       const res = await submitCandidate(data);
-      if (res.success) alert("Başvurunuz Akademi sistemine kaydedildi.");
-      else alert(`Hata: ${res.error}`);
+      if (res.success) {
+        setShowSuccessModal(true);
+        // 6 saniye sonra otomatik yönlendirme/sıfırlama
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          setResetTrigger(prev => prev + 1); // Formu sıfırla
+          setView('candidate');
+        }, 6000);
+      } else {
+        alert(`Sistemsel Hata: ${res.error}`);
+      }
     } catch (err) {
       alert("Başvuru gönderilirken bir ağ hatası oluştu.");
     }
@@ -87,6 +99,38 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
+      {/* SUCCESS MODAL - AKADEMİK ONAY */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/98 backdrop-blur-2xl flex items-center justify-center p-6 no-print animate-fade-in">
+           <div className="max-w-2xl w-full bg-white rounded-[5rem] p-16 md:p-24 text-center shadow-3xl border border-white/20 relative overflow-hidden animate-scale-in">
+              <div className="relative z-10">
+                 <div className="w-24 h-24 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-white mx-auto mb-12 shadow-2xl animate-bounce">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                 </div>
+                 <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-8">BAŞVURUNUZ DİJİTAL ARŞİVE MÜHÜRLENDİ</h2>
+                 <div className="space-y-6 text-slate-600">
+                    <p className="text-lg font-bold leading-relaxed italic opacity-90">
+                      "Klinik verileriniz ve metodolojik yeterlilik beyanınız Gemini-3 Nöral Muhakeme motoru tarafından akademik analize alınmıştır."
+                    </p>
+                    <p className="text-[13px] font-black text-orange-600 uppercase tracking-[0.2em]">
+                      Değerlendirme süreci tamamlandığında, kurumsal liyakat standartlarımıza uygunluk durumunuz tarafınıza tebliğ edilecektir.
+                    </p>
+                 </div>
+                 <div className="mt-16 flex flex-col items-center gap-4">
+                    <div className="flex gap-2">
+                       <div className="w-2 h-2 bg-slate-200 rounded-full animate-pulse"></div>
+                       <div className="w-2 h-2 bg-slate-200 rounded-full animate-pulse delay-75"></div>
+                       <div className="w-2 h-2 bg-slate-200 rounded-full animate-pulse delay-150"></div>
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Ana Sayfaya Yönlendiriliyorsunuz</p>
+                 </div>
+              </div>
+              <div className="absolute -right-20 -top-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[100px]"></div>
+              <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-emerald-600/5 rounded-full blur-[100px]"></div>
+           </div>
+        </div>
+      )}
+
       <nav className="bg-white/90 backdrop-blur-3xl border-b border-orange-50 sticky top-0 z-[100] h-20 md:h-24 flex items-center no-print shadow-sm">
         <div className="w-full max-w-[98vw] mx-auto px-4 md:px-10 flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setView('candidate')}>
@@ -108,7 +152,7 @@ const App: React.FC = () => {
 
       <main className={`mx-auto relative transition-all duration-700 ${view === 'admin' ? 'max-w-full px-2 md:px-4' : 'max-w-7xl px-8 py-12'}`}>
         {view === 'candidate' ? (
-          <CandidateForm onSubmit={onCandidateSubmit} />
+          <CandidateForm key={resetTrigger} onSubmit={onCandidateSubmit} />
         ) : (
           <DashboardLayout 
             candidates={candidates} config={config} isProcessing={isProcessing}
