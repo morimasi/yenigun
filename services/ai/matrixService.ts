@@ -25,15 +25,15 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     MODEL: Gemini 3 Flash Deep Analysis Engine.
     
     ANALİZ PROTOKOLÜ (KLİNİK OTOPSİ):
-    1. SERTİFİKA DOĞRULAMA (Kritik): Adayın 'allTrainings' listesindeki her sertifika için 'answers' içindeki 'vq_' ile başlayan soruları çapraz sorgula. 
-       - Sertifikası olup 'vq_' sorusunda hatalı veya yüzeysel yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını %30 artır.
-       - Sertifika beyanına rağmen temel terminolojiyi yanlış kullanan adayları 'Kritik Risk' olarak işaretle.
+    1. AKREDİTASYON DENETİMİ (Kritik): Adayın 'allTrainings' listesindeki sertifikalar (WISC-V, DIR Floortime, PECS, Bobath, Orton-Gillingham vb.) ile 'answers' içindeki 'vq_' yanıtlarını çapraz sorgula. 
+       - Sertifikası olup teknik soruda (VQ) hatalı veya sığ yanıt veren adayda 'socialMaskingScore' (Maskeleme) katsayısını %40 artır.
+       - Sertifika beyanına rağmen temel terminolojiyi (örn: Floortime'da FEDL basamakları, WISC'te endeks farkları) yanlış kullanan adayları 'Metodolojik Risk' olarak işaretle.
 
     2. DİKEY ALAN ANALİZİ:
-       - OSB: ABA, ESDM, ETEÇOM bilgisi.
-       - ÖÖG: PASS, DISREK, PREP bilgisi.
-       - AKADEMİK: Okuma-yazma müdahalesi (Orton-Gillingham vb.) ve Diskalkuli bilgisi.
-       - PSİKOLOJİ: Oyun terapisi ve BDT temelli sınırlar.
+       - OSB: ABA vs Gelişimsel (Floortime/ETEÇOM) ekol tercihlerini ve esnekliğini analiz et.
+       - ÖÖG: Çok duyulu (Multisensory) müdahale derinliğini ölç.
+       - OT/PT: Duyusal profil analizi ve nörolojik temel bilgisini süz.
+       - PSİKOLOJİ: BDT ve Oyun Terapisi arasındaki klinik sınırı ve etik duruşu incele.
 
     3. YARGI TONU: Sert, akademik, kanıta dayalı ve prediktif. Sadece mevcut hali değil, kurumdaki 2. yılını tahmin et.
 

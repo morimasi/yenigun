@@ -46,11 +46,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     const stepId = FORM_STEPS[currentStep].id;
     let baseQuestions = [...(BRANCH_QUESTIONS[stepId] || [])];
     
-    // Klinik Mantık adımında seçilen sertifikaların TÜM sorularını (5er tane) ekle
     if (stepId === 'clinical_logic') {
       const trainingQuestions = CERTIFICATIONS
         .filter(cert => formData.allTrainings.includes(cert.label))
-        .flatMap(cert => cert.verificationQuestions); // FlatMap kullanarak tüm soruları çek
+        .flatMap(cert => cert.verificationQuestions);
       
       baseQuestions = [...baseQuestions, ...trainingQuestions];
     }

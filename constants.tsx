@@ -22,418 +22,274 @@ export const CERTIFICATION_CATEGORIES = [
 export const CERTIFICATIONS: Certification[] = [
   // --- OTİZM SPEKTRUM BOZUKLUĞU (OSB) ---
   {
-    id: 'aba_bacb',
-    label: 'Applied Behavior Analysis (ABA / BACB)',
-    description: 'Uluslararası Uygulamalı Davranış Analizi Standartları.',
+    id: 'dir_floortime',
+    label: 'DIR Floortime (201/202/203)',
+    description: 'İlişki Temelli Nöro-gelişimsel Müdahale Modeli.',
     category: 'AUTISM_SPECTRUM',
     verificationQuestions: [
       {
-        id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Problem davranışın işlevi "Kaçınma (Escape)" olarak belirlenmişse, sönme (extinction) sırasında hangisi yapılmalıdır?',
+        id: 'vq_dir_1', category: 'technicalExpertise', type: 'radio',
+        text: 'DIR Floortime modelinde "D" (Developmental) bileşenindeki 4. basamak nedir?',
         weightedOptions: [
-          { label: 'Görev talebinin sürdürülmesi ve fiziksel yardım ile tamamlatılması.', weights: { clinical: 1.0 }, analysisInsight: 'Teknik doğruluk.' },
-          { label: 'Çocuğun sakinleşmesi için göreve ara verilmesi.', weights: { clinical: 0.0 }, analysisInsight: 'Pekiştirme hatası.' },
-          { label: 'Çocuğa mola kartı vererek odadan çıkarılması.', weights: { clinical: 0.3 }, analysisInsight: 'Kaçışın pekiştirilmesi.' },
-          { label: 'Sevdiği bir oyuncağın sunularak dikkatinin dağıtılması.', weights: { clinical: 0.1 }, analysisInsight: 'Rüşvet/Yanlış müdahale.' }
+          { label: 'Sosyal problem çözme ve ortak dikkat.', weights: { clinical: 1.0 }, analysisInsight: 'Kavramsal doğruluk.' },
+          { label: 'Sadece motor planlama.', weights: { clinical: 0.2 }, analysisInsight: 'Dar kapsamlı bilgi.' },
+          { label: 'Akademik becerilerin öğretilmesi.', weights: { clinical: 0.0 }, analysisInsight: 'Model dışı yaklaşım.' },
+          { label: 'Öfke kontrolü.', weights: { clinical: 0.3 }, analysisInsight: 'Yüzeysel yorum.' }
         ]
       },
       {
-        id: 'vq_aba_2', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir beceri analizinde (Task Analysis) "Geriye Zincirleme" yönteminin temel avantajı nedir?',
+        id: 'vq_dir_2', category: 'technicalExpertise', type: 'radio',
+        text: 'DIR modelinde "Bireysel Farklılıklar" (I) kapsamında hangisi birincil önceliktir?',
         weightedOptions: [
-          { label: 'Çocuğun doğal pekiştirece (sonuca) her denemede daha hızlı ulaşması.', weights: { clinical: 1.0 }, analysisInsight: 'Metodolojik hakimiyet.' },
-          { label: 'Öğretmenin daha az yorulmasını sağlaması.', weights: { clinical: 0.0 }, analysisInsight: 'Etik dışı bakış.' },
-          { label: 'İpucu vermeyi gerektirmemesi.', weights: { clinical: 0.2 }, analysisInsight: 'Kavram yanılgısı.' },
-          { label: 'Sadece motor becerilerde kullanılabiliyor olması.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik bilgi.' }
+          { label: 'Çocuğun duyusal profilinin ve işlemleme süreçlerinin analizi.', weights: { clinical: 1.0 }, analysisInsight: 'Derin analiz.' },
+          { label: 'Çocuğun IQ skorunun belirlenmesi.', weights: { clinical: 0.1 }, analysisInsight: 'Tanısal yanılgı.' },
+          { label: 'Çocuğun kaç kelime konuştuğu.', weights: { clinical: 0.4 }, analysisInsight: 'Sığ değerlendirme.' },
+          { label: 'Ailenin ekonomik durumu.', weights: { clinical: 0.0 }, analysisInsight: 'İlgisiz veri.' }
         ]
       },
       {
-        id: 'vq_aba_3', category: 'technicalExpertise', type: 'radio',
-        text: 'Veri toplama sürecinde "Anlık Zaman Örneklemi" (Momentary Time Sampling) ne zaman tercih edilir?',
+        id: 'vq_dir_3', category: 'technicalExpertise', type: 'radio',
+        text: 'Seans sırasında çocuğun stereotipik davranışına (örn: el çırpma) Floortime yaklaşımı ne olmalıdır?',
         weightedOptions: [
-          { label: 'Gözlemcinin sürekli veri tutamadığı, grup içi davranışların izlendiği durumlarda.', weights: { clinical: 1.0 }, analysisInsight: 'Analitik derinlik.' },
-          { label: 'Davranışın süresini net ölçmek için.', weights: { clinical: 0.2 }, analysisInsight: 'Ölçüm hatası.' },
-          { label: 'Sadece saldırgan davranışlarda.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış kullanım.' },
-          { label: 'Velinin veri toplamasını istediğimizde.', weights: { clinical: 0.3 }, analysisInsight: 'Uygulama eksikliği.' }
+          { label: 'Davranışa bir anlam yükleyip etkileşim döngüsüne (Circle of Communication) dahil etmek.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik ustalık.' },
+          { label: 'Davranışı derhal söndürmek (Extinction).', weights: { clinical: 0.0 }, analysisInsight: 'Zıt ekol (Davranışçı) hatası.' },
+          { label: 'Görmezden gelip masa başına çağırmak.', weights: { clinical: 0.1 }, analysisInsight: 'İlişkisel kopukluk.' },
+          { label: 'Eline bir nesne vererek durdurmak.', weights: { clinical: 0.3 }, analysisInsight: 'Oyalama odaklı.' }
         ]
       },
       {
-        id: 'vq_aba_4', category: 'technicalExpertise', type: 'radio',
-        text: '"Pekiştirme Tarifeleri"nde davranışın sönmeye karşı en dirençli olduğu tarife hangisidir?',
+        id: 'vq_dir_4', category: 'technicalExpertise', type: 'radio',
+        text: 'Floortime\'da "Liderliği Takip Etmek" (Following the Lead) ne anlama gelir?',
         weightedOptions: [
-          { label: 'Değişken Oranlı (Variable Ratio).', weights: { clinical: 1.0 }, analysisInsight: 'Teorik sağlamlık.' },
-          { label: 'Sürekli Pekiştirme (FR1).', weights: { clinical: 0.1 }, analysisInsight: 'Hızlı sönme riski.' },
-          { label: 'Sabit Aralıklı (Fixed Interval).', weights: { clinical: 0.3 }, analysisInsight: 'Bekleme etkisi.' },
-          { label: 'Hiç pekiştirmeme.', weights: { clinical: 0.0 }, analysisInsight: 'Temel mantık hatası.' }
+          { label: 'Çocuğun ilgisini kullanarak duygusal bir bağ ve etkileşim köprüsü kurmak.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik sadakat.' },
+          { label: 'Çocuğun her istediğini sınırsızca yapmasına izin vermek.', weights: { clinical: 0.2 }, analysisInsight: 'Disiplin hatası.' },
+          { label: 'Çocuğun arkasından yürümek.', weights: { clinical: 0.0 }, analysisInsight: 'Sözlük anlamı hatası.' },
+          { label: 'Sadece çocuğun seçtiği oyuncağı kullanmak.', weights: { clinical: 0.5 }, analysisInsight: 'Kısıtlı yorum.' }
         ]
       },
       {
-        id: 'vq_aba_5', category: 'technicalExpertise', type: 'radio',
-        text: 'Etik kurallar (BACB) gereği, bir danışan ile cinsel ilişki veya romantik bağ mülkiyetinden sonra ne kadar süre geçmelidir?',
+        id: 'vq_dir_5', category: 'technicalExpertise', type: 'radio',
+        text: 'Kritik Seviye: Duyusal olarak "Hipo-reaktif" olan bir çocukla Floortime seansı nasıl bir enerji gerektirir?',
         weightedOptions: [
-          { label: 'Profesyonel ilişki bittikten sonra en az 2 yıl.', weights: { ethics: 1.0 }, analysisInsight: 'Etik bilinç.' },
-          { label: 'İlişki biter bitmez olabilir.', weights: { ethics: -1.0 }, analysisInsight: 'Kritik etik risk.' },
-          { label: 'Veli izin verirse 6 ay sonra.', weights: { ethics: -0.5 }, analysisInsight: 'Sınır ihlali.' },
-          { label: 'Asla olamaz (Genel ilke).', weights: { ethics: 0.8 }, analysisInsight: 'Katı etik duruş.' }
+          { label: 'Yüksek enerjili, duyusal uyaranı artıran ve dikkat çekici bir stil.', weights: { clinical: 1.0 }, analysisInsight: 'Duyusal regülasyon bilgisi.' },
+          { label: 'Çok sessiz ve sakin bir stil.', weights: { clinical: 0.0 }, analysisInsight: 'Zıt müdahale hatası.' },
+          { label: 'Sadece fiziksel temas içeren bir stil.', weights: { clinical: 0.4 }, analysisInsight: 'Tek boyutlu bakış.' },
+          { label: 'Standart akademik bir stil.', weights: { clinical: 0.1 }, analysisInsight: 'Uyumsuz yaklaşım.' }
         ]
       }
     ]
   },
   {
-    id: 'esdm',
-    label: 'ESDM (Early Start Denver Model)',
-    description: 'Erken Başlangıç Denver Modeli akreditasyonu.',
+    id: 'pecs_pyramid',
+    label: 'PECS (Pyramid Educational Consultants)',
+    description: 'Resim Değişimiyle İletişim Sistemi resmi eğitimi.',
     category: 'AUTISM_SPECTRUM',
     verificationQuestions: [
       {
-        id: 'vq_esdm_1', category: 'technicalExpertise', type: 'radio',
-        text: 'ESDM müdahalesinde "Ortak Etkinlik Rutinleri"nin (Joint Activity Routines) temel yapısı nasıldır?',
+        id: 'vq_pecs_1', category: 'technicalExpertise', type: 'radio',
+        text: 'PECS Faz 1\'in birincil amacı nedir?',
         weightedOptions: [
-          { label: 'Kurulum, Tema, Temada Çeşitleme ve Kapatma.', weights: { clinical: 1.0 }, analysisInsight: 'Model sadakati.' },
-          { label: 'Sadece serbest oyun ve gözlem.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ yaklaşım.' },
-          { label: 'Öğretmen merkezli kart çalışmaları.', weights: { clinical: 0.1 }, analysisInsight: 'Modele aykırı.' },
-          { label: 'Ödül ve ceza döngüsü.', weights: { clinical: 0.0 }, analysisInsight: 'Metodik hata.' }
+          { label: 'Fiziksel olarak bir resmi uzatarak iletişim başlatmayı öğretmek.', weights: { clinical: 1.0 }, analysisInsight: 'Temel bilgi.' },
+          { label: 'Resimler arasından ayrım (discrimination) yapmak.', weights: { clinical: 0.1 }, analysisInsight: 'Faz hatası (Faz 3 konusudur).' },
+          { label: 'Cümle kurmayı öğretmek.', weights: { clinical: 0.0 }, analysisInsight: 'Hiyerarşik hata.' },
+          { label: 'Konuşmaya başlamasını sağlamak.', weights: { clinical: 0.3 }, analysisInsight: 'Yanlış hedefleme.' }
         ]
       },
       {
-        id: 'vq_esdm_2', category: 'technicalExpertise', type: 'radio',
-        text: 'ESDM veri toplama sisteminde bir becerinin "öğrenildi" kabul edilmesi için kriter nedir?',
+        id: 'vq_pecs_2', category: 'technicalExpertise', type: 'radio',
+        text: 'Faz 3A ve 3B arasındaki temel fark nedir?',
         weightedOptions: [
-          { label: 'Arka arkaya 3 gün boyunca tüm yetişkinlerle %80+ başarı.', weights: { clinical: 1.0 }, analysisInsight: 'Veri okuryazarlığı.' },
-          { label: 'Çocuğun bir kez doğru yapması.', weights: { clinical: 0.0 }, analysisInsight: 'Gevşek kriter.' },
-          { label: 'Velinin "evde yapıyor" demesi.', weights: { clinical: 0.1 }, analysisInsight: 'Objektiflik eksikliği.' },
-          { label: 'Seansın sonunda yapabilmesi.', weights: { clinical: 0.3 }, analysisInsight: 'Gecikmiş değerlendirme.' }
+          { label: 'Yüksek tercih edilen nesne ile nötr nesne arasındaki ayrım (3A) vs. İki tercih edilen nesne (3B).', weights: { clinical: 1.0 }, analysisInsight: 'İleri düzey uygulama bilgisi.' },
+          { label: '3A tek resim, 3B çift resimdir.', weights: { clinical: 0.4 }, analysisInsight: 'Yüzeysel bilgi.' },
+          { label: 'Biri evde, biri okulda yapılır.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış yorum.' },
+          { label: '3B\'de sadece sözel ipucu verilir.', weights: { clinical: 0.2 }, analysisInsight: 'Metodik hata.' }
         ]
       },
       {
-         id: 'vq_esdm_3', category: 'technicalExpertise', type: 'radio',
-         text: 'ESDM\'de "İletişim Girişimini Artırma" stratejisi hangisidir?',
-         weightedOptions: [
-            { label: 'Çocuğun istediği nesneyi ulaşamayacağı yere koyarak talep etmesini sağlama.', weights: { clinical: 1.0 }, analysisInsight: 'Fırsat öğretimi.' },
-            { label: 'Çocuk istemeden her şeyi önüne koyma.', weights: { clinical: 0.0 }, analysisInsight: 'Pasifleştirme.' },
-            { label: 'Çocuğu zorla konuşturma.', weights: { clinical: 0.2 }, analysisInsight: 'Travmatik yaklaşım.' },
-            { label: 'Sadece parmakla göstermesini bekleme.', weights: { clinical: 0.5 }, analysisInsight: 'Yetersiz hedef.' }
-         ]
+        id: 'vq_pecs_3', category: 'technicalExpertise', type: 'radio',
+        text: 'PECS uygulamasında "İletişim Ortağı"nın (Communication Partner) çocuk resim uzattığındaki ilk tepkisi ne olmalıdır?',
+        weightedOptions: [
+          { label: 'Anında nesneyi teslim etmek ve pekiştirmek.', weights: { clinical: 1.0 }, analysisInsight: 'Hızlı pekiştirme.' },
+          { label: '"Aferin" diyerek 5 saniye beklemek.', weights: { clinical: 0.1 }, analysisInsight: 'Gecikmiş pekiştirme riski.' },
+          { label: '"Bunu mu istiyorsun?" diye sormak.', weights: { clinical: 0.0 }, analysisInsight: 'Gereksiz sözel yük.' },
+          { label: 'Resmin adını söylemesini beklemek.', weights: { clinical: 0.3 }, analysisInsight: 'Metot dışı zorlama.' }
+        ]
       },
       {
-         id: 'vq_esdm_4', category: 'technicalExpertise', type: 'radio',
-         text: 'ESDM hangi yaş grubu için birincil olarak tasarlanmıştır?',
-         weightedOptions: [
-            { label: '12-60 ay (Okul öncesi erken dönem).', weights: { clinical: 1.0 }, analysisInsight: 'Temel bilgi.' },
-            { label: 'Ergenlik dönemi.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik hata.' },
-            { label: 'İlkokul çağındaki çocuklar.', weights: { clinical: 0.5 }, analysisInsight: 'Eksik odak.' },
-            { label: 'Sadece yetişkin otizmliler.', weights: { clinical: 0.0 }, analysisInsight: 'Bilgi yokluğu.' }
-         ]
+        id: 'vq_pecs_4', category: 'technicalExpertise', type: 'radio',
+        text: 'PECS Faz 4\'te kullanılan "Cümle Çubuğu" (Sentence Strip) ne işe yarar?',
+        weightedOptions: [
+          { label: '"İstiyorum" gibi kalıplarla çoklu sembol kullanımını sağlar.', weights: { clinical: 1.0 }, analysisInsight: 'Yapısal hakimiyet.' },
+          { label: 'Sadece resimlerin kaybolmasını önler.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış yorum.' },
+          { label: 'Çocuğun okuma yazma öğrenmesini sağlar.', weights: { clinical: 0.2 }, analysisInsight: 'Abartılı beklenti.' },
+          { label: 'Öğretmenin not alması içindir.', weights: { clinical: 0.1 }, analysisInsight: 'Absürt cevap.' }
+        ]
       },
       {
-         id: 'vq_esdm_5', category: 'technicalExpertise', type: 'radio',
-         text: 'ESDM müdahalesinde duygusal regülasyon nasıl sağlanır?',
-         weightedOptions: [
-            { label: 'Pozitif duygulanım (Affect) paylaşımı ve senkronizasyon ile.', weights: { clinical: 1.0 }, analysisInsight: 'İlişkisel derinlik.' },
-            { label: 'Çocuğu tek başına bırakarak (Mola).', weights: { clinical: 0.1 }, analysisInsight: 'Yalnızlaştırma.' },
-            { label: 'Sürekli fiziksel temas kurarak.', weights: { clinical: 0.4 }, analysisInsight: 'Sınır aşımı.' },
-            { label: 'Sadece oyuncak vererek.', weights: { clinical: 0.2 }, analysisInsight: 'Maddi odaklılık.' }
-         ]
+        id: 'vq_pecs_5', category: 'technicalExpertise', type: 'radio',
+        text: 'PECS\'in çocukta konuşmayı engellediği yönündeki iddialara bilimsel yanıtınız nedir?',
+        weightedOptions: [
+          { label: 'Literatür, PECS\'in sözel üretimi desteklediğini ve fonksiyonel iletişimi artırdığını gösterir.', weights: { clinical: 1.0 }, analysisInsight: 'Bilimsel dürüstlük.' },
+          { label: 'Evet, maalesef konuşmayı tembelleştirir.', weights: { clinical: -1.0 }, analysisInsight: 'Kritik bilgi eksikliği.' },
+          { label: 'Sadece zihin engelli olmayanlarda konuşmayı artırır.', weights: { clinical: 0.2 }, analysisInsight: 'Ayrımcı/Hatalı.' },
+          { label: 'Konuşmak önemli değildir, resim yeterlidir.', weights: { clinical: 0.0 }, analysisInsight: 'Klinik vizyon hatası.' }
+        ]
       }
     ]
   },
 
   // --- ÖZEL ÖĞRENME GÜÇLÜĞÜ (ÖÖG) ---
   {
-    id: 'pass_theory',
-    label: 'PASS Teorisi & CAS Uygulayıcı',
-    description: 'Bilişsel Değerlendirme Sistemi (Cognitive Assessment System).',
+    id: 'orton_gillingham',
+    label: 'Orton-Gillingham Approach',
+    description: 'Disleksi için Çok Duyulu (Multisensory) Dil Eğitimi.',
     category: 'LEARNING_DISABILITIES',
     verificationQuestions: [
       {
-        id: 'vq_cas_1', category: 'technicalExpertise', type: 'radio',
-        text: 'PASS teorisindeki "Ardıl İşlem" (Successive Processing) eksikliği hangi akademik alanda en çok sorun yaratır?',
+        id: 'vq_og_1', category: 'technicalExpertise', type: 'radio',
+        text: 'Orton-Gillingham yaklaşımının temel sac ayağı nedir?',
         weightedOptions: [
-          { label: 'Ses-sembol eşleşmesi ve kelime okuma hızı.', weights: { clinical: 1.0 }, analysisInsight: 'Teorik uygulama.' },
-          { label: 'Şekil-zemin ilişkisi.', weights: { clinical: 0.2 }, analysisInsight: 'Görsel alan karışıklığı.' },
-          { label: 'Matematiksel problem çözme mantığı.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik eşleşme.' },
-          { label: 'Duygusal farkındalık.', weights: { clinical: 0.0 }, analysisInsight: 'Kavram dışı.' }
+          { label: 'Çok duyulu (Görsel-İşitsel-Kinestetik-Dokunsal) ve yapılandırılmış olması.', weights: { clinical: 1.0 }, analysisInsight: 'Temel prensip hakimiyeti.' },
+          { label: 'Sadece hızlı okumaya odaklanması.', weights: { clinical: 0.1 }, analysisInsight: 'Dar bakış.' },
+          { label: 'Tamamen bilgisayar tabanlı olması.', weights: { clinical: 0.0 }, analysisInsight: 'Teknik hata.' },
+          { label: 'Öğrencinin serbest okuma yapması.', weights: { clinical: 0.2 }, analysisInsight: 'Yapılandırılmamış hata.' }
         ]
       },
       {
-        id: 'vq_cas_2', category: 'technicalExpertise', type: 'radio',
-        text: '"Planlama" (Planning) ölçeği düşük bir öğrencide hangi müdahale önceliklidir?',
+        id: 'vq_og_2', category: 'technicalExpertise', type: 'radio',
+        text: 'Bu yaklaşımda "Fonemik Farkındalık" neden en baştadır?',
         weightedOptions: [
-          { label: 'Öz-izleme (Self-monitoring) ve strateji geliştirme çalışmaları.', weights: { clinical: 1.0 }, analysisInsight: 'Müdahale kalitesi.' },
-          { label: 'Daha çok ezber yaptırmak.', weights: { clinical: 0.0 }, analysisInsight: 'Klinik hata.' },
-          { label: 'Sadece motor egzersizler.', weights: { clinical: 0.3 }, analysisInsight: 'Kısıtlı bakış.' },
-          { label: 'Sessiz bir ortamda tek başına ders çalışması.', weights: { clinical: 0.1 }, analysisInsight: 'Yetersiz çözüm.' }
+          { label: 'Dildeki sesleri ayırt etme yetisinin okumanın ön koşulu olduğu için.', weights: { clinical: 1.0 }, analysisInsight: 'Dilbilimsel bilinç.' },
+          { label: 'Harflerin şekillerini ezberletmek için.', weights: { clinical: 0.1 }, analysisInsight: 'Kavram hatası.' },
+          { label: 'Çocuğun güzel yazması için.', weights: { clinical: 0.0 }, analysisInsight: 'İlgisiz alan.' },
+          { label: 'Kelime anlamını bilmek için.', weights: { clinical: 0.4 }, analysisInsight: 'Semantik-Fonetik karışıklığı.' }
         ]
-      },
+      }
+    ]
+  },
+  {
+    id: 'disrek_national',
+    label: 'DİSREK (Ulusal Disleksi Programı)',
+    description: 'Türkiye Disleksi Vakfı ve yerel akreditasyon standartları.',
+    category: 'LEARNING_DISABILITIES',
+    verificationQuestions: [
       {
-         id: 'vq_cas_3', category: 'technicalExpertise', type: 'radio',
-         text: 'Eşzamanlı İşlem (Simultaneous Processing) bozukluğu olan bir çocukta ne görülür?',
-         weightedOptions: [
-            { label: 'Parçaları birleştirip bir bütün oluşturma ve okuduğunu anlama zorluğu.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru teşhis.' },
-            { label: 'Sadece harfleri ters yazma.', weights: { clinical: 0.2 }, analysisInsight: 'Yüzeysel bilgi.' },
-            { label: 'Hiperaktivite.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış etiket.' },
-            { label: 'İşitme kaybı.', weights: { clinical: 0.0 }, analysisInsight: 'Tıbbi hata.' }
-         ]
-      },
-      {
-         id: 'vq_cas_4', category: 'technicalExpertise', type: 'radio',
-         text: 'CAS testi hangi yaş aralığına uygulanabilir?',
-         weightedOptions: [
-            { label: '5 - 18 yaş.', weights: { clinical: 1.0 }, analysisInsight: 'Teknik bilgi.' },
-            { label: '0 - 6 yaş.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış ölçek.' },
-            { label: 'Sadece yetişkinler.', weights: { clinical: 0.0 }, analysisInsight: 'Hata.' },
-            { label: 'Üniversite öğrencileri.', weights: { clinical: 0.3 }, analysisInsight: 'Eksik kitle.' }
-         ]
-      },
-      {
-         id: 'vq_cas_5', category: 'technicalExpertise', type: 'radio',
-         text: 'PASS müdahalelerinden PREP (PASS Reading Enhancement Program) neyi hedefler?',
-         weightedOptions: [
-            { label: 'Bilişsel süreçleri (Ardıl/Eşzamanlı) iyileştirerek okumayı desteklemeyi.', weights: { clinical: 1.0 }, analysisInsight: 'Program bilgisi.' },
-            { label: 'Sadece hızlı okuma tekniklerini.', weights: { clinical: 0.2 }, analysisInsight: 'Yetersiz tanım.' },
-            { label: 'Göz kaslarını eğitmeyi.', weights: { clinical: 0.1 }, analysisInsight: 'Bilimdışı yaklaşım.' },
-            { label: 'Disleksiyi tamamen iyileştirmeyi.', weights: { clinical: 0.0 }, analysisInsight: 'Gerçek dışı vaat.' }
-         ]
+        id: 'vq_disrek_1', category: 'technicalExpertise', type: 'radio',
+        text: 'DİSREK müdahale programında "Görsel İşlemleme" çalışmaları hangisini kapsar?',
+        weightedOptions: [
+          { label: 'Harf karıştırmayı önlemek için şekil-zemin ve görsel hafıza egzersizlerini.', weights: { clinical: 1.0 }, analysisInsight: 'Program bilgisi.' },
+          { label: 'Sadece gözlük kullanımını.', weights: { clinical: 0.0 }, analysisInsight: 'Tıbbi yanılgı.' },
+          { label: 'Resim çizdirme tekniklerini.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ yaklaşım.' },
+          { label: 'Sadece renkli cam kullanımı.', weights: { clinical: 0.1 }, analysisInsight: 'Tartışmalı metot.' }
+        ]
       }
     ]
   },
 
-  // --- DİL VE KONUŞMA TERAPİSİ (DKT) ---
+  // --- BİLİŞSEL VE ZİHİNSEL (COGNITIVE) ---
   {
-    id: 'lidcombe',
-    label: 'Lidcombe Programı (Kekemelik)',
-    description: 'Okul öncesi dönem kekemelik müdahale sertifikası.',
-    category: 'LANGUAGE_SPEECH',
+    id: 'wisc_v_test',
+    label: 'WISC-V Uygulayıcı (Türk Psikologlar Derneği)',
+    description: 'Wechsler Çocuklar için Zeka Ölçeği - 5. Sürüm.',
+    category: 'INTELLECTUAL_COGNITIVE',
     verificationQuestions: [
       {
-        id: 'vq_lid_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Lidcombe Programı\'nda ebeveynin birincil rolü nedir?',
+        id: 'vq_wisc_1', category: 'technicalExpertise', type: 'radio',
+        text: 'WISC-V\'de "Akıcı Akıl Yürütme" (Fluid Reasoning) endeksi neyi ölçer?',
         weightedOptions: [
-          { label: 'Doğal ortamda akıcı konuşmayı sözel onaylarla pekiştirmek.', weights: { clinical: 1.0 }, analysisInsight: 'Yüksek uygulama sadakati.' },
-          { label: 'Çocuğu kekelediği için uyarmak.', weights: { clinical: 0.0 }, analysisInsight: 'Klinik hata/Kontraendike.' },
-          { label: 'Sadece terapisti izlemek.', weights: { clinical: 0.2 }, analysisInsight: 'Pasif rol.' },
-          { label: 'Çocuğa nefes egzersizleri yaptırmak.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış metot.' }
+          { label: 'Soyut problemleri çözme ve kavramlar arası ilişki kurma yetisini.', weights: { clinical: 1.0 }, analysisInsight: 'Test terminolojisi.' },
+          { label: 'Sadece kelime dağarcığını.', weights: { clinical: 0.1 }, analysisInsight: 'VCI ile karıştırma.' },
+          { label: 'Elin ne kadar hızlı çalıştığını.', weights: { clinical: 0.1 }, analysisInsight: 'PSI ile karıştırma.' },
+          { label: 'Duyulanları akılda tutmayı.', weights: { clinical: 0.2 }, analysisInsight: 'WMI ile karıştırma.' }
         ]
       },
       {
-         id: 'vq_lid_2', category: 'technicalExpertise', type: 'radio',
-         text: 'Lidcombe\'da kullanılan "SR" (Severity Rating) puanlaması kaç üzerindendir?',
-         weightedOptions: [
-            { label: '0 ile 9 arası (1: Kekemelik yok, 9: Çok şiddetli).', weights: { clinical: 1.0 }, analysisInsight: 'Teknik detay.' },
-            { label: '1 ile 100 arası.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış ölçek.' },
-            { label: 'Sadece Var/Yok şeklinde.', weights: { clinical: 0.2 }, analysisInsight: 'Eksik ölçüm.' },
-            { label: 'A ile F harfleri arası.', weights: { clinical: 0.0 }, analysisInsight: 'Uydurma cevap.' }
-         ]
-      },
+        id: 'vq_wisc_2', category: 'technicalExpertise', type: 'radio',
+        text: 'Test sırasında çocuk "Ben bunu yapamam" diyerek reddederse standart prosedür nedir?',
+        weightedOptions: [
+          { label: 'Teşvik et (prompt), ancak yönerge dışına çıkmadan bir sonraki maddeye geç veya testi durdur (kurallara göre).', weights: { clinical: 1.0 }, analysisInsight: 'Etik/Teknik uygulama.' },
+          { label: 'Cevabı kulağına fısılda.', weights: { clinical: -1.0 }, analysisInsight: 'Kritik test ihlali.' },
+          { label: 'Çocuğa kız ve yapması için zorla.', weights: { clinical: 0.0 }, analysisInsight: 'Pedagojik risk.' },
+          { label: 'Veliyi içeri çağırıp yardım iste.', weights: { clinical: 0.0 }, analysisInsight: 'Standart dışı uygulama.' }
+        ]
+      }
+    ]
+  },
+
+  // --- DİL VE KONUŞMA (DKT) ---
+  {
+    id: 'prompt_technique',
+    label: 'PROMPT (Level 1/2)',
+    description: 'Oral Müsküler Fonetik Hedeflerin Yeniden Yapılandırılması.',
+    category: 'LANGUAGE_SPEECH',
+    verificationQuestions: [
       {
-         id: 'vq_lid_3', category: 'technicalExpertise', type: 'radio',
-         text: 'Programın 2. aşamasına (Maintenance) ne zaman geçilir?',
-         weightedOptions: [
-            { label: 'Akıcılık kriterleri ardışık birkaç hafta boyunca sağlandığında.', weights: { clinical: 1.0 }, analysisInsight: 'Süreç hakimiyeti.' },
-            { label: 'Veli "artık takılmıyor" dediğinde.', weights: { clinical: 0.2 }, analysisInsight: 'Subjektif hata.' },
-            { label: '10 seans dolduğunda.', weights: { clinical: 0.1 }, analysisInsight: 'Zaman odaklı hata.' },
-            { label: 'Çocuk okula başladığında.', weights: { clinical: 0.0 }, analysisInsight: 'İlgisiz kriter.' }
-         ]
-      },
-      {
-         id: 'vq_lid_4', category: 'technicalExpertise', type: 'radio',
-         text: 'Lidcombe programında "Sözel Onay" (Verbal Contingency) oranı ne olmalıdır?',
-         weightedOptions: [
-            { label: 'Akıcı konuşmaya verilen onay, kekemeliğe verilen tepkiden çok daha fazla olmalı.', weights: { clinical: 1.0 }, analysisInsight: 'Pekiştirme dengesi.' },
-            { label: 'Her kekemeliğe ceza verilmeli.', weights: { clinical: 0.0 }, analysisInsight: 'Tehlikeli yaklaşım.' },
-            { label: 'Sadece kekemelik anında konuşulmalı.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış odak.' },
-            { label: 'Hiçbir sözel tepki verilmemeli.', weights: { clinical: 0.3 }, analysisInsight: 'Etkisiz müdahale.' }
-         ]
-      },
-      {
-         id: 'vq_lid_5', category: 'technicalExpertise', type: 'radio',
-         text: 'Bu program hangi yaş grubu çocuklar için altın standarttır?',
-         weightedOptions: [
-            { label: '6 yaş altı (Okul öncesi).', weights: { clinical: 1.0 }, analysisInsight: 'Temel bilgi.' },
-            { label: 'Sadece yetişkinler.', weights: { clinical: 0.0 }, analysisInsight: 'Kritik hata.' },
-            { label: '12-18 yaş arası ergenler.', weights: { clinical: 0.3 }, analysisInsight: 'Yanlış hedef.' },
-            { label: 'Her yaşa uygulanabilir.', weights: { clinical: 0.5 }, analysisInsight: 'Genellemeci hata.' }
-         ]
+        id: 'vq_prompt_1', category: 'technicalExpertise', type: 'radio',
+        text: 'PROMPT tekniğinde "Taktil-Kinestetik" girdinin temel amacı nedir?',
+        weightedOptions: [
+          { label: 'Artikülatörlerin (dil, dudak vb.) motor kontrolünü ve yerleşimini fiziksel olarak desteklemek.', weights: { clinical: 1.0 }, analysisInsight: 'Metot hakimiyeti.' },
+          { label: 'Çocuğun boğazını rahatlatmak.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış tanım.' },
+          { label: 'Konuşma yerine masaj yapmak.', weights: { clinical: 0.1 }, analysisInsight: 'Hatalı uygulama.' },
+          { label: 'Çocuğu susturmak.', weights: { clinical: 0.0 }, analysisInsight: 'Absürt cevap.' }
+        ]
       }
     ]
   },
 
   // --- ERGOTERAPİ & FİZYOTERAPİ (OT/PT) ---
   {
-    id: 'sensory_integration',
-    label: 'Ayres Duyu Bütünleme (SIPT/EASI)',
-    description: 'Duyusal işlemleme bozuklukları uzmanlık sertifikası.',
+    id: 'bobath_ndt',
+    label: 'Bobath / NDT (Neuro-Developmental Treatment)',
+    description: 'Serebral Palsi ve Nörolojik Bozukluklar için Sertifikalı Eğitim.',
     category: 'OCCUPATIONAL_PHYSIO',
     verificationQuestions: [
       {
-        id: 'vq_si_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Vestibüler sistem hassasiyeti olan bir çocukta hangi davranış sık görülür?',
+        id: 'vq_bobath_1', category: 'technicalExpertise', type: 'radio',
+        text: 'Bobath konseptinde "Key Points of Control" (Kontrolün Kilit Noktaları) neyi hedefler?',
         weightedOptions: [
-          { label: 'Ayaklarının yerden kesilmesinden korkma (Gravitational Insecurity).', weights: { clinical: 1.0 }, analysisInsight: 'Doğru semptom analizi.' },
-          { label: 'Yüksek sesle bağırma.', weights: { clinical: 0.1 }, analysisInsight: 'İlgisiz sistem.' },
-          { label: 'Sürekli parlak ışıklara bakma.', weights: { clinical: 0.2 }, analysisInsight: 'Görsel odaklılık.' },
-          { label: 'Yemek seçiciliği.', weights: { clinical: 0.4 }, analysisInsight: 'Oral-taktil karışıklığı.' }
+          { label: 'Anormal tonusu inhibe edip normal hareket paternlerini fasilite etmeyi.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik uzmanlık.' },
+          { label: 'Çocuğu masaya bağlamayı.', weights: { clinical: 0.0 }, analysisInsight: 'Etik hata.' },
+          { label: 'Sadece kas gücünü artırmayı.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik bakış.' },
+          { label: 'Kemik kırıklarını iyileştirmeyi.', weights: { clinical: 0.0 }, analysisInsight: 'Tıbbi bilgi hatası.' }
         ]
-      },
-      {
-         id: 'vq_si_2', category: 'technicalExpertise', type: 'radio',
-         text: 'Propriyoseptif girdi eksikliği yaşayan bir çocuk ne yapar?',
-         weightedOptions: [
-            { label: 'Vücut farkındalığı için kendine vurma, zıplama veya eşyalara çarpma.', weights: { clinical: 1.0 }, analysisInsight: 'Proprioceptive seeking.' },
-            { label: 'Sadece parmak ucu yürür.', weights: { clinical: 0.3 }, analysisInsight: 'Tek taraflı bakış.' },
-            { label: 'Hiyeroglif yazar.', weights: { clinical: 0.0 }, analysisInsight: 'İlgisiz.' },
-            { label: 'Sürekli uyur.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış gözlem.' }
-         ]
-      },
-      {
-         id: 'vq_si_3', category: 'technicalExpertise', type: 'radio',
-         text: 'Duyu bütünleme seansında "Just Right Challenge" ne demektir?',
-         weightedOptions: [
-            { label: 'Çocuğu zorlamayan ama konfor alanının bir tık dışında olan, başarılabilecek görev.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik felsefe.' },
-            { label: 'Çocuğun istediği her şeyi yapması.', weights: { clinical: 0.0 }, analysisInsight: 'Laissez-faire hatası.' },
-            { label: 'Maksimum zorluk seviyesi.', weights: { clinical: 0.2 }, analysisInsight: 'Yüksek stres riski.' },
-            { label: 'Sadece masada yapılan aktiviteler.', weights: { clinical: 0.1 }, analysisInsight: 'Model dışı.' }
-         ]
-      },
-      {
-         id: 'vq_si_4', category: 'technicalExpertise', type: 'radio',
-         text: 'Taktil defansifliği (Dokunsal hassasiyet) olan bir çocukta hangisi kontraendikedir (yapılmamalıdır)?',
-         weightedOptions: [
-            { label: 'Çocuğun arkasından yaklaşarak aniden dokunmak.', weights: { clinical: 1.0 }, analysisInsight: 'Güvenlik ve etik.' },
-            { label: 'Ağır baskı (Deep pressure) uygulamak.', weights: { clinical: 0.5 }, analysisInsight: 'Aslında rahatlatabilir.' },
-            { label: 'Farklı dokuları tanıtmak.', weights: { clinical: 0.4 }, analysisInsight: 'Müdahale yöntemi.' },
-            { label: 'Yalınayak yürütmek.', weights: { clinical: 0.3 }, analysisInsight: 'Duyusal maruziyet.' }
-         ]
-      },
-      {
-         id: 'vq_si_5', category: 'technicalExpertise', type: 'radio',
-         text: 'Ayres Duyu Bütünleme hangi branşın yasal uygulama alanıdır?',
-         weightedOptions: [
-            { label: 'Ergoterapi (Occupational Therapy).', weights: { clinical: 1.0 }, analysisInsight: 'Yasal farkındalık.' },
-            { label: 'Psikoloji.', weights: { clinical: 0.0 }, analysisInsight: 'Yetki karmaşası.' },
-            { label: 'Sınıf Öğretmenliği.', weights: { clinical: 0.0 }, analysisInsight: 'Branş dışı.' },
-            { label: 'PDR.', weights: { clinical: 0.1 }, analysisInsight: 'Yetki ihlali.' }
-         ]
       }
     ]
   },
-
-  // --- OKUMA YAZMA & MATEMATİK (AKADEMİK) ---
   {
-    id: 'dyscalculia_cert',
-    label: 'Diskalkuli Müdahale Sertifikası',
-    description: 'Matematik öğrenme güçlüğü üzerine klinik eğitim.',
-    category: 'ACADEMIC_SKILLS',
+    id: 'therasuit_cert',
+    label: 'TheraSuit Method / Uzay Terapisi',
+    description: 'Yoğun nöro-rehabilitasyon ve askı sistemleri eğitimi.',
+    category: 'OCCUPATIONAL_PHYSIO',
     verificationQuestions: [
       {
-        id: 'vq_dis_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Diskalkuli olan bir çocukta "Subitizing" (Şipşak sayılama) becerisi nasıldır?',
+        id: 'vq_thera_1', category: 'technicalExpertise', type: 'radio',
+        text: 'TheraSuit elbisesinin propriyoseptif sistem üzerindeki birincil etkisi nedir?',
         weightedOptions: [
-          { label: '4-5 nesneye kadar olan grupları saymadan tanıyamaz, tek tek sayar.', weights: { clinical: 1.0 }, analysisInsight: 'Temel diskalkuli bilgisi.' },
-          { label: 'Sayıları çok hızlı çarpar.', weights: { clinical: 0.0 }, analysisInsight: 'Zıt durum.' },
-          { label: 'Sadece geometriyi yapamaz.', weights: { clinical: 0.2 }, analysisInsight: 'Eksik teşhis.' },
-          { label: 'Sayıları tersten söyler.', weights: { clinical: 0.4 }, analysisInsight: 'Disleksi ile karıştırma.' }
+          { label: 'Eklemlere dikey kompresyon yaparak vücut farkındalığını ve hizalanmayı artırmak.', weights: { clinical: 1.0 }, analysisInsight: 'Mekanik/Biyolojik bilgi.' },
+          { label: 'Sadece çocuğun dik durmasını sağlamak.', weights: { clinical: 0.5 }, analysisInsight: 'Yüzeysel.' },
+          { label: 'Çocuğu terleterek zayıflatmak.', weights: { clinical: 0.0 }, analysisInsight: 'Bilim dışı.' },
+          { label: 'Kasları dondurmak.', weights: { clinical: 0.1 }, analysisInsight: 'Tehlikeli yanılgı.' }
         ]
-      },
-      {
-         id: 'vq_dis_2', category: 'technicalExpertise', type: 'radio',
-         text: 'Sayı Doğrusu (Number Line) kullanımı diskalkulide neden önemlidir?',
-         weightedOptions: [
-            { label: 'Sayılar arasındaki büyüklük-küçüklük ilişkisini görselleştirdiği için.', weights: { clinical: 1.0 }, analysisInsight: 'Strateji bilgisi.' },
-            { label: 'Çocuk çizgileri sevdiği için.', weights: { clinical: 0.1 }, analysisInsight: 'Sığ yorum.' },
-            { label: 'Ezber yapmayı kolaylaştırdığı için.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış amaç.' },
-            { label: 'Sadece toplama işlemi için kullanılır.', weights: { clinical: 0.3 }, analysisInsight: 'Dar kapsam.' }
-         ]
-      },
-      {
-         id: 'vq_dis_3', category: 'technicalExpertise', type: 'radio',
-         text: 'Diskalkuli müdahalesinde hangisi önceliklidir?',
-         weightedOptions: [
-            { label: 'Somut materyallerle sayı hissiyatı (Number Sense) oluşturmak.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru hiyerarşi.' },
-            { label: 'Çarpım tablosunu ezberletmek.', weights: { clinical: 0.1 }, analysisInsight: 'Mekanik hata.' },
-            { label: 'Sürekli test çözdürmek.', weights: { clinical: 0.0 }, analysisInsight: 'Pedagojik risk.' },
-            { label: 'Hesap makinesi kullanımını yasaklamak.', weights: { clinical: 0.2 }, analysisInsight: 'Zorlayıcı tutum.' }
-         ]
-      },
-      {
-         id: 'vq_dis_4', category: 'technicalExpertise', type: 'radio',
-         text: 'Aşağıdakilerden hangisi diskalkulinin birincil göstergesidir?',
-         weightedOptions: [
-            { label: 'Miktar tahmini yapamama ve sayı sembollerini miktar ile eşleştirememe.', weights: { clinical: 1.0 }, analysisInsight: 'Tanısal derinlik.' },
-            { label: 'Güzel yazı yazamama.', weights: { clinical: 0.1 }, analysisInsight: 'Disgrafi karışıklığı.' },
-            { label: 'Okuduğunu anlamama.', weights: { clinical: 0.2 }, analysisInsight: 'Disleksi karışıklığı.' },
-            { label: 'Çabuk yorulma.', weights: { clinical: 0.0 }, analysisInsight: 'Genel durum.' }
-         ]
-      },
-      {
-         id: 'vq_dis_5', category: 'technicalExpertise', type: 'radio',
-         text: 'Diskalkuli tanısı genellikle ne zaman konur?',
-         weightedOptions: [
-            { label: 'İlkokul dönemi, matematiksel işlemler başladığında.', weights: { clinical: 1.0 }, analysisInsight: 'Gelişimsel süreç.' },
-            { label: 'Bebeklikte.', weights: { clinical: 0.0 }, analysisInsight: 'Saçma cevap.' },
-            { label: 'Lisede.', weights: { clinical: 0.3 }, analysisInsight: 'Geç kalınmış teşhis.' },
-            { label: 'Sadece IQ testi ile.', weights: { clinical: 0.2 }, analysisInsight: 'Yöntem hatası.' }
-         ]
       }
     ]
   },
 
-  // --- REHBERLİK & PSİKOLOJİ ---
+  // --- PSİKOLOJİ & REHBERLİK ---
   {
-    id: 'play_therapy',
-    label: 'Oyun Terapisi (Deneyimsel/Çocuk Merkezli)',
-    description: 'Çocuklarla oyun yoluyla terapötik iletişim sertifikası.',
+    id: 'cbt_children',
+    label: 'Bilişsel Davranışçı Terapi (BDT) - Çocuk ve Ergen',
+    description: 'Akademik akreditasyonlu uygulayıcı sertifikası.',
     category: 'PSYCHOLOGY_GUIDANCE',
     verificationQuestions: [
       {
-        id: 'vq_play_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Çocuk merkezli oyun terapisinde terapistin temel duruşu ne olmalıdır?',
+        id: 'vq_cbt_1', category: 'technicalExpertise', type: 'radio',
+        text: 'BDT\'de "Bilişsel Yeniden Yapılandırma" (Cognitive Restructuring) çocuklarda nasıl uygulanır?',
         weightedOptions: [
-          { label: 'Çocuğu yönlendirmeyen, duyguları yansıtan ve eşlik eden bir "şahit".', weights: { clinical: 1.0 }, analysisInsight: 'Ekol hakimiyeti.' },
-          { label: 'Çocuğa ne oynaması gerektiğini söyleyen bir lider.', weights: { clinical: 0.0 }, analysisInsight: 'Ekole aykırı.' },
-          { label: 'Oyun sırasında sürekli sorular soran bir dedektif.', weights: { clinical: 0.1 }, analysisInsight: 'İnvaziv yaklaşım.' },
-          { label: 'Sadece dışarıdan izleyen bir gözlemci.', weights: { clinical: 0.4 }, analysisInsight: 'Bağlantı eksikliği.' }
+          { label: 'Olumsuz otomatik düşünceleri yakalayıp daha işlevsel olanlarla değiştirmeyi öğreterek.', weights: { clinical: 1.0 }, analysisInsight: 'Terapi ekolü hakimiyeti.' },
+          { label: 'Çocuğa sürekli "olumlu düşün" diyerek.', weights: { clinical: 0.2 }, analysisInsight: 'Toksik pozitiflik/Ekol dışı.' },
+          { label: 'Sadece resim çizdirerek.', weights: { clinical: 0.3 }, analysisInsight: 'Yetersiz müdahale.' },
+          { label: 'İlaç tedavisini savunarak.', weights: { clinical: 0.0 }, analysisInsight: 'Yetki aşımı.' }
         ]
-      },
-      {
-         id: 'vq_play_2', category: 'technicalExpertise', type: 'radio',
-         text: 'Oyun odasında sınır koyma (limit setting) ne zaman yapılır?',
-         weightedOptions: [
-            { label: 'Çocuk kendine, terapiste veya malzemelere fiziksel zarar verme eğilimindeyken.', weights: { clinical: 1.0 }, analysisInsight: 'Etik/Güvenlik.' },
-            { label: 'Çocuk oyuncakları dağıttığında.', weights: { clinical: 0.2 }, analysisInsight: 'Esneklik eksikliği.' },
-            { label: 'Her seansın başında kural olarak.', weights: { clinical: 0.1 }, analysisInsight: 'Otoriter yaklaşım.' },
-            { label: 'Çocuk sustuğunda.', weights: { clinical: 0.0 }, analysisInsight: 'Hatalı uygulama.' }
-         ]
-      },
-      {
-         id: 'vq_play_3', category: 'technicalExpertise', type: 'radio',
-         text: 'Oyun terapisinde kullanılan oyuncaklar nasıl seçilmelidir?',
-         weightedOptions: [
-            { label: 'Duygusal dışavurumu, rol oynamayı ve agresyonu temsil edebilecek sembolik çeşitlilikte.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik envanter bilgisi.' },
-            { label: 'Sadece en pahalı ve yeni oyuncaklar.', weights: { clinical: 0.0 }, analysisInsight: 'Maddi odak.' },
-            { label: 'Sadece eğitici/öğretici olanlar.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış amaç.' },
-            { label: 'Çocuğun evde sahip olmadığı her şey.', weights: { clinical: 0.1 }, analysisInsight: 'İşlevsiz seçim.' }
-         ]
-      },
-      {
-         id: 'vq_play_4', category: 'technicalExpertise', type: 'radio',
-         text: 'Terapist, çocuğun oyunundaki temaları ne zaman yorumlamalıdır?',
-         weightedOptions: [
-            { label: 'Çocuk kendi sürecinde buna hazır olduğunda ve güven bağı tam oluştuğunda (Genellikle nadiren).', weights: { clinical: 1.0 }, analysisInsight: 'Zamanlama yetkinliği.' },
-            { label: 'İlk seansın sonunda.', weights: { clinical: 0.1 }, analysisInsight: 'Aceleci/Zararlı.' },
-            { label: 'Veli her sorduğunda.', weights: { clinical: 0.2 }, analysisInsight: 'Profesyonel mesafe ihlali.' },
-            { label: 'Çocuk her hata yaptığında.', weights: { clinical: 0.0 }, analysisInsight: 'Yargılayıcı.' }
-         ]
-      },
-      {
-         id: 'vq_play_5', category: 'technicalExpertise', type: 'radio',
-         text: 'Oyun terapisi hangi yaş grubunda en etkilidir?',
-         weightedOptions: [
-            { label: '2 - 12 yaş arası.', weights: { clinical: 1.0 }, analysisInsight: 'Temel gelişim bilgisi.' },
-            { label: 'Sadece bebekler.', weights: { clinical: 0.1 }, analysisInsight: 'Yanlış kitle.' },
-            { label: 'Lise öğrencileri.', weights: { clinical: 0.2 }, analysisInsight: 'Ekol dışı.' },
-            { label: '70 yaş üstü.', weights: { clinical: 0.0 }, analysisInsight: 'Gerontoloji karışıklığı.' }
-         ]
       }
     ]
   }
@@ -443,33 +299,13 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   clinical_logic: [
     {
       id: 'gen_1', category: 'technicalExpertise', type: 'radio',
-      text: 'Multidisipliner bir vakada (Örn: OSB), Ergoterapist ve Özel Eğitim Öğretmeni arasındaki koordinasyon nasıl olmalıdır?',
+      text: 'Karmaşık bir vaka (Örn: OSB + ADHD + Duyusal İşlemleme Bozukluğu) için ilk önceliğiniz ne olur?',
       weightedOptions: [
-        { label: 'Ortak hedefler belirlenmeli; seanslar birbirinin duyusal ve akademik ihtiyaçlarını desteklemeli.', weights: { clinical: 1.0, fit: 1.0 }, analysisInsight: 'Ekip uyumu.' },
-        { label: 'Her branş kendi odasında bağımsız çalışmalı, iletişim kurmaya gerek yok.', weights: { clinical: 0.0, fit: 0.0 }, analysisInsight: 'İzolasyon riski.' },
-        { label: 'Hangi branş daha kıdemliyse onun dediği yapılmalı.', weights: { clinical: 0.4 }, analysisInsight: 'Hiyerarşik hata.' },
-        { label: 'Sadece veli toplantılarında konuşulmalı.', weights: { clinical: 0.5 }, analysisInsight: 'Yetersiz koordinasyon.' }
+        { label: 'Multidisipliner bir değerlendirme ile en yüksek engel teşkil eden "bariyer davranışı" veya "duyusal ihtiyacı" belirlemek.', weights: { clinical: 1.0, fit: 1.0 }, analysisInsight: 'Sistemik bakış.' },
+        { label: 'Hemen okuma yazma öğretmeye başlamak.', weights: { clinical: 0.0 }, analysisInsight: 'Akademik acelecilik.' },
+        { label: 'Sadece velinin en çok şikayet ettiği konuya odaklanmak.', weights: { clinical: 0.5 }, analysisInsight: 'Veli odaklılık riski.' },
+        { label: 'Vakayı "zor" olarak etiketleyip başka kuruma yönlendirmek.', weights: { resilience: 0.0 }, analysisInsight: 'Kaçınmacı profil.' }
       ]
-    },
-    {
-       id: 'gen_2', category: 'technicalExpertise', type: 'radio',
-       text: 'Bilimsel temelli (Evidence-based) olmayan bir yöntemi kurumda uygulamak isteyen birine karşı tutumunuz?',
-       weightedOptions: [
-          { label: 'Yöntemin kanıt düzeyini sorgular, bilimsel literatür dışı uygulamaları mesleki risk olarak görürüm.', weights: { clinical: 1.0, ethics: 1.0 }, analysisInsight: 'Bilimsel dürüstlük.' },
-          { label: 'Eğer veli para ödüyorsa uygulanabilir.', weights: { ethics: -1.0 }, analysisInsight: 'Kritik etik zafiyet.' },
-          { label: 'Yeni şeyler denemek iyidir, denemekten zarar gelmez.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ bakış.' },
-          { label: 'Kurum sahibi istiyorsa sesimi çıkarmam.', weights: { institutionalLoyalty: 0.3, clinical: 0.0 }, analysisInsight: 'Pasif sadakat.' }
-       ]
-    },
-    {
-       id: 'gen_3', category: 'technicalExpertise', type: 'radio',
-       text: 'Çocuğun programında (BEP) ilerleme kaydedilemiyorsa ilk yapılması gereken nedir?',
-       weightedOptions: [
-          { label: 'Önkoşul becerileri kontrol etmek, veri analizini yenilemek ve pekiştireçleri değiştirmek.', weights: { clinical: 1.0 }, analysisInsight: 'Analitik çözüm.' },
-          { label: 'Vakayı "öğrenemez" olarak etiketleyip beklemeye almak.', weights: { clinical: 0.0 }, analysisInsight: 'Yetersizlik atfı.' },
-          { label: 'Aynı programı daha yüksek sesle ve baskıyla uygulamak.', weights: { clinical: 0.1 }, analysisInsight: 'Zararlı tutum.' },
-          { label: 'Derhal başka bir öğretmene devretmek.', weights: { resilience: 0.2 }, analysisInsight: 'Kaçınmacı.' }
-       ]
     }
   ],
   ethics_parent: [
