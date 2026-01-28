@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
+import StaffAssessmentPortal from './features/staff-mentor/StaffAssessmentPortal';
 import { GlobalConfig } from './types';
 import { useAcademicEngine } from './hooks/useAcademicEngine';
 import { storageService } from './services/storageService';
@@ -20,7 +21,7 @@ const DEFAULT_CONFIG: GlobalConfig = {
 };
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'candidate' | 'admin'>('candidate');
+  const [view, setView] = useState<'candidate' | 'admin' | 'staff'>('candidate');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -127,7 +128,8 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
+            <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Aday</button>
+            <button onClick={() => setView('staff')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Öğretmen</button>
             <button onClick={() => setView('admin')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
           </div>
           {isLoggedIn && view === 'admin' && (
@@ -139,6 +141,8 @@ const App: React.FC = () => {
       <main className={`mx-auto transition-all duration-500 ${view === 'admin' ? 'max-w-full' : 'max-w-4xl py-4'}`}>
         {view === 'candidate' ? (
           <CandidateForm key={resetTrigger} onSubmit={onCandidateSubmit} />
+        ) : view === 'staff' ? (
+          <StaffAssessmentPortal />
         ) : (
           <DashboardLayout 
             candidates={candidates} config={config} isProcessing={isProcessing}
