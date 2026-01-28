@@ -92,7 +92,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 min-h-screen relative items-start" onMouseMove={handleMouseMove}>
+    <div className="flex flex-col lg:flex-row gap-6 min-h-screen relative items-start flex-1" onMouseMove={handleMouseMove}>
       
       {/* HOVER PREVIEW POPUP */}
       {hoveredCandidate && (
@@ -119,14 +119,13 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
               <div className="space-y-4 pt-4 border-t border-white/5">
                 <div className="flex flex-col gap-1">
                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">MEZUNİYET</span>
-                   <p className="text-[11px] font-bold text-slate-200 leading-tight uppercase">{hoveredCandidate.university}</p>
-                   <p className="text-[9px] font-bold text-slate-400 uppercase opacity-60">{hoveredCandidate.department}</p>
+                   <p className="text-[11px] font-bold text-slate-200 leading-tight uppercase truncate">{hoveredCandidate.university}</p>
                 </div>
 
                 <div className="flex justify-between items-end">
                    <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">KLİNİK DENEYİM</span>
-                      <p className="text-[11px] font-black text-orange-500 uppercase tracking-widest">{hoveredCandidate.experienceYears} YIL SAHA TECRÜBESİ</p>
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">DENEYİM</span>
+                      <p className="text-[11px] font-black text-orange-500 uppercase tracking-widest">{hoveredCandidate.experienceYears} YIL</p>
                    </div>
                    {hoveredCandidate.report && (
                      <div className="text-right">
@@ -136,32 +135,20 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                    )}
                 </div>
               </div>
-
-              <div className="flex flex-wrap gap-2 pt-4">
-                 {hoveredCandidate.allTrainings.slice(0, 3).map((t, idx) => (
-                   <span key={idx} className="px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase text-slate-400 border border-white/5">
-                      {t.split(' ')[0]}
-                   </span>
-                 ))}
-                 {hoveredCandidate.allTrainings.length > 3 && (
-                   <span className="text-[8px] font-black text-slate-600 uppercase mt-1">+{hoveredCandidate.allTrainings.length - 3} Diğer</span>
-                 )}
-              </div>
             </div>
-            
             <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl"></div>
           </div>
         </div>
       )}
 
-      {/* SOL PANEL (LISTE) */}
-      <div className="lg:w-[320px] flex flex-col gap-5 shrink-0 no-print sticky top-32 max-h-[calc(100vh-10rem)]">
-        <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 space-y-6">
+      {/* SOL PANEL - Optimize edilmiş genişlik */}
+      <div className="lg:w-[300px] flex flex-col gap-4 shrink-0 no-print sticky top-8 max-h-[90vh]">
+        <div className="bg-slate-50/50 p-4 rounded-[2rem] border border-slate-100 space-y-4">
           <form onSubmit={handleSearchSubmit} className="relative">
             <input 
               type="text" 
-              placeholder="İsim ile Dosya Ara..." 
-              className="w-full bg-slate-50 rounded-2xl p-5 text-[12px] font-bold outline-none border border-slate-100 shadow-inner"
+              placeholder="Arama..." 
+              className="w-full bg-white rounded-xl p-4 text-[12px] font-bold outline-none border border-slate-100 shadow-sm focus:border-orange-500 transition-all"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
             />
@@ -169,23 +156,23 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
 
           <button 
             onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-            className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-orange-600 transition-all shadow-lg"
+            className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-orange-600 transition-all shadow-md"
           >
-            {isFilterPanelOpen ? 'FİLTRELERİ GİZLE' : `GELİŞMİŞ FİLTRE (${filteredAndSortedCandidates.length})`}
+            {isFilterPanelOpen ? 'GİZLE' : `FİLTRELE (${filteredAndSortedCandidates.length})`}
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+        <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2">
           {isFilterPanelOpen ? (
-            <div className="space-y-5 animate-slide-down">
-              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">KLİNİK BRANŞLAR</h4>
-                 <div className="flex flex-wrap gap-2">
+            <div className="space-y-4 animate-slide-down">
+              <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+                 <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">KLİNİK BRANŞLAR</h4>
+                 <div className="flex flex-wrap gap-1.5">
                     {Object.values(Branch).map(b => (
                       <button
                         key={b}
                         onClick={() => toggleFilter('branches', b)}
-                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase border transition-all ${
+                        className={`px-3 py-2 rounded-lg text-[8px] font-black uppercase border transition-all ${
                           (filters.branches as string[]).includes(b) ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'
                         }`}
                       >
@@ -196,26 +183,26 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
               </div>
             </div>
           ) : (
-            <div className="space-y-3 animate-slide-up">
+            <div className="space-y-2 animate-slide-up">
               {filteredAndSortedCandidates.map((c: Candidate) => (
                 <div 
                   key={c.id} 
-                  onClick={() => { setSelectedId(c.id); window.scrollTo({ top: 112, behavior: 'smooth' }); }}
+                  onClick={() => { setSelectedId(c.id); }}
                   onMouseEnter={() => setHoveredCandidate(c)}
                   onMouseLeave={() => setHoveredCandidate(null)}
-                  className={`p-5 rounded-[2.2rem] border transition-all cursor-pointer relative group ${
-                    selectedId === c.id ? 'bg-white border-orange-600 shadow-2xl translate-x-2 ring-8 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
+                  className={`p-4 rounded-[1.5rem] border transition-all cursor-pointer relative group ${
+                    selectedId === c.id ? 'bg-white border-orange-600 shadow-xl translate-x-1 ring-4 ring-orange-50' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'
                   }`}
                 >
-                  <div className="flex items-center gap-5">
-                    <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center font-black text-[16px] shadow-sm ${
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center font-black text-[13px] shadow-sm ${
                       c.report ? (c.report.score > 75 ? 'bg-emerald-600 text-white' : c.report.score > 40 ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-slate-100 text-slate-400'
                     }`}>
                       {c.report ? c.report.score : '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-slate-900 text-[13px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-2 tracking-widest">{(c.branch as string)?.split(' ')[0]} • {c.experienceYears}Y</p>
+                      <h4 className="font-black text-slate-900 text-[11px] truncate uppercase leading-none">{c.name || 'İsimsiz'}</h4>
+                      <p className="text-[8px] font-bold text-slate-400 uppercase truncate mt-1 tracking-widest">{(c.branch as string)?.split(' ')[0]} • {c.experienceYears}Y</p>
                     </div>
                   </div>
                 </div>
@@ -225,8 +212,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
         </div>
       </div>
 
-      {/* SAĞ PANEL (DETAY) */}
-      <div className="flex-1 min-w-0">
+      {/* SAĞ PANEL - Maksimum Genişlik ve Esneklik */}
+      <div className="flex-1 min-w-0 w-full h-full">
         {selectedCandidate ? (
           <CandidateDetail 
             candidate={selectedCandidate}
@@ -235,8 +222,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
             onDelete={() => { if (confirm('Kayıt silinecek. Emin misiniz?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
           />
         ) : (
-          <div className="h-[800px] bg-white border-4 border-dashed border-slate-100 rounded-[5rem] flex flex-col items-center justify-center text-center p-24 opacity-40 sticky top-32">
-             <p className="text-slate-400 font-black uppercase tracking-[1em] text-[14px]">Liyakat Dosyası Bekleniyor</p>
+          <div className="flex-1 min-h-[80vh] bg-slate-50/50 border-2 border-dashed border-slate-100 rounded-[4rem] flex flex-col items-center justify-center text-center p-12 opacity-40 sticky top-8">
+             <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl">
+                <svg className="w-10 h-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+             </div>
+             <p className="text-slate-400 font-black uppercase tracking-[0.8em] text-[12px]">Liyakat Dosyası Bekleniyor</p>
           </div>
         )}
       </div>

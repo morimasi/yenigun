@@ -37,8 +37,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-10 animate-fade-in min-h-screen max-w-[1800px] mx-auto w-full relative pt-10 pb-20 px-4 md:px-10">
-      {/* SOL GENİŞ KOMUTA MERKEZİ (SIDEBAR) */}
+    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in min-h-screen max-w-full mx-auto w-full relative pt-6 pb-12 px-4 md:px-8">
+      {/* SOL KOMUTA MERKEZİ - Optimize edilmiş genişlik */}
       <aside className="no-print shrink-0">
         <AdminTopNav 
           activeTab={activeTab} 
@@ -49,13 +49,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
         />
       </aside>
       
-      {/* ANA İÇERİK ALANI */}
+      {/* ANA İÇERİK KANVASI - Maksimum yayılım */}
       <main className="flex-1 w-full min-w-0">
-        <div className="bg-white rounded-[4rem] border border-slate-200 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.04)] p-6 md:p-12 min-h-[85vh] relative overflow-hidden">
-          {/* ARKA PLAN DEKORASYONU */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-slate-50 rounded-full blur-3xl -mr-48 -mt-48 opacity-50"></div>
+        <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.05)] p-4 md:p-8 min-h-[92vh] relative overflow-hidden flex flex-col">
+          {/* Arka plan derinlik efekti */}
+          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-slate-50 rounded-full blur-[100px] -mr-80 -mt-80 opacity-40 pointer-events-none"></div>
           
-          <div className="relative z-10">
+          <div className="relative z-10 flex-1 flex flex-col">
             {renderContent()}
           </div>
         </div>
