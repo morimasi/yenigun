@@ -27,7 +27,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'pipeline': return <PipelineView {...props} />;
-      case 'analytics': return <AnalyticsView candidates={props.candidates} />;
+      case 'analytics': return <AnalyticsView candidates={props.candidates} config={props.config} />;
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
       case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
       case 'lab': return <ClinicalLabView candidates={props.candidates} />;
