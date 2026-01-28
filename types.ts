@@ -5,7 +5,9 @@ export enum ClinicalTestType {
   CONFLICT_MANAGEMENT = 'Multidisipliner Çatışma',
   DATA_LITERACY = 'Klinik Veri Okuryazarlığı',
   BOUNDARY_INTEGRITY = 'Veli-Öğretmen Sınır İhlali',
-  COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik'
+  COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik',
+  DE_ESCALATION_REFLEX = 'Kriz ve Güvenlik Yönetimi',
+  PARENT_MANIPULATION = 'Veli Sınır Testi'
 }
 
 export enum Branch {
@@ -111,6 +113,8 @@ export interface SimulationResult {
     empathyCalibration: number;
     professionalDistance: number;
     crisisResolutionEfficiency: number;
+    cognitiveLoadIndex: number; // YENİ: Adayın zihinsel yorulma hızı
+    ethicalStabilityScore: number; // YENİ: Baskı altında etik taviz verme eğilimi
     criticalMistakes: string[];
     clinicalTruths: string[];
     neuralDivergence: {
@@ -166,7 +170,6 @@ export interface GlobalConfig {
   primaryColor: string;
   accentColor: string;
   aiTone: 'strict' | 'balanced' | 'empathetic';
-  // Fixed duplicate aiWeights property
   aiWeights: { ethics: number; clinical: number; experience: number; fit: number; };
   aiPersona: { skepticism: number; empathy: number; formality: number; };
   automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; };

@@ -18,9 +18,6 @@ export const CERTIFICATION_CATEGORIES = [
 ];
 
 export const CERTIFICATIONS: Certification[] = [
-  // ==========================================
-  // OTİZM SPEKTRUM BOZUKLUĞU (OSB)
-  // ==========================================
   {
     id: 'aba_bacb',
     label: 'Applied Behavior Analysis (BACB/QABA)',
@@ -54,42 +51,6 @@ export const CERTIFICATIONS: Certification[] = [
     }
   },
   {
-    id: 'pcdi_autism',
-    label: 'PCDI (Princeton Child Dev. Inst.) Müfredatı',
-    description: 'Veri odaklı yoğun davranışsal eğitim modeli.',
-    category: 'AUTISM_SPECTRUM',
-    verificationQuestion: {
-      id: 'vq_pcdi',
-      category: 'technicalExpertise',
-      text: 'PCDI yaklaşımında "Script-Fading" (İpucunu Silikleştirme) hangi temel beceriyi geliştirmek için kullanılır?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Sosyal etkileşim ve başlatma becerilerini bağımsızlaştırmak için.', weights: { technical: 1.0 }, analysisInsight: 'İleri düzey OSB müdahale bilgisi.' },
-        { label: 'Sadece motor becerileri öğretmek için.', weights: { technical: 0.2 }, analysisInsight: 'Eksik kavram bilgisi.' }
-      ]
-    }
-  },
-  {
-    id: 'gobdo_2',
-    label: 'GOBDO-2 (Gilliam Otizm Derecelendirme Ölçeği)',
-    description: 'Otizm tarama ve derecelendirme aracı (Türkiye Adaptasyonu).',
-    category: 'AUTISM_SPECTRUM',
-    verificationQuestion: {
-      id: 'vq_gobdo',
-      category: 'technicalExpertise',
-      text: 'GOBDO-2 puanlamasında "Otizm İndeksi" hangi alt testlerin birleşimiyle hesaplanır?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Kısıtlı-Yineleyici Davranışlar, Sosyal Etkileşim ve Duygusal Tepkiler.', weights: { technical: 1.0 }, analysisInsight: 'Değerlendirme aracı hakimiyeti.' },
-        { label: 'Sadece konuşma hızı ve akademik başarı.', weights: { technical: 0.2 }, analysisInsight: 'Ölçek parametre hatası.' }
-      ]
-    }
-  },
-
-  // ==========================================
-  // ÖZEL ÖĞRENME GÜÇLÜĞÜ (ÖÖG)
-  // ==========================================
-  {
     id: 'prep_pass',
     label: 'PREP (PASS Reading Enhancement Program)',
     description: 'PASS teorisine dayalı disleksi müdahale programı.',
@@ -105,42 +66,6 @@ export const CERTIFICATIONS: Certification[] = [
       ]
     }
   },
-  {
-    id: 'tog_disleksi',
-    label: 'TÖG Disleksi Müdahale Programı',
-    description: 'Türkiye yerel öğrenme güçlüğü akademik müfredatı.',
-    category: 'LEARNING_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_tog',
-      category: 'technicalExpertise',
-      text: 'TÖG müfredatında "Fonolojik Farkındalık" aşaması neden okuma öncesi kritik kabul edilir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Dili oluşturan ses birimlerinin manipüle edilmesini sağladığı için.', weights: { technical: 1.0 }, analysisInsight: 'Metodolojik netlik.' },
-        { label: 'Çocuğun hızlı okumasını sağladığı için.', weights: { technical: 0.3 }, analysisInsight: 'Yüzeysel yaklaşım.' }
-      ]
-    }
-  },
-  {
-    id: 'cogent_cog',
-    label: 'COGENT (Bilişsel Gelişim Programı)',
-    description: 'Erken çocuklukta bilişsel süreçleri güçlendirme (PASS temelli).',
-    category: 'LEARNING_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_cogent',
-      category: 'technicalExpertise',
-      text: 'COGENT müdahalesinin PREP\'ten temel farkı nedir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Okuma-yazma öncesi temel bilişsel yapıları (0-7 yaş) hedeflemesi.', weights: { technical: 1.0 }, analysisInsight: 'Program hiyerarşisi bilgisi.' },
-        { label: 'Sadece yetişkin disleksisi ile çalışması.', weights: { technical: 0.1 }, analysisInsight: 'Kritik bilgi eksikliği.' }
-      ]
-    }
-  },
-
-  // ==========================================
-  // ZİHİN ENGELLİLER & BİLİŞSEL ÖLÇÜM
-  // ==========================================
   {
     id: 'portage_tr',
     label: 'Portage Erken Eğitim Programı',
@@ -172,105 +97,53 @@ export const CERTIFICATIONS: Certification[] = [
         { label: 'Sadece atasözü açıklamaları ile.', weights: { technical: 0.2 }, analysisInsight: 'Ölçek hatası.' }
       ]
     }
-  },
-  {
-    id: 'leiter_3_nonverbal',
-    label: 'Leiter-3 Performans Ölçeği',
-    description: 'Tamamen sözel olmayan zeka ölçümü (Örn: Ağır OSB vakaları).',
-    category: 'INTELLECTUAL_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_leiter',
-      category: 'technicalExpertise',
-      text: 'Leiter-3 testi hangi vaka grupları için "Altın Standart" kabul edilir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Konuşma engeli, ağır OSB veya dil bilmeyen vakalar.', weights: { technical: 1.0, clinical: 1.0 }, analysisInsight: 'Klinik karar verme becerisi.' },
-        { label: 'Sadece üstün zekalı çocuklar.', weights: { technical: 0.3 }, analysisInsight: 'Yanlış endikasyon.' }
-      ]
-    }
-  },
-
-  // ==========================================
-  // DİL KONUŞMA & DİĞER (YEREL & GLOBAL)
-  // ==========================================
-  {
-    id: 'prompt_level1',
-    label: 'PROMPT Level 1',
-    description: 'Artikülasyon müdahalesi için taktil-kinestetik model.',
-    category: 'LANGUAGE_SPEECH',
-    verificationQuestion: {
-      id: 'vq_prompt_tech',
-      category: 'technicalExpertise',
-      text: 'PROMPT hiyerarşisinde "Dikey Çene Kontrolü" hangi aşamanın temelidir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Mandibular Seviye (Mandibular Stage).', weights: { technical: 1.0 }, analysisInsight: 'Hiyerarşik tam hakimiyet.' },
-        { label: 'Sadece dil ucu sesleri.', weights: { technical: 0.4 }, analysisInsight: 'Teknik eksiklik.' }
-      ]
-    }
-  },
-  {
-    id: 'metropolitan_school',
-    label: 'Metropolitan Okul Olgunluğu Testi',
-    description: 'Okul öncesi akademik hazırlık ölçümü.',
-    category: 'INTELLECTUAL_DISABILITIES',
-    verificationQuestion: {
-      id: 'vq_metro',
-      category: 'technicalExpertise',
-      text: 'Metropolitan testinde "Kelimeleri Anlama" alt testi neyi ölçmeyi amaçlar?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Dilsel yönergeleri anlama ve kavram bilgisini.', weights: { technical: 1.0 }, analysisInsight: 'Test uygulama yeterliliği.' },
-        { label: 'Sadece çocuğun kalem tutma becerisini.', weights: { technical: 0.2 }, analysisInsight: 'Yanlış parametre.' }
-      ]
-    }
   }
 ];
 
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   clinical_logic: [
     {
+      id: 'data_1',
+      category: 'technicalExpertise',
+      text: 'Son 3 aydır "Göz Kontrolü" hedefinde %10 başarı gösteren bir vakanın verilerini incelerken klinik kararınız ne olur?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Metodu değiştirir, önkoşul becerileri (joint attention vb.) tekrar analiz ederim.', weights: { technical: 1.0, clinical: 1.0, development: 0.9 }, analysisInsight: 'Veri odaklı profesyonel revizyon.' },
+        { label: 'Aynı metotla devam eder, pekiştireç yoğunluğunu artırırım.', weights: { technical: 0.3, clinical: 0.4 }, analysisInsight: 'Metodolojik tutuculuk / Veri körlüğü.' }
+      ]
+    },
+    {
       id: 'cl_1',
       category: 'technicalExpertise',
       text: 'Çok ağır problem davranış (self-injury) sergileyen bir vakada, müdahale planınızdaki "Öncül Kontrolü" ile "Sonuç Yönetimi" dengesini klinik olarak nasıl kurarsınız?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Önce davranışı durdurmak için sonuç odaklı (ceza/mola) çalışırım.', weights: { technical: 0.4, clinical: 0.3, ethics: 0.5 }, analysisInsight: 'Geleneksel/Davranışçı katı tutum.' },
-        { label: 'İşlevsel analiz yapar, öncülleri düzenleyerek alternatif davranış öğretirim.', weights: { technical: 1.0, clinical: 1.0, development: 0.9 }, analysisInsight: 'Modern kanıta dayalı klinik muhakeme.' }
-      ]
-    },
-    {
-      id: 'ped_1',
-      category: 'pedagogicalAnalysis',
-      text: 'Ebeveyn katılımı düşük olan bir vakada, ev programının sürdürülebilirliğini sağlamak için yaklaşımınız ne olur?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Programı basitleştirir ve ebeveynin küçük başarılarını pekiştiririm.', weights: { pedagogy: 1.0, development: 0.9, personality: 0.8 }, analysisInsight: 'Aile merkezli empatik yaklaşım.' },
-        { label: 'Veliyi uyarır ve kurum disiplinine uyması gerektiğini hatırlatırım.', weights: { pedagogy: 0.3, formality: 1.0, personality: 0.4 }, analysisInsight: 'Otoriter ve düşük empatik bağ.' }
+        { label: 'Önce davranışı durdurmak için sonuç odaklı (ceza/mola) çalışırım.', weights: { technical: 0.4, clinical: 0.3 }, analysisInsight: 'Geleneksel katı tutum.' },
+        { label: 'İşlevsel analiz yapar, öncülleri düzenleyerek alternatif davranış öğretirim.', weights: { technical: 1.0, clinical: 1.0 }, analysisInsight: 'Bilimsel klinik muhakeme.' }
       ]
     }
   ],
   ethics_parent: [
     {
-      id: 'eth_1',
-      category: 'workEthics',
-      text: 'Veli, kurum prosedürleri dışında size "özel bir hediye" veya "ekstra ödeme" teklif ettiğinde profesyonel sınırınızı nasıl korursunuz?',
+      id: 'parent_1',
+      category: 'parentStudentRelations',
+      text: 'Veli, bilimsel olarak kanıtlanmamış bir "alternatif tedavi" (Örn: Ağır diyetler) için sizden destek istediğinde duruşunuz ne olur?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Nazikçe reddeder ve kurumun etik ilkelerini veliye açıklarım.', weights: { ethics: 1.0, formality: 1.0, loyalty: 1.0 }, analysisInsight: 'Yüksek profesyonel bütünlük.' },
-        { label: 'Güven ilişkisinin bozulmaması için bir defaya mahsus kabul ederim.', weights: { ethics: 0.1, formality: 0.2, institutionalLoyalty: 0.1 }, analysisInsight: 'Kritik sınır ihlali riski.' }
+        { label: 'Bilimsel literatürü açıklar, kurumun kanıta dayalı ilkesini korurum.', weights: { ethics: 1.0, formality: 1.0, loyalty: 1.0 }, analysisInsight: 'Yüksek etik dürüstlük.' },
+        { label: 'Veliyi kırmamak adına denemesine izin verir, takip ederim.', weights: { ethics: 0.2, clinical: 0.1 }, analysisInsight: 'Klinik taviz ve etik zafiyet.' }
       ]
     }
   ],
   resilience_team: [
     {
-      id: 'res_1',
+      id: 'burnout_1',
       category: 'sustainability',
-      text: 'Multidisipliner toplantıda bir meslektaşınız sizin klinik kararınıza sert ve haksız bir eleştiri getirdiğinde tepkiniz ne olur?',
+      text: 'Ardışık 4 seans boyunca vakanın yoğun ağlama krizlerine maruz kaldınız. Seans çıkışında zihinsel durumunuzu nasıl yönetirsiniz?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Eleştirinin teknik dayanağını sorar ve verilerimle açıklama yaparım.', weights: { sustainability: 1.0, criticismTolerance: 1.0, personality: 0.9 }, analysisInsight: 'Yüksek kognitif esneklik ve direnç.' },
-        { label: 'Kişisel saldırı olarak algılar ve toplantıyı terk ederim.', weights: { sustainability: 0.2, criticismTolerance: 0.1, personality: 0.2 }, analysisInsight: 'Düşük stres toleransı.' }
+        { label: 'Vakanın fonksiyonunu hatırlar, duygularımdan arınıp nesnel rapor yazarım.', weights: { sustainability: 1.0, personality: 1.0 }, analysisInsight: 'Yüksek duygusal regülasyon.' },
+        { label: 'O günkü yorgunlukla seansı erken bitirmeyi veya raporu ertelemeyi düşünürüm.', weights: { sustainability: 0.2, institutionalLoyalty: 0.3 }, analysisInsight: 'Düşük direnç ve burnout riski.' }
       ]
     }
   ],
@@ -281,8 +154,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       text: 'Kurumun yeni uygulamaya koyduğu bir metodun verimsiz olduğunu düşünüyorsanız nasıl aksiyon alırsınız?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Alternatif verileri sunarak idare ile yapıcı bir toplantı talep ederim.', weights: { institutionalLoyalty: 1.0, formality: 0.9, development: 0.8 }, analysisInsight: 'Sorumlu kurumsal aidiyet.' },
-        { label: 'Metodu uygulamayı bırakır ve diğer öğretmenlerle şikayetimi paylaşırım.', weights: { institutionalLoyalty: 0.2, personality: 0.3, ethics: 0.4 }, analysisInsight: 'Kurumsal huzuru bozma potansiyeli.' }
+        { label: 'Alternatif verileri sunarak idare ile yapıcı bir toplantı talep ederim.', weights: { institutionalLoyalty: 1.0, formality: 0.9 }, analysisInsight: 'Sorumlu kurumsal aidiyet.' },
+        { label: 'Metodu uygulamayı bırakır ve diğer öğretmenlerle şikayetimi paylaşırım.', weights: { institutionalLoyalty: 0.2, personality: 0.3 }, analysisInsight: 'Kurumsal huzuru bozma riski.' }
       ]
     }
   ]
