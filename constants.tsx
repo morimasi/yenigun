@@ -10,139 +10,218 @@ export const FORM_STEPS: FormStep[] = [
 ];
 
 export const CERTIFICATION_CATEGORIES = [
-  { id: 'SPECIAL_ED_ABA', label: 'Özel Eğitim & ABA' },
+  { id: 'AUTISM_SPECTRUM', label: 'Otizm Spektrum Bozukluğu (OSB)' },
+  { id: 'LEARNING_DISABILITIES', label: 'Özel Öğrenme Güçlüğü (ÖÖG)' },
+  { id: 'INTELLECTUAL_DISABILITIES', label: 'Zihin Engelliler & Bilişsel' },
   { id: 'LANGUAGE_SPEECH', label: 'Dil ve Konuşma Terapisi' },
-  { id: 'OCCUPATIONAL_THERAPY', label: 'Ergoterapi & Gelişim' },
-  { id: 'PHYSIOTHERAPY', label: 'Fizyoterapi' },
-  { id: 'PSYCHOLOGY_PEDAGOGY', label: 'Psikoloji & Pedagoji' }
+  { id: 'OCCUPATIONAL_PHYSIO', label: 'Ergoterapi & Fizyoterapi' }
 ];
 
 export const CERTIFICATIONS: Certification[] = [
+  // ==========================================
+  // OTİZM SPEKTRUM BOZUKLUĞU (OSB)
+  // ==========================================
   {
-    id: 'aba_bcba',
-    label: 'ABA (BCBA/QBA Standartları)',
-    description: 'Bilimsel davranış analizi ve müdahale protokolleri.',
-    category: 'SPECIAL_ED_ABA',
+    id: 'aba_bacb',
+    label: 'Applied Behavior Analysis (BACB/QABA)',
+    description: 'Uluslararası davranış analizi standartları.',
+    category: 'AUTISM_SPECTRUM',
     verificationQuestion: {
-      id: 'vq_aba',
+      id: 'vq_aba_tech',
       category: 'technicalExpertise',
-      text: 'Ağır problem davranış sergileyen bir vakada "Extinction" (Sönme) protokolü uygulanırken "Extinction Burst" (Sönme Patlaması) gözlemlendiğinde klinik önceliğiniz ne olmalıdır?',
+      text: 'Bir vakada "Differential Reinforcement of Alternative Behavior" (DRA) uygularken, hedef davranışın sönmeye (extinction) girmesi için kilit şart nedir?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Protokolü derhal durdurup mola yöntemine geçmek.', weights: { clinical: 0.1, technical: 0.2 }, analysisInsight: 'Teknik yetersizlik.' },
-        { label: 'Güvenlik önlemlerini artırarak protokole kararlılıkla devam etmek.', weights: { clinical: 1.0, technical: 1.0 }, analysisInsight: 'Uzman seviye klinik sebat.' }
+        { label: 'Uygunsuz davranışın tamamen görmezden gelinip alternatifin pekiştirilmesi.', weights: { technical: 1.0, clinical: 0.9 }, analysisInsight: 'Standart protokol hakimiyeti.' },
+        { label: 'Sadece uygunsuz davranışın cezalandırılması.', weights: { technical: 0.1, ethics: 0.3 }, analysisInsight: 'Metodolojik hata.' }
       ]
     }
   },
   {
-    id: 'etekom',
-    label: 'ETEÇOM Uygulayıcısı',
-    description: 'Etkileşim temelli erken çocuklukta müdahale.',
-    category: 'SPECIAL_ED_ABA',
+    id: 'etekom_tr',
+    label: 'ETEÇOM (Etkileşim Temelli Erken Çocukluk Müdahale)',
+    description: 'Türkiye yerel, duyarlı etkileşim temelli otizm programı.',
+    category: 'AUTISM_SPECTRUM',
     verificationQuestion: {
       id: 'vq_etekom',
       category: 'technicalExpertise',
-      text: 'ETEÇOM stratejilerinde "Karşılıklı Sosyal Etkileşim"in temel taşı hangisidir?',
+      text: 'ETEÇOM stratejilerinde "Çocuğun Liderliğini Takip Etmek" tam olarak neyi ifade eder?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Çocuğun komutları harfiyen yerine getirmesi.', weights: { technical: 0.2 }, analysisInsight: 'Davranışçı kalıp.' },
-        { label: 'Ebeveyn ve çocuk arasındaki sosyal-duygusal alışverişin niteliği.', weights: { technical: 1.0 }, analysisInsight: 'Doğru metodolojik bilgi.' }
+        { label: 'Çocuğun ilgilendiği nesne üzerinden etkileşimi genişletmek.', weights: { technical: 1.0, pedagogy: 0.8 }, analysisInsight: 'Model felsefesine tam uyum.' },
+        { label: 'Çocuğun serbest oyun oynamasına izin verip müdahale etmemek.', weights: { technical: 0.3 }, analysisInsight: 'Klinik pasiflik yanılgısı.' }
       ]
     }
   },
   {
-    id: 'prompt',
-    label: 'PROMPT Tekniği',
-    description: 'Artikülasyon ve motor konuşma bozuklukları müdahalesi.',
+    id: 'pcdi_autism',
+    label: 'PCDI (Princeton Child Dev. Inst.) Müfredatı',
+    description: 'Veri odaklı yoğun davranışsal eğitim modeli.',
+    category: 'AUTISM_SPECTRUM',
+    verificationQuestion: {
+      id: 'vq_pcdi',
+      category: 'technicalExpertise',
+      text: 'PCDI yaklaşımında "Script-Fading" (İpucunu Silikleştirme) hangi temel beceriyi geliştirmek için kullanılır?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Sosyal etkileşim ve başlatma becerilerini bağımsızlaştırmak için.', weights: { technical: 1.0 }, analysisInsight: 'İleri düzey OSB müdahale bilgisi.' },
+        { label: 'Sadece motor becerileri öğretmek için.', weights: { technical: 0.2 }, analysisInsight: 'Eksik kavram bilgisi.' }
+      ]
+    }
+  },
+  {
+    id: 'gobdo_2',
+    label: 'GOBDO-2 (Gilliam Otizm Derecelendirme Ölçeği)',
+    description: 'Otizm tarama ve derecelendirme aracı (Türkiye Adaptasyonu).',
+    category: 'AUTISM_SPECTRUM',
+    verificationQuestion: {
+      id: 'vq_gobdo',
+      category: 'technicalExpertise',
+      text: 'GOBDO-2 puanlamasında "Otizm İndeksi" hangi alt testlerin birleşimiyle hesaplanır?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Kısıtlı-Yineleyici Davranışlar, Sosyal Etkileşim ve Duygusal Tepkiler.', weights: { technical: 1.0 }, analysisInsight: 'Değerlendirme aracı hakimiyeti.' },
+        { label: 'Sadece konuşma hızı ve akademik başarı.', weights: { technical: 0.2 }, analysisInsight: 'Ölçek parametre hatası.' }
+      ]
+    }
+  },
+
+  // ==========================================
+  // ÖZEL ÖĞRENME GÜÇLÜĞÜ (ÖÖG)
+  // ==========================================
+  {
+    id: 'prep_pass',
+    label: 'PREP (PASS Reading Enhancement Program)',
+    description: 'PASS teorisine dayalı disleksi müdahale programı.',
+    category: 'LEARNING_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_prep',
+      category: 'technicalExpertise',
+      text: 'PREP programında "Ardıl İşlem" (Successive Processing) zorluğu çeken bir çocukta hangi okuma hatası belirgindir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Harf-ses dizilimini karıştırma ve kelimeyi sentezleyememe.', weights: { technical: 1.0, clinical: 0.9 }, analysisInsight: 'Nöropsikolojik temel hakimiyeti.' },
+        { label: 'Metnin genel ana fikrini anlayamama.', weights: { technical: 0.4 }, analysisInsight: 'Yanlış işlemleme alanı.' }
+      ]
+    }
+  },
+  {
+    id: 'tog_disleksi',
+    label: 'TÖG Disleksi Müdahale Programı',
+    description: 'Türkiye yerel öğrenme güçlüğü akademik müfredatı.',
+    category: 'LEARNING_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_tog',
+      category: 'technicalExpertise',
+      text: 'TÖG müfredatında "Fonolojik Farkındalık" aşaması neden okuma öncesi kritik kabul edilir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Dili oluşturan ses birimlerinin manipüle edilmesini sağladığı için.', weights: { technical: 1.0 }, analysisInsight: 'Metodolojik netlik.' },
+        { label: 'Çocuğun hızlı okumasını sağladığı için.', weights: { technical: 0.3 }, analysisInsight: 'Yüzeysel yaklaşım.' }
+      ]
+    }
+  },
+  {
+    id: 'cogent_cog',
+    label: 'COGENT (Bilişsel Gelişim Programı)',
+    description: 'Erken çocuklukta bilişsel süreçleri güçlendirme (PASS temelli).',
+    category: 'LEARNING_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_cogent',
+      category: 'technicalExpertise',
+      text: 'COGENT müdahalesinin PREP\'ten temel farkı nedir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Okuma-yazma öncesi temel bilişsel yapıları (0-7 yaş) hedeflemesi.', weights: { technical: 1.0 }, analysisInsight: 'Program hiyerarşisi bilgisi.' },
+        { label: 'Sadece yetişkin disleksisi ile çalışması.', weights: { technical: 0.1 }, analysisInsight: 'Kritik bilgi eksikliği.' }
+      ]
+    }
+  },
+
+  // ==========================================
+  // ZİHİN ENGELLİLER & BİLİŞSEL ÖLÇÜM
+  // ==========================================
+  {
+    id: 'portage_tr',
+    label: 'Portage Erken Eğitim Programı',
+    description: 'Zihin engelli ve gelişim geriliği olan çocuklar için müfredat.',
+    category: 'INTELLECTUAL_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_portage',
+      category: 'technicalExpertise',
+      text: 'Portage gelişim ölçeğinde "Bilişsel Gelişim" kartlarında hangi beceri grubu önceliklidir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Sınıflama, eşleştirme ve neden-sonuç ilişkileri.', weights: { technical: 1.0, pedagogy: 0.9 }, analysisInsight: 'Müfredat derinliği.' },
+        { label: 'Sadece kaba motor yürüme becerileri.', weights: { technical: 0.2 }, analysisInsight: 'Alan karmaşası.' }
+      ]
+    }
+  },
+  {
+    id: 'stanford_binet_5',
+    label: 'Stanford-Binet Zeka Ölçeği (SB-5)',
+    description: 'Uluslararası standart zeka ölçüm aracı.',
+    category: 'INTELLECTUAL_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_sb5',
+      category: 'technicalExpertise',
+      text: 'SB-5 testinde "Sözel Olmayan Akıl Yürütme" nasıl ölçülür?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Görsel matrisler ve nesne montajı görevleri ile.', weights: { technical: 1.0 }, analysisInsight: 'Psikometrik yetkinlik.' },
+        { label: 'Sadece atasözü açıklamaları ile.', weights: { technical: 0.2 }, analysisInsight: 'Ölçek hatası.' }
+      ]
+    }
+  },
+  {
+    id: 'leiter_3_nonverbal',
+    label: 'Leiter-3 Performans Ölçeği',
+    description: 'Tamamen sözel olmayan zeka ölçümü (Örn: Ağır OSB vakaları).',
+    category: 'INTELLECTUAL_DISABILITIES',
+    verificationQuestion: {
+      id: 'vq_leiter',
+      category: 'technicalExpertise',
+      text: 'Leiter-3 testi hangi vaka grupları için "Altın Standart" kabul edilir?',
+      type: 'radio',
+      weightedOptions: [
+        { label: 'Konuşma engeli, ağır OSB veya dil bilmeyen vakalar.', weights: { technical: 1.0, clinical: 1.0 }, analysisInsight: 'Klinik karar verme becerisi.' },
+        { label: 'Sadece üstün zekalı çocuklar.', weights: { technical: 0.3 }, analysisInsight: 'Yanlış endikasyon.' }
+      ]
+    }
+  },
+
+  // ==========================================
+  // DİL KONUŞMA & DİĞER (YEREL & GLOBAL)
+  // ==========================================
+  {
+    id: 'prompt_level1',
+    label: 'PROMPT Level 1',
+    description: 'Artikülasyon müdahalesi için taktil-kinestetik model.',
     category: 'LANGUAGE_SPEECH',
     verificationQuestion: {
-      id: 'vq_prompt',
+      id: 'vq_prompt_tech',
       category: 'technicalExpertise',
-      text: 'PROMPT hiyerarşisinde "Surface" (Yüzey) seviyesi neyi hedefler?',
+      text: 'PROMPT hiyerarşisinde "Dikey Çene Kontrolü" hangi aşamanın temelidir?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Konuşmanın prosodik özelliklerini düzenlemeyi.', weights: { technical: 1.0 }, analysisInsight: 'İleri seviye teknik bilgi.' },
-        { label: 'Sadece sesletimi (fonem) düzeltmeyi.', weights: { technical: 0.4 }, analysisInsight: 'Eksik teknik tanım.' }
+        { label: 'Mandibular Seviye (Mandibular Stage).', weights: { technical: 1.0 }, analysisInsight: 'Hiyerarşik tam hakimiyet.' },
+        { label: 'Sadece dil ucu sesleri.', weights: { technical: 0.4 }, analysisInsight: 'Teknik eksiklik.' }
       ]
     }
   },
   {
-    id: 'lidcombe',
-    label: 'Lidcombe Programı',
-    description: 'Okul öncesi kekemelik müdahale programı.',
-    category: 'LANGUAGE_SPEECH',
+    id: 'metropolitan_school',
+    label: 'Metropolitan Okul Olgunluğu Testi',
+    description: 'Okul öncesi akademik hazırlık ölçümü.',
+    category: 'INTELLECTUAL_DISABILITIES',
     verificationQuestion: {
-      id: 'vq_lidcombe',
+      id: 'vq_metro',
       category: 'technicalExpertise',
-      text: 'Lidcombe Programında "Sözlü Tepki" (Verbal Contingency) ne zaman verilir?',
+      text: 'Metropolitan testinde "Kelimeleri Anlama" alt testi neyi ölçmeyi amaçlar?',
       type: 'radio',
       weightedOptions: [
-        { label: 'Sadece takılmalar olduğunda uyarmak için.', weights: { technical: 0.2 }, analysisInsight: 'Hatalı uygulama riski.' },
-        { label: 'Akıcı konuşma sergilendiğinde pekiştirmek için.', weights: { technical: 1.0 }, analysisInsight: 'Doğru metodolojik refleks.' }
-      ]
-    }
-  },
-  {
-    id: 'sensory_integration',
-    label: 'Duyu Bütünleme (Ayres)',
-    description: 'Duyusal işlemleme bozuklukları analizi.',
-    category: 'OCCUPATIONAL_THERAPY',
-    verificationQuestion: {
-      id: 'vq_si',
-      category: 'technicalExpertise',
-      text: 'Vestibüler hiporeaktif bir çocukta mülakat esnasında hangi davranışı gözlemlemeyi beklersiniz?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Hareketsizlik ve uyuşukluk.', weights: { technical: 1.0 }, analysisInsight: 'Klinik gözlem derinliği.' },
-        { label: 'Seslere karşı aşırı duyarlılık.', weights: { technical: 0.3 }, analysisInsight: 'Kavram karmaşası.' }
-      ]
-    }
-  },
-  {
-    id: 'dir_floortime_cert',
-    label: 'DIR Floortime (ICDL)',
-    description: 'Gelişimsel, bireysel farklılıklara dayalı model.',
-    category: 'OCCUPATIONAL_THERAPY',
-    verificationQuestion: {
-      id: 'vq_ft',
-      category: 'technicalExpertise',
-      text: 'DIR modelinde "Kendi Kendini Düzenleme" (Self-Regulation) hangi gelişim basamağının temelidir?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'FEDL 1', weights: { technical: 1.0 }, analysisInsight: 'Temel teorik hakimiyet.' },
-        { label: 'FEDL 4', weights: { technical: 0.4 }, analysisInsight: 'Hatalı hiyerarşi bilgisi.' }
-      ]
-    }
-  },
-  {
-    id: 'wisc_4_psk',
-    label: 'WISC-IV Uygulayıcısı',
-    description: 'Bilişsel yetenek ve zeka ölçeği.',
-    category: 'PSYCHOLOGY_PEDAGOGY',
-    verificationQuestion: {
-      id: 'vq_wisc4',
-      category: 'technicalExpertise',
-      text: 'WISC-IV\'te "Genel Yetenek İndeksi" (GYİ) hangi durumlarda hesaplanır?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Tüm alt testlerde puanlar birbirine çok yakınsa.', weights: { technical: 0.3 }, analysisInsight: 'Yanlış istatistiksel yorum.' },
-        { label: 'Sözel Bilgi ve Algısal Akıl Yürütme arasında anlamlı fark olup diğer alanlar (Bİ, ÇB) düşükse.', weights: { technical: 1.0 }, analysisInsight: 'Doğru psikometrik uzmanlık.' }
-      ]
-    }
-  },
-  {
-    id: 'moxo',
-    label: 'MOXO Dikkat Testi',
-    description: 'DEHB tanısı destekleyici performans testi.',
-    category: 'PSYCHOLOGY_PEDAGOGY',
-    verificationQuestion: {
-      id: 'vq_moxo',
-      category: 'technicalExpertise',
-      text: 'MOXO testinde "Zamanlama" parametresi neyi ölçer?',
-      type: 'radio',
-      weightedOptions: [
-        { label: 'Dikkat süresini.', weights: { technical: 0.5 }, analysisInsight: 'Yüzeysel bilgi.' },
-        { label: 'Uyaranlara verilen tepkinin doğruluğunu ve hızını.', weights: { technical: 1.0 }, analysisInsight: 'Parametrik hakimiyet.' }
+        { label: 'Dilsel yönergeleri anlama ve kavram bilgisini.', weights: { technical: 1.0 }, analysisInsight: 'Test uygulama yeterliliği.' },
+        { label: 'Sadece çocuğun kalem tutma becerisini.', weights: { technical: 0.2 }, analysisInsight: 'Yanlış parametre.' }
       ]
     }
   }
