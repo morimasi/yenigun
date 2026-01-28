@@ -1,163 +1,279 @@
 
-import React, { useState } from 'react';
-import { StaffMember, IDP, TrainingSlide } from '../../types';
+import React, { useState, useEffect, useMemo } from 'react';
 import { armsService } from '../../services/ai/armsService';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const StaffProfileView: React.FC<{ staff: StaffMember }> = ({ staff }) => {
-  const [idp, setIdp] = useState<IDP | null>(null);
-  const [slides, setSlides] = useState<TrainingSlide[] | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const handleGeneratePlan = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
     try {
-      const newIdp = await armsService.generateIDP(staff);
-      setIdp(newIdp);
-      const newSlides = await armsService.generateTrainingSlides(newIdp, staff.branch);
-      setSlides(newSlides);
+      const res = await fetch(`/api/staff?action=get_details&staffId=${staffId}`);
+      const json = await res.json();
+      setData(json);
     } catch (e) {
-      alert("Nöral planlama motoru hatası.");
+      console.error("Detail fetch error:", e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const SlideContent = ({ slide, index, total }: { slide: TrainingSlide, index: number, total: number }) => (
-    <div className={`flex flex-col justify-between h-full transition-all duration-700 ${isFullscreen ? 'p-20 bg-slate-950 text-white' : 'p-12 bg-slate-50'}`}>
-       <div className="space-y-12">
-          <div className="flex justify-between items-start">
-             <span className={`text-[12px] font-black uppercase tracking-[0.5em] ${isFullscreen ? 'text-orange-500' : 'text-orange-600'}`}>SLAYT {index + 1} / {total}</span>
-             {isFullscreen && <button onClick={() => setIsFullscreen(false)} className="text-white/40 hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest">[ SUNUMDAN ÇIK ]</button>}
-          </div>
-          <h4 className={`font-black uppercase tracking-tighter italic leading-none ${isFullscreen ? 'text-7xl text-white' : 'text-4xl text-slate-900'}`}>"{slide.title}"</h4>
-          <p className={`font-bold italic leading-relaxed opacity-90 ${isFullscreen ? 'text-3xl text-slate-300' : 'text-xl text-slate-600'}`}>"{slide.content}"</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-             <div className="space-y-6">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block border-b border-white/10 pb-4">KRİTİK ÖĞRETİLER</span>
-                {slide.keyPoints.map((point, i) => (
-                  <div key={i} className={`flex gap-5 items-center p-5 rounded-3xl border ${isFullscreen ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
-                     <div className="w-2 h-2 rounded-full bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.8)]"></div>
-                     <p className={`font-black uppercase tracking-tight ${isFullscreen ? 'text-base text-slate-200' : 'text-[12px] text-slate-800'}`}>{point}</p>
-                  </div>
-                ))}
-             </div>
-             {slide.clinicalCase && (
-               <div className={`p-10 rounded-[3rem] border flex flex-col justify-center ${isFullscreen ? 'bg-orange-600/10 border-orange-500/20' : 'bg-orange-50 border-orange-100'}`}>
-                  <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-4">KLİNİK VAKA ANALİZİ</span>
-                  <p className={`font-bold italic leading-relaxed ${isFullscreen ? 'text-xl text-orange-100' : 'text-sm text-orange-900'}`}>{slide.clinicalCase}</p>
-               </div>
-             )}
-          </div>
-       </div>
+  useEffect(() => {
+    fetchData();
+  }, [staffId]);
 
-       <div className={`mt-16 flex justify-between items-center pt-8 border-t ${isFullscreen ? 'border-white/10' : 'border-slate-200'}`}>
-          <div className="flex gap-4">
-             <button disabled={index === 0} onClick={() => setActiveSlide(s => s - 1)} className="p-6 bg-slate-900 text-white rounded-full hover:bg-orange-600 transition-all disabled:opacity-20"><svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M15 19l-7-7 7-7" /></svg></button>
-             <button disabled={index === total - 1} onClick={() => setActiveSlide(s => s + 1)} className="p-6 bg-slate-900 text-white rounded-full hover:bg-orange-600 transition-all disabled:opacity-20"><svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M9 5l7 7-7 7" /></svg></button>
-          </div>
-          <div className="text-center">
-             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">TARTIŞMA ODAĞI</p>
-             <p className={`font-black uppercase italic ${isFullscreen ? 'text-2xl text-orange-500' : 'text-[14px] text-orange-600'}`}>"{slide.discussionQuestion}"</p>
-          </div>
-          <div className="hidden md:block">
-             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">ARMS v2 // NÖRAL EĞİTİM MOTORU</span>
-          </div>
-       </div>
-    </div>
-  );
+  const handleGenerateIDP = async () => {
+    setIsAiProcessing(true);
+    try {
+      // 1. Generate IDP based on real assessment history
+      const newIdp = await armsService.generateIDP({
+        ...data.profile,
+        assessments: data.assessments
+      } as any);
+      
+      // 2. Save to DB
+      await fetch('/api/staff?action=save_idp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staffId, data: newIdp })
+      });
+
+      // 3. Generate Slides for the UI (Optional: can be saved in DB too)
+      const slides = await armsService.generateTrainingSlides(newIdp, data.profile.branch);
+      newIdp.autoGeneratedPresentation = slides;
+
+      // Update local state
+      setData({ ...data, activeIDP: { data: newIdp } });
+      alert("Nöral Gelişim Planı başarıyla mühürlendi ve personelin bulut dosyasına işlendi.");
+    } catch (e) {
+      alert("AI Analiz Motoru Hatası.");
+    } finally {
+      setIsAiProcessing(false);
+    }
+  };
+
+  const chartData = useMemo(() => {
+    if (!data?.assessments) return [];
+    return data.assessments.map((a: any) => ({
+      date: new Date(a.timestamp).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }),
+      score: a.score
+    }));
+  }, [data]);
+
+  if (isLoading) return <div className="py-40 text-center animate-pulse uppercase font-black text-slate-300 tracking-[0.5em]">Veri Rezonansı Kuruluyor...</div>;
+
+  const idp = data.activeIDP?.data;
 
   return (
-    <div className="space-y-10 animate-scale-in">
-      {isFullscreen && slides && (
-        <div className="fixed inset-0 z-[1000] bg-slate-950 animate-fade-in overflow-hidden">
-           <SlideContent slide={slides[activeSlide]} index={activeSlide} total={slides.length} />
+    <div className="space-y-8 animate-scale-in">
+      {isFullscreen && idp?.autoGeneratedPresentation && (
+        <div className="fixed inset-0 z-[1000] bg-slate-950 flex flex-col animate-fade-in">
+           <SlideContent 
+             slide={idp.autoGeneratedPresentation[activeSlide]} 
+             index={activeSlide} 
+             total={idp.autoGeneratedPresentation.length} 
+             full={true} 
+             onClose={() => setIsFullscreen(false)} 
+             onPrev={() => setActiveSlide(s => Math.max(0, s - 1))}
+             onNext={() => setActiveSlide(s => Math.min(idp.autoGeneratedPresentation.length - 1, s + 1))}
+           />
         </div>
       )}
 
-      <div className="bg-white p-12 md:p-16 rounded-[4.5rem] border border-slate-100 shadow-2xl relative overflow-hidden group">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-10 mb-16 relative z-10">
-          <div className="flex gap-10 items-center">
-            <div className="w-32 h-32 bg-slate-950 rounded-[3rem] flex items-center justify-center text-white text-6xl font-black shadow-3xl">
-              {staff.name.charAt(0)}
+      {/* TOP HEADER: ACADEMIC CREDENTIALS */}
+      <div className="bg-white p-12 rounded-[4.5rem] border border-slate-100 shadow-2xl relative overflow-hidden group">
+         <div className="flex flex-col xl:flex-row justify-between items-center gap-10 relative z-10">
+            <div className="flex items-center gap-10">
+               <div className="w-32 h-32 bg-slate-950 rounded-[3rem] flex items-center justify-center text-white text-6xl font-black shadow-3xl">
+                  {data.profile.name.charAt(0)}
+               </div>
+               <div>
+                  <h3 className="text-5xl font-black text-slate-900 tracking-tighter uppercase italic mb-4 leading-none">{data.profile.name}</h3>
+                  <div className="flex items-center gap-5">
+                     <span className="px-5 py-2 bg-orange-600 rounded-xl text-[11px] font-black text-white uppercase tracking-widest">{data.profile.branch}</span>
+                     <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{data.profile.experience_years} YIL DENEYİM // {data.profile.university}</span>
+                  </div>
+               </div>
             </div>
-            <div>
-              <h3 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-4 italic">{staff.name}</h3>
-              <div className="flex items-center gap-4">
-                 <span className="px-5 py-2 bg-orange-600 rounded-xl text-[11px] font-black text-white uppercase tracking-widest">{staff.branch}</span>
-                 <div className="w-2 h-2 rounded-full bg-slate-200"></div>
-                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{staff.role.toUpperCase()} DOSYASI</span>
-              </div>
+            <div className="flex gap-4">
+               <button 
+                 onClick={handleGenerateIDP}
+                 disabled={isAiProcessing}
+                 className="px-10 py-6 bg-slate-950 text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-3xl active:scale-95 disabled:opacity-50"
+               >
+                  {isAiProcessing ? 'NÖRAL ANALİZ AKTİF...' : (idp ? 'IDP YENİLE' : 'IDP OLUŞTUR')}
+               </button>
+               {idp?.autoGeneratedPresentation && (
+                 <button onClick={() => setIsFullscreen(true)} className="px-10 py-6 bg-orange-600 text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-900 transition-all">SUNUMU BAŞLAT</button>
+               )}
             </div>
-          </div>
-          {!idp && (
-            <button 
-              onClick={handleGeneratePlan}
-              disabled={isLoading}
-              className="px-12 py-6 bg-slate-950 text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-3xl active:scale-95 disabled:opacity-50"
-            >
-              {isLoading ? 'NÖRAL ANALİZ AKTİF...' : 'GELİŞİM PLANINI MÜHÜRLE'}
-            </button>
-          )}
-          {idp && (
-             <button onClick={() => setIsFullscreen(true)} className="px-12 py-6 bg-orange-600 text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-950 transition-all">SUNUMU BAŞLAT (TAM EKRAN)</button>
-          )}
-        </div>
-
-        {idp && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in relative z-10">
-             <div className="lg:col-span-5 space-y-8">
-                <div className="p-12 bg-slate-50 rounded-[4rem] border border-slate-100 shadow-inner">
-                   <div className="flex items-center gap-3 mb-10">
-                      <div className="w-1.5 h-8 bg-orange-600 rounded-full"></div>
-                      <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em]">KLİNİK BOŞLUK ANALİZİ</h5>
-                   </div>
-                   <div className="space-y-5">
-                      {idp.identifiedGaps.map((gap, i) => (
-                        <div key={i} className="flex gap-5 items-center p-6 bg-white rounded-3xl border border-slate-100 shadow-sm group/gap hover:border-rose-500 transition-all">
-                           <div className="w-3 h-3 rounded-full bg-rose-500 group-hover/gap:animate-ping"></div>
-                           <p className="text-[14px] font-black text-slate-700 uppercase tracking-tight">{gap}</p>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-                
-                <div className="p-12 bg-slate-950 rounded-[4rem] text-white shadow-3xl relative overflow-hidden">
-                   <h5 className="text-[11px] font-black text-orange-500 uppercase tracking-widest mb-10">STRATEJİK YOL HARİTASI</h5>
-                   <div className="space-y-12 relative z-10">
-                      <div className="border-l-2 border-white/10 pl-8 relative">
-                        <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-orange-500"></div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase block mb-3">KISA VADE (0-3 AY)</span>
-                        <p className="text-[16px] font-bold text-slate-300 leading-relaxed italic">"{idp.roadmap.shortTerm}"</p>
-                      </div>
-                      <div className="border-l-2 border-white/10 pl-8 relative">
-                        <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-orange-500"></div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase block mb-3">UZUN VADE (12 AY)</span>
-                        <p className="text-[16px] font-bold text-slate-300 leading-relaxed italic">"{idp.roadmap.longTerm}"</p>
-                      </div>
-                   </div>
-                </div>
-             </div>
-
-             <div className="lg:col-span-7 flex flex-col">
-                {slides ? (
-                   <div className="bg-white rounded-[4rem] border border-slate-100 shadow-2xl overflow-hidden flex-1 flex flex-col min-h-[700px]">
-                      <SlideContent slide={slides[activeSlide]} index={activeSlide} total={slides.length} />
-                   </div>
-                ) : (
-                   <div className="h-full flex items-center justify-center border-4 border-dashed border-slate-100 rounded-[4rem] opacity-30">
-                      <p className="text-xl font-black uppercase tracking-[0.5em]">Eğitim Müfredatı Bekleniyor</p>
-                   </div>
-                )}
-             </div>
-          </div>
-        )}
-        <div className="absolute -right-40 -top-40 w-96 h-96 bg-orange-600/5 rounded-full blur-[150px] group-hover:scale-125 transition-transform duration-[3s]"></div>
+         </div>
+         <div className="absolute -right-40 -top-40 w-80 h-80 bg-orange-600/5 rounded-full blur-[120px] group-hover:scale-125 transition-transform duration-[5s]"></div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+         {/* CLINICAL TRENDS CHART */}
+         <div className="lg:col-span-8 bg-white p-12 rounded-[5rem] border border-slate-100 shadow-xl h-[500px]">
+            <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.5em] mb-12 border-l-[12px] border-orange-600 pl-8 leading-none py-2">Klinik Gelişim Eğrisi</h4>
+            <div className="h-[320px]">
+               <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                     <defs>
+                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                           <stop offset="5%" stopColor="#ea580c" stopOpacity={0.1}/>
+                           <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
+                        </linearGradient>
+                     </defs>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                     <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} />
+                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} domain={[0, 100]} />
+                     <Tooltip contentStyle={{borderRadius: '25px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)'}} />
+                     <Area type="monotone" dataKey="score" stroke="#ea580c" strokeWidth={5} fillOpacity={1} fill="url(#colorScore)" />
+                  </AreaChart>
+               </ResponsiveContainer>
+            </div>
+         </div>
+
+         {/* AKREDİTASYON ENVANTERİ */}
+         <div className="lg:col-span-4 bg-slate-900 p-12 rounded-[5rem] text-white shadow-2xl flex flex-col">
+            <h4 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.5em] mb-10 border-b border-white/10 pb-6">Aktif Akreditasyonlar</h4>
+            <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-2">
+               {(data.profile.all_trainings || []).map((t: string, i: number) => (
+                  <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4 group hover:bg-white/10 transition-colors">
+                     <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                     <span className="text-[11px] font-black uppercase tracking-tight text-slate-300 group-hover:text-white transition-colors">{t}</span>
+                  </div>
+               ))}
+               {(!data.profile.all_trainings || data.profile.all_trainings.length === 0) && <p className="text-[10px] text-slate-500 italic uppercase">Beyan edilen sertifika yok.</p>}
+            </div>
+         </div>
+      </div>
+
+      {/* IDP & SLIDES BENTO SECTION */}
+      {idp ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-slide-up">
+           <div className="lg:col-span-5 space-y-8">
+              <div className="p-12 bg-white rounded-[4rem] border-2 border-orange-500/20 shadow-2xl relative overflow-hidden">
+                 <div className="flex items-center gap-4 mb-10 relative z-10">
+                    <div className="w-2 h-8 bg-orange-600 rounded-full"></div>
+                    <h5 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.4em]">Stratejik Odak: {idp.focusArea}</h5>
+                 </div>
+                 <div className="space-y-4 relative z-10">
+                    {idp.identifiedGaps.map((gap: string, i: number) => (
+                      <div key={i} className="flex gap-5 items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-rose-500 transition-all">
+                         <div className="w-2.5 h-2.5 rounded-full bg-rose-500 group-hover:animate-ping"></div>
+                         <p className="text-[13px] font-black text-slate-700 uppercase tracking-tight leading-tight">{gap}</p>
+                      </div>
+                    ))}
+                 </div>
+                 <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-orange-600/5 rounded-full blur-[100px]"></div>
+              </div>
+
+              <div className="p-12 bg-slate-950 rounded-[4rem] text-white shadow-3xl">
+                 <h5 className="text-[11px] font-black text-orange-500 uppercase tracking-widest mb-10">AKADEMİK YOL HARİTASI</h5>
+                 <div className="space-y-12">
+                    <div className="border-l-2 border-white/10 pl-10 relative group">
+                       <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-orange-500 group-hover:scale-150 transition-transform"></div>
+                       <span className="text-[10px] font-black text-slate-500 uppercase block mb-4">FAZ 1: STABİLİZASYON</span>
+                       <p className="text-[17px] font-bold text-slate-200 italic leading-relaxed uppercase tracking-tight">"{idp.roadmap.shortTerm}"</p>
+                    </div>
+                    <div className="border-l-2 border-white/10 pl-10 relative group">
+                       <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-emerald-500 group-hover:scale-150 transition-transform"></div>
+                       <span className="text-[10px] font-black text-slate-500 uppercase block mb-4">FAZ 2: UZMANLIK</span>
+                       <p className="text-[17px] font-bold text-slate-200 italic leading-relaxed uppercase tracking-tight">"{idp.roadmap.longTerm}"</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="lg:col-span-7">
+              {idp.autoGeneratedPresentation ? (
+                 <div className="bg-white rounded-[5rem] border border-slate-100 shadow-2xl overflow-hidden h-full flex flex-col min-h-[700px]">
+                    <SlideContent 
+                      slide={idp.autoGeneratedPresentation[activeSlide]} 
+                      index={activeSlide} 
+                      total={idp.autoGeneratedPresentation.length} 
+                      onPrev={() => setActiveSlide(s => Math.max(0, s - 1))}
+                      onNext={() => setActiveSlide(s => Math.min(idp.autoGeneratedPresentation.length - 1, s + 1))}
+                    />
+                 </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center border-4 border-dashed border-slate-100 rounded-[5rem] opacity-30 text-center p-20">
+                   <h3 className="text-3xl font-black text-slate-400 uppercase tracking-[0.8em]">Eğitim Müfredatı</h3>
+                   <p className="text-[12px] font-black uppercase mt-4">Nöral sunum oluşturulması için IDP tetiğini çalıştırın.</p>
+                </div>
+              )}
+           </div>
+        </div>
+      ) : (
+        <div className="py-32 bg-slate-50 rounded-[5rem] border-4 border-dashed border-slate-200 text-center flex flex-col items-center justify-center">
+           <p className="text-[14px] font-black text-slate-400 uppercase tracking-[0.8em] mb-6">Gelişim Planı Hazır Değil</p>
+           <button onClick={handleGenerateIDP} className="px-12 py-6 bg-slate-900 text-white rounded-3xl font-black uppercase text-[11px] tracking-widest hover:bg-orange-600 transition-all shadow-xl">ANALİZİ TETİKLE</button>
+        </div>
+      )}
     </div>
   );
 };
+
+const SlideContent = ({ slide, index, total, full = false, onClose, onPrev, onNext }: any) => (
+  <div className={`flex flex-col justify-between h-full transition-all duration-700 ${full ? 'p-16 md:p-32 bg-slate-950 text-white' : 'p-12 bg-white'}`}>
+    <div className="space-y-12">
+      <div className="flex justify-between items-center relative z-10">
+         <span className={`text-[12px] font-black uppercase tracking-[0.6em] ${full ? 'text-orange-500' : 'text-orange-600'}`}>MODÜL {index + 1} / {total}</span>
+         {full && <button onClick={onClose} className="p-4 hover:bg-white/10 rounded-full transition-all text-white"><svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>}
+      </div>
+      
+      <div className="space-y-8 relative z-10 animate-slide-up">
+        <h4 className={`font-black uppercase tracking-tighter italic leading-[0.9] ${full ? 'text-8xl md:text-9xl' : 'text-5xl text-slate-900'}`}>"{slide.title}"</h4>
+        <p className={`font-bold italic leading-relaxed opacity-90 ${full ? 'text-4xl md:text-5xl text-slate-400 max-w-6xl' : 'text-xl text-slate-500'}`}>"{slide.content}"</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16 relative z-10 animate-fade-in delay-500">
+         <div className="space-y-8">
+            <span className={`text-[10px] font-black uppercase tracking-widest block border-b pb-4 ${full ? 'text-slate-500 border-white/10' : 'text-slate-400 border-slate-100'}`}>KRİTİK UYGULAMA NOTLARI</span>
+            <div className="space-y-4">
+              {slide.keyPoints.map((point: string, i: number) => (
+                <div key={i} className={`flex gap-6 items-center p-6 rounded-[2rem] border transition-all ${full ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-100'}`}>
+                   <div className="w-3 h-3 rounded-full bg-orange-600 shadow-[0_0_15px_rgba(234,88,12,0.6)]"></div>
+                   <p className={`font-black uppercase tracking-tight ${full ? 'text-xl text-slate-300' : 'text-[12px] text-slate-800'}`}>{point}</p>
+                </div>
+              ))}
+            </div>
+         </div>
+         {slide.clinicalCase && (
+           <div className={`p-12 rounded-[4rem] border flex flex-col justify-center relative overflow-hidden ${full ? 'bg-orange-600/10 border-orange-500/20' : 'bg-orange-50 border-orange-100'}`}>
+              <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-6">KLİNİK VAKA ANALİZİ</span>
+              <p className={`font-bold italic leading-relaxed ${full ? 'text-3xl text-orange-100' : 'text-base text-orange-950'}`}>{slide.clinicalCase}</p>
+           </div>
+         )}
+      </div>
+    </div>
+
+    <div className={`mt-20 flex justify-between items-center pt-10 border-t ${full ? 'border-white/10' : 'border-slate-100'} relative z-10`}>
+      <div className="flex gap-6">
+         <button disabled={index === 0} onClick={onPrev} className={`p-8 rounded-full transition-all border-4 ${full ? 'bg-white/5 border-white/10 text-white hover:bg-orange-600 hover:border-orange-600' : 'bg-slate-900 border-slate-900 text-white hover:bg-orange-600 hover:border-orange-600'} disabled:opacity-20`}>
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M15 19l-7-7 7-7" /></svg>
+         </button>
+         <button disabled={index === total - 1} onClick={onNext} className={`p-8 rounded-full transition-all border-4 ${full ? 'bg-white/5 border-white/10 text-white hover:bg-orange-600 hover:border-orange-600' : 'bg-slate-900 border-slate-900 text-white hover:bg-orange-600 hover:border-orange-600'} disabled:opacity-20`}>
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M9 5l7 7-7 7" /></svg>
+         </button>
+      </div>
+      <div className="text-right">
+         <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] mb-3">TARTIŞMA VE MUHAKEME SORUSU</p>
+         <p className={`font-black uppercase italic tracking-tighter ${full ? 'text-5xl text-orange-500' : 'text-xl text-orange-600'}`}>"{slide.discussionQuestion}"</p>
+      </div>
+    </div>
+    
+    {full && (
+      <div className="absolute -left-80 -bottom-80 w-[1000px] h-[1000px] bg-orange-600/5 rounded-full blur-[300px] pointer-events-none"></div>
+    )}
+  </div>
+);
 
 export default StaffProfileView;
