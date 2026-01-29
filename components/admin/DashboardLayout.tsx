@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
-import AdminTopNav from './AdminTopNav'; // Artık Sidebar görevi görüyor
+import AdminTopNav from './AdminTopNav'; // Artık Header görevi görüyor
 import PipelineView from '../../features/academic-pipeline/PipelineView';
 import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
@@ -45,9 +45,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
-      {/* SOL SIDEBAR (Ultra-Compact Mode: w-20) */}
-      <aside className="w-20 bg-slate-900 text-white flex-shrink-0 flex flex-col border-r border-slate-800 z-50 h-full transition-all duration-300">
+    <div className="flex flex-col h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
+      {/* ÜST KOMUTA BARI (Horizontal Navigation) */}
+      <header className="shrink-0 z-50">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -55,24 +55,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
           onRefresh={props.onRefresh}
           isProcessing={props.isProcessing}
         />
-      </aside>
+      </header>
       
       {/* ANA İÇERİK ALANI */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Üst Bilgi Barı (Minimal Breadcrumb) */}
-        <header className="h-10 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0">
-           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <span className="text-orange-600">YÖNETİM</span>
-              <span className="text-slate-300">/</span>
-              <span>{activeTab.toUpperCase()}</span>
+      <main className="flex-1 flex flex-col min-h-0 relative">
+        {/* Alt Bilgi Barı (Context Strip) */}
+        <div className="h-8 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 shadow-sm z-40">
+           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              <span className="text-slate-300">MODÜL:</span>
+              <span className="text-orange-600">{activeTab.toUpperCase()}</span>
            </div>
            <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[9px] font-bold text-slate-400">SİSTEM AKTİF</span>
+              <span className="text-[8px] font-bold text-slate-400 tracking-widest">VERİ AKIŞI: ONLINE</span>
            </div>
-        </header>
+        </div>
 
-        {/* Dinamik İçerik */}
+        {/* Dinamik İçerik Sahnesi */}
         <div className="flex-1 overflow-y-auto p-4 scroll-smooth bg-[#F8FAFC]">
            {renderContent()}
         </div>
