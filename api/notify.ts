@@ -1,4 +1,6 @@
 
+import { sql } from '@vercel/postgres';
+
 export const config = { runtime: 'edge' };
 
 export default async function handler(request: Request) {
@@ -9,37 +11,60 @@ export default async function handler(request: Request) {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   try {
-    const { targetEmail, targetPhone, targetName, channel, subject, body } = await request.json();
+    // Body'de targetId (CandidateID) bekliyoruz
+    const { targetId, targetEmail, targetPhone, targetName, channel, subject, body } = await request.json();
+    let status = 'pending';
+    let errorMessage = null;
 
     if (channel === 'email') {
-      if (!RESEND_API_KEY) throw new Error("Email provider not configured.");
-      
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: 'Yeni Gün Akademi <onboarding@resend.dev>',
-          to: [targetEmail],
-          subject: subject || 'Kurumsal Bilgilendirme',
-          html: `<div style="font-family:sans-serif; color:#333; padding:20px;">${body.replace(/\n/g, '<br/>')}</div>`,
-        }),
-      });
-      if (!res.ok) throw new Error("Email sending failed via provider.");
+      if (!RESEND_API_KEY) {
+        status = 'failed';
+        errorMessage = 'Email provider config missing';
+      } else {
+        try {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: 'Yeni Gün Akademi <onboarding@resend.dev>',
+              to: [targetEmail],
+              subject: subject || 'Kurumsal Bilgilendirme',
+              html: `<div style="font-family:sans-serif; color:#333; padding:20px;">${body.replace(/\n/g, '<br/>')}</div>`,
+            }),
+          });
+          
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Email failed");
+          }
+          status = 'sent';
+        } catch (e: any) {
+          status = 'failed';
+          errorMessage = e.message;
+        }
+      }
+    } else {
+      // SMS / WhatsApp Simulation
+      console.log(`[${channel.toUpperCase()} SIM] To: ${targetPhone}, Content: ${body}`);
+      status = 'sent'; 
     }
 
-    if (channel === 'sms') {
-      // Bu bölüm yerel SMS gateway entegrasyonu için placeholder'dır.
-      console.log(`[SMS SIMULATION] To: ${targetPhone}, Content: ${body}`);
-      await new Promise(r => setTimeout(r, 500)); // Simüle gecikme
+    // DATABASE LOGGING
+    if (targetId) {
+      await sql`
+        INSERT INTO communication_logs (
+          target_id, target_email, channel, subject, content_preview, status, error_message
+        ) VALUES (
+          ${targetId}, ${targetEmail}, ${channel}, ${subject}, ${body.substring(0, 200)}, ${status}, ${errorMessage}
+        )
+      `;
     }
 
-    if (channel === 'whatsapp') {
-      // WhatsApp API için webhook veya doğrudan API çağrısı
-      console.log(`[WA SIMULATION] To: ${targetPhone}, Content: ${body}`);
-      // İpucu: Client tarafında deep link de kullanılabilir ancak merkezi yapı için API tercih edilir.
+    if (status === 'failed') {
+      return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });

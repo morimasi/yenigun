@@ -27,81 +27,50 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // 1. ŞEMA İLKLENDİRME (HER İKİ TABLOYU DA GARANTİYE AL)
-    await sql`
-      CREATE TABLE IF NOT EXISTS candidates (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        email TEXT,
-        phone TEXT,
-        age INTEGER,
-        gender TEXT,
-        branch TEXT,
-        university TEXT,
-        department TEXT,
-        experience_years INTEGER,
-        previous_institutions TEXT,
-        all_trainings JSONB DEFAULT '[]'::jsonb,
-        answers JSONB DEFAULT '{}'::jsonb,
-        status TEXT DEFAULT 'pending',
-        admin_notes TEXT,
-        reminder_note TEXT,
-        report JSONB DEFAULT NULL,
-        algo_report JSONB DEFAULT NULL,
-        interview_schedule JSONB DEFAULT NULL,
-        cv_data JSONB DEFAULT NULL,
-        archive_category TEXT,
-        archive_note TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS staff (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        phone TEXT,
-        password_hash TEXT NOT NULL,
-        branch TEXT NOT NULL,
-        university TEXT,
-        department TEXT,
-        experience_years INTEGER DEFAULT 0,
-        all_trainings JSONB DEFAULT '[]'::jsonb,
-        onboarding_complete BOOLEAN DEFAULT FALSE,
-        status TEXT DEFAULT 'active',
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
     if (method === 'GET') {
-      const { rows } = await sql`SELECT * FROM candidates ORDER BY updated_at DESC;`;
+      const id = searchParams.get('id');
+
+      // DETAY SORGUSU (Tekil Aday - Full Data)
+      if (id) {
+        const { rows } = await sql`SELECT * FROM candidates WHERE id = ${id}`;
+        if (rows.length === 0) return new Response(JSON.stringify({ error: 'NOT_FOUND' }), { status: 404, headers });
+        
+        const candidate = rows[0];
+        return new Response(JSON.stringify({
+            ...candidate,
+            timestamp: new Date(candidate.updated_at || candidate.created_at).getTime()
+        }), { status: 200, headers });
+      }
+
+      // LISTE SORGUSU (Optimized - No BLOBs)
+      // cv_data, report ve algo_report çok büyük olabilir, liste görünümü için bunları optimize ediyoruz.
+      // Sadece gerekli metadata çekiliyor.
+      const { rows } = await sql`
+        SELECT 
+          id, name, email, phone, age, gender, branch, university, department,
+          experience_years, previous_institutions, status, archive_category,
+          updated_at, created_at,
+          (report->>'score')::int as score,
+          (cv_data IS NOT NULL) as has_cv
+        FROM candidates 
+        ORDER BY updated_at DESC;
+      `;
+
       const candidates = rows.map(row => ({
         id: row.id,
         name: row.name || 'İsimsiz',
         email: row.email || '',
         phone: row.phone || '',
         age: row.age || 0,
-        gender: row.gender || 'Belirtilmemiş',
         branch: row.branch || '',
-        university: row.university || '',
-        department: row.department || '',
         experienceYears: row.experience_years || 0,
-        previousInstitutions: row.previous_institutions || '',
-        allTrainings: row.all_trainings || [],
-        answers: row.answers || {},
         status: row.status || 'pending',
-        adminNotes: row.admin_notes || '',
-        reminderNote: row.reminder_note || '',
         archiveCategory: row.archive_category,
-        archiveNote: row.archive_note,
-        report: row.report,
-        algoReport: row.algo_report,
-        cvData: row.cv_data,
+        report: row.score ? { score: row.score } : null, // Liste için sadece skor yeterli
+        hasCv: row.has_cv,
         timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
       }));
+      
       return new Response(JSON.stringify(candidates), { status: 200, headers });
     }
 
@@ -115,7 +84,7 @@ export default async function handler(request: Request) {
       const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
       const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
 
-      // ADAY GÜNCELLEMESİ
+      // UPSERT QUERY
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
@@ -135,26 +104,28 @@ export default async function handler(request: Request) {
           previous_institutions = EXCLUDED.previous_institutions, all_trainings = EXCLUDED.all_trainings, 
           answers = EXCLUDED.answers, status = EXCLUDED.status, admin_notes = EXCLUDED.admin_notes, 
           reminder_note = EXCLUDED.reminder_note, report = EXCLUDED.report, algo_report = EXCLUDED.algo_report, 
-          cv_data = EXCLUDED.cv_data, archive_category = EXCLUDED.archive_category, 
+          cv_data = CASE WHEN EXCLUDED.cv_data IS NOT NULL THEN EXCLUDED.cv_data ELSE candidates.cv_data END, 
+          archive_category = EXCLUDED.archive_category, 
           archive_note = EXCLUDED.archive_note, updated_at = EXCLUDED.updated_at;
       `;
 
-      // OTOMATİK PERSONEL ATAMA (HIRE-TO-STAFF PIPELINE)
+      // HIRE-TO-STAFF (TRACEABILITY UPDATE)
       if (body.status === 'archived' && body.archiveCategory === 'HIRED_CONTRACTED') {
         const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`;
         const defaultPassword = 'yenigun2024';
 
         await sql`
           INSERT INTO staff (
-            id, name, email, phone, password_hash, branch, university, department,
-            experience_years, all_trainings, onboarding_complete, status, updated_at
+            id, origin_candidate_id, name, email, phone, password_hash, role, branch, 
+            university, department, experience_years, all_trainings, onboarding_complete, status, updated_at
           ) VALUES (
-            ${staffId}, ${body.name}, ${body.email}, ${body.phone}, ${defaultPassword}, 
-            ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears},
+            ${staffId}, ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${defaultPassword}, 
+            'user', ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears},
             ${allTrainings}, FALSE, 'active', ${now}
           )
           ON CONFLICT (email) DO UPDATE SET
             branch = EXCLUDED.branch,
+            origin_candidate_id = EXCLUDED.origin_candidate_id,
             updated_at = EXCLUDED.updated_at;
         `;
       }

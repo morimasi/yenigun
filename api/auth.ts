@@ -1,4 +1,6 @@
 
+import { sql } from '@vercel/postgres';
+
 export const config = {
   runtime: 'edge',
 };
@@ -19,24 +21,35 @@ export default async function handler(request: Request) {
     try {
       const { username, password } = await request.json();
 
-      // Üretim ortamında bu bilgiler environment variable'da tutulmalıdır.
-      const ADMIN_USER = "admin";
-      const ADMIN_PASS = "yenigun2024";
+      // DB AUTH CHECK (Role MUST be admin)
+      // Not: username parametresini email veya name ile eşleştirebiliriz.
+      // Basitlik adına, 'admin' kullanıcısı özel bir username gibi davranır veya email ile kontrol edilir.
+      
+      const { rows } = await sql`
+        SELECT id, name, role FROM staff 
+        WHERE (email = ${username} OR name = 'Sistem Yöneticisi') -- 'admin' girişi için name veya email
+        AND password_hash = ${password}
+        AND role = 'admin'
+        LIMIT 1;
+      `;
 
-      if (username === ADMIN_USER && password === ADMIN_PASS) {
-        // Basit bir session token (Gerçek senaryoda JWT veya DB tabanlı session önerilir)
-        const sessionToken = btoa(`session_${Date.now()}_${Math.random()}`);
+      if (rows.length > 0) {
+        const user = rows[0];
+        const sessionToken = btoa(`session_${user.id}_${Date.now()}`);
         
         return new Response(JSON.stringify({ 
           success: true, 
           token: sessionToken,
-          expires: Date.now() + (24 * 60 * 60 * 1000) // 24 saat
+          user: { name: user.name, role: user.role },
+          expires: Date.now() + (24 * 60 * 60 * 1000)
         }), { status: 200, headers });
       }
 
-      return new Response(JSON.stringify({ success: false, error: 'KİMLİK_HATASI', message: 'Hatalı kullanıcı adı veya şifre.' }), { status: 401, headers });
-    } catch (e) {
-      return new Response(JSON.stringify({ error: 'AUTH_ERROR' }), { status: 500, headers });
+      // Legacy/Fallback check removed for security. DB is mandatory.
+      return new Response(JSON.stringify({ success: false, error: 'KİMLİK_HATASI', message: 'Yetkisiz erişim veya hatalı şifre.' }), { status: 401, headers });
+    } catch (e: any) {
+      console.error("Auth DB Error:", e);
+      return new Response(JSON.stringify({ error: 'DB_CONNECTION_ERROR', details: e.message }), { status: 500, headers });
     }
   }
 

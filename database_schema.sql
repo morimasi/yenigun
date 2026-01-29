@@ -1,13 +1,13 @@
 
 -- ======================================================
 -- YENI GUN AKADEMI - ARMS (ACADEMIC RESONANCE SYSTEM)
--- VERITABANI MIMARISI v5.0 (DEEP PROFESSIONAL)
+-- VERITABANI MIMARISI v6.0 (ENTERPRISE EDITION)
 -- ======================================================
 
--- 1. GEREKLI EKLENTILERIN AKTIFLESTIRILMESI
+-- 1. GEREKLI EKLENTILER
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. OTOMATIK ZAMAN GUNCELLEME FONKSIYONU
+-- 2. ZAMANLAYICI FONKSIYON
 CREATE OR REPLACE FUNCTION arms_update_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -16,7 +16,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 3. ADAY YONETIM TABLOSU (CANDIDATES)
+-- 3. ADAY YONETIM TABLOSU
 CREATE TABLE IF NOT EXISTS candidates (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     report JSONB DEFAULT NULL,
     algo_report JSONB DEFAULT NULL,
     interview_schedule JSONB DEFAULT NULL,
-    cv_data JSONB DEFAULT NULL,
+    cv_data JSONB DEFAULT NULL, -- DİKKAT: Performans için liste sorgularında hariç tutulmalı
     admin_notes TEXT,
     reminder_note TEXT,
     archive_category TEXT,
@@ -46,21 +46,22 @@ CREATE TABLE IF NOT EXISTS candidates (
 
 CREATE INDEX IF NOT EXISTS idx_arms_cand_status ON candidates(status);
 CREATE INDEX IF NOT EXISTS idx_arms_cand_branch ON candidates(branch);
-CREATE INDEX IF NOT EXISTS idx_arms_cand_email ON candidates(email);
+CREATE INDEX IF NOT EXISTS idx_arms_cand_created ON candidates(created_at DESC);
 
 DROP TRIGGER IF EXISTS tr_arms_update_candidates ON candidates;
 CREATE TRIGGER tr_arms_update_candidates
 BEFORE UPDATE ON candidates
 FOR EACH ROW EXECUTE FUNCTION arms_update_timestamp();
 
--- 4. AKADEMIK PERSONEL TABLOSU (STAFF)
--- Not: email ve phone UNIQUE yapılarak 'Tekil Kimlik' (Identity Singularity) sağlanmıştır.
+-- 4. AKADEMIK PERSONEL TABLOSU
 CREATE TABLE IF NOT EXISTS staff (
     id TEXT PRIMARY KEY,
+    origin_candidate_id TEXT REFERENCES candidates(id) ON DELETE SET NULL, -- Traceability Link
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    phone TEXT UNIQUE, -- Telefon numarası da artık tekil olmak zorunda
+    phone TEXT UNIQUE,
     password_hash TEXT NOT NULL,
+    role TEXT DEFAULT 'user', -- 'admin', 'coordinator', 'user'
     branch TEXT NOT NULL,
     university TEXT,
     department TEXT,
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_arms_staff_branch ON staff(branch);
+CREATE INDEX IF NOT EXISTS idx_arms_staff_role ON staff(role);
 CREATE INDEX IF NOT EXISTS idx_arms_staff_email ON staff(email);
 
 DROP TRIGGER IF EXISTS tr_arms_update_staff ON staff;
@@ -80,9 +81,9 @@ CREATE TRIGGER tr_arms_update_staff
 BEFORE UPDATE ON staff
 FOR EACH ROW EXECUTE FUNCTION arms_update_timestamp();
 
--- 5. PERSONEL DEGERLENDIRME TABLOSU (STAFF ASSESSMENTS)
+-- 5. PERSONEL DEGERLENDIRME TABLOSU
 CREATE TABLE IF NOT EXISTS staff_assessments (
-    id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
+    id TEXT PRIMARY KEY DEFAULT (uuid_generate_v4())::text,
     staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
     battery_id TEXT NOT NULL,
     answers JSONB NOT NULL,
@@ -91,29 +92,40 @@ CREATE TABLE IF NOT EXISTS staff_assessments (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_arms_ass_staff_id ON staff_assessments(staff_id);
--- Mükerrer testi önlemek için (Bir personel bir testi sadece bir kez mühürleyebilir)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_arms_unique_assessment ON staff_assessments(staff_id, battery_id);
 
--- 6. BIREYSEL GELISIM PLANI TABLOSU (STAFF IDP)
+-- 6. BIREYSEL GELISIM PLANI (IDP)
 CREATE TABLE IF NOT EXISTS staff_idp (
-    id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
+    id TEXT PRIMARY KEY DEFAULT (uuid_generate_v4())::text,
     staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
     data JSONB NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_arms_idp_active ON staff_idp(staff_id) WHERE is_active = TRUE;
+-- 7. ILETISIM LOGLARI (YENI)
+CREATE TABLE IF NOT EXISTS communication_logs (
+    id TEXT PRIMARY KEY DEFAULT (uuid_generate_v4())::text,
+    target_id TEXT, -- Candidate ID or Staff ID
+    target_email TEXT,
+    channel TEXT NOT NULL, -- 'email', 'whatsapp', 'sms'
+    subject TEXT,
+    content_preview TEXT,
+    status TEXT NOT NULL, -- 'sent', 'failed', 'pending'
+    error_message TEXT,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
--- 7. SISTEM AYARLARI TABLOSU (SYSTEM CONFIG)
+CREATE INDEX IF NOT EXISTS idx_comm_target ON communication_logs(target_id);
+
+-- 8. SISTEM AYARLARI
 CREATE TABLE IF NOT EXISTS system_config (
     id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     data JSONB NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. VARSAYILAN AYARLAR
+-- 9. ADMIN VE AYAR SEEDING
 INSERT INTO system_config (id, data) 
 VALUES (1, '{
     "institutionName": "Yeni Gün Akademi",
@@ -123,7 +135,7 @@ VALUES (1, '{
 }'::jsonb) 
 ON CONFLICT (id) DO NOTHING;
 
--- 9. ADMIN KULLANICISI
-INSERT INTO staff (id, name, email, password_hash, branch, onboarding_complete)
-VALUES ('STF-001', 'Akademik Admin', 'admin@yenigun.com', 'yenigun2024', 'Özel Eğitim', FALSE)
-ON CONFLICT (id) DO NOTHING;
+-- Default Admin (Güvenlik için role eklendi)
+INSERT INTO staff (id, name, email, password_hash, role, branch, onboarding_complete)
+VALUES ('STF-ADMIN', 'Sistem Yöneticisi', 'admin@yenigun.com', 'yenigun2024', 'admin', 'Yönetim', TRUE)
+ON CONFLICT (email) DO UPDATE SET role = 'admin';
