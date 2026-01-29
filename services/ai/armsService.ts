@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { StaffMember, IDP, TrainingSlide } from "../../types";
+import { StaffMember, IDP, TrainingSlide, PresentationConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -66,30 +66,75 @@ export const armsService = {
   },
 
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    // Legacy support for older IDP calls
+    const config: PresentationConfig = {
+        topic: `Bireysel Gelişim: ${idp.focusArea}`,
+        targetAudience: 'individual',
+        tone: 'academic',
+        depth: 'intermediate',
+        slideCount: 5
+    };
+    return this.generateCustomPresentation(config, { idpData: idp, branch });
+  },
+
+  /**
+   * YENİ NESİL SUNUM MOTORU (NEURAL PRESENTATION ENGINE)
+   * Tamamen özelleştirilebilir, derinlikli ve interaktif sunumlar üretir.
+   */
+  async generateCustomPresentation(config: PresentationConfig, contextData?: any): Promise<TrainingSlide[]> {
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Akademik Direktörü ve Eğitim Teknoloğu.
+      GÖREV: Verilen parametrelere göre üst düzey, modern ve klinik derinliği olan bir eğitim sunumu hazırla.
+      
+      SUNUM KONFİGÜRASYONU:
+      - KONU: ${config.topic}
+      - HEDEF KİTLE: ${config.targetAudience} (Dil ve üslubu buna göre ayarla. Veli ise empatik ve net, Ekip ise teknik ve motive edici).
+      - TON: ${config.tone}
+      - DERİNLİK: ${config.depth} (Expert ise temel tanımları geç, vaka analizine odaklan).
+      - SLAYT SAYISI: ${config.slideCount}
+      
+      BAĞLAM VERİSİ (Varsa): ${JSON.stringify(contextData || {})}
+      
+      TALİMATLAR:
+      1. Her slayt bir amaca hizmet etmeli. Boş laf yok.
+      2. 'speakerNotes': Sunumu yapan yöneticiye, slaytı anlatırken kullanacağı "içgörü" ve "anekdot" notları ver.
+      3. 'interactiveElement': Slaytı pasiflikten çıkaracak bir soru, tartışma veya rol yapma görevi ekle.
+      4. DİL: Kusursuz Türkçe, akademik terminolojiye hakim.
+    `;
+
+    const slideSchema = {
+      type: Type.OBJECT,
+      properties: {
+        id: { type: Type.STRING },
+        type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
+        title: { type: Type.STRING },
+        subtitle: { type: Type.STRING },
+        content: { type: Type.ARRAY, items: { type: Type.STRING } },
+        speakerNotes: { type: Type.STRING, description: "Sunucunun ekrana bakmadan söyleyeceği derinlikli notlar." },
+        visualPrompt: { type: Type.STRING, description: "Bu slayt için oluşturulabilecek görselin kısa betimlemesi (örn: 'Brain scan showing amygdala activity')." },
+        interactiveElement: {
+          type: Type.OBJECT,
+          properties: {
+            question: { type: Type.STRING },
+            expectedAnswer: { type: Type.STRING },
+            misconception: { type: Type.STRING, description: "Bu konuda sık yapılan yanlış inanç." }
+          },
+          nullable: true
+        }
+      },
+      required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+    };
+
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `GELİŞİM PLANI ANALİZİ: ${JSON.stringify(idp)}, BRANŞ: ${branch}. 
-                 Bu personel için personelin özellikle "Identified Gaps" kısmındaki eksikliklerini kapatacak 5 slaytlık, profesyonel, interaktif ve klinik derinliği olan bir hizmet-içi sunum seti hazırla.`,
+      model: 'gemini-3-pro-preview',
+      contents: `Yukarıdaki konfigürasyona uygun ${config.slideCount} adet slayt üret. Çıktı bir JSON Array olsun.`,
       config: {
-        systemInstruction: `
-           ROL: Yeni Gün Akademi Akademik Müfredat Direktörü.
-           AMAÇ: Personeli teorik bilgiden ziyade "Klinik Muhakeme" yapmaya zorlayacak vaka odaklı slaytlar üretmek.
-           DİL: Tamamen Türkçe.
-        `,
+        systemInstruction,
         responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 28000 },
         responseSchema: {
           type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING, description: "Slayt başlığı (Çarpıcı ve akademik)." },
-              content: { type: Type.STRING, description: "Slaytın ana felsefesi ve teknik içeriği." },
-              keyPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Uygulamada dikkat edilecek 3 kritik nokta." },
-              clinicalCase: { type: Type.STRING, description: "Bu konuyla ilgili gerçekçi bir klinik senaryo/vaka." },
-              discussionQuestion: { type: Type.STRING, description: "Personelin cevaplaması gereken derin mülakat sorusu." }
-            },
-            required: ["title", "content", "keyPoints", "discussionQuestion"]
-          }
+          items: slideSchema
         }
       }
     });

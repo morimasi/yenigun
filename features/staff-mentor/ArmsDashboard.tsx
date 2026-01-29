@@ -2,8 +2,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { StaffMember, Branch } from '../../types';
 import StaffProfileView from './StaffProfileView';
+import PresentationStudio from './PresentationStudio';
 
 const ArmsDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'studio'>('dashboard');
   const [staffList, setStaffList] = useState<any[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +41,22 @@ const ArmsDashboard: React.FC = () => {
     return { avgScore: avg, growth: Math.round(avg * 0.4) };
   }, [staffList]);
 
+  // RENDER STUDIO
+  if (activeTab === 'studio') {
+    return (
+      <div className="relative">
+        <button 
+          onClick={() => setActiveTab('dashboard')} 
+          className="absolute top-8 left-8 z-50 px-6 py-3 bg-white rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100"
+        >
+          ← Dashboard'a Dön
+        </button>
+        <PresentationStudio />
+      </div>
+    );
+  }
+
+  // RENDER DASHBOARD
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-20">
       <div className="bg-slate-950 p-12 md:p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border border-white/5 group">
@@ -53,15 +71,26 @@ const ArmsDashboard: React.FC = () => {
               Kadrolu<br/>Klinik Zeka
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-10 text-right">
-            <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 backdrop-blur-xl">
-               <p className="text-6xl font-black text-orange-500">%{stats.avgScore}</p>
-               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2 leading-tight">KURUMSAL<br/>AKADEMİK VERİM</p>
-            </div>
-            <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 backdrop-blur-xl">
-               <p className="text-6xl font-black text-emerald-500">%{stats.growth}</p>
-               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2 leading-tight">YILLIK<br/>REZONANS ARTIŞI</p>
-            </div>
+          <div className="flex flex-col items-end gap-6">
+             <button 
+               onClick={() => setActiveTab('studio')}
+               className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group"
+             >
+                <span className="flex items-center gap-3">
+                   <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                   AKADEMİK STÜDYO (SUNUM)
+                </span>
+             </button>
+             <div className="grid grid-cols-2 gap-6 w-full">
+                <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 backdrop-blur-xl text-center">
+                   <p className="text-4xl font-black text-orange-500">%{stats.avgScore}</p>
+                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-2">VERİM</p>
+                </div>
+                <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 backdrop-blur-xl text-center">
+                   <p className="text-4xl font-black text-emerald-500">%{stats.growth}</p>
+                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-2">BÜYÜME</p>
+                </div>
+             </div>
           </div>
         </div>
         <div className="absolute -left-40 -bottom-40 w-[600px] h-[600px] bg-orange-600/5 rounded-full blur-[200px] group-hover:scale-110 transition-transform duration-[5s]"></div>
