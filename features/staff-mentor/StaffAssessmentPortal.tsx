@@ -15,8 +15,14 @@ const shuffleQuestions = (questions: AssessmentQuestion[]): AssessmentQuestion[]
 
 const StaffAssessmentPortal: React.FC = () => {
   const [step, setStep] = useState<'auth' | 'onboarding' | 'dashboard' | 'exam'>('auth');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [staff, setStaff] = useState<any>(null);
+  
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ 
+    name: '', email: '', password: '', branch: Branch.OzelEgitim, phone: '' 
+  });
+
   const [completedBatteries, setCompletedBatteries] = useState<string[]>([]);
   
   // Test State
@@ -42,7 +48,6 @@ const StaffAssessmentPortal: React.FC = () => {
     }
   }, [activeModule]);
 
-  // Tüm soruların cevaplanıp cevaplanmadığını kontrol et
   const isExamComplete = useMemo(() => {
     if (!activeModule) return false;
     return activeModule.questions.every(q => answers[q.id] !== undefined);
@@ -77,6 +82,34 @@ const StaffAssessmentPortal: React.FC = () => {
       }
     } catch (e) {
       alert("Sunucu bağlantı hatası.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!registerForm.name || !registerForm.email || !registerForm.password) {
+      alert("Lütfen tüm alanları doldurunuz.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/staff?action=register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Kayıt başarılı. Şimdi giriş yapabilirsiniz.");
+        setAuthMode('login');
+        setLoginForm({ email: registerForm.email, password: '' }); // Email'i taşı
+      } else {
+        alert(data.message || "Kayıt başarısız.");
+      }
+    } catch (e) {
+      alert("Sunucu hatası.");
     } finally {
       setIsSaving(false);
     }
@@ -149,45 +182,109 @@ const StaffAssessmentPortal: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-orange-600"></div>
+          
           <div className="mb-10 text-center">
              <div className="w-20 h-20 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white mx-auto mb-6 shadow-xl">
                <span className="font-black text-2xl">YG</span>
              </div>
-             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Akademik Personel<br/>Giriş Kapısı</h3>
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-3">Kurumsal Kimlik Doğrulama</p>
+             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Akademik Personel<br/>{authMode === 'login' ? 'Giriş Kapısı' : 'Kayıt Ünitesi'}</h3>
+             
+             <div className="flex justify-center gap-4 mt-6">
+               <button 
+                 onClick={() => setAuthMode('login')} 
+                 className={`text-[10px] font-black uppercase tracking-[0.2em] pb-2 border-b-2 transition-all ${authMode === 'login' ? 'text-orange-600 border-orange-600' : 'text-slate-300 border-transparent'}`}
+               >
+                 GİRİŞ YAP
+               </button>
+               <button 
+                 onClick={() => setAuthMode('register')} 
+                 className={`text-[10px] font-black uppercase tracking-[0.2em] pb-2 border-b-2 transition-all ${authMode === 'register' ? 'text-orange-600 border-orange-600' : 'text-slate-300 border-transparent'}`}
+               >
+                 KAYIT OL
+               </button>
+             </div>
           </div>
           
-          <form onSubmit={handleLogin} className="space-y-6">
-             <div className="space-y-2">
-               <label className="text-[9px] font-black text-slate-400 uppercase ml-2">KURUMSAL E-POSTA</label>
-               <input 
-                 type="email" 
-                 className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all text-slate-900" 
-                 value={loginForm.email}
-                 onChange={e => setLoginForm({...loginForm, email: e.target.value})}
-               />
-             </div>
-             <div className="space-y-2">
-               <label className="text-[9px] font-black text-slate-400 uppercase ml-2">SİCİL ŞİFRESİ</label>
-               <input 
-                 type="password" 
-                 className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all text-slate-900" 
-                 value={loginForm.password}
-                 onChange={e => setLoginForm({...loginForm, password: e.target.value})}
-               />
-             </div>
-             <button type="submit" disabled={isSaving} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-xl active:scale-95">
-               {isSaving ? 'DOĞRULANIYOR...' : 'SİSTEME ERİŞ'}
-             </button>
-          </form>
+          {authMode === 'login' ? (
+            <form onSubmit={handleLogin} className="space-y-6 animate-fade-in">
+               <div className="space-y-2">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">KURUMSAL E-POSTA</label>
+                 <input 
+                   type="email" 
+                   className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all text-slate-900" 
+                   value={loginForm.email}
+                   onChange={e => setLoginForm({...loginForm, email: e.target.value})}
+                 />
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">ŞİFRE</label>
+                 <input 
+                   type="password" 
+                   className="w-full p-5 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all text-slate-900" 
+                   value={loginForm.password}
+                   onChange={e => setLoginForm({...loginForm, password: e.target.value})}
+                 />
+               </div>
+               <button type="submit" disabled={isSaving} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-xl active:scale-95">
+                 {isSaving ? 'DOĞRULANIYOR...' : 'SİSTEME ERİŞ'}
+               </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} className="space-y-4 animate-fade-in">
+               <div className="space-y-1">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">AD SOYAD</label>
+                 <input 
+                   type="text" 
+                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
+                   value={registerForm.name}
+                   onChange={e => setRegisterForm({...registerForm, name: e.target.value})}
+                 />
+               </div>
+               <div className="space-y-1">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">BRANŞ</label>
+                 <select 
+                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
+                   value={registerForm.branch}
+                   onChange={e => setRegisterForm({...registerForm, branch: e.target.value as Branch})}
+                 >
+                    {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+                 </select>
+               </div>
+               <div className="space-y-1">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">E-POSTA</label>
+                 <input 
+                   type="email" 
+                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
+                   value={registerForm.email}
+                   onChange={e => setRegisterForm({...registerForm, email: e.target.value})}
+                 />
+               </div>
+               <div className="space-y-1">
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-2">ŞİFRE BELİRLE</label>
+                 <input 
+                   type="password" 
+                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
+                   value={registerForm.password}
+                   onChange={e => setRegisterForm({...registerForm, password: e.target.value})}
+                 />
+               </div>
+               <button type="submit" disabled={isSaving} className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl active:scale-95">
+                 {isSaving ? 'KAYDEDİLİYOR...' : 'KAYDI OLUŞTUR'}
+               </button>
+            </form>
+          )}
+          
           <p className="text-[9px] font-bold text-slate-300 text-center mt-8 uppercase tracking-widest">
-             Tekil Kimlik Protokolü: Her personel sadece tek bir dijital kimliğe sahip olabilir.
+             Tekil Kimlik Protokolü v5.4
           </p>
         </div>
       </div>
     );
   }
 
+  // ... (Other steps: onboarding, dashboard, exam - remain unchanged)
+  // [Kodun geri kalanı aynı şekilde devam eder, sadece Auth ekranı değişti]
+  
   if (step === 'onboarding') {
      return (
         <div className="max-w-4xl mx-auto mt-10 p-10 bg-white rounded-[3rem] shadow-2xl border border-slate-100">

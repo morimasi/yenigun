@@ -24,7 +24,7 @@ export default async function handler(request: Request) {
         SELECT s.*, 
         (SELECT COUNT(*) FROM staff_assessments WHERE staff_id = s.id) as assessment_count,
         (SELECT score FROM staff_assessments WHERE staff_id = s.id ORDER BY timestamp DESC LIMIT 1) as last_score
-        FROM staff s ORDER BY name ASC
+        FROM staff s ORDER BY created_at DESC
       `;
       return new Response(JSON.stringify(rows), { status: 200, headers });
     }
@@ -59,10 +59,37 @@ export default async function handler(request: Request) {
           staff: { ...staff, completedBatteries: completedBatteryIds } 
         }), { status: 200, headers });
       }
-      return new Response(JSON.stringify({ success: false, message: 'Geçersiz bilgiler.' }), { status: 401, headers });
+      return new Response(JSON.stringify({ success: false, message: 'Geçersiz bilgiler veya kayıt bulunamadı.' }), { status: 401, headers });
     }
 
-    // 4. SAVE ASSESSMENT (LOCKING)
+    // 4. STAFF REGISTRATION (NEW)
+    if (method === 'POST' && action === 'register') {
+      const body = await request.json();
+      const staffId = `STF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      const now = new Date().toISOString();
+      const allTrainings = JSON.stringify(body.allTrainings || []);
+
+      try {
+        await sql`
+          INSERT INTO staff (
+            id, name, email, phone, password_hash, branch, university, department,
+            experience_years, all_trainings, onboarding_complete, status, created_at, updated_at
+          ) VALUES (
+            ${staffId}, ${body.name}, ${body.email}, ${body.phone || null}, ${body.password}, 
+            ${body.branch}, ${body.university || null}, ${body.department || null}, 
+            ${body.experienceYears || 0}, ${allTrainings}, FALSE, 'active', ${now}, ${now}
+          )
+        `;
+        return new Response(JSON.stringify({ success: true, staffId }), { status: 201, headers });
+      } catch (err: any) {
+        if (err.code === '23505') { // Unique constraint
+           return new Response(JSON.stringify({ success: false, message: 'Bu e-posta adresi ile zaten bir kayıt mevcut.' }), { status: 409, headers });
+        }
+        throw err;
+      }
+    }
+
+    // 5. SAVE ASSESSMENT (LOCKING)
     if (method === 'POST' && action === 'save_assessment') {
       const { staffId, batteryId, answers, score, aiTags } = await request.json();
       
@@ -80,7 +107,7 @@ export default async function handler(request: Request) {
       }
     }
 
-    // 5. UPDATE PROFILE
+    // 6. UPDATE PROFILE
     if (method === 'POST' && action === 'update_profile') {
         const body = await request.json();
         await sql`
@@ -98,7 +125,7 @@ export default async function handler(request: Request) {
         return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 6. SAVE IDP
+    // 7. SAVE IDP
     if (method === 'POST' && action === 'save_idp') {
       const { staffId, data } = await request.json();
       await sql`UPDATE staff_idp SET is_active = FALSE WHERE staff_id = ${staffId}`;

@@ -10,6 +10,13 @@ const ArmsDashboard: React.FC = () => {
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // New Staff Modal State
+  const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
+  const [newStaffForm, setNewStaffForm] = useState({
+    name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0
+  });
+  const [isAdding, setIsAdding] = useState(false);
 
   const fetchStaff = async () => {
     setIsLoading(true);
@@ -27,6 +34,34 @@ const ArmsDashboard: React.FC = () => {
   useEffect(() => {
     fetchStaff();
   }, []);
+
+  const handleAddStaff = async () => {
+    if(!newStaffForm.name || !newStaffForm.email) {
+      alert("İsim ve E-posta zorunludur.");
+      return;
+    }
+    setIsAdding(true);
+    try {
+      const res = await fetch('/api/staff?action=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newStaffForm)
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert(`Personel başarıyla eklendi. (ID: ${result.staffId})`);
+        setIsAddStaffOpen(false);
+        setNewStaffForm({ name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0 });
+        fetchStaff(); // Listeyi güncelle
+      } else {
+        alert(result.message || "Hata oluştu.");
+      }
+    } catch (e) {
+      alert("Sunucu hatası.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const filteredStaff = useMemo(() => {
     return staffList.filter(s => 
@@ -58,7 +93,7 @@ const ArmsDashboard: React.FC = () => {
 
   // RENDER DASHBOARD
   return (
-    <div className="flex flex-col gap-8 animate-fade-in pb-20">
+    <div className="flex flex-col gap-8 animate-fade-in pb-20 relative">
       <div className="bg-slate-950 p-12 md:p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border border-white/5 group">
         <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
           <div className="space-y-6">
@@ -72,15 +107,23 @@ const ArmsDashboard: React.FC = () => {
             </h2>
           </div>
           <div className="flex flex-col items-end gap-6">
-             <button 
-               onClick={() => setActiveTab('studio')}
-               className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group"
-             >
-                <span className="flex items-center gap-3">
-                   <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                   AKADEMİK STÜDYO (SUNUM)
-                </span>
-             </button>
+             <div className="flex gap-4">
+                <button 
+                  onClick={() => setIsAddStaffOpen(true)}
+                  className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-[3rem] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95"
+                >
+                   + HIZLI PERSONEL EKLE
+                </button>
+                <button 
+                  onClick={() => setActiveTab('studio')}
+                  className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group"
+                >
+                    <span className="flex items-center gap-3">
+                      <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                      AKADEMİK STÜDYO (SUNUM)
+                    </span>
+                </button>
+             </div>
              <div className="grid grid-cols-2 gap-6 w-full">
                 <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 backdrop-blur-xl text-center">
                    <p className="text-4xl font-black text-orange-500">%{stats.avgScore}</p>
@@ -153,6 +196,42 @@ const ArmsDashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* ADD STAFF MODAL */}
+      {isAddStaffOpen && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in no-print">
+           <div className="bg-white rounded-[4rem] w-full max-w-lg p-12 shadow-2xl border border-white/20 animate-scale-in">
+              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8">Hızlı Kadro Aktivasyonu</h3>
+              <div className="space-y-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Ad Soyad</label>
+                    <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.name} onChange={e => setNewStaffForm({...newStaffForm, name: e.target.value})} />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Kurumsal E-Posta</label>
+                    <input type="email" className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.email} onChange={e => setNewStaffForm({...newStaffForm, email: e.target.value})} />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Branş</label>
+                    <select className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.branch} onChange={e => setNewStaffForm({...newStaffForm, branch: e.target.value as Branch})}>
+                       {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Geçici Şifre</label>
+                    <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none text-slate-400" value={newStaffForm.password} readOnly />
+                 </div>
+                 
+                 <div className="flex gap-4 pt-4">
+                    <button onClick={() => setIsAddStaffOpen(false)} className="flex-1 py-5 text-slate-400 text-[11px] font-black uppercase tracking-widest">İptal</button>
+                    <button onClick={handleAddStaff} disabled={isAdding} className="flex-2 px-10 py-5 bg-slate-900 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all">
+                       {isAdding ? 'Ekleniyor...' : 'Atamayı Onayla'}
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
