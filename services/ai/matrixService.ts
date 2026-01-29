@@ -35,7 +35,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
        - ÖÖG: Akademik hedefler ile bilişsel süreçleri (PASS) entegre edebiliyor mu?
        - DKT/OT: Anatomi ve nöro-müsküler hiyerarşi bilgisi ne düzeyde?
 
-    3. PERFORMANS PROJEKSİYONU: Adayın 2 yıllık süreçte kuruma sağlayacağı akademik katma değeri ve 'Burnout' (tükenmişlik) riskini 'resilience_team' yanıtlarına dayanarak tahmin et.
+    3. MÜLAKAT STRATEJİSİ OLUŞTURMA (10 ADET SORU):
+       - Adayın analiz sonuçlarına bak. En DÜŞÜK puan aldığı alanları ve En YÜKSEK puan aldığı alanları belirle.
+       - İlk 5 Soru (ZAYIF YÖN ODAKLI): Adayın zayıf olduğu veya riskli görülen alanlarını (örn: Etik, Stres Yönetimi, Teknik Bilgi) zorlayan, kriz senaryosu içeren sorular yaz.
+       - Son 5 Soru (GÜÇLÜ YÖN ODAKLI): Adayın güçlü olduğu alanlarda (örn: Pedagoji, İletişim) vizyonunu ve derinliğini sergilemesine fırsat veren, üst düzey akademik sorular yaz.
 
     YARGI TONU: Sert, akademik, kanıta dayalı ve prediktif. 
     DİL: Tamamen Türkçe.
@@ -90,7 +93,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       interviewGuidance: {
         type: Type.OBJECT,
         properties: {
-          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın zayıf yönlerini (ilk 5) ve güçlü yönlerini (son 5) hedefleyen toplam 10 adet nokta atışı mülakat sorusu." },
           criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
           simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
