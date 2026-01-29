@@ -18,7 +18,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
 }) => {
   const GROUPS = [
     {
-      label: 'AKADEMİK OPERASYON',
+      id: 'ops',
       items: [
         { id: 'pipeline', label: 'Başvuru Havuzu', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
         { id: 'calendar', label: 'Mülakat Takvimi', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z' },
@@ -26,7 +26,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       ]
     },
     {
-      label: 'ANALİZ VE KARAR',
+      id: 'analysis',
       items: [
         { id: 'decision', label: 'Karar Destek (AI)', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
         { id: 'lab', label: 'Klinik Laboratuvar', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86 .517l-.318.158a6 6 0 01-3.86 .517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
@@ -34,72 +34,69 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       ]
     },
     {
-      label: 'KURUMSAL BELLEK',
+      id: 'memory',
       items: [
-        { id: 'arms', label: 'Mentor Sistemi (ARMS)', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-        { id: 'methodology', label: 'Metodoloji Envanteri', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+        { id: 'arms', label: 'Mentor Sistemi', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+        { id: 'methodology', label: 'Envanter', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
         { id: 'archive', label: 'Arşiv', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
       ]
     },
     {
-      label: 'SİSTEM',
+      id: 'sys',
       items: [
-        { id: 'settings', label: 'Yapılandırma', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066c-1.543.94-3.31.826-4.74 0a1.724 1.724 0 00-2.573-1.066c.426 1.756 2.924 1.756 3.35 0' }
+        { id: 'settings', label: 'Ayarlar', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066c-1.543.94-3.31.826-4.74 0a1.724 1.724 0 00-2.573-1.066c.426 1.756 2.924 1.756 3.35 0' }
       ]
     }
   ];
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300">
-      {/* BRAND HEADER */}
-      <div className="h-20 flex items-center px-6 border-b border-slate-800 bg-slate-950">
-        <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shrink-0 mr-4">
-          YG
-        </div>
-        <div className="flex flex-col overflow-hidden">
-          <h1 className="text-[11px] font-black text-white uppercase tracking-tighter truncate leading-none">{institutionName}</h1>
-          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Yönetim v5.0</span>
-        </div>
+    <div className="flex flex-col h-full bg-slate-900 text-slate-400 items-center py-6">
+      {/* BRAND (Icon Only) */}
+      <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg mb-8 shrink-0 cursor-default" title={institutionName}>
+        YG
       </div>
 
-      {/* NAVIGATION */}
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 custom-scrollbar">
-        {GROUPS.map((group, idx) => (
-          <div key={idx}>
-            <h4 className="px-3 text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mb-3">{group.label}</h4>
-            <div className="space-y-1">
-              {group.items.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${
-                    activeTab === item.id 
-                    ? 'bg-orange-600 text-white shadow-md' 
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                  }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === item.id ? 'text-white' : 'text-slate-500 group-hover:text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                  </svg>
-                  <span className="text-[11px] font-bold uppercase tracking-tight">{item.label}</span>
-                </button>
-              ))}
-            </div>
+      {/* NAVIGATION ICONS */}
+      <div className="flex-1 w-full space-y-6 overflow-y-auto custom-scrollbar flex flex-col items-center">
+        {GROUPS.map((group) => (
+          <div key={group.id} className="space-y-2 w-full px-3">
+            {group.items.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                title={item.label}
+                className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center transition-all group relative ${
+                  activeTab === item.id 
+                  ? 'bg-slate-800 text-white shadow-md ring-1 ring-slate-700' 
+                  : 'hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                </svg>
+                
+                {/* Tooltip on Hover */}
+                <span className="absolute left-14 bg-slate-800 text-white text-[9px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none uppercase tracking-wider shadow-xl">
+                  {item.label}
+                </span>
+              </button>
+            ))}
+            <div className="w-8 h-px bg-slate-800 mx-auto my-2"></div>
           </div>
         ))}
       </div>
 
       {/* FOOTER ACTIONS */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950">
+      <div className="mt-4 px-3 w-full">
         <button
           onClick={onRefresh}
           disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+          title="Verileri Tazele"
+          className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center bg-slate-800 hover:bg-emerald-600 hover:text-white transition-all text-slate-400 disabled:opacity-50"
         >
-          <svg className={`w-3.5 h-3.5 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
           </svg>
-          {isProcessing ? 'İŞLENİYOR' : 'VERİLERİ TAZELE'}
         </button>
       </div>
     </div>

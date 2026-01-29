@@ -45,9 +45,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F1F5F9] font-sans text-slate-900 overflow-hidden">
-      {/* SOL SIDEBAR (Eski TopNav dikey hale getirildi) */}
-      <aside className="w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col border-r border-slate-800 z-50 h-full">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
+      {/* SOL SIDEBAR (Ultra-Compact Mode: w-20) */}
+      <aside className="w-20 bg-slate-900 text-white flex-shrink-0 flex flex-col border-r border-slate-800 z-50 h-full transition-all duration-300">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -59,23 +59,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       
       {/* ANA İÇERİK ALANI */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Üst Bilgi Barı (Breadcrumb & Status) */}
-        <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
-           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-              <span className="text-orange-600">YÖNETİM KOKPİTİ</span>
+        {/* Üst Bilgi Barı (Minimal Breadcrumb) */}
+        <header className="h-10 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0">
+           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              <span className="text-orange-600">YÖNETİM</span>
               <span className="text-slate-300">/</span>
               <span>{activeTab.toUpperCase()}</span>
            </div>
-           <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SİSTEM ONLİNE</span>
-              </div>
+           <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[9px] font-bold text-slate-400">SİSTEM AKTİF</span>
            </div>
         </header>
 
         {/* Dinamik İçerik */}
-        <div className="flex-1 overflow-y-auto p-6 scroll-smooth bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 scroll-smooth bg-[#F8FAFC]">
            {renderContent()}
         </div>
       </main>
