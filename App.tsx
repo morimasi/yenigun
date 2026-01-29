@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
 import StaffAssessmentPortal from './features/staff-mentor/StaffAssessmentPortal';
-import { GlobalConfig } from './types';
+import { GlobalConfig, Candidate } from './types';
 import { useAcademicEngine } from './hooks/useAcademicEngine';
 import { storageService } from './services/storageService';
 
@@ -25,6 +25,9 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
+  
+  // GLOBAL SYNC TRIGGER: Personel listesi değiştiğinde (Hiring veya Kayıt) Mentors listesini tetikler.
+  const [staffRefreshKey, setStaffRefreshKey] = useState(Date.now());
 
   const {
     candidates, config, isProcessing, isLoading, isLoggedIn,
@@ -76,6 +79,21 @@ const App: React.FC = () => {
     } catch (err) {
       alert("Ağ hatası.");
     }
+  };
+
+  /**
+   * ADAY GÜNCELLEME VE PERSONEL SENKRONİZASYONU
+   */
+  const handleCandidateUpdate = async (c: Candidate) => {
+    const result = await storageService.updateCandidate(c);
+    if (result.success) {
+      // Eğer aday "İşe Alındı" kategorisindeyse Mentors tablosunu tetikle
+      if (c.archiveCategory === 'HIRED_CONTRACTED') {
+        setStaffRefreshKey(Date.now());
+      }
+      loadData(false); // Sessizce aday listesini de güncelle
+    }
+    return result;
   };
 
   if (view === 'admin' && !isLoggedIn) {
@@ -145,8 +163,12 @@ const App: React.FC = () => {
           <StaffAssessmentPortal />
         ) : (
           <DashboardLayout 
-            candidates={candidates} config={config} isProcessing={isProcessing}
-            onUpdateCandidate={async (c) => await storageService.updateCandidate(c)}
+            candidates={candidates} 
+            config={config} 
+            isProcessing={isProcessing}
+            staffRefreshKey={staffRefreshKey}
+            setStaffRefreshKey={setStaffRefreshKey}
+            onUpdateCandidate={handleCandidateUpdate}
             onDeleteCandidate={async (id) => await storageService.deleteCandidate(id)}
             onUpdateConfig={async (conf) => await storageService.saveConfig(conf)}
             onRefresh={() => loadData(true)}

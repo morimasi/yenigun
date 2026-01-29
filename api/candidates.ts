@@ -27,7 +27,7 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Tablo şeması kontrolü ve ilklendirme
+    // 1. ŞEMA İLKLENDİRME (HER İKİ TABLOYU DA GARANTİYE AL)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -52,6 +52,25 @@ export default async function handler(request: Request) {
         cv_data JSONB DEFAULT NULL,
         archive_category TEXT,
         archive_note TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS staff (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT,
+        password_hash TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        university TEXT,
+        department TEXT,
+        experience_years INTEGER DEFAULT 0,
+        all_trainings JSONB DEFAULT '[]'::jsonb,
+        onboarding_complete BOOLEAN DEFAULT FALSE,
+        status TEXT DEFAULT 'active',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -96,7 +115,7 @@ export default async function handler(request: Request) {
       const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
       const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
 
-      // 1. ADAY GÜNCELLEMESİ
+      // ADAY GÜNCELLEMESİ
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
@@ -120,22 +139,23 @@ export default async function handler(request: Request) {
           archive_note = EXCLUDED.archive_note, updated_at = EXCLUDED.updated_at;
       `;
 
-      // 2. OTOMATİK PERSONEL ATAMA (AUTO-COMMISSIONING)
-      // Eğer aday "HIRED_CONTRACTED" olarak işaretlendiyse, onu Staff tablosuna da ekle.
+      // OTOMATİK PERSONEL ATAMA (HIRE-TO-STAFF PIPELINE)
       if (body.status === 'archived' && body.archiveCategory === 'HIRED_CONTRACTED') {
-        const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`; // Benzersiz Staff ID türet
-        const defaultPassword = 'yenigun2024'; // İlk giriş şifresi
+        const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`;
+        const defaultPassword = 'yenigun2024';
 
         await sql`
           INSERT INTO staff (
             id, name, email, phone, password_hash, branch, university, department,
-            experience_years, all_trainings, onboarding_complete, status, created_at, updated_at
+            experience_years, all_trainings, onboarding_complete, status, updated_at
           ) VALUES (
             ${staffId}, ${body.name}, ${body.email}, ${body.phone}, ${defaultPassword}, 
             ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears},
-            ${allTrainings}, FALSE, 'active', ${now}, ${now}
+            ${allTrainings}, FALSE, 'active', ${now}
           )
-          ON CONFLICT (email) DO NOTHING; -- E-posta zaten varsa işlem yapma (Idempotency)
+          ON CONFLICT (email) DO UPDATE SET
+            branch = EXCLUDED.branch,
+            updated_at = EXCLUDED.updated_at;
         `;
       }
 
@@ -152,6 +172,7 @@ export default async function handler(request: Request) {
 
     return new Response(JSON.stringify({ error: 'INVALID_METHOD' }), { status: 405, headers });
   } catch (error: any) {
+    console.error("Candidate API Error:", error);
     return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
   }
 }

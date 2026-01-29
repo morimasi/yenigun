@@ -21,6 +21,8 @@ interface DashboardLayoutProps {
   onDeleteCandidate: (id: string) => void;
   onRefresh: () => void;
   isProcessing: boolean;
+  staffRefreshKey: number;
+  setStaffRefreshKey: (k: number) => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
@@ -36,7 +38,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'methodology': return <MethodologyInventoryView />;
       case 'archive': return <ArchiveView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} onDeleteCandidate={props.onDeleteCandidate} />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
-      case 'arms': return <ArmsDashboard />;
+      case 'arms': return <ArmsDashboard refreshTrigger={props.staffRefreshKey} onRefresh={() => props.setStaffRefreshKey(Date.now())} />;
       case 'comm': return <CommunicationCenter candidates={props.candidates} />;
       default: return <PipelineView {...props} />;
     }

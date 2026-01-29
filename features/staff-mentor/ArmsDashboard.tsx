@@ -4,7 +4,12 @@ import { StaffMember, Branch } from '../../types';
 import StaffProfileView from './StaffProfileView';
 import PresentationStudio from './PresentationStudio';
 
-const ArmsDashboard: React.FC = () => {
+interface ArmsDashboardProps {
+  refreshTrigger?: number;
+  onRefresh?: () => void;
+}
+
+const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'studio'>('dashboard');
   const [staffList, setStaffList] = useState<any[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
@@ -21,7 +26,8 @@ const ArmsDashboard: React.FC = () => {
   const fetchStaff = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/staff?action=list_all');
+      // Cache busting ile her zaman taze veri çekimi
+      const res = await fetch(`/api/staff?action=list_all&_t=${Date.now()}`);
       const data = await res.json();
       if (Array.isArray(data)) setStaffList(data);
     } catch (e) {
@@ -31,9 +37,10 @@ const ArmsDashboard: React.FC = () => {
     }
   };
 
+  // GLOBAL REFRESH: refreshTrigger değiştiğinde (örn: aday işe alındığında) listeyi tazele
   useEffect(() => {
     fetchStaff();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleAddStaff = async () => {
     if(!newStaffForm.name || !newStaffForm.email) {
@@ -52,7 +59,10 @@ const ArmsDashboard: React.FC = () => {
         alert(`Personel başarıyla eklendi. (ID: ${result.staffId})`);
         setIsAddStaffOpen(false);
         setNewStaffForm({ name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0 });
-        fetchStaff(); // Listeyi güncelle
+        
+        // Eğer global onRefresh varsa onu çağır (bu refreshTrigger'ı güncelleyecektir)
+        if (onRefresh) onRefresh(); 
+        else fetchStaff();
       } else {
         alert(result.message || "Hata oluştu.");
       }
@@ -153,7 +163,7 @@ const ArmsDashboard: React.FC = () => {
              </div>
              
              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {isLoading ? (
+                {isLoading && staffList.length === 0 ? (
                   [1,2,3].map(i => <div key={i} className="h-20 bg-slate-50 rounded-3xl animate-pulse"></div>)
                 ) : filteredStaff.length === 0 ? (
                   <p className="text-[10px] font-black text-slate-300 uppercase text-center py-10">Kayıt Bulunamadı</p>
