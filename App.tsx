@@ -111,7 +111,7 @@ const App: React.FC = () => {
   }
 
   // PUBLIC/STAFF NAVIGATION (Simple Header)
-  if (view !== 'admin') {
+  if (view === 'candidate' || view === 'staff') {
     return (
       <div className="min-h-screen bg-[#F1F5F9]">
         {showSuccessModal && (
