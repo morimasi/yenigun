@@ -1,7 +1,7 @@
 
 -- ======================================================
 -- YENI GUN AKADEMI - ARMS (ACADEMIC RESONANCE SYSTEM)
--- VERITABANI MIMARISI v6.0 (ENTERPRISE EDITION)
+-- VERITABANI MIMARISI v6.1 (MIGRATION PATCHED)
 -- ======================================================
 
 -- 1. GEREKLI EKLENTILER
@@ -72,6 +72,10 @@ CREATE TABLE IF NOT EXISTS staff (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- MIGRATION: EĞER TABLO ESKİYSE EKSİK SÜTUNLARI EKLE
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS origin_candidate_id TEXT REFERENCES candidates(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_arms_staff_role ON staff(role);
 CREATE INDEX IF NOT EXISTS idx_arms_staff_email ON staff(email);
