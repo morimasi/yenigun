@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { Candidate, ArchiveCategory } from '../../types';
-import { SearchableSelect } from '../../shared/ui/SearchableSelect';
 
 interface ArchiveViewProps {
   candidates: Candidate[];
@@ -9,201 +8,234 @@ interface ArchiveViewProps {
   onDeleteCandidate: (id: string) => void;
 }
 
-const CATEGORY_MAP: Record<ArchiveCategory, { label: string, color: string, desc: string }> = {
-  TALENT_POOL: { label: 'Yetenek Havuzu', color: 'bg-emerald-500', desc: 'İleride kesinlikle değerlendirilmesi gereken yüksek potansiyelli uzmanlar.' },
-  FUTURE_REFERENCE: { label: 'Gelecek Başvuru', color: 'bg-blue-500', desc: 'Mevcut pozisyon uygun olmasa da gelişim vaat eden adaylar.' },
-  DISQUALIFIED: { label: 'Diskalifiye', color: 'bg-slate-400', desc: 'Kurumsal liyakat kriterlerini karşılamayan başvurular.' },
-  BLACK_LIST: { label: 'Kara Liste', color: 'bg-rose-600', desc: 'Etik veya güvenlik riski taşıyan, tekrar mülakata alınmayacak isimler.' },
-  HIRED_CONTRACTED: { label: 'Atanmış / Çalışan', color: 'bg-slate-900', desc: 'Kurum bünyesine katılmış veya daha önce çalışmış kadro.' }
+const CATEGORY_MAP: Record<ArchiveCategory, { label: string, color: string, indicator: string }> = {
+  TALENT_POOL: { label: 'YETENEK HAVUZU', color: 'text-emerald-600', indicator: 'bg-emerald-500' },
+  FUTURE_REFERENCE: { label: 'GELECEK BAŞVURU', color: 'text-blue-600', indicator: 'bg-blue-500' },
+  DISQUALIFIED: { label: 'DİSKALİFİYE', color: 'text-slate-500', indicator: 'bg-slate-400' },
+  BLACK_LIST: { label: 'KARA LİSTE', color: 'text-rose-600', indicator: 'bg-rose-600' },
+  HIRED_CONTRACTED: { label: 'KADROLU PERSONEL', color: 'text-slate-900', indicator: 'bg-slate-900' }
 };
 
 const ArchiveView: React.FC<ArchiveViewProps> = ({ candidates, onUpdateCandidate, onDeleteCandidate }) => {
-  const [activeCategory, setActiveCategory] = useState<ArchiveCategory | 'ALL'>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState({ category: 'ALL', search: '' });
+
   const archivedCandidates = useMemo(() => 
-    candidates.filter(c => c.status === 'archived'), 
+    candidates.filter(c => c.status === 'archived').sort((a, b) => b.timestamp - a.timestamp), 
     [candidates]
   );
 
-  const filteredArchive = useMemo(() => {
+  const filteredList = useMemo(() => {
     return archivedCandidates.filter(c => {
-      const matchesCategory = activeCategory === 'ALL' || c.archiveCategory === activeCategory;
-      const matchesSearch = c.name.toLocaleLowerCase('tr-TR').includes(searchTerm.toLocaleLowerCase('tr-TR'));
-      return matchesCategory && matchesSearch;
-    }).sort((a, b) => b.timestamp - a.timestamp);
-  }, [archivedCandidates, activeCategory, searchTerm]);
+      const matchesCat = filter.category === 'ALL' || c.archiveCategory === filter.category;
+      const matchesSearch = c.name.toLocaleLowerCase('tr-TR').includes(filter.search.toLocaleLowerCase('tr-TR')) || 
+                            c.branch.toLocaleLowerCase('tr-TR').includes(filter.search.toLocaleLowerCase('tr-TR'));
+      return matchesCat && matchesSearch;
+    });
+  }, [archivedCandidates, filter]);
+
+  const selectedCandidate = useMemo(() => 
+    archivedCandidates.find(c => c.id === selectedId), 
+    [archivedCandidates, selectedId]
+  );
 
   const stats = useMemo(() => {
-    const res: Record<string, number> = { ALL: archivedCandidates.length };
-    archivedCandidates.forEach(c => {
-      if (c.archiveCategory) res[c.archiveCategory] = (res[c.archiveCategory] || 0) + 1;
-    });
-    return res;
+    return archivedCandidates.reduce((acc, c) => {
+      acc.total++;
+      if (c.archiveCategory) acc[c.archiveCategory] = (acc[c.archiveCategory] || 0) + 1;
+      return acc;
+    }, { total: 0 } as Record<string, number>);
   }, [archivedCandidates]);
 
   const handleRestore = (candidate: Candidate) => {
-    if (confirm("Bu aday aktif mülakat havuzuna (Beklemede) geri taşınacaktır. Onaylıyor musunuz?")) {
-      onUpdateCandidate({
-        ...candidate,
-        status: 'pending',
-        timestamp: Date.now()
-      });
+    if (confirm("GÜVENLİK PROTOKOLÜ: Bu dosya üzerindeki 'Mühür' kaldırılacak ve aday aktif havuza taşınacaktır. Onaylıyor musunuz?")) {
+      onUpdateCandidate({ ...candidate, status: 'pending', timestamp: Date.now() });
+      setSelectedId(null);
     }
   };
 
-  const handleFullDelete = (id: string) => {
-    if (confirm("DİKKAT: Aday verileri kalıcı olarak silinecektir. Bu işlem geri alınamaz!")) {
+  const handleDelete = (id: string) => {
+    if (confirm("KRİTİK İŞLEM: Bu kayıt veritabanından kalıcı olarak silinecek. Geri alınamaz. Devam edilsin mi?")) {
       onDeleteCandidate(id);
+      setSelectedId(null);
     }
   };
 
   return (
-    <div className="space-y-12 animate-fade-in pb-32">
+    <div className="flex h-full bg-white rounded-lg border border-slate-200 overflow-hidden">
       
-      {/* HEADER & ANALYTICS */}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 bg-slate-900 p-12 rounded-[4.5rem] text-white shadow-3xl relative overflow-hidden">
-        <div className="relative z-10 space-y-6 max-w-3xl">
-           <div className="flex items-center gap-4">
-              <span className="px-4 py-1.5 bg-orange-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">KURUMSAL BELLEK</span>
-              <div className="h-px w-20 bg-white/20"></div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">STABIL VERİ ARŞİVİ</span>
+      {/* SOL: VERİ LİSTESİ (MASTER) */}
+      <div className="w-[400px] flex flex-col border-r border-slate-200 bg-white shrink-0">
+        {/* Filtre Alanı */}
+        <div className="p-3 border-b border-slate-200 space-y-3 bg-slate-50/50">
+           <div className="flex items-center justify-between">
+              <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                 ARŞİV KAYITLARI ({filteredList.length})
+              </h3>
            </div>
-           <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.85]">Akademik Arşiv<br/>Yönetim Merkezi</h3>
-           <p className="text-base md:text-xl font-bold text-slate-400 leading-relaxed italic opacity-80 uppercase tracking-tight">
-             "Kurumun liyakat hafızası, geçmiş verilerle geleceği aydınlatıyor."
-           </p>
-        </div>
-        <div className="relative z-10 flex flex-wrap gap-4">
-           <div className="bg-white/5 border border-white/10 p-8 rounded-[3rem] backdrop-blur-xl flex items-center gap-8">
-              <div className="text-center">
-                 <p className="text-5xl font-black">{stats.ALL}</p>
-                 <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mt-2">TOPLAM KAYIT</p>
-              </div>
-              <div className="w-px h-16 bg-white/10"></div>
-              <div className="text-center">
-                 <p className="text-5xl font-black text-emerald-500">{stats.TALENT_POOL || 0}</p>
-                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">PREMIUM YETENEK</p>
-              </div>
-           </div>
-        </div>
-        <div className="absolute -right-40 -top-40 w-[60rem] h-[60rem] bg-orange-600/5 rounded-full blur-[200px] pointer-events-none"></div>
-      </div>
-
-      {/* FILTER CONTROLS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sticky top-28 z-40 no-print">
-         <div className="lg:col-span-8 bg-white p-4 rounded-[2.5rem] shadow-xl border border-slate-100 flex items-center gap-3 overflow-x-auto no-scrollbar">
-            <button 
-              onClick={() => setActiveCategory('ALL')}
-              className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeCategory === 'ALL' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-            >
-               TÜM ARŞİV ({stats.ALL})
-            </button>
-            {Object.entries(CATEGORY_MAP).map(([key, data]) => (
-              <button 
-                key={key}
-                onClick={() => setActiveCategory(key as ArchiveCategory)}
-                className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-3 ${activeCategory === key ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+           
+           <div className="flex gap-2">
+              <select 
+                className="flex-1 bg-white border border-slate-200 text-[10px] font-bold rounded-md py-1.5 px-2 outline-none focus:border-orange-500 uppercase"
+                value={filter.category}
+                onChange={e => setFilter({...filter, category: e.target.value})}
               >
-                 <div className={`w-2 h-2 rounded-full ${activeCategory === key ? 'bg-white' : data.color}`}></div>
-                 {data.label} ({stats[key] || 0})
-              </button>
-            ))}
-         </div>
-         <div className="lg:col-span-4 bg-white p-4 rounded-[2.5rem] shadow-xl border border-slate-100 flex items-center px-8">
-            <svg className="w-5 h-5 text-slate-300 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input 
-               type="text"
-               placeholder="Arşivde isim sorgula..."
-               className="flex-1 bg-transparent font-bold text-sm outline-none text-slate-900 placeholder:text-slate-300"
-               value={searchTerm}
-               onChange={e => setSearchTerm(e.target.value)}
-            />
-         </div>
+                 <option value="ALL">TÜM KATEGORİLER</option>
+                 {Object.entries(CATEGORY_MAP).map(([key, val]) => (
+                    <option key={key} value={key}>{val.label}</option>
+                 ))}
+              </select>
+           </div>
+           
+           <div className="relative">
+              <input 
+                 type="text" 
+                 placeholder="İsim veya Ref No..." 
+                 className="w-full bg-white border border-slate-200 rounded-md py-1.5 pl-8 pr-2 text-[10px] font-bold outline-none focus:border-orange-500 transition-all uppercase"
+                 value={filter.search}
+                 onChange={e => setFilter({...filter, search: e.target.value})}
+              />
+              <svg className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+           </div>
+        </div>
+
+        {/* Liste */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+           {filteredList.map(c => {
+              const cat = CATEGORY_MAP[c.archiveCategory || 'FUTURE_REFERENCE'];
+              const isSelected = selectedId === c.id;
+              
+              return (
+                <div 
+                  key={c.id} 
+                  onClick={() => setSelectedId(c.id)}
+                  className={`px-4 py-3 border-b border-slate-100 cursor-pointer transition-all hover:bg-slate-50 group ${isSelected ? 'bg-slate-50 border-l-4 border-l-slate-900' : 'border-l-4 border-l-transparent'}`}
+                >
+                   <div className="flex justify-between items-start mb-1">
+                      <span className={`text-[11px] font-black uppercase truncate ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}>{c.name}</span>
+                      <span className="text-[9px] font-mono text-slate-400">{new Date(c.timestamp).toLocaleDateString('tr-TR')}</span>
+                   </div>
+                   <div className="flex justify-between items-end">
+                      <div className="flex flex-col">
+                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{c.branch}</span>
+                         <span className={`text-[8px] font-black uppercase mt-1 ${cat.color} flex items-center gap-1.5`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${cat.indicator}`}></div>
+                            {cat.label}
+                         </span>
+                      </div>
+                      {c.report && <span className="text-[10px] font-black text-slate-300 group-hover:text-slate-900 transition-colors">SKOR: %{c.report.score}</span>}
+                   </div>
+                </div>
+              );
+           })}
+        </div>
       </div>
 
-      {/* GRID AREA */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-         {filteredArchive.length === 0 ? (
-           <div className="col-span-full py-40 text-center bg-white rounded-[5rem] border-4 border-dashed border-slate-100 opacity-40">
-              <svg className="w-20 h-20 text-slate-200 mx-auto mb-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-              <h4 className="text-2xl font-black text-slate-400 uppercase tracking-widest">Arşivde Kayıt Bulunmuyor</h4>
-           </div>
-         ) : (
-           filteredArchive.map(c => {
-             const catInfo = CATEGORY_MAP[c.archiveCategory || 'FUTURE_REFERENCE'];
-             return (
-               <div key={c.id} className="bg-white rounded-[3.5rem] p-10 border border-slate-100 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-8">
-                     <div className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest text-white shadow-md ${catInfo.color}`}>
-                        {catInfo.label}
-                     </div>
-                     <span className="text-[10px] font-bold text-slate-300 uppercase">{new Date(c.timestamp).toLocaleDateString('tr-TR')}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-6 mb-10">
-                     <div className="w-16 h-16 bg-slate-900 rounded-[1.8rem] flex items-center justify-center text-white text-2xl font-black shadow-xl">
-                        {c.name.charAt(0)}
+      {/* SAĞ: DOSYA DETAYI (DETAIL) */}
+      <div className="flex-1 bg-slate-50/30 flex flex-col overflow-hidden relative">
+         {selectedCandidate ? (
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+               
+               {/* DOSYA HEADER */}
+               <div className="flex justify-between items-start mb-8 border-b border-slate-200 pb-6">
+                  <div className="flex items-center gap-6">
+                     <div className="w-16 h-16 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-2xl font-black text-slate-300 shadow-sm">
+                        {selectedCandidate.name.charAt(0)}
                      </div>
                      <div>
-                        <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-tight">{c.name}</h4>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{c.branch}</p>
+                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">{selectedCandidate.name}</h1>
+                        <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                           <span>{selectedCandidate.branch}</span>
+                           <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                           <span>REF: {selectedCandidate.id}</span>
+                        </div>
                      </div>
                   </div>
+                  <div className="text-right">
+                     <span className={`inline-block px-3 py-1 rounded border text-[9px] font-black uppercase tracking-widest ${
+                        CATEGORY_MAP[selectedCandidate.archiveCategory || 'FUTURE_REFERENCE'].color
+                     } border-current opacity-80`}>
+                        {CATEGORY_MAP[selectedCandidate.archiveCategory || 'FUTURE_REFERENCE'].label}
+                     </span>
+                     <p className="text-[9px] font-mono text-slate-400 mt-2">ARŞİV TARİHİ: {new Date(selectedCandidate.timestamp).toLocaleString('tr-TR')}</p>
+                  </div>
+               </div>
 
-                  <div className="space-y-6 mb-10">
-                     <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 min-h-[100px] flex flex-col justify-center">
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Arşivleme Notu</span>
-                        <p className="text-[12px] font-bold text-slate-600 leading-relaxed italic truncate-3-lines">
-                           "{c.archiveNote || 'Herhangi bir karar notu eklenmemiş.'}"
-                        </p>
-                     </div>
-                     
-                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-[12px] ${c.report && c.report.score > 70 ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
-                           %{c.report?.score || '?'}
+               {/* KARAR METNİ */}
+               <div className="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-900"></div>
+                  <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3">ARŞİVLEME GEREKÇESİ (KARAR NOTU)</h4>
+                  <p className="text-[12px] font-medium text-slate-700 leading-relaxed font-mono">
+                     "{selectedCandidate.archiveNote || 'Sistem tarafından otomatik arşivlenmiştir. Özel bir not bulunmamaktadır.'}"
+                  </p>
+               </div>
+
+               {/* VERİ ÖZETİ */}
+               <div className="grid grid-cols-2 gap-6 mb-8">
+                  <div className="bg-white p-5 rounded-xl border border-slate-200">
+                     <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">AKADEMİK PROFİL</h5>
+                     <ul className="space-y-2">
+                        <li className="flex justify-between text-[10px] font-bold border-b border-slate-50 pb-1">
+                           <span className="text-slate-500">DENEYİM</span>
+                           <span className="text-slate-900">{selectedCandidate.experienceYears} YIL</span>
+                        </li>
+                        <li className="flex justify-between text-[10px] font-bold border-b border-slate-50 pb-1">
+                           <span className="text-slate-500">ÜNİVERSİTE</span>
+                           <span className="text-slate-900 truncate max-w-[150px]">{selectedCandidate.university}</span>
+                        </li>
+                        <li className="flex justify-between text-[10px] font-bold pb-1">
+                           <span className="text-slate-500">E-POSTA</span>
+                           <span className="text-slate-900 truncate max-w-[150px]">{selectedCandidate.email}</span>
+                        </li>
+                     </ul>
+                  </div>
+                  
+                  {selectedCandidate.report && (
+                     <div className="bg-slate-900 p-5 rounded-xl text-white">
+                        <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">LİYAKAT SNAPSHOT</h5>
+                        <div className="flex items-end gap-4 mb-4">
+                           <span className="text-4xl font-black text-white">%{selectedCandidate.report.score}</span>
+                           <span className="text-[9px] font-bold text-slate-400 mb-1">GENEL SKOR</span>
                         </div>
-                        <div className="flex-1">
-                           <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                              <div className={`h-full ${c.report && c.report.score > 70 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${c.report?.score || 0}%` }}></div>
+                        <div className="space-y-1">
+                           <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                              <span>DÜRÜSTLÜK ENDEKSİ</span>
+                              <span className="text-emerald-400">%{selectedCandidate.report.integrityIndex}</span>
+                           </div>
+                           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500" style={{ width: `${selectedCandidate.report.integrityIndex}%` }}></div>
                            </div>
                         </div>
                      </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-50 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                     <button 
-                       onClick={() => handleRestore(c)}
-                       className="py-4 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl"
-                     >
-                        HAVUZA GERİ TAŞI
-                     </button>
-                     <button 
-                        onClick={() => handleFullDelete(c.id)}
-                        className="py-4 bg-white border border-rose-100 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 transition-all"
-                     >
-                        KALICI OLARAK SİL
-                     </button>
-                  </div>
-                  
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -translate-y-24 translate-x-24 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-700 pointer-events-none opacity-50"></div>
+                  )}
                </div>
-             );
-           })
-         )}
-      </div>
 
-      {/* FOOTER INFO */}
-      <div className="bg-orange-50 p-10 rounded-[4rem] border border-orange-100 flex flex-col md:flex-row items-center gap-10">
-         <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center text-orange-600 shadow-xl shrink-0">
-            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-         </div>
-         <div className="flex-1 space-y-2 text-center md:text-left">
-            <h5 className="text-[14px] font-black text-orange-900 uppercase tracking-widest">Arşiv Mantığı ve Kurumsal Koruma</h5>
-            <p className="text-[12px] font-bold text-orange-800 leading-relaxed uppercase tracking-tight opacity-80">
-               Arşivlenen dosyalar bulut veritabanında mühürlenir. Bu veriler mülakat istatistiklerini beslerken aktif listeyi meşgul etmez. Kara listeye alınan adaylar, aynı e-posta veya TC Kimlik ile başvurduklarında sistem otomatik uyarı verir.
-            </p>
-         </div>
+               {/* ACTIONS */}
+               <div className="flex gap-4 pt-4 border-t border-slate-200">
+                  <button 
+                     onClick={() => handleRestore(selectedCandidate)}
+                     className="flex-1 py-3 bg-white border border-slate-300 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm"
+                  >
+                     HAVUZA GERİ YÜKLE
+                  </button>
+                  <button 
+                     onClick={() => handleDelete(selectedCandidate.id)}
+                     className="px-6 py-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                  >
+                     SİL
+                  </button>
+               </div>
+
+            </div>
+         ) : (
+            <div className="h-full flex flex-col items-center justify-center opacity-40 select-none">
+               <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+               </div>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">DOSYA SEÇİLMEDİ</p>
+            </div>
+         )}
       </div>
     </div>
   );
