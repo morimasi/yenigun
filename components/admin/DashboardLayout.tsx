@@ -45,9 +45,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col animate-fade-in min-h-screen w-full bg-slate-50">
-      {/* COMPACT NAV */}
-      <header className="no-print w-full sticky top-0 z-[100] transition-all duration-300">
+    <div className="flex flex-col gap-1 animate-fade-in min-h-screen w-full relative">
+      <header className="no-print w-full sticky top-20 md:top-24 z-[90] px-1 md:px-2 transition-all duration-300">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -57,10 +56,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
         />
       </header>
       
-      {/* MINIMAL CONTENT CANVAS */}
-      <main className="flex-1 w-full px-4 md:px-6 py-4">
-        <div className="bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm min-h-[calc(100vh-6rem)] relative overflow-hidden flex flex-col w-full transition-all duration-200">
-          <div className="relative z-10 flex-1 flex flex-col w-full h-full p-4 md:p-6">
+      <main className="flex-1 w-full px-1 md:px-2 pb-8 mt-4">
+        <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] p-1 md:p-6 min-h-[92vh] relative overflow-hidden flex flex-col w-full transition-all">
+          <div className="absolute top-0 right-0 w-[70rem] h-[70rem] bg-orange-50 rounded-full blur-[150px] -mr-[30rem] -mt-[30rem] opacity-30 pointer-events-none"></div>
+          
+          <div className="relative z-10 flex-1 flex flex-col w-full h-full">
             {renderContent()}
           </div>
         </div>
