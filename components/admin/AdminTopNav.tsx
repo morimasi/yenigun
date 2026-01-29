@@ -54,50 +54,57 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   ];
 
   return (
-    <div className="flex items-center justify-between h-16 px-6 bg-slate-900 text-slate-400 border-b border-slate-800 shadow-xl">
+    <div className="flex items-center justify-between h-full px-8 bg-slate-900 text-slate-400 border-b border-slate-800 shadow-2xl relative">
       
-      {/* BRAND & LOGO */}
-      <div className="flex items-center gap-4 shrink-0 mr-8">
-        <div className="w-9 h-9 bg-orange-600 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-lg cursor-default select-none">
+      {/* BRAND & LOGO (Scaled Up) */}
+      <div className="flex items-center gap-6 shrink-0 mr-12 group cursor-default">
+        <div className="w-16 h-16 bg-orange-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300 select-none">
           YG
         </div>
-        <div className="hidden lg:block">
-           <h1 className="text-white text-[11px] font-black uppercase tracking-tighter leading-none">{institutionName}</h1>
-           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mt-0.5">Yönetim v5.0</span>
+        <div className="hidden lg:block space-y-1">
+           <h1 className="text-white text-base font-black uppercase tracking-tighter leading-none">{institutionName}</h1>
+           <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Yönetim Kokpiti v5.1</span>
+           </div>
         </div>
       </div>
 
-      {/* HORIZONTAL NAVIGATION */}
-      <div className="flex-1 flex items-center h-full overflow-x-auto custom-scrollbar gap-2">
+      {/* HORIZONTAL NAVIGATION (Expanded Touch Targets) */}
+      <div className="flex-1 flex items-center h-full overflow-x-auto custom-scrollbar gap-6 no-scrollbar">
         {GROUPS.map((group, idx) => (
           <React.Fragment key={group.id}>
             {/* SEPARATOR */}
-            {idx > 0 && <div className="w-px h-6 bg-slate-700/50 mx-2 shrink-0"></div>}
+            {idx > 0 && <div className="w-px h-12 bg-slate-800/80 mx-2 shrink-0 rounded-full"></div>}
             
             {/* GROUP ITEMS */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-3">
               {group.items.map(item => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-all group ${
+                  className={`relative flex items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 group ${
                     activeTab === item.id 
-                    ? 'bg-slate-800 text-white shadow-md ring-1 ring-slate-700' 
-                    : 'hover:bg-slate-800 hover:text-white'
+                    ? 'bg-slate-800 text-white shadow-xl ring-1 ring-slate-700 -translate-y-1' 
+                    : 'hover:bg-slate-800 hover:text-white hover:shadow-lg'
                   }`}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-7 h-7 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                   </svg>
                   
-                  {/* Tooltip Downwards */}
-                  <span className="absolute top-12 bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none uppercase tracking-wider shadow-xl border border-slate-700">
-                    {item.label}
-                  </span>
+                  {/* Tooltip Fix: Positioned closer and with higher z-index relative to this container */}
+                  <div className="absolute top-[75px] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[150] w-max">
+                    <div className="bg-slate-800 text-white text-[10px] font-bold px-3 py-2 rounded-lg shadow-2xl border border-slate-700 uppercase tracking-widest flex flex-col items-center gap-1">
+                       {/* Arrow Up */}
+                       <div className="w-2 h-2 bg-slate-800 rotate-45 border-l border-t border-slate-700 absolute -top-1"></div>
+                       <span className="relative z-10">{item.label}</span>
+                    </div>
+                  </div>
                   
                   {/* Active Indicator Dot */}
                   {activeTab === item.id && (
-                    <span className="absolute -bottom-1 w-1 h-1 bg-orange-600 rounded-full"></span>
+                    <span className="absolute -bottom-2 w-1.5 h-1.5 bg-orange-600 rounded-full shadow-[0_0_10px_#ea580c]"></span>
                   )}
                 </button>
               ))}
@@ -107,14 +114,14 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       </div>
 
       {/* RIGHT ACTIONS */}
-      <div className="flex items-center gap-4 pl-6 border-l border-slate-800 ml-4 shrink-0">
+      <div className="flex items-center gap-6 pl-10 border-l border-slate-800 ml-6 shrink-0 h-16">
         <button
           onClick={onRefresh}
           disabled={isProcessing}
           title="Verileri Tazele"
-          className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50 shadow-lg group"
         >
-          <svg className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={`w-6 h-6 group-hover:rotate-180 transition-transform duration-500 ${isProcessing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
           </svg>
         </button>

@@ -9,39 +9,34 @@ const SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Bu puanın adayın hangi metodolojik yanıtlarına (özellikle 20 soruluk fundamental set ve dikey VQ-X soruları) dayandığının analizi." },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Cevaplarda saptanan mikrodavranış ve teknik tutum emareleri." },
-    institutionalImpact: { type: Type.STRING, description: "Bu adayın kurumda çalışması durumunda klinik kalite ve vaka yönetimi üzerindeki 12 aylık etkisi." },
-    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-    cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
+    reasoning: { type: Type.STRING, description: "BU ALAN ÇOK ÖNEMLİ: Adayın verdiği spesifik cevaplardan yola çıkarak, bu puanı almasının KÖK NEDENİNİ (Root Cause) açıkla. Sebep-Sonuç ilişkisi kur. Örn: 'Adayın X sorusunda Y yanıtını vermesi, kriz anında donup kalacağını gösteriyor.'" },
+    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın cevaplarında tespit edilen somut 'mikro-davranış' kanıtları." },
+    institutionalImpact: { type: Type.STRING, description: "SEBEP-SONUÇ ANALİZİ: Bu aday işe alınırsa 6 ay içinde kurumda somut olarak ne değişir? Pozitif ve negatif etkileri net bir dille yaz." },
+    pros: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın kuruma katacağı net katma değerler." },
+    cons: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın yaratabileceği operasyonel yükler." },
+    risks: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Dikkat edilmesi gereken kırmızı çizgiler ve potansiyel kriz noktaları." }
   },
   required: ["score", "status", "reasoning", "behavioralIndicators", "institutionalImpact", "pros", "cons", "risks"]
 };
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Karar Destek Uzmanı ve Akademik Akreditasyon Denetçisi.
-    MODEL: Gemini 3 Flash Deep Analysis Engine.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçisi ve Stratejik İK Danışmanı.
+    GÖREV: Adayın verilerini "Derinlemesine Akademik Otopsi" protokolü ile analiz et.
     
-    ANALİZ PROTOKOLÜ:
-    1. AKREDİTASYON VE CV DOĞRULAMA (CROSS-VERIFICATION):
-       - Adayın beyan ettiği 'answers' (mülakat yanıtları) ile sisteme yüklediği CV belgesini (eğer varsa) karşılaştır.
-       - CV'de yer alan tarihler, kurumlar ve sertifikalar ile adayın beyanları (experienceYears, allTrainings) arasında tutarsızlık varsa 'integrityIndex' puanını düşür.
-       - Sertifika beyanına rağmen temel teknik terminolojiyi (Örn: ABA'da işlevsel analiz, CAS'ta PASS teorisi) yanlış işaretleyen adayları "Kâğıt Üstü Uzman" riskiyle işaretle.
+    ANALİZ PRENSİPLERİ (ÇOK ÖNEMLİ):
+    1. YÜZEYSELLİK YASAKTIR: "Aday iyidir" gibi cümleler kurma. "Adayın 3. soruda ABC kaydı yerine sezgisel yanıt vermesi, veri temelli çalışmadığını ve metodolojik körlük yaşadığını kanıtlar" gibi sebep-sonuç odaklı konuş.
+    2. SEBEP & SONUÇ ZİNCİRİ: Her tespiti bir kanıta dayandır ve sonucunu kurumsal etkiyle bağla. (Kanıt -> Analiz -> Kurumsal Sonuç).
+    3. RİSK VE TAVSİYE: Sadece durumu tespit etme, ne yapılması gerektiğini de söyle. "Bu adayı işe alırsanız, ilk 2 ay yoğun süpervizyon gerekir" gibi.
+    4. DİL VE TON: Üst düzey akademik, profesyonel, net, süslü kelimelerden arındırılmış, analitik Türkçe.
 
-    2. DİKEY ALAN YETKİNLİĞİ:
-       - OSB: ABA ve DIR Floortime arasındaki ekol farkını yönetebiliyor mu?
-       - ÖÖG: Akademik hedefler ile bilişsel süreçleri (PASS) entegre edebiliyor mu?
-       - DKT/OT: Anatomi ve nöro-müsküler hiyerarşi bilgisi ne düzeyde?
+    ÖZEL İNCELEME ALANLARI:
+    - CV vs BEYAN: Yüklenen CV (varsa) ile adayın verdiği cevaplar arasındaki tutarsızlıkları (örn: 5 yıl deneyim deyip temel terimleri bilmemesi) acımasızca raporla.
+    - ETİK DİRENÇ: Adayın "özel ders", "hediye kabulü" gibi tuzak sorulara verdiği yanıtları ahlaki ve kurumsal güvenlik açısından parçala.
+    - KLİNİK DERİNLİK: Aday teoriyi mi ezberlemiş yoksa sahada mı pişmiş? Bunu cevapların detayından çıkar.
 
-    3. MÜLAKAT STRATEJİSİ OLUŞTURMA (10 ADET SORU):
-       - Adayın analiz sonuçlarına bak. En DÜŞÜK puan aldığı alanları ve En YÜKSEK puan aldığı alanları belirle.
-       - İlk 5 Soru (ZAYIF YÖN ODAKLI): Adayın zayıf olduğu veya riskli görülen alanlarını (örn: Etik, Stres Yönetimi, Teknik Bilgi) zorlayan, kriz senaryosu içeren sorular yaz.
-       - Son 5 Soru (GÜÇLÜ YÖN ODAKLI): Adayın güçlü olduğu alanlarda (örn: Pedagoji, İletişim) vizyonunu ve derinliğini sergilemesine fırsat veren, üst düzey akademik sorular yaz.
-
-    YARGI TONU: Sert, akademik, kanıta dayalı ve prediktif. 
-    DİL: Tamamen Türkçe.
+    ÇIKTI FORMATI:
+    - Tüm analizler, yöneticinin tek okuyuşta karar verebileceği netlikte ve derinlikte olmalı.
   `;
 
   const responseSchema = {
@@ -50,9 +45,9 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       score: { type: Type.NUMBER },
       integrityIndex: { type: Type.NUMBER },
       socialMaskingScore: { type: Type.NUMBER },
-      summary: { type: Type.STRING },
-      detailedAnalysisNarrative: { type: Type.STRING },
-      recommendation: { type: Type.STRING },
+      summary: { type: Type.STRING, description: "Adayın genel profilinin, artı ve eksileriyle birlikte 3 cümlelik yönetici özeti." },
+      detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın zihinsel haritasını, metodolojik yaklaşımını ve kişilik özelliklerini birleştiren 300 kelimelik, detaylı, sebep-sonuç ilişkili kompozisyon." },
+      recommendation: { type: Type.STRING, description: "NET KARAR TAVSİYESİ: İşe Al / Reddet / Havuza Al. Ve bunun tek cümlelik en güçlü gerekçesi." },
       predictiveMetrics: {
         type: Type.OBJECT,
         properties: {
@@ -60,7 +55,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
           burnoutRisk: { type: Type.NUMBER },
           learningVelocity: { type: Type.NUMBER },
           leadershipPotential: { type: Type.NUMBER },
-          evolutionPath: { type: Type.STRING, description: "Adayın 2 yıl sonraki akademik yetkinlik projeksiyonu." }
+          evolutionPath: { type: Type.STRING, description: "Gelecek Projeksiyonu: Aday 24 ay sonra nerede olacak? Lider mi, tükenmiş mi, stabil mi? Sebepleriyle anlat." }
         },
         required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
       },
@@ -93,8 +88,8 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       interviewGuidance: {
         type: Type.OBJECT,
         properties: {
-          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın zayıf yönlerini (ilk 5) ve güçlü yönlerini (son 5) hedefleyen toplam 10 adet nokta atışı mülakat sorusu." },
-          criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+          strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Adayın zayıf noktalarını hedefleyen ve 'Neden bu soruyu soruyoruz?' bilgisini içeren stratejik mülakat soruları." },
+          criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Mülakatçının adayın beden dilinde veya ses tonunda özellikle dikkat etmesi gereken uyarılar." },
           simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
         required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
@@ -122,8 +117,8 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   }
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: contents, // Dizi olarak gönderiyoruz (Multimodal)
+    model: 'gemini-3-pro-preview',
+    contents: contents, 
     config: {
       systemInstruction,
       responseMimeType: "application/json",

@@ -46,8 +46,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
 
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
-      {/* ÜST KOMUTA BARI (Horizontal Navigation) */}
-      <header className="shrink-0 z-50">
+      {/* ÜST KOMUTA BARI (Expanded Height & High Z-Index) */}
+      <header className="shrink-0 z-[100] h-32 transition-all duration-500 shadow-2xl relative">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -58,7 +58,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       </header>
       
       {/* ANA İÇERİK ALANI */}
-      <main className="flex-1 flex flex-col min-h-0 relative">
+      <main className="flex-1 flex flex-col min-h-0 relative z-0">
         {/* Alt Bilgi Barı (Context Strip) */}
         <div className="h-8 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 shadow-sm z-40">
            <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-slate-400">
