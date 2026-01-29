@@ -31,8 +31,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
         text: 'Bir problem davranışın "işlevi" belirlenirken hangisi birincil veri kaynağıdır?',
         weightedOptions: [
-          { label: 'ABC (Antecedent-Behavior-Consequence) kayıtları ve işlevsel analiz.', weights: { clinical: 1.0 }, analysisInsight: 'Teknik doğruluk.' },
           { label: 'Velinin çocuk hakkındaki genel şikayetleri.', weights: { clinical: 0.2 }, analysisInsight: 'Subjektif hata.' },
+          { label: 'ABC (Antecedent-Behavior-Consequence) kayıtları ve işlevsel analiz.', weights: { clinical: 1.0 }, analysisInsight: 'Teknik doğruluk.' },
           { label: 'Çocuğun tıbbi tanılama raporu.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik veri kullanımı.' },
           { label: 'Öğretmenin o anki sezgisel tahmini.', weights: { clinical: 0.0 }, analysisInsight: 'Bilimsel dışı.' }
         ]
@@ -49,8 +49,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_dir_1', category: 'technicalExpertise', type: 'radio',
         text: 'FEDL 3 (İki Yönlü İletişim) aşamasında temel hedef hangisidir?',
         weightedOptions: [
-          { label: 'Sürekli etkileşim döngüleri (circles of communication) kurmak.', weights: { clinical: 1.0 }, analysisInsight: 'Hiyerarşik bilgi.' },
           { label: 'Çocuğa sayıları öğretmek.', weights: { clinical: 0.0 }, analysisInsight: 'Yanlış etap.' },
+          { label: 'Sürekli etkileşim döngüleri (circles of communication) kurmak.', weights: { clinical: 1.0 }, analysisInsight: 'Hiyerarşik bilgi.' },
           { label: 'Sadece göz kontağı kurmasını sağlamak.', weights: { clinical: 0.3 }, analysisInsight: 'Davranışçı ile karıştırma.' },
           { label: 'Karmaşık cümleler kurdurmak.', weights: { clinical: 0.1 }, analysisInsight: 'Üst basamak hatası.' }
         ]
@@ -73,9 +73,9 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_cas_1', category: 'technicalExpertise', type: 'radio',
         text: 'CAS testinde "Planlama" ölçeği düşük çıkan bir öğrencide hangisi birincil müdahaledir?',
         weightedOptions: [
-          { label: 'Bilişsel strateji geliştirme ve öz-izleme çalışmaları.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik uyum.' },
           { label: 'Hızlı okuma çalışmaları.', weights: { clinical: 0.2 }, analysisInsight: 'Alakasız müdahale.' },
           { label: 'Ezber kapasitesini artırıcı ödevler.', weights: { clinical: 0.0 }, analysisInsight: 'Pedagojik risk.' },
+          { label: 'Bilişsel strateji geliştirme ve öz-izleme çalışmaları.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik uyum.' },
           { label: 'Daha çok matematik testi çözdürmek.', weights: { clinical: 0.1 }, analysisInsight: 'Sığ yaklaşım.' }
         ]
       }
@@ -98,8 +98,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_wisc_1', category: 'technicalExpertise', type: 'radio',
         text: 'WISC-V raporunda "Görsel Uzamsal" ve "Akıcı Akıl Yürütme" arasındaki belirgin fark neyi gösterir?',
         weightedOptions: [
-          { label: 'Adayın görsel algı ile soyut mantık yürütme arasındaki bilişsel ayrışmasını.', weights: { clinical: 1.0 }, analysisInsight: 'Üst düzey yorum kabiliyeti.' },
           { label: 'Çocuğun zekasının çok yüksek olduğunu.', weights: { clinical: 0.2 }, analysisInsight: 'Popülist yorum.' },
+          { label: 'Adayın görsel algı ile soyut mantık yürütme arasındaki bilişsel ayrışmasını.', weights: { clinical: 1.0 }, analysisInsight: 'Üst düzey yorum kabiliyeti.' },
           { label: 'Testin hatalı yapıldığını.', weights: { clinical: 0.0 }, analysisInsight: 'Yetersiz teknik bilgi.' },
           { label: 'Çocuğun gözlük kullanması gerektiğini.', weights: { clinical: 0.1 }, analysisInsight: 'Absürt yorum.' }
         ]
@@ -122,8 +122,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_prompt_1', category: 'technicalExpertise', type: 'radio',
         text: 'PROMPT hiyerarşisinde "Mandibular (Çene) Kontrolü" neden ilk sırada yer alır?',
         weightedOptions: [
-          { label: 'Daha karmaşık labial ve lingual hareketler için stabil bir temel oluşturduğu için.', weights: { clinical: 1.0 }, analysisInsight: 'Anatomik derinlik.' },
           { label: 'Öğretmesi en kolay hareket olduğu için.', weights: { clinical: 0.2 }, analysisInsight: 'Sığ bilgi.' },
+          { label: 'Daha karmaşık labial ve lingual hareketler için stabil bir temel oluşturduğu için.', weights: { clinical: 1.0 }, analysisInsight: 'Anatomik derinlik.' },
           { label: 'Seslerin çoğu çene hareketiyle çıktığı için.', weights: { clinical: 0.4 }, analysisInsight: 'Eksik tanımlama.' },
           { label: 'Veli çene hareketini daha rahat gördüğü için.', weights: { clinical: 0.0 }, analysisInsight: 'Klinik dışı odak.' }
         ]
@@ -147,8 +147,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_si_1', category: 'technicalExpertise', type: 'radio',
         text: '"Propriyoseptif Sistem" arayışı olan bir çocukta seansta hangisi gözlemlenir?',
         weightedOptions: [
-          { label: 'Derin bası ihtiyacı, eklemleri sıkıştırma ve sert hareketlere eğilim.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik profil bilgisi.' },
           { label: 'Sürekli kulaklarını kapatma ve sesten kaçma.', weights: { clinical: 0.1 }, analysisInsight: 'İşitsel savunma ile karıştırma.' },
+          { label: 'Derin bası ihtiyacı, eklemleri sıkıştırma ve sert hareketlere eğilim.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik profil bilgisi.' },
           { label: 'Sadece parlak ışıklardan rahatsız olma.', weights: { clinical: 0.1 }, analysisInsight: 'Görsel hassasiyet hatası.' },
           { label: 'Dengesini kaybedip sürekli düşme.', weights: { clinical: 0.4 }, analysisInsight: 'Vestibüler ile karıştırma.' }
         ]
@@ -178,8 +178,8 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_cbt_1', category: 'technicalExpertise', type: 'radio',
         text: 'BDT seansında "Bilişsel Yeniden Yapılandırma"nın temel amacı nedir?',
         weightedOptions: [
-          { label: 'İşlevsel olmayan otomatik düşünceleri saptayıp rasyonel olanlarla değiştirmek.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik hakimiyet.' },
           { label: 'Çocuğun geçmiş travmalarını saatlerce anlattırmak.', weights: { clinical: 0.2 }, analysisInsight: 'Ekol karışıklığı.' },
+          { label: 'İşlevsel olmayan otomatik düşünceleri saptayıp rasyonel olanlarla değiştirmek.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik hakimiyet.' },
           { label: 'Sadece güzel düşünmesini sağlamak.', weights: { clinical: 0.1 }, analysisInsight: 'Yüzeysel yorum.' },
           { label: 'Çocuğa seans sırasında ödül vermek.', weights: { clinical: 0.3 }, analysisInsight: 'Davranışçı odak.' }
         ]
@@ -200,9 +200,9 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_1', category: 'technicalExpertise', type: 'radio',
       text: 'BEP (Bireyselleştirilmiş Eğitim Programı) hazırlarken hedeflerin belirlenmesinde "SMART" kriterleri neyi ifade eder?',
       weightedOptions: [
-        { label: 'Ölçülebilir, gözlenebilir ve gerçekçi hedeflerin spesifik bir zaman diliminde planlanmasını.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik doğruluk.' },
         { label: 'Öğrencinin tüm yaşamı boyunca öğrenmesi gereken genel becerileri.', weights: { clinical: 0.4 }, analysisInsight: 'Yüzeysel planlama.' },
         { label: 'Sadece akademik (okuma-yazma) becerilerin önceliklendirilmesini.', weights: { clinical: 0.1 }, analysisInsight: 'Pedagojik kısıtlılık.' },
+        { label: 'Ölçülebilir, gözlenebilir ve gerçekçi hedeflerin spesifik bir zaman diliminde planlanmasını.', weights: { clinical: 1.0 }, analysisInsight: 'Metodik doğruluk.' },
         { label: 'Velinin en çok talep ettiği becerilerin listelenmesini.', weights: { clinical: 0.3 }, analysisInsight: 'Veli odaklı sapma.' }
       ]
     },
@@ -210,9 +210,9 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_2', category: 'technicalExpertise', type: 'radio',
       text: 'Bilimsel dayanaklı uygulamalarda "Veri Toplama" (Data Collection) seans başarısı için neden kritiktir?',
       weightedOptions: [
-        { label: 'Müdahalenin etkinliğini nesnel olarak kanıtlamak ve rotayı veriye göre belirlemek için.', weights: { clinical: 1.0 }, analysisInsight: 'Analitik zihin.' },
         { label: 'Dosyalama ve resmi denetimlerde eksik bırakmamak için.', weights: { clinical: 0.4 }, analysisInsight: 'Bürokratik odak.' },
         { label: 'Veliye ne kadar çok çalıştığımızı göstermek için.', weights: { clinical: 0.2 }, analysisInsight: 'Sosyal maskeleme.' },
+        { label: 'Müdahalenin etkinliğini nesnel olarak kanıtlamak ve rotayı veriye göre belirlemek için.', weights: { clinical: 1.0 }, analysisInsight: 'Analitik zihin.' },
         { label: 'Sadece öğrencinin ne kadar hata yaptığını saymak için.', weights: { clinical: 0.5 }, analysisInsight: 'Eksik veri vizyonu.' }
       ]
     },
@@ -220,8 +220,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_3', category: 'technicalExpertise', type: 'radio',
       text: 'Genelleme (Generalization) aşaması tam olarak ne zaman başlar?',
       weightedOptions: [
-        { label: 'Öğretim aşamasıyla eş zamanlı olarak, farklı materyal ve kişilerle en baştan kurgulanmalıdır.', weights: { clinical: 1.0 }, analysisInsight: 'İleri klinik vizyon.' },
         { label: 'Beceri tamamen öğrenildikten sonra seansın sonunda.', weights: { clinical: 0.5 }, analysisInsight: 'Geleneksel hata.' },
+        { label: 'Öğretim aşamasıyla eş zamanlı olarak, farklı materyal ve kişilerle en baştan kurgulanmalıdır.', weights: { clinical: 1.0 }, analysisInsight: 'İleri klinik vizyon.' },
         { label: 'Sadece veli evde "yapmıyor" dediği zaman.', weights: { clinical: 0.3 }, analysisInsight: 'Reaktif tutum.' },
         { label: 'Müfredat bittiğinde, bir sonraki yıla hazırlık olarak.', weights: { clinical: 0.1 }, analysisInsight: 'Zamanlama hatası.' }
       ]
@@ -230,8 +230,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_4', category: 'technicalExpertise', type: 'radio',
       text: '"Hata Üretmeden Öğretim" (Errorless Teaching) tekniğinde temel amaç nedir?',
       weightedOptions: [
-        { label: 'İpucu silikleştirme ile çocuğun yanlış yapma ve motivasyon kaybetme riskini minimize etmek.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru metodoloji.' },
         { label: 'Çocuğun hiç yorulmamasını sağlamak.', weights: { clinical: 0.2 }, analysisInsight: 'Pedagojik yanılgı.' },
+        { label: 'İpucu silikleştirme ile çocuğun yanlış yapma ve motivasyon kaybetme riskini minimize etmek.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru metodoloji.' },
         { label: 'İpucunu sürekli vererek çocuğun doğruyu her zaman yapmasını sağlamak.', weights: { clinical: 0.4 }, analysisInsight: 'İpucu bağımlılığı riski.' },
         { label: 'Dersi daha hızlı bitirebilmek.', weights: { clinical: 0.0 }, analysisInsight: 'Mesleki etik zayıflığı.' }
       ]
@@ -240,8 +240,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_5', category: 'technicalExpertise', type: 'radio',
       text: 'Multidisipliner bir ekipte (OT, DKT, ÖE) seans çakışması durumunda öncelik nasıl belirlenir?',
       weightedOptions: [
-        { label: 'Çocuğun o anki regülasyon ve temel bariyer ihtiyacına göre ortak karar alınır.', weights: { clinical: 1.0, fit: 1.0 }, analysisInsight: 'Sistemik çözüm.' },
         { label: 'Kurumda en uzun süre çalışan öğretmenin dediği olur.', weights: { fit: 0.2 }, analysisInsight: 'Hiyerarşik katılık.' },
+        { label: 'Çocuğun o anki regülasyon ve temel bariyer ihtiyacına göre ortak karar alınır.', weights: { clinical: 1.0, fit: 1.0 }, analysisInsight: 'Sistemik çözüm.' },
         { label: 'Veli hangi derse girmek istiyorsa o tercih edilir.', weights: { fit: 0.4, clinical: 0.3 }, analysisInsight: 'Veli manipülasyonu.' },
         { label: 'Sadece akademik (derste başarılı olma) odaklı branş öncelenir.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış öncelik.' }
       ]
@@ -254,9 +254,9 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_1', category: 'workEthics', type: 'radio',
       text: 'Bir veli, mülakat sonrası size özelden ulaşarak kurum dışı "Siyah Randevu" (Özel Ders) teklif ederse tutumunuz?',
       weightedOptions: [
-        { label: 'Kurum etik kurallarını hatırlatıp reddeder ve yönetimi şeffafça bilgilendiririm.', weights: { ethics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek dürüstlük.' },
         { label: 'Sadece hayır derim, yönetime bilgi verip veliyi zor durumda bırakmam.', weights: { ethics: 0.7, institutionalLoyalty: 0.5 }, analysisInsight: 'Gizli sadakat.' },
         { label: 'Kabul ederim ama seansları kurum saatleri dışında yaparım.', weights: { ethics: -1.0, institutionalLoyalty: -1.0 }, analysisInsight: 'Ağır ihlal.' },
+        { label: 'Kurum etik kurallarını hatırlatıp reddeder ve yönetimi şeffafça bilgilendiririm.', weights: { ethics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek dürüstlük.' },
         { label: 'Haftada bir gün ise bir şey olmayacağını düşünürüm.', weights: { ethics: -0.5, institutionalLoyalty: -0.5 }, analysisInsight: 'Sınır aşımı.' }
       ]
     },
@@ -264,8 +264,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_2', category: 'workEthics', type: 'radio',
       text: 'Seans sırasında çocuğun vücudunda açıklanamayan bir morluk/iz gördünüz. İlk adımınız ne olur?',
       weightedOptions: [
-        { label: 'Protokol gereği durumu derhal klinik koordinatöre/yönetime raporlarım ve kayıt altına alırım.', weights: { ethics: 1.0, technicalExpertise: 0.8 }, analysisInsight: 'Profesyonel koruma.' },
         { label: 'Veliye "Bu nedir?" diye sorar, tatmin edici cevap alırsam konuyu kapatırım.', weights: { ethics: 0.4 }, analysisInsight: 'Risk yönetimi hatası.' },
+        { label: 'Protokol gereği durumu derhal klinik koordinatöre/yönetime raporlarım ve kayıt altına alırım.', weights: { ethics: 1.0, technicalExpertise: 0.8 }, analysisInsight: 'Profesyonel koruma.' },
         { label: 'Bir sonraki seansı bekleyip iz artıyor mu diye bakarım.', weights: { ethics: 0.1 }, analysisInsight: 'İhmal potansiyeli.' },
         { label: 'Kendi kendime not alır, kimseye söylemem.', weights: { ethics: 0.0 }, analysisInsight: 'Kritik sessizlik.' }
       ]
@@ -274,9 +274,9 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_3', category: 'parentStudentRelations', type: 'radio',
       text: 'Veli, diğer bir öğretmenin mülakat performansı veya kişiliği hakkında sizinle dedikodu yapmaya çalışırsa?',
       weightedOptions: [
-        { label: 'Nazikçe profesyonel sınırları çizer ve konuyu öğrencinin gelişimine geri getiririm.', weights: { parentStudentRelations: 1.0, fit: 1.0 }, analysisInsight: 'Sınır koruma.' },
         { label: 'Dinlerim ama yorum yapmam.', weights: { parentStudentRelations: 0.5, fit: 0.3 }, analysisInsight: 'Pasif onay.' },
         { label: 'Benim de benzer şikayetlerim olduğunu belirtip dertleşirim.', weights: { parentStudentRelations: -0.5, fit: -1.0 }, analysisInsight: 'Takım yıkıcılığı.' },
+        { label: 'Nazikçe profesyonel sınırları çizer ve konuyu öğrencinin gelişimine geri getiririm.', weights: { parentStudentRelations: 1.0, fit: 1.0 }, analysisInsight: 'Sınır koruma.' },
         { label: 'Veliye hak verir ama "öğretmen arkadaşımdır" diyerek savunurum.', weights: { parentStudentRelations: 0.3, fit: 0.4 }, analysisInsight: 'Çatışmalı duruş.' }
       ]
     },
@@ -284,9 +284,9 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_4', category: 'workEthics', type: 'radio',
       text: '"İkili İlişkiler" (Dual Relationships) kapsamında sosyal medyada velilerle arkadaşlık kurmayı nasıl değerlendirirsiniz?',
       weightedOptions: [
-        { label: 'Klinik objektifliği ve profesyonel mesafeyi korumak adına kesinlikle kaçınırım.', weights: { ethics: 1.0 }, analysisInsight: 'Etik olgunluk.' },
         { label: 'Sadece çok samimi olduğum ve güvendiğim velileri eklerim.', weights: { ethics: 0.2 }, analysisInsight: 'Öznel sınır yönetimi.' },
         { label: 'Eklerim ama paylaşımlarımı kısıtlarım.', weights: { ethics: 0.4 }, analysisInsight: 'Gri alan tercihi.' },
+        { label: 'Klinik objektifliği ve profesyonel mesafeyi korumak adına kesinlikle kaçınırım.', weights: { ethics: 1.0 }, analysisInsight: 'Etik olgunluk.' },
         { label: 'Modern dünyada bir sakıncası yoktur, iletişimi artırır.', weights: { ethics: 0.0 }, analysisInsight: 'Etik körlük.' }
       ]
     },
@@ -294,8 +294,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_5', category: 'parentStudentRelations', type: 'radio',
       text: 'Veli, kurumun/koordinatörün belirlediği yöntemin (örn: ABA) yanlış olduğunu ve başka bir şey (örn: Montessori) istediğini söylüyor.',
       weightedOptions: [
-        { label: 'Yöntemin bilimsel dayanağını açıklar, koordinatörü sürece dahil ederek ortak dil kurarım.', weights: { parentStudentRelations: 1.0, clinical: 0.8 }, analysisInsight: 'Arabulucu uzman.' },
         { label: 'Veli haklıdır, gizlice onun istediği gibi çalışırım.', weights: { ethics: -0.8, institutionalLoyalty: -1.0 }, analysisInsight: 'Gizli ajanda.' },
+        { label: 'Yöntemin bilimsel dayanağını açıklar, koordinatörü sürece dahil ederek ortak dil kurarım.', weights: { parentStudentRelations: 1.0, clinical: 0.8 }, analysisInsight: 'Arabulucu uzman.' },
         { label: 'Sert bir dille "uzman benim" diyerek veliyi sustururum.', weights: { parentStudentRelations: 0.2 }, analysisInsight: 'İletişim hatası.' },
         { label: 'Kararı tamamen yönetime bırakır, sorumluluk almam.', weights: { fit: 0.4 }, analysisInsight: 'Zayıf inisiyatif.' }
       ]
@@ -308,8 +308,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_1', category: 'sustainability', type: 'radio',
       text: 'Üst üste 3 seans boyunca ağır bir davranış problemi (ısırma, kendine zarar) ile karşılaştınız ve yoruldunuz. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'Durumu süpervizörümle paylaşır, teknik destek veya kısa bir mola talep ederek strateji güncellerim.', weights: { sustainability: 1.0 }, analysisInsight: 'Öz-farkındalık.' },
         { label: 'Kimseye belli etmeden devam ederim, tükenene kadar dayanırım.', weights: { sustainability: 0.3 }, analysisInsight: 'Burnout riski.' },
+        { label: 'Durumu süpervizörümle paylaşır, teknik destek veya kısa bir mola talep ederek strateji güncellerim.', weights: { sustainability: 1.0 }, analysisInsight: 'Öz-farkındalık.' },
         { label: 'O öğrencinin seanslarından çekilmek istediğimi söylerim.', weights: { sustainability: 0.1 }, analysisInsight: 'Düşük direnç.' },
         { label: 'Çocuğa gegen sesimi yükseltir veya sertleşirim.', weights: { sustainability: -1.0, ethics: -1.0 }, analysisInsight: 'Kritik tehlike.' }
       ]
@@ -318,8 +318,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_2', category: 'fit', type: 'radio',
       text: 'Takım toplantısında yaptığınız bir uygulama koordinatör tarafından sertçe eleştirildiğinde tepkiniz?',
       weightedOptions: [
-        { label: 'Eleştiriyi gelişim fırsatı olarak görür, dayanaklarımı sunar ve ortak noktada kendimi güncellerim.', weights: { fit: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Yüksek uyum.' },
         { label: 'Kişisel algılar ve toplantı sonrası modumu düşürürüm.', weights: { fit: 0.4 }, analysisInsight: 'Duygusal kırılganlık.' },
+        { label: 'Eleştiriyi gelişim fırsatı olarak görür, dayanaklarımı sunar ve ortak noktada kendimi güncellerim.', weights: { fit: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Yüksek uyum.' },
         { label: 'Hatalı olduğumu düşünmesem de tartışmamak için "tamam" derim.', weights: { fit: 0.5 }, analysisInsight: 'Pasif-agresif.' },
         { label: 'Onun da hatalarını herkesin içinde yüzüne vururum.', weights: { fit: -0.8 }, analysisInsight: 'Toksik tutum.' }
       ]
@@ -328,8 +328,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_3', category: 'sustainability', type: 'radio',
       text: 'Kurumda iş yükünün aniden arttığı (ek seanslar, raporlama dönemi) stresli bir haftayı nasıl yönetirsiniz?',
       weightedOptions: [
-        { label: 'Öncelik matrisi hazırlar, zaman yönetimi teknikleriyle iş akışını organize ederim.', weights: { sustainability: 1.0 }, analysisInsight: 'Planlama gücü.' },
         { label: 'Hepsini yetiştirmeye çalışırken hata yaparım.', weights: { sustainability: 0.4 }, analysisInsight: 'Yüksek kaygı.' },
+        { label: 'Öncelik matrisi hazırlar, zaman yönetimi teknikleriyle iş akışını organize ederim.', weights: { sustainability: 1.0 }, analysisInsight: 'Planlama gücü.' },
         { label: 'Yöneticilere bu kadar işin yapılamayacağını söyleyip şikayet ederim.', weights: { sustainability: 0.2, fit: 0.1 }, analysisInsight: 'Düşük motivasyon.' },
         { label: 'Bazı raporları kopyala-yapıştır ile hızlıca geçerim.', weights: { ethics: -0.7, clinical: -0.5 }, analysisInsight: 'Liyakat kaybı.' }
       ]
@@ -338,8 +338,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_4', category: 'fit', type: 'radio',
       text: 'Yeni işe başlayan bir iş arkadaşınızın klinik bir hata yaptığını fark ettiniz. Aksiyonunuz?',
       weightedOptions: [
-        { label: 'Kendisiyle yapıcı bir dille birebir konuşur, gerekirse üst yönetimi doğru kanaldan bilgilendiririm.', weights: { fit: 1.0, ethics: 0.8 }, analysisInsight: 'Yapıcı denetçi.' },
         { label: 'Diğer arkadaşlarıma anlatıp "bakın ne yapmış" derim.', weights: { fit: -0.5 }, analysisInsight: 'Dedikodu/Toksik.' },
+        { label: 'Kendisiyle yapıcı bir dille birebir konuşur, gerekirse üst yönetimi doğru kanaldan bilgilendiririm.', weights: { fit: 1.0, ethics: 0.8 }, analysisInsight: 'Yapıcı denetçi.' },
         { label: 'Beni ilgilendirmediğini düşünüp sessiz kalırım.', weights: { fit: 0.3, clinical: -0.2 }, analysisInsight: 'Sorumluluktan kaçınma.' },
         { label: 'Derhal koordinatöre şikayet ederim.', weights: { fit: 0.6 }, analysisInsight: 'Sert hiyerarşi.' }
       ]
@@ -348,8 +348,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_5', category: 'sustainability', type: 'radio',
       text: 'Özel eğitimde "Küçük Adımlar" prensibi bazen çok yavaş ilerler. Aylarca ilerleme kaydedemediğiniz bir vakada motivasyonunuzu ne sağlar?',
       weightedOptions: [
-        { label: 'Verileri tekrar analiz eder, küçük başarıları (successive approximations) bulur ve metodumu sorgularım.', weights: { sustainability: 1.0, clinical: 0.9 }, analysisInsight: 'Bilimsel azim.' },
         { label: 'Çocuğun potansiyelinin bu kadar olduğuna inanırım.', weights: { sustainability: 0.2 }, analysisInsight: 'Düşük beklenti hatası.' },
+        { label: 'Verileri tekrar analiz eder, küçük başarıları (successive approximations) bulur ve metodumu sorgularım.', weights: { sustainability: 1.0, clinical: 0.9 }, analysisInsight: 'Bilimsel azim.' },
         { label: 'Veliye "bu çocuktan bir şey olmaz" mesajı veririm.', weights: { ethics: -1.0, parentStudentRelations: -1.0 }, analysisInsight: 'Ağır pedagojik risk.' },
         { label: 'Kendi başarısızlığım olarak görüp moralimi bozarım.', weights: { sustainability: 0.4 }, analysisInsight: 'Kaygı odaklı.' }
       ]
@@ -362,8 +362,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_1', category: 'institutionalLoyalty', type: 'radio',
       text: 'Kurumun size 2 yıllık bir gelişim planı ve eğitim yatırım taahhüdü sunmasını nasıl karşılarsınız?',
       weightedOptions: [
-        { label: 'Bu yatırımı kariyerim için büyük fırsat görür, kurumsal aidiyetimi pekiştiririm.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Aidiyet.' },
         { label: 'Sertifikayı alana kadar kalır, sonra daha iyi bir teklifi değerlendiririm.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Fırsatçı risk.' },
+        { label: 'Bu yatırımı kariyerim için büyük fırsat görür, kurumsal aidiyetimi pekiştiririm.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Aidiyet.' },
         { label: '2 yıl çok uzun bir süre, özgürlüğümün kısıtlanmasını istemem.', weights: { institutionalLoyalty: -0.3 }, analysisInsight: 'Düşük bağlılık.' },
         { label: 'Sadece maaş artışı eşlik ederse kabul ederim.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Materyalist odak.' }
       ]
@@ -372,8 +372,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_2', category: 'developmentOpenness', type: 'radio',
       text: 'Akademik bir makaleyi veya yeni bir müdahale yöntemini öğrenip takıma sunmanız istendiğinde?',
       weightedOptions: [
-        { label: 'Zevkle araştırır, literatürü tarar ve en güncel bilgiyi ekibe aktarırım.', weights: { developmentOpenness: 1.0, fit: 0.8 }, analysisInsight: 'Akademik liderlik.' },
         { label: 'İş tanımımda "sunum yapmak" olmadığını belirtirim.', weights: { developmentOpenness: -0.5, fit: -0.5 }, analysisInsight: 'Gelişime kapalılık.' },
+        { label: 'Zevkle araştırır, literatürü tarar ve en güncel bilgiyi ekibe aktarırım.', weights: { developmentOpenness: 1.0, fit: 0.8 }, analysisInsight: 'Akademik liderlik.' },
         { label: 'Vaktim olursa yaparım.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Düşük öncelik.' },
         { label: 'Hazır bir sunumu internetten bulur, üzerinde durmam.', weights: { developmentOpenness: 0.1, ethics: -0.2 }, analysisInsight: 'Zayıf emek.' }
       ]
@@ -382,8 +382,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_3', category: 'institutionalLoyalty', type: 'radio',
       text: 'Mesleki hayaliniz/hedefiniz nedir?',
       weightedOptions: [
-        { label: 'Alanında otorite bir akademisyen/uzman olup bu kurumu bir mükemmeliyet merkezi yapmak.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Vizyoner.' },
         { label: 'Kendi merkezimi açmak.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Potansiyel rakip.' },
+        { label: 'Alanında otorite bir akademisyen/uzman olup bu kurumu bir mükemmeliyet merkezi yapmak.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Vizyoner.' },
         { label: 'Daha az çalışıp daha çok kazanabileceğim bir düzen kurmak.', weights: { sustainability: 0.0 }, analysisInsight: 'Düşük enerji.' },
         { label: 'Şu anki durumumu korumak, huzurlu çalışmak.', weights: { fit: 0.7 }, analysisInsight: 'Stabil personel.' }
       ]
@@ -392,8 +392,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_4', category: 'developmentOpenness', type: 'radio',
       text: 'Mevcut bildiğiniz bir yöntemin (örn: Geleneksel) kurum tarafından "artık kullanılmayacağı" söylendiğinde?',
       weightedOptions: [
-        { label: 'Nedenini sorgular, bilimsel gerekçeleri anlar ve yeni yönteme hızla adapte olurum.', weights: { developmentOpenness: 1.0, fit: 1.0 }, analysisInsight: 'Bilişsel esneklik.' },
         { label: 'Eski yöntemin daha iyi olduğunu savunur, direnç gösteririm.', weights: { fit: 0.2 }, analysisInsight: 'Statükocu.' },
+        { label: 'Nedenini sorgular, bilimsel gerekçeleri anlar ve yeni yönteme hızla adapte olurum.', weights: { developmentOpenness: 1.0, fit: 1.0 }, analysisInsight: 'Bilişsel esneklik.' },
         { label: 'Öğrenmiş gibi yapar, bildiğimi okumaya devam ederim.', weights: { ethics: -0.8, fit: -0.5 }, analysisInsight: 'Gizli direnç.' },
         { label: 'Yyenisini de öğrenir ama ikisini karıştırırım.', weights: { clinical: 0.4 }, analysisInsight: 'Metodik karmaşa.' }
       ]
@@ -402,8 +402,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_5', category: 'institutionalLoyalty', type: 'radio',
       text: 'Kurumun itibarını zedeleyecek bir durumla (örn: bir iş arkadaşının uygunsuz paylaşımı) karşılaştınız. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'Kurumu korumak adına durumu derhal üst yönetime resmi kanallardan iletirim.', weights: { institutionalLoyalty: 1.0, ethics: 1.0 }, analysisInsight: 'Kurumsal muhafız.' },
         { label: 'Beni ilgilendirmez, görmezden gelirim.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Aidiyet eksikliği.' },
+        { label: 'Kurumu korumak adına durumu derhal üst yönetime resmi kanallardan iletirim.', weights: { institutionalLoyalty: 1.0, ethics: 1.0 }, analysisInsight: 'Kurumsal muhafız.' },
         { label: 'Arkadaşımı uyarırım ama kuruma söylemem.', weights: { institutionalLoyalty: 0.5 }, analysisInsight: 'Kişisel sadakat önceliği.' },
         { label: 'Ben de sosyal medyada benzer paylaşımlar yaparım.', weights: { fit: -1.0 }, analysisInsight: 'Kültürel uyumsuzluk.' }
       ]

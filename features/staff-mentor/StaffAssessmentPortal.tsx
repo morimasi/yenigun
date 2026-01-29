@@ -1,9 +1,17 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { MODULAR_BATTERIES } from './assessmentData';
-import { AssessmentBattery, Branch } from '../../types';
+import { AssessmentBattery, Branch, AssessmentQuestion } from '../../types';
 import { CERTIFICATIONS, TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../../constants';
 import { SearchableSelect } from '../../shared/ui/SearchableSelect';
+
+// Fisher-Yates Shuffle Implementation
+const shuffleQuestions = (questions: AssessmentQuestion[]): AssessmentQuestion[] => {
+  return questions.map(q => ({
+    ...q,
+    options: [...q.options].sort(() => Math.random() - 0.5)
+  }));
+};
 
 const StaffAssessmentPortal: React.FC = () => {
   const [step, setStep] = useState<'auth' | 'onboarding' | 'select' | 'test' | 'complete'>('auth');
@@ -16,6 +24,7 @@ const StaffAssessmentPortal: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
+  const [shuffledQuestions, setShuffledQuestions] = useState<AssessmentQuestion[]>([]);
 
   // Profile State (Onboarding)
   const [profileData, setProfileData] = useState({
@@ -26,6 +35,13 @@ const StaffAssessmentPortal: React.FC = () => {
     experienceYears: 0,
     allTrainings: [] as string[]
   });
+
+  // Modül seçildiğinde soruların şıklarını karıştır
+  useEffect(() => {
+    if (activeModule) {
+      setShuffledQuestions(shuffleQuestions(activeModule.questions));
+    }
+  }, [activeModule]);
 
   const progress = useMemo(() => {
     if (!activeModule) return 0;
@@ -194,8 +210,8 @@ const StaffAssessmentPortal: React.FC = () => {
     );
   }
 
-  if (step === 'test' && activeModule) {
-    const q = activeModule.questions[currentQuestionIndex];
+  if (step === 'test' && activeModule && shuffledQuestions.length > 0) {
+    const q = shuffledQuestions[currentQuestionIndex];
     return (
       <div className="max-w-5xl mx-auto mt-10 animate-scale-in pb-32 px-8">
          <div className="bg-slate-950 p-12 md:p-16 rounded-t-[4.5rem] text-white relative overflow-hidden shadow-4xl">
