@@ -25,8 +25,6 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
-  
-  // GLOBAL SYNC TRIGGER: Personel listesi değiştiğinde (Hiring veya Kayıt) Mentors listesini tetikler.
   const [staffRefreshKey, setStaffRefreshKey] = useState(Date.now());
 
   const {
@@ -81,108 +79,91 @@ const App: React.FC = () => {
     }
   };
 
-  /**
-   * ADAY GÜNCELLEME VE PERSONEL SENKRONİZASYONU
-   */
   const handleCandidateUpdate = async (c: Candidate) => {
     const result = await storageService.updateCandidate(c);
     if (result.success) {
-      // Eğer aday "İşe Alındı" kategorisindeyse Mentors tablosunu tetikle
       if (c.archiveCategory === 'HIRED_CONTRACTED') {
         setStaffRefreshKey(Date.now());
       }
-      loadData(false); // Sessizce aday listesini de güncelle
+      loadData(false);
     }
     return result;
   };
 
+  // ADMIN LOGIN SCREEN
   if (view === 'admin' && !isLoggedIn) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="max-w-sm w-full p-10 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 animate-scale-in">
-           <div className="w-14 h-14 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-black">YG</div>
-           <h3 className="text-xl font-black text-slate-900 mb-8 text-center uppercase tracking-widest">YÖNETİM KOMUTASI</h3>
+        <div className="max-w-sm w-full p-8 bg-white rounded-2xl shadow-xl border border-slate-200">
+           <div className="w-12 h-12 bg-slate-900 rounded-lg mx-auto mb-6 flex items-center justify-center text-white text-lg font-black">YG</div>
+           <h3 className="text-lg font-black text-slate-900 mb-6 text-center uppercase tracking-widest">YÖNETİM ERİŞİMİ</h3>
            <form onSubmit={handleAdminLogin} className="space-y-4">
-              <input type="text" className="w-full p-4 rounded-xl bg-slate-50 font-bold border-0 focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-              <input type="password" className="w-full p-4 rounded-xl bg-slate-50 font-bold border-0 focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-              <button type="submit" disabled={isProcessing} className="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg disabled:opacity-50 text-xs">
-                {isProcessing ? 'GİRİLİYOR...' : 'SİSTEMİ AÇ'}
+              <input type="text" className="w-full p-3 rounded-lg bg-slate-50 font-bold border border-slate-200 focus:border-orange-500 outline-none text-xs" placeholder="Kullanıcı" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+              <input type="password" className="w-full p-3 rounded-lg bg-slate-50 font-bold border border-slate-200 focus:border-orange-500 outline-none text-xs" placeholder="Şifre" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+              <button type="submit" disabled={isProcessing} className="w-full py-3 bg-slate-900 text-white rounded-lg font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-md disabled:opacity-50 text-[10px]">
+                {isProcessing ? 'GİRİLİYOR...' : 'GÜVENLİ GİRİŞ'}
               </button>
            </form>
-           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600">Başvuru Sayfası</button>
+           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600">Başvuru Ekranına Dön</button>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-[300] bg-slate-900/98 backdrop-blur-2xl flex items-center justify-center p-6 no-print animate-fade-in">
-           <div className="max-w-md w-full bg-white rounded-[3rem] p-12 text-center shadow-3xl border border-white/20 animate-scale-in">
-              <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-8 shadow-xl">
-                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-4">BAŞVURU MÜHÜRLENDİ</h2>
-              <p className="text-sm font-bold text-slate-500 leading-relaxed italic mb-8">
-                "Klinik verileriniz Gemini-3 Nöral Muhakeme motoru tarafından analize alınmıştır."
-              </p>
-              <div className="flex gap-1 justify-center">
-                 <div className="w-1.5 h-1.5 bg-slate-200 rounded-full animate-pulse"></div>
-                 <div className="w-1.5 h-1.5 bg-slate-200 rounded-full animate-pulse delay-75"></div>
-                 <div className="w-1.5 h-1.5 bg-slate-200 rounded-full animate-pulse delay-150"></div>
-              </div>
-           </div>
-        </div>
-      )}
+  // PUBLIC/STAFF NAVIGATION (Simple Header)
+  if (view !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#F1F5F9]">
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-6">
+             <div className="max-w-md w-full bg-white rounded-2xl p-10 text-center shadow-2xl">
+                <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white mx-auto mb-6 shadow-lg">
+                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-2">KAYIT MÜHÜRLENDİ</h2>
+                <p className="text-xs font-bold text-slate-500">Akademik analiz süreci başlatılmıştır.</p>
+             </div>
+          </div>
+        )}
 
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-[100] h-16 flex items-center no-print">
-        <div className="w-full max-w-[98vw] mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setView('candidate')}>
-            <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-sm" style={{ backgroundColor: config.accentColor }}>YG</div>
-            <div className="hidden sm:flex flex-col">
-              <span className="text-base font-black tracking-tighter uppercase text-slate-900 leading-none">{config.institutionName}</span>
-              <span className="text-[7px] font-black text-orange-600 uppercase tracking-widest mt-1">Akademik Takip v5</span>
+        <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center">
+          <div className="w-full max-w-5xl mx-auto px-6 flex items-center justify-between">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('candidate')}>
+              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xs">YG</div>
+              <span className="text-xs font-black tracking-widest uppercase text-slate-900">YENİ GÜN AKADEMİ</span>
+            </div>
+            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+              <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
+              <button onClick={() => setView('staff')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Personel</button>
+              <button onClick={() => setView('admin')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
             </div>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Aday</button>
-            <button onClick={() => setView('staff')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Öğretmen</button>
-            <button onClick={() => setView('admin')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
-          </div>
-          {isLoggedIn && view === 'admin' && (
-            <button onClick={() => { logout(); setView('candidate'); }} className="text-[9px] font-black text-rose-500 uppercase tracking-widest ml-4">Çıkış</button>
+        </nav>
+
+        <main className="mx-auto max-w-5xl py-8">
+          {view === 'candidate' ? (
+            <CandidateForm key={resetTrigger} onSubmit={onCandidateSubmit} />
+          ) : (
+            <StaffAssessmentPortal />
           )}
-        </div>
-      </nav>
+        </main>
+      </div>
+    );
+  }
 
-      <main className={`mx-auto transition-all duration-500 ${view === 'admin' ? 'max-w-full' : 'max-w-4xl py-4'}`}>
-        {view === 'candidate' ? (
-          <CandidateForm key={resetTrigger} onSubmit={onCandidateSubmit} />
-        ) : view === 'staff' ? (
-          <StaffAssessmentPortal />
-        ) : (
-          <DashboardLayout 
-            candidates={candidates} 
-            config={config} 
-            isProcessing={isProcessing}
-            staffRefreshKey={staffRefreshKey}
-            setStaffRefreshKey={setStaffRefreshKey}
-            onUpdateCandidate={handleCandidateUpdate}
-            onDeleteCandidate={async (id) => await storageService.deleteCandidate(id)}
-            onUpdateConfig={async (conf) => await storageService.saveConfig(conf)}
-            onRefresh={() => loadData(true)}
-          />
-        )}
-      </main>
-
-      {isProcessing && (
-        <div className="fixed bottom-4 right-4 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3 z-[200] animate-slide-up">
-          <div className="w-4 h-4 border-2 border-slate-200 border-t-orange-600 rounded-full animate-spin"></div>
-          <p className="font-black text-slate-900 uppercase tracking-widest text-[9px]">Sistem İşleniyor...</p>
-        </div>
-      )}
-    </div>
+  // ADMIN DASHBOARD MODE (Full Screen)
+  return (
+    <DashboardLayout 
+      candidates={candidates} 
+      config={config} 
+      isProcessing={isProcessing}
+      staffRefreshKey={staffRefreshKey}
+      setStaffRefreshKey={setStaffRefreshKey}
+      onUpdateCandidate={handleCandidateUpdate}
+      onDeleteCandidate={async (id) => await storageService.deleteCandidate(id)}
+      onUpdateConfig={async (conf) => await storageService.saveConfig(conf)}
+      onRefresh={() => loadData(true)}
+    />
   );
 };
 

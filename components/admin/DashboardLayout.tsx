@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Candidate, GlobalConfig } from '../../types';
-import AdminTopNav from './AdminTopNav';
+import AdminTopNav from './AdminTopNav'; // Artık Sidebar görevi görüyor
 import PipelineView from '../../features/academic-pipeline/PipelineView';
 import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
@@ -45,8 +45,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col gap-1 animate-fade-in min-h-screen w-full relative">
-      <header className="no-print w-full sticky top-20 md:top-24 z-[90] px-1 md:px-2 transition-all duration-300">
+    <div className="flex h-screen bg-[#F1F5F9] font-sans text-slate-900 overflow-hidden">
+      {/* SOL SIDEBAR (Eski TopNav dikey hale getirildi) */}
+      <aside className="w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col border-r border-slate-800 z-50 h-full">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -54,15 +55,28 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
           onRefresh={props.onRefresh}
           isProcessing={props.isProcessing}
         />
-      </header>
+      </aside>
       
-      <main className="flex-1 w-full px-1 md:px-2 pb-8 mt-4">
-        <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] p-1 md:p-6 min-h-[92vh] relative overflow-hidden flex flex-col w-full transition-all">
-          <div className="absolute top-0 right-0 w-[70rem] h-[70rem] bg-orange-50 rounded-full blur-[150px] -mr-[30rem] -mt-[30rem] opacity-30 pointer-events-none"></div>
-          
-          <div className="relative z-10 flex-1 flex flex-col w-full h-full">
-            {renderContent()}
-          </div>
+      {/* ANA İÇERİK ALANI */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {/* Üst Bilgi Barı (Breadcrumb & Status) */}
+        <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-orange-600">YÖNETİM KOKPİTİ</span>
+              <span className="text-slate-300">/</span>
+              <span>{activeTab.toUpperCase()}</span>
+           </div>
+           <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SİSTEM ONLİNE</span>
+              </div>
+           </div>
+        </header>
+
+        {/* Dinamik İçerik */}
+        <div className="flex-1 overflow-y-auto p-6 scroll-smooth bg-slate-50">
+           {renderContent()}
         </div>
       </main>
     </div>
