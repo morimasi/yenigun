@@ -21,6 +21,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [activeCertCategory, setActiveCertCategory] = useState(CERTIFICATION_CATEGORIES[0].id);
   const [certSearch, setCertSearch] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null); // Dosya input referansı
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -81,12 +83,35 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Dosya boyutu 5MB'dan küçük olmalıdır.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        setFormData(prev => ({
+          ...prev,
+          cvData: { base64: base64String, mimeType: file.type, fileName: file.name }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleNext = () => {
     const stepId = FORM_STEPS[currentStep].id;
     if (stepId === 'personal') {
       if (!formData.name || !formData.email || !formData.phone || !formData.university) {
         alert("Temel bilgilerinizi eksiksiz doldurunuz.");
         return;
+      }
+      // CV Zorunluluğu kontrolü (Opsiyonel olarak açılabilir, şimdilik uyarı veriyoruz)
+      if (!formData.cvData) {
+         if(!confirm("CV yüklemediniz. Yapay zeka analizinin doğruluğu düşebilir. Devam etmek istiyor musunuz?")) return;
       }
     } else {
       const unanswered = currentQuestions.filter((q: Question) => !formData.answers[q.id]);
@@ -155,6 +180,44 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SearchableSelect label="Üniversite" options={TURKISH_UNIVERSITIES} value={formData.university} onChange={(v) => setFormData({...formData, university: v})} />
               <SearchableSelect label="Bölüm" options={TURKISH_DEPARTMENTS} value={formData.department} onChange={(v) => setFormData({...formData, department: v})} />
+            </div>
+
+            {/* CV UPLOAD AREA - RESTORED */}
+            <div className="pt-2">
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,image/*" />
+                <div 
+                  onClick={() => fileInputRef.current?.click()} 
+                  className={`group relative w-full p-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center gap-6 overflow-hidden ${
+                    formData.cvData 
+                    ? 'bg-slate-900 border-slate-900 text-white shadow-xl' 
+                    : 'bg-slate-50/30 border-slate-200 hover:border-orange-400 hover:bg-orange-50/10'
+                  }`}
+                >
+                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${formData.cvData ? 'bg-orange-600 text-white' : 'bg-white text-slate-400 shadow-sm group-hover:text-orange-500'}`}>
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {formData.cvData ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4 4V4" />
+                        )}
+                      </svg>
+                   </div>
+                   <div className="text-left">
+                      <p className={`text-[11px] font-black uppercase tracking-widest ${formData.cvData ? 'text-white' : 'text-slate-500 group-hover:text-slate-800'}`}>
+                        {formData.cvData ? 'BELGE DOĞRULANDI VE MÜHÜRLENDİ' : 'ÖZGEÇMİŞ / PORTFOLYO YÜKLE'}
+                      </p>
+                      <p className={`text-[9px] font-bold mt-1 ${formData.cvData ? 'text-slate-400' : 'text-slate-400'}`}>
+                        {formData.cvData ? formData.cvData.fileName : 'PDF veya Görsel (Maks 5MB) - AI tarafından taranacaktır.'}
+                      </p>
+                   </div>
+                   {formData.cvData && (
+                     <div className="absolute top-0 right-0 p-3">
+                        <div className="px-3 py-1 bg-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-orange-500">
+                           ANALİZE HAZIR
+                        </div>
+                     </div>
+                   )}
+                </div>
             </div>
           </div>
 

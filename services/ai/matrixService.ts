@@ -25,9 +25,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     MODEL: Gemini 3 Flash Deep Analysis Engine.
     
     ANALİZ PROTOKOLÜ:
-    1. AKREDİTASYON DOĞRULAMA (VQ-X CHECK): Adayın 'allTrainings' listesindeki sertifikalar (ABA, CAS, WISC-V, PROMPT, Ayres SI vb.) ile mülakat sorularına verdiği yanıtları çapraz sorgula. 
-       - Sertifika beyanına rağmen temel teknik terminolojiyi (Örn: ABA'da işlevsel analiz, CAS'ta PASS teorisi) yanlış işaretleyen adayların 'integrityIndex' puanını %50 düşür.
-       - Bu adayları "Kâğıt Üstü Uzman" riskiyle işaretle.
+    1. AKREDİTASYON VE CV DOĞRULAMA (CROSS-VERIFICATION):
+       - Adayın beyan ettiği 'answers' (mülakat yanıtları) ile sisteme yüklediği CV belgesini (eğer varsa) karşılaştır.
+       - CV'de yer alan tarihler, kurumlar ve sertifikalar ile adayın beyanları (experienceYears, allTrainings) arasında tutarsızlık varsa 'integrityIndex' puanını düşür.
+       - Sertifika beyanına rağmen temel teknik terminolojiyi (Örn: ABA'da işlevsel analiz, CAS'ta PASS teorisi) yanlış işaretleyen adayları "Kâğıt Üstü Uzman" riskiyle işaretle.
 
     2. DİKEY ALAN YETKİNLİĞİ:
        - OSB: ABA ve DIR Floortime arasındaki ekol farkını yönetebiliyor mu?
@@ -99,9 +100,27 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     required: ["score", "integrityIndex", "socialMaskingScore", "summary", "detailedAnalysisNarrative", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
   };
 
+  // CV verisini JSON string'den ayırarak Token tasarrufu yapalım ve temiz bir JSON gönderelim.
+  const { cvData, ...candidateWithoutCV } = candidate;
+  
+  const contents: any[] = [
+    { text: `ADAY BEYAN VE YANITLARI: ${JSON.stringify(candidateWithoutCV)}` }
+  ];
+
+  // Eğer CV varsa, onu MULTIMODAL olarak ekle (Metin değil, doğrudan dosya verisi)
+  if (cvData && cvData.base64) {
+    contents.push({
+      inlineData: {
+        mimeType: cvData.mimeType,
+        data: cvData.base64
+      }
+    });
+    contents.push({ text: "Ekli belge adayın CV'sidir. Lütfen bu belgeyi adayın yukarıdaki beyanlarıyla (deneyim yılı, mezuniyet, sertifikalar) karşılaştır ve tutarlılık analizi yap." });
+  }
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY VERİLERİ (BEYANLAR + FUNDAMENTAL 20 SORU + VQ-X YANITLARI): ${JSON.stringify(candidate)}`,
+    contents: contents, // Dizi olarak gönderiyoruz (Multimodal)
     config: {
       systemInstruction,
       responseMimeType: "application/json",
