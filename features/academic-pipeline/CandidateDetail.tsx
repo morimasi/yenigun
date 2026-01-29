@@ -16,6 +16,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [analysisPhase, setAnalysisPhase] = useState('');
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  const [isHiring, setIsHiring] = useState(false);
   
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [archiveForm, setArchiveForm] = useState<{ category: ArchiveCategory, note: string }>({
@@ -76,17 +77,31 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }
   };
 
-  const handleQuickDecision = (decision: 'hired' | 'rejected') => {
+  const handleQuickDecision = async (decision: 'hired' | 'rejected') => {
     const label = decision === 'hired' ? 'İşe Alındı' : 'Reddedildi';
-    if (confirm(`${candidate.name} için '${label}' kararı verilecek ve dosya otomatik olarak arşive mühürlenecektir. Onaylıyor musunuz?`)) {
-      onUpdate({
+    const confirmMsg = decision === 'hired' 
+      ? `${candidate.name} personel kadrosuna atanacak ve Mentor listesine eklenecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?`
+      : `${candidate.name} reddedilerek arşive kaldırılacaktır. Onaylıyor musunuz?`;
+
+    if (confirm(confirmMsg)) {
+      if (decision === 'hired') setIsHiring(true);
+      
+      // Asenkron işlem simülasyonu olmaksızın doğrudan update çağrılır, backend asıl işi yapar.
+      // Ancak UI feedback için kısa bir gecikme kullanıcıya "işlem yapılıyor" hissi verir.
+      await onUpdate({
         ...candidate,
         status: 'archived',
         archiveCategory: decision === 'hired' ? 'HIRED_CONTRACTED' : 'DISQUALIFIED',
-        archiveNote: `Hızlı Karar: Aday ${label} olarak işaretlenerek havuza taşındı.`,
+        archiveNote: decision === 'hired' 
+          ? `RESMİ ATAMA: Aday personel kadrosuna dahil edildi. Otomatik Mentor profili oluşturuldu.` 
+          : `Hızlı Karar: Aday ${label} olarak işaretlendi.`,
         timestamp: Date.now()
       });
-      alert(`Aday ${label} kategorisiyle akademik arşive taşındı.`);
+      
+      setIsHiring(false);
+      alert(decision === 'hired' 
+        ? "ATAMA BAŞARILI: Personel kaydı oluşturuldu ve akademik havuza eklendi." 
+        : "Aday arşive kaldırıldı.");
     }
   };
 
@@ -135,7 +150,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         </div>
         <div className="flex gap-3 no-print w-full xl:w-auto">
            <div className="flex bg-slate-100 p-1 rounded-2xl">
-              <button onClick={() => handleQuickDecision('hired')} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase hover:bg-slate-900 hover:text-white transition-all shadow-sm">İŞE AL</button>
+              <button 
+                onClick={() => handleQuickDecision('hired')} 
+                disabled={isHiring}
+                className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase hover:bg-slate-900 hover:text-white transition-all shadow-sm disabled:opacity-50"
+              >
+                {isHiring ? 'ATANIYOR...' : 'PERSONEL OLARAK ATA'}
+              </button>
               <button onClick={() => handleQuickDecision('rejected')} className="px-6 py-3 text-rose-500 rounded-xl text-[9px] font-black uppercase hover:bg-rose-50 transition-all">REDDET</button>
            </div>
            <button onClick={handleRunAnalysis} disabled={isAnalysing} className="px-8 py-4 bg-orange-600 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.1em] hover:bg-slate-900 transition-all shadow-lg active:scale-95">
@@ -321,7 +342,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="p-8 md:p-12 bg-white border-t border-slate-50 flex flex-col md:flex-row justify-between items-center rounded-b-[3rem] gap-8 no-print">
          <div className="flex gap-4 w-full md:w-auto">
             <button onClick={onDelete} className="flex-1 md:flex-none px-10 py-4 text-rose-500 text-[10px] font-black uppercase hover:bg-rose-50 rounded-[1.5rem] border-2 border-rose-100 transition-all shadow-sm">SİSTEMDEN KALDIR</button>
-            <button onClick={() => setIsArchiveModalOpen(true)} className="flex-1 md:flex-none px-10 py-4 text-orange-600 text-[10px] font-black uppercase hover:bg-orange-50 rounded-[1.5rem] border-2 border-orange-100 transition-all">ARŞİVE TAŞI</button>
+            <button onClick={() => setIsArchiveModalOpen(true)} className="flex-1 md:flex-none px-10 py-4 text-orange-600 text-[10px] font-black uppercase hover:bg-orange-50 rounded-[1.5rem] border-2 border-orange-100 transition-all">MANUEL ARŞİVLE</button>
          </div>
          <button 
            onClick={() => exportService.exportSingleCandidatePDF(candidate, { 

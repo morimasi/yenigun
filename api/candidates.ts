@@ -50,6 +50,8 @@ export default async function handler(request: Request) {
         algo_report JSONB DEFAULT NULL,
         interview_schedule JSONB DEFAULT NULL,
         cv_data JSONB DEFAULT NULL,
+        archive_category TEXT,
+        archive_note TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -74,6 +76,8 @@ export default async function handler(request: Request) {
         status: row.status || 'pending',
         adminNotes: row.admin_notes || '',
         reminderNote: row.reminder_note || '',
+        archiveCategory: row.archive_category,
+        archiveNote: row.archive_note,
         report: row.report,
         algoReport: row.algo_report,
         cvData: row.cv_data,
@@ -92,16 +96,19 @@ export default async function handler(request: Request) {
       const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
       const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
 
+      // 1. ADAY GÜNCELLEMESİ
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
           experience_years, previous_institutions, all_trainings, answers, 
-          status, admin_notes, reminder_note, report, algo_report, cv_data, updated_at
+          status, admin_notes, reminder_note, report, algo_report, cv_data, 
+          archive_category, archive_note, updated_at
         ) VALUES (
           ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
           ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears}, 
           ${body.previousInstitutions}, ${allTrainings}, ${answers}, ${body.status},
-          ${body.adminNotes}, ${body.reminderNote}, ${report}, ${algoReport}, ${cvData}, ${now}
+          ${body.adminNotes}, ${body.reminderNote}, ${report}, ${algoReport}, ${cvData}, 
+          ${body.archiveCategory}, ${body.archiveNote}, ${now}
         ) ON CONFLICT (id) DO UPDATE SET 
           name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, age = EXCLUDED.age, 
           gender = EXCLUDED.gender, branch = EXCLUDED.branch, university = EXCLUDED.university, 
@@ -109,8 +116,29 @@ export default async function handler(request: Request) {
           previous_institutions = EXCLUDED.previous_institutions, all_trainings = EXCLUDED.all_trainings, 
           answers = EXCLUDED.answers, status = EXCLUDED.status, admin_notes = EXCLUDED.admin_notes, 
           reminder_note = EXCLUDED.reminder_note, report = EXCLUDED.report, algo_report = EXCLUDED.algo_report, 
-          cv_data = EXCLUDED.cv_data, updated_at = EXCLUDED.updated_at;
+          cv_data = EXCLUDED.cv_data, archive_category = EXCLUDED.archive_category, 
+          archive_note = EXCLUDED.archive_note, updated_at = EXCLUDED.updated_at;
       `;
+
+      // 2. OTOMATİK PERSONEL ATAMA (AUTO-COMMISSIONING)
+      // Eğer aday "HIRED_CONTRACTED" olarak işaretlendiyse, onu Staff tablosuna da ekle.
+      if (body.status === 'archived' && body.archiveCategory === 'HIRED_CONTRACTED') {
+        const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`; // Benzersiz Staff ID türet
+        const defaultPassword = 'yenigun2024'; // İlk giriş şifresi
+
+        await sql`
+          INSERT INTO staff (
+            id, name, email, phone, password_hash, branch, university, department,
+            experience_years, all_trainings, onboarding_complete, status, created_at, updated_at
+          ) VALUES (
+            ${staffId}, ${body.name}, ${body.email}, ${body.phone}, ${defaultPassword}, 
+            ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears},
+            ${allTrainings}, FALSE, 'active', ${now}, ${now}
+          )
+          ON CONFLICT (email) DO NOTHING; -- E-posta zaten varsa işlem yapma (Idempotency)
+        `;
+      }
+
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
