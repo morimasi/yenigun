@@ -1,7 +1,7 @@
 
 -- ======================================================
 -- YENI GUN AKADEMI - ARMS (ACADEMIC RESONANCE SYSTEM)
--- VERITABANI MIMARISI v4.6 (STABIL SURUM)
+-- VERITABANI MIMARISI v5.0 (DEEP PROFESSIONAL)
 -- ======================================================
 
 -- 1. GEREKLI EKLENTILERIN AKTIFLESTIRILMESI
@@ -44,22 +44,22 @@ CREATE TABLE IF NOT EXISTS candidates (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- CANDIDATES INDEKSLERI (Hata almamak icin IF NOT EXISTS kullanildi)
 CREATE INDEX IF NOT EXISTS idx_arms_cand_status ON candidates(status);
 CREATE INDEX IF NOT EXISTS idx_arms_cand_branch ON candidates(branch);
 CREATE INDEX IF NOT EXISTS idx_arms_cand_email ON candidates(email);
 
--- CANDIDATES TRIGGER
 DROP TRIGGER IF EXISTS tr_arms_update_candidates ON candidates;
 CREATE TRIGGER tr_arms_update_candidates
 BEFORE UPDATE ON candidates
 FOR EACH ROW EXECUTE FUNCTION arms_update_timestamp();
 
 -- 4. AKADEMIK PERSONEL TABLOSU (STAFF)
+-- Not: email ve phone UNIQUE yapılarak 'Tekil Kimlik' (Identity Singularity) sağlanmıştır.
 CREATE TABLE IF NOT EXISTS staff (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    phone TEXT UNIQUE, -- Telefon numarası da artık tekil olmak zorunda
     password_hash TEXT NOT NULL,
     branch TEXT NOT NULL,
     university TEXT,
@@ -72,11 +72,9 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- STAFF INDEKSLERI
 CREATE INDEX IF NOT EXISTS idx_arms_staff_branch ON staff(branch);
 CREATE INDEX IF NOT EXISTS idx_arms_staff_email ON staff(email);
 
--- STAFF TRIGGER
 DROP TRIGGER IF EXISTS tr_arms_update_staff ON staff;
 CREATE TRIGGER tr_arms_update_staff
 BEFORE UPDATE ON staff
@@ -93,9 +91,9 @@ CREATE TABLE IF NOT EXISTS staff_assessments (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- ASSESSMENTS INDEKSLERI
 CREATE INDEX IF NOT EXISTS idx_arms_ass_staff_id ON staff_assessments(staff_id);
-CREATE INDEX IF NOT EXISTS idx_arms_ass_battery ON staff_assessments(battery_id);
+-- Mükerrer testi önlemek için (Bir personel bir testi sadece bir kez mühürleyebilir)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_arms_unique_assessment ON staff_assessments(staff_id, battery_id);
 
 -- 6. BIREYSEL GELISIM PLANI TABLOSU (STAFF IDP)
 CREATE TABLE IF NOT EXISTS staff_idp (
@@ -106,7 +104,6 @@ CREATE TABLE IF NOT EXISTS staff_idp (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- IDP INDEKSLERI
 CREATE INDEX IF NOT EXISTS idx_arms_idp_active ON staff_idp(staff_id) WHERE is_active = TRUE;
 
 -- 7. SISTEM AYARLARI TABLOSU (SYSTEM CONFIG)
@@ -116,7 +113,7 @@ CREATE TABLE IF NOT EXISTS system_config (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. VARSAYILAN AYARLARIN EKLEMESI (SEED DATA)
+-- 8. VARSAYILAN AYARLAR
 INSERT INTO system_config (id, data) 
 VALUES (1, '{
     "institutionName": "Yeni Gün Akademi",
@@ -126,7 +123,7 @@ VALUES (1, '{
 }'::jsonb) 
 ON CONFLICT (id) DO NOTHING;
 
--- 9. TEST PERSONEL VERISI (Opsiyonel)
+-- 9. ADMIN KULLANICISI
 INSERT INTO staff (id, name, email, password_hash, branch, onboarding_complete)
 VALUES ('STF-001', 'Akademik Admin', 'admin@yenigun.com', 'yenigun2024', 'Özel Eğitim', FALSE)
 ON CONFLICT (id) DO NOTHING;

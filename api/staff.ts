@@ -18,46 +18,6 @@ export default async function handler(request: Request) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // --- ŞEMA KURULUMU (HER ÇAĞRIDA GÜVENLİK KONTROLÜ) ---
-    await sql`
-      CREATE TABLE IF NOT EXISTS staff (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        branch TEXT NOT NULL,
-        university TEXT,
-        department TEXT,
-        experience_years INTEGER DEFAULT 0,
-        all_trainings JSONB DEFAULT '[]'::jsonb,
-        onboarding_complete BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS staff_assessments (
-        id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
-        staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
-        battery_id TEXT NOT NULL,
-        answers JSONB NOT NULL,
-        score INTEGER NOT NULL,
-        ai_tags JSONB DEFAULT '[]'::jsonb,
-        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS staff_idp (
-        id TEXT PRIMARY KEY DEFAULT (random()*1000000)::text,
-        staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
-        data JSONB NOT NULL,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
     // 1. LIST ALL STAFF (ADMIN ONLY)
     if (method === 'GET' && action === 'list_all') {
       const { rows } = await sql`
@@ -83,15 +43,62 @@ export default async function handler(request: Request) {
       }), { status: 200, headers });
     }
 
-    // 3. STAFF AUTH (LOGIN)
+    // 3. STAFF AUTH (LOGIN) & COMPLETED ASSESSMENTS CHECK
     if (method === 'POST' && action === 'login') {
       const { email, password } = await request.json();
       const { rows } = await sql`SELECT * FROM staff WHERE email = ${email} AND password_hash = ${password}`;
-      if (rows.length > 0) return new Response(JSON.stringify({ success: true, staff: rows[0] }), { status: 200, headers });
+      
+      if (rows.length > 0) {
+        const staff = rows[0];
+        // Tamamlanan testleri çek
+        const { rows: completed } = await sql`SELECT battery_id FROM staff_assessments WHERE staff_id = ${staff.id}`;
+        const completedBatteryIds = completed.map(c => c.battery_id);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          staff: { ...staff, completedBatteries: completedBatteryIds } 
+        }), { status: 200, headers });
+      }
       return new Response(JSON.stringify({ success: false, message: 'Geçersiz bilgiler.' }), { status: 401, headers });
     }
 
-    // 4. SAVE IDP
+    // 4. SAVE ASSESSMENT (LOCKING)
+    if (method === 'POST' && action === 'save_assessment') {
+      const { staffId, batteryId, answers, score, aiTags } = await request.json();
+      
+      try {
+        await sql`
+          INSERT INTO staff_assessments (staff_id, battery_id, answers, score, ai_tags, timestamp)
+          VALUES (${staffId}, ${batteryId}, ${JSON.stringify(answers)}, ${score}, ${JSON.stringify(aiTags)}, CURRENT_TIMESTAMP)
+        `;
+        return new Response(JSON.stringify({ success: true }), { status: 201, headers });
+      } catch (err: any) {
+        if (err.code === '23505') { // Unique constraint violation code for Postgres
+           return new Response(JSON.stringify({ success: false, message: 'Bu modül zaten mühürlenmiş.' }), { status: 409, headers });
+        }
+        throw err;
+      }
+    }
+
+    // 5. UPDATE PROFILE
+    if (method === 'POST' && action === 'update_profile') {
+        const body = await request.json();
+        await sql`
+            UPDATE staff SET 
+            name = ${body.name},
+            branch = ${body.branch},
+            university = ${body.university},
+            department = ${body.department},
+            experience_years = ${body.experienceYears},
+            all_trainings = ${JSON.stringify(body.allTrainings)},
+            onboarding_complete = TRUE,
+            updated_at = CURRENT_TIMESTAMP
+            WHERE id = ${body.id}
+        `;
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+    }
+
+    // 6. SAVE IDP
     if (method === 'POST' && action === 'save_idp') {
       const { staffId, data } = await request.json();
       await sql`UPDATE staff_idp SET is_active = FALSE WHERE staff_id = ${staffId}`;
@@ -99,9 +106,8 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
-    // ... (Diğer aksiyonlar: update_profile, save_assessment mevcut haliyle kalır)
-
   } catch (error: any) {
+    console.error("Staff API Error:", error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
   }
   return new Response(null, { status: 405 });
