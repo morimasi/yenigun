@@ -56,7 +56,9 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
       const candidate = candidates.find(c => c.id === candidateId);
       if (!candidate) throw new Error("Aday bulunamadı.");
 
-      const algoReport = calculateAlgorithmicAnalysis(candidate);
+      // Calculate Algorithmic Analysis using the GLOBAL CONFIG (Advanced settings)
+      const algoReport = calculateAlgorithmicAnalysis(candidate, config);
+      
       const aiReport = await aiService.analyzeCandidate(candidate, config);
       
       const updatedCandidate = { ...candidate, report: aiReport, algoReport, timestamp: Date.now() };

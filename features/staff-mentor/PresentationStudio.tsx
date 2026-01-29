@@ -86,9 +86,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
     setIsGenerating(true);
     try {
       const generatedSlides = await armsService.generateCustomPresentation(config);
-      setSlides(generatedSlides);
-      setMode('preview');
-      setActiveSlideIdx(0);
+      if (generatedSlides && generatedSlides.length > 0) {
+        setSlides(generatedSlides);
+        setMode('preview');
+        setActiveSlideIdx(0);
+      } else {
+        alert("Sunum oluşturulamadı. Lütfen tekrar deneyin.");
+      }
     } catch (e) {
       alert("Sunum motoru hatası. Lütfen tekrar deneyin.");
     } finally {
@@ -274,6 +278,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
   // --- LIVE MODE (FULLSCREEN PROFESSIONAL) ---
   if (mode === 'live') {
     const slide = slides[activeSlideIdx];
+    if (!slide) return <div className="text-white text-center p-20">Slayt Verisi Yüklenemedi</div>;
+
     return (
       <div 
         className={`fixed inset-0 z-[1000] bg-slate-950 text-white flex flex-col overflow-hidden transition-colors duration-700 ${isLaserActive ? 'cursor-none' : 'cursor-default'}`}
@@ -319,7 +325,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
                        {slide.title}
                      </h2>
                      <div className="space-y-10 pl-16">
-                        {slide.content.map((point, i) => (
+                        {(slide.content || []).map((point, i) => (
                            <div key={i} className="flex gap-6 items-start opacity-0 animate-slide-up" style={{ animationDelay: `${i * 300}ms`, animationFillMode: 'forwards' }}>
                               <div className="w-4 h-4 mt-3 bg-orange-600 rotate-45 shrink-0 shadow-[0_0_20px_#ea580c]"></div>
                               <p className="text-3xl md:text-4xl font-bold text-slate-300 leading-snug tracking-tight">{point}</p>
@@ -462,13 +468,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
              {/* Slide Preview */}
              <div className="absolute inset-0 p-16 flex flex-col">
                 <div className="flex justify-between items-center mb-10">
-                   <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{slides[activeSlideIdx].title}</h2>
-                   <div className="px-4 py-1 bg-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400">{slides[activeSlideIdx].type}</div>
+                   <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{slides[activeSlideIdx]?.title}</h2>
+                   <div className="px-4 py-1 bg-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400">{slides[activeSlideIdx]?.type}</div>
                 </div>
                 
                 <div className="flex-1 grid grid-cols-2 gap-12">
                    <div className="space-y-4">
-                      {slides[activeSlideIdx].content.map((c, i) => (
+                      {(slides[activeSlideIdx]?.content || []).map((c, i) => (
                          <div key={i} className="flex gap-4 items-start">
                             <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 shrink-0"></div>
                             <p className="text-lg font-bold text-slate-600 leading-snug">{c}</p>
@@ -476,7 +482,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
                       ))}
                    </div>
                    <div className="space-y-6">
-                      {slides[activeSlideIdx].interactiveElement && (
+                      {slides[activeSlideIdx]?.interactiveElement && (
                          <div className="bg-orange-50 p-6 rounded-[2rem] border border-orange-100">
                             <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-2">ETKİLEŞİM</span>
                             <p className="text-sm font-bold text-slate-800 italic">"{slides[activeSlideIdx].interactiveElement!.question}"</p>
@@ -484,7 +490,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
                       )}
                       <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">GİZLİ NOT</span>
-                         <p className="text-xs font-medium text-slate-500">{slides[activeSlideIdx].speakerNotes}</p>
+                         <p className="text-xs font-medium text-slate-500">{slides[activeSlideIdx]?.speakerNotes}</p>
                       </div>
                    </div>
                 </div>

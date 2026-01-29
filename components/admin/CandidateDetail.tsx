@@ -65,7 +65,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     }, 2000);
 
     try {
-      const algoReport = calculateAlgorithmicAnalysis(candidate);
+      // Config parametresini hesaplama motoruna geçiyoruz (ÖZELLEŞTİRİLMİŞ AĞIRLIKLAR İÇİN)
+      const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       const aiReport = await generateCandidateAnalysis(candidate, config);
       onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
     } catch (e: any) {

@@ -90,4 +90,42 @@ export interface IntelligenceSegment { score: number; status: 'optimal' | 'warni
 export interface AIReport { score: number; integrityIndex: number; socialMaskingScore: number; summary: string; detailedAnalysisNarrative: string; recommendation: string; deepAnalysis: Record<string, IntelligenceSegment>; predictiveMetrics: { retentionProbability: number; burnoutRisk: number; learningVelocity: number; leadershipPotential: number; evolutionPath: string; }; interviewGuidance: { strategicQuestions: string[]; criticalObservations: string[]; simulationTasks: string[]; }; swot: { strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[]; }; }
 export interface AlgorithmicReport { overallScore: number; reliabilityIndex: number; ethicsScore: number; experienceWeight: number; retentionScore: number; burnoutResistance: number; fitScore: number; riskFlags: string[]; }
 export interface Candidate { id: string; name: string; email: string; phone: string; age: number; gender: Gender; maritalStatus: MaritalStatus; branch: string; university: string; department: string; experienceYears: number; previousInstitutions: string; allTrainings: string[]; answers: Record<string, string | string[]>; timestamp: number; status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived'; archiveCategory?: ArchiveCategory; archiveNote?: string; adminNotes?: string; reminderNote?: string; report?: AIReport; algoReport?: AlgorithmicReport; interviewSchedule?: { date: string; time: string; method: string; location: string; }; cvData?: { base64: string; mimeType: string; fileName: string; }; }
-export interface GlobalConfig { institutionName: string; primaryColor: string; accentColor: string; aiTone: 'strict' | 'balanced' | 'empathetic'; aiWeights: { ethics: number; clinical: number; experience: number; fit: number; }; aiPersona: { skepticism: number; empathy: number; formality: number; }; automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; }; interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; }; notificationEmail: string; lastUpdated: number; }
+
+// --- ADVANCED ANALYTICS CONFIGURATION ---
+export interface AdvancedAnalyticsConfig {
+  weights: {
+    clinicalDepth: number; // Teknik yetkinlik ve metodoloji
+    ethicalIntegrity: number; // Etik ve sınırlar
+    emotionalResilience: number; // Kriz yönetimi ve stres
+    institutionalLoyalty: number; // Aidiyet ve uzun vade
+    learningAgility: number; // Gelişime açıklık ve esneklik
+  };
+  penalties: {
+    criticalEthicalViolation: number; // Puan düşüşü (örn: 30)
+    inconsistentAnswers: number; // Tutarsızlık cezası
+    lowExperienceDiscount: number; // 0-1 arası çarpan (Deneyimsiz aday katsayısı)
+  };
+  thresholds: {
+    minHiringScore: number; // Otomatik öneri alt limiti
+    highPotentialCutoff: number; // HiPo etiketi için gereken skor
+  };
+  aiCognition: {
+    skepticismLevel: number; // 0-100 (Şüphecilik: Düşük skor verir, kanıt arar)
+    innovationBias: number; // 0-100 (Yenilikçi yöntemleri mi, gelenekseli mi ödüllendirsin?)
+    stressTestIntensity: number; // 0-100 (Simülasyon zorluğu)
+  };
+}
+
+export interface GlobalConfig { 
+  institutionName: string; 
+  primaryColor: string; 
+  accentColor: string; 
+  aiTone: 'strict' | 'balanced' | 'empathetic'; 
+  aiWeights: { ethics: number; clinical: number; experience: number; fit: number; }; // Legacy support
+  aiPersona: { skepticism: number; empathy: number; formality: number; }; // Legacy support
+  advancedAnalytics?: AdvancedAnalyticsConfig; // New Deep Config
+  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; }; 
+  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; }; 
+  notificationEmail: string; 
+  lastUpdated: number; 
+}

@@ -1,5 +1,5 @@
 
-import { Candidate, AlgorithmicReport, AIReport } from './types';
+import { Candidate, AlgorithmicReport, AIReport, GlobalConfig } from './types';
 import { BRANCH_QUESTIONS } from './constants';
 
 /**
@@ -49,7 +49,11 @@ export const verifyCandidateIntegrity = (candidate: Candidate): { score: number,
   return { score: integrityScore, issues, status };
 };
 
-export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicReport => {
+/**
+ * Gelişmiş Algoritmik Hesaplama Motoru
+ * Config üzerinden gelen hassas ağırlıkları ve ceza katsayılarını kullanır.
+ */
+export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: GlobalConfig): AlgorithmicReport => {
   const scores: Record<string, number[]> = {
     ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: []
   };
@@ -59,6 +63,22 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
 
   const answers = candidate.answers || {};
 
+  // Default değerler (Eğer config yoksa veya yeni yapıya geçilmediyse)
+  const weights = config?.advancedAnalytics?.weights || {
+    clinicalDepth: 25,
+    ethicalIntegrity: 30,
+    emotionalResilience: 20,
+    institutionalLoyalty: 10,
+    learningAgility: 15
+  };
+
+  const penalties = config?.advancedAnalytics?.penalties || {
+    criticalEthicalViolation: 25,
+    inconsistentAnswers: 10,
+    lowExperienceDiscount: 0.9
+  };
+
+  // Cevapların Analizi
   Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
     const answer = answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
@@ -69,8 +89,10 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
           if (scores[cat]) scores[cat].push(numericWeight * 100);
         });
 
+        // Kritik Etik İhlal Kontrolü
         if (selectedOption.weights.ethics && Number(selectedOption.weights.ethics) < 0.4) {
           riskFlags.push(`Kritik Etik Sınır İhlali Riski: ${q.id}`);
+          reliabilityPoints -= penalties.criticalEthicalViolation;
         }
       }
     }
@@ -83,28 +105,51 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate): AlgorithmicR
   const resilienceScore = getAvg(scores.resilience);
   const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
+  const agilityScore = getAvg(scores.developmentOpenness || []);
 
   const exp = candidate.experienceYears || 0;
   const experienceWeight = Math.min(exp * 10, 100);
+  
+  // Alt Skor Hesaplamaları
   const retentionScore = Math.round((loyaltyScore * 0.7) + (fitScore * 0.3));
   const burnoutResistance = Math.round((resilienceScore * 0.8) + (clinicalScore * 0.2));
 
+  // Tutarsızlık Kontrolü (Deneyim yüksek ama klinik bilgi düşükse)
   if (exp > 5 && clinicalScore < 50) {
-    reliabilityPoints -= 15;
+    reliabilityPoints -= penalties.inconsistentAnswers;
     riskFlags.push("Deneyim/Yetkinlik Uyumsuzluğu");
   }
 
-  const overallScore = Math.round(
-    (ethicsScore * 0.30) + 
-    (clinicalScore * 0.25) + 
-    (resilienceScore * 0.20) + 
-    (fitScore * 0.15) + 
-    (loyaltyScore * 0.10)
-  );
+  // Deneyim İndirimi (Junior koruması veya cezası)
+  let expMultiplier = 1;
+  if (exp < 2) expMultiplier = penalties.lowExperienceDiscount;
+
+  // Ağırlıklı Ortalama Hesaplama (Total Score)
+  // Config'den gelen ağırlıklar toplamı 100 olmayabilir, normalize etmiyoruz, kullanıcı ayarı esastır.
+  // Ancak toplam ağırlığa bölerek normalize etmek daha güvenlidir.
+  const totalWeight = Object.values(weights).reduce((a,b) => a+b, 0) || 100;
+
+  let rawScore = (
+    (ethicsScore * weights.ethicalIntegrity) + 
+    (clinicalScore * weights.clinicalDepth) + 
+    (resilienceScore * weights.emotionalResilience) + 
+    (fitScore * weights.institutionalLoyalty) +
+    (agilityScore * weights.learningAgility)
+  ) / totalWeight;
+
+  // Çarpanları Uygula
+  rawScore = rawScore * expMultiplier;
+
+  // Reliability puanı üzerinden son kesinti
+  if (reliabilityPoints < 80) {
+      rawScore = rawScore * (reliabilityPoints / 100);
+  }
+
+  const overallScore = Math.min(100, Math.max(0, Math.round(rawScore)));
 
   return {
     overallScore,
-    reliabilityIndex: reliabilityPoints,
+    reliabilityIndex: Math.max(0, reliabilityPoints),
     ethicsScore,
     experienceWeight,
     retentionScore,
