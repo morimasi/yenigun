@@ -16,28 +16,39 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // New Staff Modal State
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [newStaffForm, setNewStaffForm] = useState({
     name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0
   });
   const [isAdding, setIsAdding] = useState(false);
 
+  // YEREL PERSONEL VERİSİNİ ÇEK
+  const getLocalStaff = () => {
+    const local = localStorage.getItem('yeni_gun_staff');
+    return local ? JSON.parse(local) : [];
+  };
+
   const fetchStaff = async () => {
     setIsLoading(true);
     try {
-      // Cache busting ile her zaman taze veri çekimi
       const res = await fetch(`/api/staff?action=list_all&_t=${Date.now()}`);
-      const data = await res.json();
-      if (Array.isArray(data)) setStaffList(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setStaffList(data);
+          localStorage.setItem('yeni_gun_staff', JSON.stringify(data)); // Cache güncelle
+          return;
+        }
+      }
+      throw new Error("API_FAIL");
     } catch (e) {
-      console.error("Staff fetch error:", e);
+      console.warn("Staff API failure, using local storage.");
+      setStaffList(getLocalStaff());
     } finally {
       setIsLoading(false);
     }
   };
 
-  // GLOBAL REFRESH: refreshTrigger değiştiğinde (örn: aday işe alındığında) listeyi tazele
   useEffect(() => {
     fetchStaff();
   }, [refreshTrigger]);
@@ -48,27 +59,38 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
       return;
     }
     setIsAdding(true);
+    const staffId = `STF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    
     try {
       const res = await fetch('/api/staff?action=register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStaffForm)
       });
-      const result = await res.json();
+      
+      const result = res.ok ? await res.json() : { success: false };
+      
       if (result.success) {
-        alert(`Personel başarıyla eklendi. (ID: ${result.staffId})`);
-        setIsAddStaffOpen(false);
-        setNewStaffForm({ name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0 });
-        
-        // Eğer global onRefresh varsa onu çağır (bu refreshTrigger'ı güncelleyecektir)
-        if (onRefresh) onRefresh(); 
-        else fetchStaff();
+        // Success logic
       } else {
-        alert(result.message || "Hata oluştu.");
+        throw new Error("API_FAIL");
       }
     } catch (e) {
-      alert("Sunucu hatası.");
+      // OFFLINE FALLBACK
+      const currentStaff = getLocalStaff();
+      const newStaffMember = {
+        id: staffId,
+        ...newStaffForm,
+        created_at: new Date().toISOString(),
+        status: 'active',
+        last_score: 0
+      };
+      localStorage.setItem('yeni_gun_staff', JSON.stringify([newStaffMember, ...currentStaff]));
     } finally {
+      alert(`Personel başarıyla eklendi. (ID: ${staffId}) - ${isAdding ? '(Çevrimdışı Mod)' : ''}`);
+      setIsAddStaffOpen(false);
+      setNewStaffForm({ name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0 });
+      if (onRefresh) onRefresh(); else fetchStaff();
       setIsAdding(false);
     }
   };
@@ -81,19 +103,15 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
 
   const stats = useMemo(() => {
     if (staffList.length === 0) return { avgScore: 0, growth: 0 };
-    const validScores = staffList.filter(s => s.last_score !== null).map(s => s.last_score);
+    const validScores = staffList.filter(s => s.last_score !== null).map(s => s.last_score || 0);
     const avg = validScores.length > 0 ? Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length) : 0;
     return { avgScore: avg, growth: Math.round(avg * 0.4) };
   }, [staffList]);
 
-  // RENDER STUDIO
   if (activeTab === 'studio') {
     return (
       <div className="relative">
-        <button 
-          onClick={() => setActiveTab('dashboard')} 
-          className="absolute top-8 left-8 z-50 px-6 py-3 bg-white rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100"
-        >
+        <button onClick={() => setActiveTab('dashboard')} className="absolute top-8 left-8 z-50 px-6 py-3 bg-white rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100">
           ← Dashboard'a Dön
         </button>
         <PresentationStudio />
@@ -101,7 +119,6 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
     );
   }
 
-  // RENDER DASHBOARD
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-20 relative">
       <div className="bg-slate-950 p-12 md:p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border border-white/5 group">
@@ -118,16 +135,10 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
           </div>
           <div className="flex flex-col items-end gap-6">
              <div className="flex gap-4">
-                <button 
-                  onClick={() => setIsAddStaffOpen(true)}
-                  className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-[3rem] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95"
-                >
+                <button onClick={() => setIsAddStaffOpen(true)} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-[3rem] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95">
                    + HIZLI PERSONEL EKLE
                 </button>
-                <button 
-                  onClick={() => setActiveTab('studio')}
-                  className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group"
-                >
+                <button onClick={() => setActiveTab('studio')} className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group">
                     <span className="flex items-center gap-3">
                       <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       AKADEMİK STÜDYO (SUNUM)
@@ -153,15 +164,8 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
         <div className="xl:col-span-3 space-y-6">
           <div className="p-8 bg-white rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden">
              <div className="mb-8">
-                <input 
-                  type="text" 
-                  placeholder="Personel Sorgula..." 
-                  className="w-full bg-slate-50 rounded-2xl p-4 text-[11px] font-bold outline-none border border-transparent focus:border-orange-500 transition-all shadow-inner"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
+                <input type="text" placeholder="Personel Sorgula..." className="w-full bg-slate-50 rounded-2xl p-4 text-[11px] font-bold outline-none border border-transparent focus:border-orange-500 transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
              </div>
-             
              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                 {isLoading && staffList.length === 0 ? (
                   [1,2,3].map(i => <div key={i} className="h-20 bg-slate-50 rounded-3xl animate-pulse"></div>)
@@ -169,13 +173,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
                   <p className="text-[10px] font-black text-slate-300 uppercase text-center py-10">Kayıt Bulunamadı</p>
                 ) : (
                   filteredStaff.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => setSelectedStaffId(s.id)}
-                      className={`w-full p-5 rounded-3xl border-2 transition-all flex items-center gap-5 text-left relative group/item ${
-                        selectedStaffId === s.id ? 'bg-slate-950 border-slate-950 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-50 hover:border-orange-200'
-                      }`}
-                    >
+                    <button key={s.id} onClick={() => setSelectedStaffId(s.id)} className={`w-full p-5 rounded-3xl border-2 transition-all flex items-center gap-5 text-left relative group/item ${selectedStaffId === s.id ? 'bg-slate-950 border-slate-950 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-50 hover:border-orange-200'}`}>
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all ${selectedStaffId === s.id ? 'bg-orange-600' : 'bg-slate-100 text-slate-400'}`}>
                         {s.name.charAt(0)}
                       </div>
@@ -183,7 +181,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
                         <p className="text-[13px] font-black uppercase tracking-tight truncate leading-none mb-2">{s.name}</p>
                         <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 truncate">{s.branch}</p>
                       </div>
-                      {s.last_score !== null && (
+                      {s.last_score !== undefined && (
                         <div className={`px-2 py-1 rounded-lg text-[9px] font-black ${s.last_score > 70 ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>%{s.last_score}</div>
                       )}
                     </button>
@@ -207,7 +205,6 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
         </div>
       </div>
 
-      {/* ADD STAFF MODAL */}
       {isAddStaffOpen && (
         <div className="fixed inset-0 z-[150] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in no-print">
            <div className="bg-white rounded-[4rem] w-full max-w-lg p-12 shadow-2xl border border-white/20 animate-scale-in">

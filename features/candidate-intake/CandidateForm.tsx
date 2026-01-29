@@ -136,102 +136,102 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
 
     if (step.id === 'personal') {
       return (
-        <div className="space-y-6 animate-fade-in">
-          <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm space-y-8">
-            <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
-              <div className="w-2 h-8 bg-orange-600 rounded-full"></div>
+        <div className="space-y-4 animate-fade-in text-sm">
+          <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+              <div className="w-1.5 h-6 bg-orange-600 rounded-full"></div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic">01. Kurumsal Kimlik Kaydı</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Akademik dosyanızın temelini oluşturun.</p>
+                <h3 className="text-base font-bold text-slate-900 uppercase tracking-tight">01. Kurumsal Kimlik Kaydı</h3>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Akademik dosyanızın temelini oluşturun.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">Tam Ad Soyad</label>
-                <input type="text" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-orange-500/10 transition-all outline-none" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Dr. Ahmet Yılmaz" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Tam Ad Soyad</label>
+                <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold focus:bg-white focus:border-orange-500 transition-all outline-none" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Örn: Ahmet Yılmaz" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">E-Posta Adresi</label>
-                <input type="email" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold focus:bg-white transition-all outline-none" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="ornek@mail.com" />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">E-Posta Adresi</label>
+                <input type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold focus:bg-white focus:border-orange-500 transition-all outline-none" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="ornek@mail.com" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">Mobil İletişim</label>
-                <input type="tel" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="05XX XXX XX XX" />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Mobil İletişim</label>
+                <input type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold focus:bg-white focus:border-orange-500 transition-all outline-none" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="05XX XXX XX XX" />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">Akademik Branş</label>
-                <select className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none cursor-pointer" value={formData.branch} onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Akademik Branş</label>
+                <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold outline-none cursor-pointer" value={formData.branch} onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}>
                   {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">Saha Deneyimi (Yıl)</label>
-                <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Saha Deneyimi (Yıl)</label>
+                <input type="number" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold outline-none" value={formData.experienceYears} onChange={(e) => setFormData({...formData, experienceYears: parseInt(e.target.value)})} />
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase ml-2 tracking-widest">Güncel Yaş</label>
-                <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Güncel Yaş</label>
+                <input type="number" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold outline-none" value={formData.age} onChange={(e) => setFormData({...formData, age: parseInt(e.target.value)})} />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SearchableSelect label="Üniversite" options={TURKISH_UNIVERSITIES} value={formData.university} onChange={(v) => setFormData({...formData, university: v})} />
               <SearchableSelect label="Bölüm" options={TURKISH_DEPARTMENTS} value={formData.department} onChange={(v) => setFormData({...formData, department: v})} />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,image/*" />
                 <div 
                   onClick={() => fileInputRef.current?.click()} 
-                  className={`group relative w-full p-8 rounded-[2.5rem] border-2 border-dashed transition-all cursor-pointer flex items-center justify-center gap-8 ${
+                  className={`group relative w-full p-4 rounded-xl border border-dashed transition-all cursor-pointer flex items-center justify-center gap-4 ${
                     formData.cvData 
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-2xl' 
-                    : 'bg-slate-50/50 border-slate-200 hover:border-orange-500 hover:bg-white'
+                    ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                    : 'bg-slate-50 border-slate-300 hover:border-orange-500 hover:bg-white'
                   }`}
                 >
-                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${formData.cvData ? 'bg-orange-600 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
-                      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={formData.cvData ? 3 : 2} d={formData.cvData ? "M5 13l4 4L19 7" : "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4 4V4"} />
+                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${formData.cvData ? 'bg-orange-600 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={formData.cvData ? 2.5 : 2} d={formData.cvData ? "M5 13l4 4L19 7" : "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4 4V4"} />
                       </svg>
                    </div>
                    <div className="text-left">
-                      <p className={`text-[12px] font-black uppercase tracking-[0.2em] ${formData.cvData ? 'text-white' : 'text-slate-900'}`}>
-                        {formData.cvData ? 'Belge Sisteme Mühürlendi' : 'Özgeçmiş / Portfolyo Yükleme'}
+                      <p className={`text-[11px] font-bold uppercase tracking-wide ${formData.cvData ? 'text-white' : 'text-slate-700'}`}>
+                        {formData.cvData ? 'Belge Mühürlendi' : 'CV / Portfolyo Yükle'}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                        {formData.cvData ? formData.cvData.fileName : 'PDF / JPG Formatında (Analiz için Kritik)'}
+                      <p className="text-[9px] font-semibold opacity-70 uppercase">
+                        {formData.cvData ? formData.cvData.fileName : 'PDF / JPG Formatında'}
                       </p>
                    </div>
                 </div>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 p-8 rounded-[3rem] shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic border-l-4 border-orange-600 pl-4">Metodolojik Akreditasyonlar</h3>
-              <span className="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">{formData.allTrainings.length} SEÇİM</span>
+          <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight border-l-2 border-orange-600 pl-3">Metodolojik Akreditasyonlar</h3>
+              <span className="px-3 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-widest">{formData.allTrainings.length} SEÇİM</span>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-4">
               {CERTIFICATION_CATEGORIES.map(cat => (
                 <button 
                   key={cat.id} 
                   type="button" 
                   onClick={() => setActiveCertCategory(cat.id)}
-                  className={`flex items-center gap-3 px-5 py-3 rounded-2xl transition-all whitespace-nowrap text-[11px] font-black uppercase border-2 ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all whitespace-nowrap text-[10px] font-bold uppercase border ${
                     activeCertCategory === cat.id 
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-lg' 
-                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                    ? 'bg-slate-900 text-white border-slate-900' 
+                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                   <span className="text-base">{cat.icon}</span>
+                   <span className="text-sm">{cat.icon}</span>
                    <span>{cat.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               {filteredCerts.map(cert => {
                 const isSelected = formData.allTrainings.includes(cert.label);
                 return (
@@ -239,17 +239,17 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                     key={cert.id} 
                     type="button" 
                     onClick={() => toggleTraining(cert.label)} 
-                    className={`p-5 rounded-2xl text-left transition-all border-2 flex flex-col gap-2 relative overflow-hidden group ${
+                    className={`p-3 rounded-lg text-left transition-all border flex flex-col gap-1 relative overflow-hidden group ${
                       isSelected 
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]' 
-                      : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-white hover:border-orange-500'
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-orange-400'
                     }`}
                   >
-                    <p className={`text-[12px] font-black uppercase tracking-tight leading-tight ${isSelected ? 'text-white' : 'text-slate-800'}`}>{cert.label}</p>
-                    <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase">{cert.description}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-tight leading-tight ${isSelected ? 'text-white' : 'text-slate-800'}`}>{cert.label}</p>
+                    <p className="text-[9px] font-medium opacity-70 uppercase truncate">{cert.description}</p>
                     {isSelected && (
                       <div className="absolute top-2 right-2 text-orange-500">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                       </div>
                     )}
                   </button>
@@ -262,42 +262,41 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
     }
 
     return (
-      <div className="space-y-12 animate-fade-in pb-20">
-        <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden mb-12">
+      <div className="space-y-6 animate-fade-in pb-10">
+        <div className="bg-slate-900 p-6 rounded-xl text-white shadow-lg relative overflow-hidden mb-6">
             <div className="relative z-10">
-               <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.5em] mb-4 block">GÜNCEL ETAP</span>
-               <h2 className="text-4xl font-black uppercase tracking-tighter italic leading-none">{step.title}</h2>
-               <p className="text-[11px] font-bold text-slate-400 uppercase mt-4 tracking-widest max-w-2xl opacity-80">{step.description}</p>
+               <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-2 block">GÜNCEL ETAP</span>
+               <h2 className="text-2xl font-black uppercase tracking-tight leading-none">{step.title}</h2>
+               <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-wide max-w-2xl opacity-90">{step.description}</p>
             </div>
-            <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/10 rounded-full blur-[100px]"></div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {currentQuestions.map((q: Question, idx: number) => (
-            <div key={q.id} className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm group hover:border-orange-500 transition-all">
-              <div className="flex items-start gap-5 mb-8">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm font-black shrink-0 shadow-lg group-hover:bg-orange-600 transition-colors">
+            <div key={q.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-900 flex items-center justify-center text-xs font-black shrink-0">
                   {idx + 1}
                 </div>
-                <h4 className="text-xl md:text-2xl font-black text-slate-900 leading-tight uppercase tracking-tight italic pt-1">
+                <h4 className="text-sm font-bold text-slate-900 leading-snug uppercase tracking-tight">
                   {q.text}
                 </h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-0 md:pl-15">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-0 md:pl-9">
                 {(shuffledOptionsMap[q.id] || []).map((opt: string) => {
                   const isSelected = formData.answers[q.id] === opt;
                   return (
                     <button 
                       key={opt} 
                       onClick={() => setFormData(prev => ({ ...prev, answers: { ...prev.answers, [q.id]: opt } }))} 
-                      className={`text-left px-8 py-5 rounded-2xl border-2 transition-all text-[13px] font-bold uppercase tracking-tight leading-snug flex items-center gap-4 ${
+                      className={`text-left px-4 py-3 rounded-lg border transition-all text-[11px] font-bold uppercase tracking-tight leading-snug flex items-center gap-3 ${
                         isSelected 
-                        ? 'bg-slate-900 border-slate-900 text-white shadow-xl translate-x-1' 
-                        : 'bg-slate-50 border-transparent text-slate-500 hover:border-slate-300 hover:bg-white'
+                        ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'}`}>
-                        {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                      <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'}`}>
+                        {isSelected && <div className="w-1 h-1 bg-white rounded-full"></div>}
                       </div>
                       <span>{opt}</span>
                     </button>
@@ -312,56 +311,55 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 mt-6 mb-20">
-      <div className="bg-white/95 backdrop-blur-3xl rounded-[4rem] shadow-[0_50px_100px_rgba(0,0,0,0.12)] overflow-hidden border border-white flex flex-col min-h-[85vh]">
+    <div className="max-w-4xl mx-auto px-4 mt-4 mb-10">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[80vh]">
         
         {/* PROGRESS NAVIGATION */}
-        <div className="bg-slate-950 p-10 flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-white/5 relative overflow-hidden">
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.6em]">MİA KLİNİK ANALİZ</span>
-              <div className="h-px w-12 bg-white/20"></div>
-              <span className="text-[10px] font-black text-white/40 uppercase">ETAP {currentStep + 1} / {FORM_STEPS.length}</span>
+        <div className="bg-slate-900 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">MİA SİSTEMİ</span>
+              <div className="h-px w-8 bg-white/20"></div>
+              <span className="text-[9px] font-black text-white/50 uppercase">BÖLÜM {currentStep + 1} / {FORM_STEPS.length}</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter italic leading-none">
+            <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">
               AKADEMİK DOSYA GİRİŞİ
             </h1>
           </div>
           
-          <div className="relative z-10 flex flex-col items-end gap-3 w-full md:w-80">
-            <div className="flex justify-between w-full mb-1">
-               <span className="text-[9px] font-black text-white uppercase tracking-widest opacity-60">TAMAMLANMA ORANI</span>
-               <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">%{Math.round(((currentStep + 1) / FORM_STEPS.length) * 100)}</span>
+          <div className="flex flex-col items-end gap-2 w-full md:w-64">
+            <div className="flex justify-between w-full mb-0.5">
+               <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">İLERLEME</span>
+               <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest">%{Math.round(((currentStep + 1) / FORM_STEPS.length) * 100)}</span>
             </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-               <div className="h-full bg-orange-600 shadow-[0_0_15px_rgba(234,88,12,0.6)] transition-all duration-1000" style={{ width: `${((currentStep + 1) / FORM_STEPS.length) * 100}%` }}></div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+               <div className="h-full bg-orange-600 transition-all duration-500" style={{ width: `${((currentStep + 1) / FORM_STEPS.length) * 100}%` }}></div>
             </div>
           </div>
-          <div className="absolute -left-20 -top-20 w-96 h-96 bg-orange-600/5 rounded-full blur-[150px]"></div>
         </div>
         
-        <div className="p-4 md:p-16 flex-1 bg-[#FAFAFA]">
+        <div className="p-4 md:p-8 flex-1 bg-[#F8FAFC]">
           {renderStepContent()}
         </div>
 
         {/* COMPACT FOOTER ACTIONS */}
-        <div className="p-10 bg-white border-t border-slate-100 flex justify-between items-center sticky bottom-0 z-50 backdrop-blur-md bg-white/95">
+        <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center sticky bottom-0 z-50">
           <button 
             onClick={() => currentStep > 0 && setCurrentStep(c => c - 1)} 
-            className={`px-12 py-6 font-black text-[12px] uppercase tracking-widest transition-all rounded-2xl ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50 border border-transparent hover:border-slate-200'}`}
+            className={`px-6 py-3 font-bold text-[10px] uppercase tracking-widest transition-all rounded-lg ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
           >
-            ← ÖNCEKİ BÖLÜM
+            ← ÖNCEKİ
           </button>
           <button 
             onClick={handleNext}
             disabled={!isStepComplete}
-            className={`px-16 py-6 rounded-[2rem] font-black text-[12px] uppercase tracking-[0.4em] shadow-3xl transition-all active:scale-95 ${
+            className={`px-8 py-3 rounded-lg font-black text-[10px] uppercase tracking-widest shadow-sm transition-all active:scale-95 ${
                 isStepComplete 
                 ? 'bg-slate-900 text-white hover:bg-orange-600' 
                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             }`}
           >
-            {currentStep === FORM_STEPS.length - 1 ? 'MÜHÜRLE VE ANALİZE GÖNDER' : 'SONRAKİ BÖLÜME GEÇ →'}
+            {currentStep === FORM_STEPS.length - 1 ? 'MÜHÜRLE VE GÖNDER' : 'SONRAKİ →'}
           </button>
         </div>
       </div>

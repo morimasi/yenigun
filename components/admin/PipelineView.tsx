@@ -15,157 +15,155 @@ interface PipelineViewProps {
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
-  const [filterBranch, setFilterBranch] = useState<string>('ALL');
   
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
 
   const filteredCandidates = useMemo(() => {
     return candidates.filter(c => {
-      const matchesSearch = (c.name || '').toLocaleLowerCase('tr-TR').includes(searchInput.toLocaleLowerCase('tr-TR'));
-      const matchesBranch = filterBranch === 'ALL' || c.branch === filterBranch;
+      const name = (c.name || '').toLocaleLowerCase('tr-TR');
       const isActive = c.status !== 'archived'; 
-      return matchesSearch && matchesBranch && isActive;
-    }).sort((a, b) => (b.report?.score || 0) - (a.report?.score || 0));
-  }, [candidates, searchInput, filterBranch]);
+      return isActive && name.includes(searchInput.toLocaleLowerCase('tr-TR'));
+    }).sort((a, b) => b.timestamp - a.timestamp);
+  }, [candidates, searchInput]);
 
   const selectedCandidate = useMemo(() => 
     candidates.find(c => c.id === selectedId), 
     [candidates, selectedId]
   );
 
-  const toggleCheck = (id: string) => {
+  const toggleCheck = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     const next = new Set(checkedIds);
-    if (next.has(id)) next.delete(id); else next.add(id);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
     setCheckedIds(next);
   };
 
-  const getScoreColor = (score?: number) => {
-    if (!score) return 'bg-slate-100 text-slate-400';
-    if (score >= 80) return 'bg-emerald-100 text-emerald-700';
-    if (score >= 60) return 'bg-orange-100 text-orange-700';
-    return 'bg-rose-100 text-rose-700';
+  const toggleAll = () => {
+    if (checkedIds.size === filteredCandidates.length) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(filteredCandidates.map(c => c.id)));
+    }
+  };
+
+  const handleBulkZip = async () => {
+    const targets = candidates.filter(c => checkedIds.has(c.id) && c.report);
+    if (targets.length === 0) {
+      alert("Lütfen en az bir analiz edilmiş aday seçiniz.");
+      return;
+    }
+    setIsExporting(true);
+    try {
+      await exportService.exportAllCandidatesAsZip(targets, setExportProgress);
+    } catch (e) {
+      alert("ZIP Üretim Hatası.");
+    } finally {
+      setIsExporting(false);
+      setExportProgress(0);
+    }
   };
 
   return (
-    <div className="flex h-full gap-6">
-      {/* SOL: VERİ TABLOSU (DATA GRID) */}
-      <div className={`${selectedCandidate ? 'w-1/2' : 'w-full'} flex flex-col gap-4 transition-all duration-300`}>
-        
-        {/* TOOLBAR */}
-        <div className="bg-white border border-slate-200 p-3 rounded-xl flex items-center justify-between shadow-sm shrink-0">
-           <div className="flex items-center gap-3 flex-1">
-              <div className="relative flex-1 max-w-xs">
-                 <input 
-                   type="text" 
-                   placeholder="Aday Ara..." 
-                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-orange-500 focus:bg-white transition-all"
-                   value={searchInput}
-                   onChange={e => setSearchInput(e.target.value)}
-                 />
-                 <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+    <div className="flex h-full overflow-hidden gap-0 bg-white rounded-lg border border-slate-200 shadow-sm">
+      
+      {/* EXPORT OVERLAY */}
+      {isExporting && (
+        <div className="fixed inset-0 z-[1000] bg-slate-900/90 backdrop-blur-2xl flex items-center justify-center p-12">
+           <div className="bg-white rounded-xl p-6 max-w-xs w-full text-center space-y-4">
+              <h3 className="text-sm font-black text-slate-900 uppercase">Paketleniyor...</h3>
+              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                 <div className="h-full bg-orange-600 transition-all duration-300" style={{ width: `${exportProgress}%` }}></div>
               </div>
-              <select 
-                className="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 py-2 px-3 rounded-lg outline-none focus:border-orange-500 cursor-pointer"
-                value={filterBranch}
-                onChange={e => setFilterBranch(e.target.value)}
-              >
-                 <option value="ALL">Tüm Branşlar</option>
-                 {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
-              </select>
-           </div>
-           
-           <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">{filteredCandidates.length} KAYIT</span>
-              {checkedIds.size > 0 && (
-                 <button className="bg-slate-900 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-sm">
-                    {checkedIds.size} DOSYAYI İNDİR
-                 </button>
-              )}
-           </div>
-        </div>
-
-        {/* COMPACT TABLE */}
-        <div className="bg-white border border-slate-200 rounded-xl flex-1 overflow-hidden shadow-sm flex flex-col">
-           <div className="overflow-y-auto flex-1 custom-scrollbar">
-              <table className="w-full text-left border-collapse">
-                 <thead className="bg-slate-50 sticky top-0 z-10">
-                    <tr>
-                       <th className="p-4 w-10 border-b border-slate-200">
-                          <input type="checkbox" className="accent-slate-900" onChange={(e) => {
-                             if(e.target.checked) setCheckedIds(new Set(filteredCandidates.map(c => c.id)));
-                             else setCheckedIds(new Set());
-                          }} />
-                       </th>
-                       <th className="p-3 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest">ADAY PROFİLİ</th>
-                       <th className="p-3 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest">BRANŞ & EĞİTİM</th>
-                       <th className="p-3 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">LİYAKAT SKORU</th>
-                       <th className="p-3 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">DURUM</th>
-                    </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100">
-                    {filteredCandidates.length === 0 ? (
-                       <tr><td colSpan={5} className="p-10 text-center text-xs font-bold text-slate-400 uppercase">Kayıt Bulunamadı</td></tr>
-                    ) : (
-                       filteredCandidates.map(c => (
-                          <tr 
-                            key={c.id} 
-                            onClick={() => setSelectedId(c.id)}
-                            className={`cursor-pointer transition-all hover:bg-blue-50/50 ${selectedId === c.id ? 'bg-orange-50 hover:bg-orange-50' : ''}`}
-                          >
-                             <td className="p-4" onClick={e => e.stopPropagation()}>
-                                <input type="checkbox" className="accent-slate-900" checked={checkedIds.has(c.id)} onChange={() => toggleCheck(c.id)} />
-                             </td>
-                             <td className="p-3">
-                                <div className="flex items-center gap-3">
-                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs text-white ${selectedId === c.id ? 'bg-orange-600' : 'bg-slate-900'}`}>
-                                      {c.name.charAt(0)}
-                                   </div>
-                                   <div>
-                                      <p className="text-xs font-black text-slate-900 uppercase tracking-tight">{c.name}</p>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase">{c.email}</p>
-                                   </div>
-                                </div>
-                             </td>
-                             <td className="p-3">
-                                <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight">{c.branch}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">{c.experienceYears} YIL • {c.university}</p>
-                             </td>
-                             <td className="p-3 text-center">
-                                <span className={`inline-block px-3 py-1 rounded-md text-[10px] font-black ${getScoreColor(c.report?.score)}`}>
-                                   %{c.report?.score || '?'}
-                                </span>
-                             </td>
-                             <td className="p-3 text-center">
-                                <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${c.status === 'interview_scheduled' ? 'border-blue-200 text-blue-600 bg-blue-50' : 'border-slate-200 text-slate-500 bg-slate-50'}`}>
-                                   {c.status === 'interview_scheduled' ? 'MÜLAKAT' : 'BEKLEMEDE'}
-                                </span>
-                             </td>
-                          </tr>
-                       ))
-                    )}
-                 </tbody>
-              </table>
-           </div>
-        </div>
-      </div>
-
-      {/* SAĞ: DETAY PANELİ (SPLIT VIEW) */}
-      {selectedCandidate && (
-        <div className="w-1/2 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-slide-right">
-           <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <CandidateDetail 
-                candidate={selectedCandidate}
-                config={config}
-                onUpdate={onUpdateCandidate}
-                onDelete={() => { if(confirm('Silinsin mi?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); }}}
-              />
-           </div>
-           <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
-              <button onClick={() => setSelectedId(null)} className="text-xs font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest px-4">Kapat</button>
            </div>
         </div>
       )}
+
+      {/* SOL: ULTRA-KOMPAKT ADAY LİSTESİ (SABİT 300px) */}
+      <div className={`${selectedCandidate ? 'w-[300px]' : 'w-full max-w-3xl mx-auto'} flex flex-col border-r border-slate-200 bg-slate-50/50 transition-all duration-300 shrink-0`}>
+        
+        {/* LİSTE BAŞLIĞI VE ARAMA */}
+        <div className="p-2 border-b border-slate-200 bg-white">
+           <div className="relative mb-2">
+              <input 
+                 type="text" 
+                 placeholder="Aday Ara..." 
+                 className="w-full bg-slate-50 rounded-md py-1.5 pl-7 pr-2 text-[11px] font-semibold outline-none border border-slate-200 focus:border-orange-500 transition-all"
+                 value={searchInput}
+                 onChange={e => setSearchInput(e.target.value)}
+               />
+               <svg className="w-3 h-3 text-slate-400 absolute left-2 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+           </div>
+           <div className="flex justify-between items-center px-1">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{filteredCandidates.length} KAYIT</span>
+              <button onClick={toggleAll} className="text-[9px] font-bold text-orange-600 hover:underline">
+                 {checkedIds.size > 0 ? 'SEÇİMİ KALDIR' : 'TÜMÜNÜ SEÇ'}
+              </button>
+           </div>
+        </div>
+
+        {/* LİSTE İÇERİĞİ */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+           {filteredCandidates.map(c => {
+              const isSelected = selectedId === c.id;
+              const isChecked = checkedIds.has(c.id);
+              const score = c.report?.score || 0;
+              const scoreColor = score > 75 ? 'text-emerald-600' : score > 50 ? 'text-orange-600' : 'text-slate-400';
+
+              return (
+                <div 
+                  key={c.id} 
+                  onClick={() => setSelectedId(c.id)}
+                  className={`px-3 py-2 border-b border-slate-100 cursor-pointer transition-colors hover:bg-white flex items-center gap-3 ${
+                    isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm' : 'border-l-4 border-l-transparent'
+                  }`}
+                >
+                  <div onClick={(e) => toggleCheck(c.id, e)} className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${isChecked ? 'bg-slate-900 border-slate-900' : 'border-slate-300 hover:border-orange-500'}`}>
+                     {isChecked && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                  
+                  <div className="min-w-0 flex-1">
+                    <div className="flex justify-between items-center mb-0.5">
+                       <h4 className={`text-[11px] font-bold truncate ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}>{c.name}</h4>
+                       <span className={`text-[10px] font-black ${scoreColor}`}>{score > 0 ? `%${score}` : '-'}</span>
+                    </div>
+                    <p className="text-[9px] font-medium text-slate-400 truncate uppercase">{c.branch} • {c.experienceYears}Y</p>
+                  </div>
+                </div>
+              );
+           })}
+        </div>
+        
+        {/* BULK ACTION BAR (ALTTA) */}
+        {checkedIds.size > 0 && (
+           <div className="p-2 border-t border-slate-200 bg-white">
+              <button onClick={handleBulkZip} className="w-full py-1.5 bg-slate-900 text-white rounded-md text-[10px] font-bold uppercase tracking-wide hover:bg-orange-600 transition-colors">
+                 {checkedIds.size} DOSYAYI İNDİR
+              </button>
+           </div>
+        )}
+      </div>
+
+      {/* SAĞ: DETAY PANELİ (KANVAS) */}
+      <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
+        {selectedCandidate ? (
+          <CandidateDetail 
+            candidate={selectedCandidate}
+            config={config}
+            onUpdate={onUpdateCandidate}
+            onDelete={() => { if (confirm('Silinsin mi?')) { onDeleteCandidate(selectedCandidate.id); setSelectedId(null); } }}
+          />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-10 opacity-30">
+             <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+             </div>
+             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Görüntülemek için aday seçin</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
