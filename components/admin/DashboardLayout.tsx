@@ -11,6 +11,7 @@ import ClinicalLabView from '../../features/clinical-lab/ClinicalLabView';
 import MethodologyInventoryView from './MethodologyInventoryView';
 import ArchiveView from './ArchiveView';
 import ArmsDashboard from '../../features/staff-mentor/ArmsDashboard';
+import CommunicationCenter from '../../features/communication/CommunicationCenter';
 
 interface DashboardLayoutProps {
   candidates: Candidate[];
@@ -23,7 +24,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab' | 'methodology' | 'archive' | 'arms'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab' | 'methodology' | 'archive' | 'arms' | 'comm'>('pipeline');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -36,6 +37,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'archive': return <ArchiveView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} onDeleteCandidate={props.onDeleteCandidate} />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
       case 'arms': return <ArmsDashboard />;
+      case 'comm': return <CommunicationCenter candidates={props.candidates} />;
       default: return <PipelineView {...props} />;
     }
   };
