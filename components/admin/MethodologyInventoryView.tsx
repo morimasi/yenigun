@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { BRANCH_QUESTIONS, CERTIFICATIONS } from '../../constants';
 import { Question } from '../../types';
@@ -55,7 +54,8 @@ const MethodologyInventoryView: React.FC = () => {
     
     // Sadece 0 olmayan ağırlıkları temizle
     const cleanWeights: Record<string, number> = {};
-    Object.entries(draftOption.weights).forEach(([k, v]) => {
+    Object.entries(draftOption.weights).forEach(([k, value]) => {
+        const v = value as number;
         if (v !== 0) cleanWeights[k === 'clinical' ? 'technicalExpertise' : k === 'fit' ? 'institutionalLoyalty' : k] = v;
     });
 
