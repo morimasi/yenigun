@@ -4,6 +4,54 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+// --- 1. AKILLI JSON TEMİZLEYİCİ ---
+// AI bazen yanıtı ```json ... ``` blokları içine alır. Bu fonksiyon o blokları temizler.
+const cleanAndParseJSON = (rawText: string | undefined) => {
+  if (!rawText) throw new Error("AI yanıtı boş döndü.");
+  
+  try {
+    // Markdown bloklarını temizle
+    let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanText);
+  } catch (e) {
+    console.error("JSON Parse Hatası (Ham Veri):", rawText);
+    throw new Error("AI yanıtı geçerli bir JSON formatında değil.");
+  }
+};
+
+// --- 2. FALLBACK (GÜVENLİK AĞI) YAPISI ---
+// AI başarısız olursa arayüzün çökmemesi için döndürülecek boş şablon.
+const FALLBACK_REPORT: AIReport = {
+  score: 0,
+  integrityIndex: 0,
+  socialMaskingScore: 0,
+  summary: "Analiz sırasında teknik bir aksaklık oluştu veya AI yanıtı yapılandırılamadı. Lütfen analizi tekrar tetikleyiniz.",
+  detailedAnalysisNarrative: "Veri işleme hatası. Bağlantı zaman aşımına uğramış veya model yanıtı bozuk formatta gelmiş olabilir.",
+  recommendation: "Tekrar Deneyiniz",
+  predictiveMetrics: {
+    retentionProbability: 0,
+    burnoutRisk: 0,
+    learningVelocity: 0,
+    leadershipPotential: 0,
+    evolutionPath: "Veri Yok"
+  },
+  deepAnalysis: {
+    workEthics: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    technicalExpertise: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    pedagogicalAnalysis: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    parentStudentRelations: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    sustainability: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    institutionalLoyalty: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    developmentOpenness: { score: 0, status: 'critical', reasoning: 'Analiz Hatası', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    // Opsiyonel alanlar için de boş objeler
+    formality: { score: 0, status: 'critical', reasoning: '', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    criticismTolerance: { score: 0, status: 'critical', reasoning: '', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
+    personality: { score: 0, status: 'critical', reasoning: '', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] }
+  },
+  swot: { strengths: [], weaknesses: [], opportunities: [], threats: [] },
+  interviewGuidance: { strategicQuestions: [], criticalObservations: [], simulationTasks: [] }
+};
+
 const SEGMENT_SCHEMA = {
   type: Type.OBJECT,
   properties: {
@@ -98,34 +146,42 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     required: ["score", "integrityIndex", "socialMaskingScore", "summary", "detailedAnalysisNarrative", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
   };
 
-  // CV verisini JSON string'den ayırarak Token tasarrufu yapalım ve temiz bir JSON gönderelim.
-  const { cvData, ...candidateWithoutCV } = candidate;
-  
-  const contents: any[] = [
-    { text: `ADAY BEYAN VE YANITLARI: ${JSON.stringify(candidateWithoutCV)}` }
-  ];
+  try {
+    // CV verisini JSON string'den ayırarak Token tasarrufu yapalım ve temiz bir JSON gönderelim.
+    const { cvData, ...candidateWithoutCV } = candidate;
+    
+    const contents: any[] = [
+      { text: `ADAY BEYAN VE YANITLARI: ${JSON.stringify(candidateWithoutCV)}` }
+    ];
 
-  // Eğer CV varsa, onu MULTIMODAL olarak ekle (Metin değil, doğrudan dosya verisi)
-  if (cvData && cvData.base64) {
-    contents.push({
-      inlineData: {
-        mimeType: cvData.mimeType,
-        data: cvData.base64
+    // Eğer CV varsa, onu MULTIMODAL olarak ekle
+    if (cvData && cvData.base64) {
+      contents.push({
+        inlineData: {
+          mimeType: cvData.mimeType,
+          data: cvData.base64
+        }
+      });
+      contents.push({ text: "Ekli belge adayın CV'sidir. Lütfen bu belgeyi adayın yukarıdaki beyanlarıyla karşılaştır." });
+    }
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: contents, 
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 16000 }, // Budget düşürüldü (Speed Optimization)
+        responseSchema: responseSchema
       }
     });
-    contents.push({ text: "Ekli belge adayın CV'sidir. Lütfen bu belgeyi adayın yukarıdaki beyanlarıyla (deneyim yılı, mezuniyet, sertifikalar) karşılaştır ve tutarlılık analizi yap." });
+
+    return cleanAndParseJSON(response.text);
+
+  } catch (error) {
+    console.error("AI Analiz Servisi Hatası:", error);
+    // Hata durumunda sistemi çökertmek yerine boş ama güvenli veri dönüyoruz.
+    // Kullanıcıya "Tekrar Dene" şansı vermek için.
+    return FALLBACK_REPORT;
   }
-
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: contents, 
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 32768 },
-      responseSchema: responseSchema
-    }
-  });
-
-  return JSON.parse(response.text || '{}');
 };
