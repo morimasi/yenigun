@@ -5,31 +5,41 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
- * NÖRAL VERİ AYIKLAYICI (V3)
- * AI çıktısındaki gürültüyü temizler ve en derin JSON objesini kurtarır.
+ * HEURISTIC JSON RECOVERY (V4)
+ * AI yanıtı kesilse veya kirlense bile veriyi kurtarır.
  */
 const extractPureJSON = (text: string): any => {
   try {
-    // 1. Standart temizlik
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // 1. Temizlik: Markdown ve Monologları ayıkla
+    let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    // 2. İlk parantez ve son parantez arasını bul (Thinking metni dışarıda kalsın)
+    // 2. İlk '{' ve son '}' arasını bul
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
     
-    if (firstBrace === -1 || lastBrace === -1) throw new Error("JSON Yapısı Bulunamadı");
+    if (firstBrace === -1) throw new Error("Başlangıç parantezi yok.");
     
-    let jsonCandidate = cleanText.substring(firstBrace, lastBrace + 1);
+    let jsonCandidate = lastBrace !== -1 
+      ? cleanText.substring(firstBrace, lastBrace + 1)
+      : cleanText.substring(firstBrace); // Kesilmişse sonuna kadar al
 
-    // 3. Eksik parantez tamamlama (Klinik Kurtarma)
-    const opens = (jsonCandidate.match(/\{/g) || []).length;
-    const closes = (jsonCandidate.match(/\}/g) || []).length;
-    if (opens > closes) jsonCandidate += "}".repeat(opens - closes);
+    // 3. Otomatik Kapatma (Kesilmiş JSON'lar için)
+    let openBraces = (jsonCandidate.match(/\{/g) || []).length;
+    let closeBraces = (jsonCandidate.match(/\}/g) || []).length;
+    
+    while (openBraces > closeBraces) {
+      jsonCandidate += "}";
+      closeBraces++;
+    }
+
+    // 4. JSON Temizliği (Hatalı virgüller vb.)
+    jsonCandidate = jsonCandidate.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
 
     return JSON.parse(jsonCandidate);
   } catch (e) {
-    console.error("Neural Extraction Failure:", text);
-    throw new Error("AI veri akışı deşifre edilemedi.");
+    console.error("Critical Neural Parse Error:", text);
+    // UI'ın çökmemesi için boş ama yapısal bir fallback dön
+    return null;
   }
 };
 
@@ -51,22 +61,23 @@ const SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
-    MODEL: Gemini-3-Flash (Thinking Mode Activated).
-    GÖREV: Adayın beyanlarını ve mülakat reflekslerini parçala. 
-    STRATEJİ: Düşünme aşamasında (Thinking Phase) adayın her cevabını literatürle (ABA, Floortime, BEP) karşılaştır. Sonuç aşamasında KESİNLİKLE sadece saf JSON döndür.
+    GÖREV: Adayın liyakat dosyasını DERİN MUHAKEME ile analiz et.
     DİL: Akademik Türkçe.
+    FORMAT: Sadece JSON döndür. 
+    STRATEJİ: Her analizi somut bir klinik nedene bağla.
   `;
 
   try {
-    const { cvData, ...candidateData } = candidate;
+    const { cvData, report, algoReport, ...candidateData } = candidate;
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ANALİZ EDİLECEK ADAY VERİSİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `VERİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }, // MAKSİMUM MUHAKEME GÜCÜ
+        // BÜTÇE OPTİMİZASYONU: 12k düşünme, 20k cevap alanı bırakır.
+        thinkingConfig: { thinkingBudget: 12000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -96,10 +107,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 parentStudentRelations: SEGMENT_SCHEMA,
                 sustainability: SEGMENT_SCHEMA,
                 institutionalLoyalty: SEGMENT_SCHEMA,
-                developmentOpenness: SEGMENT_SCHEMA,
-                formality: SEGMENT_SCHEMA,
-                criticismTolerance: SEGMENT_SCHEMA,
-                personality: SEGMENT_SCHEMA
+                developmentOpenness: SEGMENT_SCHEMA
               },
               required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness"]
             },
@@ -128,9 +136,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       }
     });
 
-    return extractPureJSON(response.text);
+    const parsedData = extractPureJSON(response.text);
+    if (!parsedData) throw new Error("JSON Kurtarılamadı");
+    return parsedData;
   } catch (error) {
-    console.error("AI Nöral Hata:", error);
+    console.error("AI Nöral Analiz Hatası:", error);
     throw error;
   }
 };

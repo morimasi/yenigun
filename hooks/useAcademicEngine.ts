@@ -36,21 +36,23 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
       const aiReport = await generateCandidateAnalysis(candidate, config);
       const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       
-      const updatedCandidate = { 
+      const updatedCandidate = JSON.parse(JSON.stringify({ 
         ...candidate, 
         report: aiReport, 
         algoReport: algoReport, 
         timestamp: Date.now() 
-      };
+      }));
       
-      // REAKTİF GÜNCELLEME: Yerel state'i anında zorla
+      // REAKTİF GÜNCELLEME: Global state'i mühürle
       setCandidates(prev => {
-        const next = prev.map(c => c.id === candidateId ? updatedCandidate : c);
-        // UI Re-render Force
-        return [...next];
+        const index = prev.findIndex(c => c.id === candidateId);
+        if (index === -1) return prev;
+        const newList = [...prev];
+        newList[index] = updatedCandidate;
+        return newList;
       });
       
-      // Kalıcı depolama (Fire and forget)
+      // Kalıcı depolama
       await storageService.updateCandidate(updatedCandidate);
       
       return { success: true };

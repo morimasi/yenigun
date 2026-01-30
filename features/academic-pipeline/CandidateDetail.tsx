@@ -48,7 +48,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       });
       setSelectedSegment('workEthics');
     } catch (e: any) { 
-      alert("Muhakeme motoru yanıt vermedi. Lütfen tekrar deneyiniz."); 
+      alert("Muhakeme motoru yanıt vermedi veya token limiti aşıldı. Lütfen tekrar deneyiniz."); 
     } finally { 
       setIsAnalysing(false); 
     }
@@ -95,7 +95,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                  isAnalysing ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white hover:bg-orange-600'
                }`}
             >
-               {isAnalysing ? 'MUHAKEME AKTİF...' : 'ANALİZİ TETİKLE'}
+               {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZİ BAŞLAT'}
             </button>
             <div className="flex bg-slate-100 p-0.5 rounded-lg ml-2">
                <button onClick={() => handleDecision('hired')} className="px-3 py-1.5 text-[9px] font-black uppercase rounded-md text-slate-600 hover:bg-white hover:text-emerald-600 transition-all">ATA</button>
@@ -128,7 +128,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             <div className="h-full flex flex-col items-center justify-center opacity-30 text-center">
                <div className="w-16 h-16 bg-slate-200 rounded-2xl mb-4 animate-pulse"></div>
                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  {isAnalysing ? 'Muhakeme Motoru Veri İşliyor...' : 'Aday Analizi Bekleniyor'}
+                  {isAnalysing ? 'Nöral Muhakeme Devreye Girdi... (Lütfen Bekleyiniz)' : 'Veri Hazırlanıyor...'}
                </p>
             </div>
          ) : (
@@ -160,7 +160,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                               <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
                                  <div className="absolute top-0 left-0 w-2 h-full bg-slate-900"></div>
                                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-4">KLİNİK NEDENSELLİK (ROOT CAUSE)</h4>
-                                 <p className="text-[13px] font-medium text-slate-700 leading-relaxed text-justify">"{currentData.reasoning || 'Veri bulunamadı.'}"</p>
+                                 <p className="text-[13px] font-medium text-slate-700 leading-relaxed text-justify">"{currentData.reasoning || 'Düşünme süreci devam ediyor...'}"</p>
                               </div>
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -177,12 +177,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                  </div>
                                  <div className="bg-slate-900 p-6 rounded-[2rem] text-white">
                                     <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">KURUMSAL ETKİ</h5>
-                                    <p className="text-[12px] font-medium text-slate-300 leading-relaxed">{currentData.institutionalImpact || 'Etki analizi yapılamadı.'}</p>
+                                    <p className="text-[12px] font-medium text-slate-300 leading-relaxed">{currentData.institutionalImpact || 'Etki analizi kilitlendi.'}</p>
                                  </div>
                               </div>
                            </div>
                         ) : (
-                          <div className="p-20 text-center opacity-20 uppercase font-black text-slate-400 tracking-widest">Kategori Seçiniz</div>
+                          <div className="p-20 text-center opacity-20 uppercase font-black text-slate-400 tracking-widest">Kategori Seçimi Bekleniyor</div>
                         )}
                      </div>
                   </div>
@@ -227,7 +227,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                   <div className="space-y-8">
                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
                         <h4 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-6">24 AYLIK EVRİM YOLU</h4>
-                        <p className="text-xl md:text-2xl font-black leading-snug italic tracking-tight">"{candidate.report.predictiveMetrics?.evolutionPath || 'Projeksiyon verisi işlenemedi.'}"</p>
+                        <p className="text-xl md:text-2xl font-black leading-snug italic tracking-tight">"{candidate.report.predictiveMetrics?.evolutionPath || 'Projeksiyon kilitlendi.'}"</p>
                         <div className="absolute right-0 top-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px]"></div>
                      </div>
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
