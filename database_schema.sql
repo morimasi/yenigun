@@ -1,7 +1,7 @@
 
 -- ======================================================
 -- YENI GUN AKADEMI - ARMS (ACADEMIC RESONANCE SYSTEM)
--- VERITABANI MIMARISI v6.1 (MIGRATION PATCHED)
+-- VERITABANI MIMARISI v6.2 (SCHEMA REPAIR)
 -- ======================================================
 
 -- 1. GEREKLI EKLENTILER
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     report JSONB DEFAULT NULL,
     algo_report JSONB DEFAULT NULL,
     interview_schedule JSONB DEFAULT NULL,
-    cv_data JSONB DEFAULT NULL, -- DİKKAT: Performans için liste sorgularında hariç tutulmalı
+    cv_data JSONB DEFAULT NULL,
     admin_notes TEXT,
     reminder_note TEXT,
     archive_category TEXT,
@@ -43,6 +43,14 @@ CREATE TABLE IF NOT EXISTS candidates (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- REPAIR: EKSİK SÜTUNLARI TAMAMLA (Self-Healing Backup)
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_category TEXT;
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_note TEXT;
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reminder_note TEXT;
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;
+ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;
 
 CREATE INDEX IF NOT EXISTS idx_arms_cand_status ON candidates(status);
 CREATE INDEX IF NOT EXISTS idx_arms_cand_branch ON candidates(branch);
