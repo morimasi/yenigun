@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Candidate, GlobalConfig } from '../types';
 import { storageService } from '../services/storageService';
 import { aiService } from '../services/aiService';
@@ -12,12 +12,16 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('yeni_gun_admin_token'));
 
-  const loadData = useCallback(async (isManual = false) => {
+  // isManual: Kullanıcı butona bastıysa true, otomatik pollling ise true (artık her zaman taze veri istiyoruz)
+  const loadData = useCallback(async (isManual = true) => {
     if (isManual) setIsProcessing(true);
     if (!isManual && candidates.length === 0) setIsLoading(true);
 
     try {
-      const data = await storageService.getCandidates(isManual);
+      // Force refresh her zaman true gönderiliyor ki sunucudan çeksin.
+      const data = await storageService.getCandidates(true);
+      
+      // Veri değişimi kontrolü (Opsiyonel optimizasyon, şimdilik her zaman set ediyoruz)
       setCandidates(data);
       
       const remoteConfig = await storageService.getConfig();
@@ -32,7 +36,7 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
       setIsLoading(false);
       setIsProcessing(false);
     }
-  }, [candidates.length]);
+  }, []); // candidates dependency kaldırıldı, loop engellemek için.
 
   const submitCandidate = async (formData: any) => {
     setIsProcessing(true);
@@ -45,7 +49,12 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
     };
 
     const result = await storageService.saveCandidate(newCandidate);
-    if (result.success && isLoggedIn) loadData(true);
+    
+    // Sadece kayıt başarılıysa listeyi yenile
+    if (result.success) {
+        if (isLoggedIn) loadData(true);
+    }
+    
     setIsProcessing(false);
     return result;
   };
@@ -62,13 +71,17 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
       const aiReport = await aiService.analyzeCandidate(candidate, config);
       
       const updatedCandidate = { ...candidate, report: aiReport, algoReport, timestamp: Date.now() };
-      await storageService.updateCandidate(updatedCandidate);
+      const saveResult = await storageService.updateCandidate(updatedCandidate);
       
-      setCandidates(prev => prev.map(c => c.id === candidateId ? updatedCandidate : c));
-      return { success: true };
+      if (saveResult.success) {
+          setCandidates(prev => prev.map(c => c.id === candidateId ? updatedCandidate : c));
+          return { success: true };
+      } else {
+          throw new Error(saveResult.error);
+      }
     } catch (e) {
       console.error("AI Analiz Hatası:", e);
-      return { success: false, error: "AI Analizi başarısız." };
+      return { success: false, error: "AI Analizi başarısız veya kaydedilemedi." };
     } finally {
       setIsProcessing(false);
     }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
@@ -135,7 +134,7 @@ const App: React.FC = () => {
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
               <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
               <button onClick={() => setView('staff')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Personel</button>
-              <button onClick={() => setView('admin')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'admin' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Yönetim</button>
+              <button onClick={() => setView('admin')} className="px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all text-slate-400">Yönetim</button>
             </div>
           </div>
         </nav>

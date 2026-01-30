@@ -10,12 +10,15 @@ export default async function handler(request: Request) {
   const { searchParams } = new URL(request.url);
   const authHeader = request.headers.get('Authorization');
 
+  // STRICT CACHE CONTROL HEADERS
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Cache-Control': 'no-store, max-age=0'
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   };
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
@@ -43,8 +46,6 @@ export default async function handler(request: Request) {
       }
 
       // LISTE SORGUSU (Optimized - No BLOBs)
-      // cv_data, report ve algo_report çok büyük olabilir, liste görünümü için bunları optimize ediyoruz.
-      // Sadece gerekli metadata çekiliyor.
       const { rows } = await sql`
         SELECT 
           id, name, email, phone, age, gender, branch, university, department,
@@ -66,7 +67,7 @@ export default async function handler(request: Request) {
         experienceYears: row.experience_years || 0,
         status: row.status || 'pending',
         archiveCategory: row.archive_category,
-        report: row.score ? { score: row.score } : null, // Liste için sadece skor yeterli
+        report: row.score ? { score: row.score } : null,
         hasCv: row.has_cv,
         timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
       }));
@@ -84,7 +85,6 @@ export default async function handler(request: Request) {
       const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
       const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
 
-      // UPSERT QUERY
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
@@ -109,7 +109,6 @@ export default async function handler(request: Request) {
           archive_note = EXCLUDED.archive_note, updated_at = EXCLUDED.updated_at;
       `;
 
-      // HIRE-TO-STAFF (TRACEABILITY UPDATE)
       if (body.status === 'archived' && body.archiveCategory === 'HIRED_CONTRACTED') {
         const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`;
         const defaultPassword = 'yenigun2024';

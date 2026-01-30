@@ -37,59 +37,67 @@ export const storageService = {
       }
       throw new Error("API_FAIL");
     } catch (e) {
-      // OFFLINE FALLBACK: Yerel doğrulama
-      console.warn("Sunucu bağlantısı yok, yerel doğrulama yapılıyor.");
-      if (username === 'admin' && password === 'yenigun2024') {
-        const mockToken = btoa(`offline_session_${Date.now()}`);
-        localStorage.setItem(STORAGE_KEYS.TOKEN, mockToken);
-        return { success: true };
-      }
-      return { success: false, error: 'Sunucuya ulaşılamadı ve yerel giriş başarısız.' };
+      console.warn("Sunucu bağlantısı yok.");
+      return { success: false, error: 'Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.' };
     }
   },
 
-  async getCandidates(forceRefresh = false): Promise<Candidate[]> {
+  // CRITICAL UPDATE: NETWORK-FIRST STRATEGY
+  async getCandidates(forceRefresh = true): Promise<Candidate[]> {
     try {
-      // API çağrısını dene
-      if (forceRefresh) {
-        const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
-          headers: { 'Pragma': 'no-cache', ...this.getAuthHeader() }
-        });
-        if (response.ok) {
-          const remoteData: Candidate[] = await response.json();
-          localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(remoteData));
-          return remoteData.sort((a, b) => b.timestamp - a.timestamp);
+      // Her zaman sunucudan taze veri çekmeyi dene (Cache-Busting: _t parametresi)
+      const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
+        headers: { 
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate', 
+          ...this.getAuthHeader() 
         }
+      });
+
+      if (response.ok) {
+        const remoteData: Candidate[] = await response.json();
+        // Sunucudan veri geldiyse yerel yedeği güncelle
+        localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(remoteData));
+        return remoteData.sort((a, b) => b.timestamp - a.timestamp);
+      } else {
+        throw new Error(`API Error: ${response.status}`);
       }
-      throw new Error("USE_LOCAL");
     } catch (e: any) {
-      // Hata durumunda (500, 404, Network Error) yerel veriyi dön
+      console.error("Veri Senkronizasyon Hatası:", e);
+      // Sadece sunucu hatasında yerel veriyi göster, ama kullanıcı bilsin.
       const localStr = localStorage.getItem(STORAGE_KEYS.CANDIDATES);
       const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
       return localData.sort((a, b) => b.timestamp - a.timestamp);
     }
   },
 
+  // CRITICAL UPDATE: WRITE-THROUGH STRATEGY
   async saveCandidate(candidate: Candidate): Promise<StorageResult> {
     try {
       const res = await fetch('/api/candidates', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeader() },
         body: JSON.stringify(candidate)
       });
-      if (!res.ok) throw new Error("API_FAIL");
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Veritabanı kayıt hatası");
+      }
+      
+      // Kayıt başarılıysa, yerel listeyi hemen invalidate etmemiz gerekmez, 
+      // bir sonraki getCandidates çağrısı güncel veriyi çekecektir.
       return { success: true };
-    } catch (e) {
-      // OFFLINE FALLBACK: LocalStorage'a kaydet
-      const current = await this.getCandidates();
-      const updated = [candidate, ...current.filter(c => c.id !== candidate.id)];
-      localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(updated));
-      return { success: true };
+    } catch (e: any) {
+      console.error("Kayıt Hatası:", e);
+      // DİKKAT: Artık sessizce LocalStorage'a kaydetmiyoruz. 
+      // Veritabanına gitmeyen veri "Kaydedildi" sayılmaz.
+      return { success: false, error: "Sunucuya bağlanılamadı. Kayıt MERKEZİ SİSTEME iletilemedi." };
     }
   },
 
   async updateCandidate(candidate: Candidate): Promise<StorageResult> {
-    return this.saveCandidate(candidate); // Save mantığı update ile aynı çalışır (Upsert)
+    return this.saveCandidate(candidate);
   },
 
   async deleteCandidate(id: string): Promise<boolean> {
@@ -101,25 +109,23 @@ export const storageService = {
       if (!res.ok) throw new Error("API_FAIL");
       return true;
     } catch (e) {
-      // OFFLINE FALLBACK: Silme
-      const current = await this.getCandidates();
-      const filtered = current.filter(c => c.id !== id);
-      localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(filtered));
-      return true;
+      return false; // Silme işlemi sunucuda olmazsa başarısız say.
     }
   },
 
   async deleteMultipleCandidates(ids: string[]): Promise<boolean> {
-    // Toplu silme için offline logic
-    const current = await this.getCandidates();
-    const filtered = current.filter(c => !ids.includes(c.id));
-    localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(filtered));
-    return true;
+    // Toplu silme henüz API tarafında yoksa tek tek sil
+    try {
+        await Promise.all(ids.map(id => this.deleteCandidate(id)));
+        return true;
+    } catch (e) {
+        return false;
+    }
   },
 
   async getConfig(): Promise<GlobalConfig | null> {
     try {
-      const res = await fetch('/api/config', { headers: this.getAuthHeader() });
+      const res = await fetch(`/api/config?_t=${Date.now()}`, { headers: this.getAuthHeader() });
       if (res.ok) return await res.json();
       throw new Error("API_FAIL");
     } catch (e) {
@@ -130,15 +136,18 @@ export const storageService = {
 
   async saveConfig(config: GlobalConfig): Promise<boolean> {
     try {
-      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config)); // Önce yerele yaz
       const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...this.getAuthHeader() },
         body: JSON.stringify(config)
       });
-      return res.ok;
+      if (res.ok) {
+        localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
+        return true;
+      }
+      return false;
     } catch (e) {
-      return true; // API hatası olsa bile yerel kayıt başarılı sayılır
+      return false;
     }
   }
 };
