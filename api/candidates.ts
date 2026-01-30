@@ -7,6 +7,7 @@ export const config = {
 
 async function initializeDatabase() {
   try {
+    // Ana tablo kurulumu - Eksik olan 'phone' ve diğer kritik sütunlar eklendi.
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -29,14 +30,20 @@ async function initializeDatabase() {
         archive_category TEXT,
         archive_note TEXT,
         reminder_note TEXT,
+        interview_schedule JSONB,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-    // Eksik kolonları her ihtimale karşı ekle (Self-healing)
+    
+    // Self-healing: Mevcut tabloya eksik olabilecek sütunları zorla ekle
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reminder_note TEXT;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_category TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_note TEXT;`;
   } catch (e) {
     console.error("DB Init Failure:", e);
   }
@@ -62,9 +69,11 @@ export default async function handler(request: Request) {
     if (method === 'GET') {
       const { rows } = await sql`
         SELECT 
-          id, name, branch, status, experience_years as "experienceYears",
-          COALESCE(report, '{}'::jsonb) as report,
-          updated_at
+          id, name, email, phone, branch, status, experience_years as "experienceYears",
+          university, department, all_trainings as "allTrainings", answers,
+          report, algo_report as "algoReport", archive_category as "archiveCategory",
+          archive_note as "archiveNote", interview_schedule as "interviewSchedule",
+          updated_at as "timestamp"
         FROM candidates 
         ORDER BY updated_at DESC;
       `;
@@ -75,12 +84,12 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      // EMAIL tabanlı çakışma yönetimi (ID bazlı değil, çünkü ID her seferinde rastgele üretiliyor)
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, branch, university, department,
           experience_years, previous_institutions, all_trainings, answers, 
-          status, report, algo_report, cv_data, archive_category, archive_note, updated_at
+          status, report, algo_report, cv_data, archive_category, archive_note, 
+          interview_schedule, updated_at
         ) VALUES (
           ${body.id}, 
           ${body.name}, 
@@ -101,6 +110,7 @@ export default async function handler(request: Request) {
           ${JSON.stringify(body.cvData || null)}, 
           ${body.archiveCategory ?? null}, 
           ${body.archiveNote ?? null}, 
+          ${JSON.stringify(body.interviewSchedule || null)},
           ${now}
         ) 
         ON CONFLICT (email) DO UPDATE SET 
@@ -110,6 +120,7 @@ export default async function handler(request: Request) {
           status = EXCLUDED.status, 
           report = COALESCE(EXCLUDED.report, candidates.report), 
           algo_report = COALESCE(EXCLUDED.algo_report, candidates.algo_report), 
+          interview_schedule = COALESCE(EXCLUDED.interview_schedule, candidates.interview_schedule),
           updated_at = EXCLUDED.updated_at,
           archive_category = EXCLUDED.archive_category, 
           archive_note = EXCLUDED.archive_note;
@@ -125,8 +136,12 @@ export default async function handler(request: Request) {
     }
 
   } catch (error: any) {
-    console.error("Critical API 500:", error);
-    return new Response(JSON.stringify({ error: 'DATABASE_WRITE_ERROR', details: error.message }), { status: 500, headers });
+    console.error("Critical API 500 Recovery:", error);
+    return new Response(JSON.stringify({ 
+      error: 'DATABASE_WRITE_ERROR', 
+      message: 'Veritabanı mühürleme hatası. Sütun uyuşmazlığı gideriliyor olabilir.',
+      details: error.message 
+    }), { status: 500, headers });
   }
   return new Response(null, { status: 405 });
 }
