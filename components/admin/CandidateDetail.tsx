@@ -261,7 +261,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 rounded-xl text-white shadow-lg relative overflow-hidden">
                         <div className="relative z-10">
                            <h4 className="text-[9px] font-black text-orange-500 uppercase tracking-[0.3em] mb-3">24 AYLIK EVRİM YOLU</h4>
-                           <p className="text-sm font-bold leading-relaxed italic tracking-tight text-justify">"{candidate.report.predictiveMetrics.evolutionPath}"</p>
+                           <p className="text-sm font-bold leading-relaxed italic tracking-tight text-justify">"{candidate.report.predictiveMetrics?.evolutionPath || 'Analiz Ediliyor...'}"</p>
                         </div>
                         <div className="absolute right-0 top-0 w-32 h-32 bg-orange-600/10 rounded-full blur-[40px]"></div>
                      </div>
@@ -269,25 +269,25 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <PredictBar 
                            label="SADAKAT" 
-                           value={candidate.report.predictiveMetrics.retentionProbability} 
+                           value={candidate.report.predictiveMetrics?.retentionProbability || 0} 
                            color="text-emerald-600" 
                            description="1 yıl"
                         />
                         <PredictBar 
                            label="ÖĞRENME" 
-                           value={candidate.report.predictiveMetrics.learningVelocity} 
+                           value={candidate.report.predictiveMetrics?.learningVelocity || 0} 
                            color="text-blue-600" 
                            description="Adaptasyon"
                         />
                         <PredictBar 
                            label="DİRENÇ" 
-                           value={100 - candidate.report.predictiveMetrics.burnoutRisk} 
+                           value={100 - (candidate.report.predictiveMetrics?.burnoutRisk || 0)} 
                            color="text-rose-600" 
                            description="Stres"
                         />
                         <PredictBar 
                            label="LİDERLİK" 
-                           value={candidate.report.predictiveMetrics.leadershipPotential} 
+                           value={candidate.report.predictiveMetrics?.leadershipPotential || 0} 
                            color="text-orange-600" 
                            description="Potansiyel"
                         />
@@ -311,7 +311,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
                         <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-4 border-l-2 border-orange-600 pl-3">STRATEJİK SORGULAMA KILAVUZU</h4>
                         <div className="space-y-3">
-                           {candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                           {candidate.report.interviewGuidance?.strategicQuestions?.map((q, i) => (
                               <div key={i} className="flex gap-4 items-start group p-2 hover:bg-slate-50 rounded">
                                  <span className="w-6 h-6 bg-slate-900 text-white rounded flex items-center justify-center text-[9px] font-black shrink-0 shadow-sm">{i+1}</span>
                                  <div className="space-y-1">
@@ -322,6 +322,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                  </div>
                               </div>
                            ))}
+                           {(!candidate.report.interviewGuidance?.strategicQuestions || candidate.report.interviewGuidance.strategicQuestions.length === 0) && (
+                             <div className="text-center py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Soru seti oluşturulamadı.</div>
+                           )}
                         </div>
                      </div>
 
@@ -332,7 +335,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                               KRİTİK GÖZLEM NOKTALARI
                            </h4>
                            <div className="space-y-2">
-                              {candidate.report.interviewGuidance.criticalObservations.map((obs, i) => (
+                              {candidate.report.interviewGuidance?.criticalObservations?.map((obs, i) => (
                                  <div key={i} className="flex gap-2 items-start bg-white p-3 rounded-lg border border-rose-50 shadow-sm">
                                     <span className="text-rose-500 font-black text-[10px]">!</span>
                                     <p className="text-[10px] font-bold text-slate-700 leading-tight uppercase">{obs}</p>
@@ -343,7 +346,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">SİMÜLASYON GÖREVLERİ</h4>
                            <div className="space-y-2">
-                              {candidate.report.interviewGuidance.simulationTasks?.map((task, i) => (
+                              {candidate.report.interviewGuidance?.simulationTasks?.map((task, i) => (
                                  <div key={i} className="flex gap-2 items-start bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                                     <span className="text-slate-900 font-black text-[10px]">►</span>
                                     <p className="text-[10px] font-bold text-slate-700 leading-tight">{task}</p>
