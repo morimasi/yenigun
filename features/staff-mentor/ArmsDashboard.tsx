@@ -22,7 +22,6 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   });
   const [isAdding, setIsAdding] = useState(false);
 
-  // YEREL PERSONEL VERİSİNİ ÇEK
   const getLocalStaff = () => {
     const local = localStorage.getItem('yeni_gun_staff');
     return local ? JSON.parse(local) : [];
@@ -36,7 +35,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
         const data = await res.json();
         if (Array.isArray(data)) {
           setStaffList(data);
-          localStorage.setItem('yeni_gun_staff', JSON.stringify(data)); // Cache güncelle
+          localStorage.setItem('yeni_gun_staff', JSON.stringify(data));
           return;
         }
       }
@@ -67,16 +66,9 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStaffForm)
       });
-      
       const result = res.ok ? await res.json() : { success: false };
-      
-      if (result.success) {
-        // Success logic
-      } else {
-        throw new Error("API_FAIL");
-      }
+      if (!result.success) throw new Error("API_FAIL");
     } catch (e) {
-      // OFFLINE FALLBACK
       const currentStaff = getLocalStaff();
       const newStaffMember = {
         id: staffId,
@@ -87,7 +79,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
       };
       localStorage.setItem('yeni_gun_staff', JSON.stringify([newStaffMember, ...currentStaff]));
     } finally {
-      alert(`Personel başarıyla eklendi. (ID: ${staffId}) - ${isAdding ? '(Çevrimdışı Mod)' : ''}`);
+      alert(`Personel başarıyla eklendi. (ID: ${staffId})`);
       setIsAddStaffOpen(false);
       setNewStaffForm({ name: '', email: '', password: 'yenigun2024', branch: Branch.OzelEgitim, experienceYears: 0 });
       if (onRefresh) onRefresh(); else fetchStaff();
@@ -111,8 +103,8 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   if (activeTab === 'studio') {
     return (
       <div className="relative">
-        <button onClick={() => setActiveTab('dashboard')} className="absolute top-8 left-8 z-50 px-6 py-3 bg-white rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100">
-          ← Dashboard'a Dön
+        <button onClick={() => setActiveTab('dashboard')} className="absolute top-4 left-4 z-50 px-4 py-2 bg-white rounded-xl shadow-md text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-200">
+          ← Geri
         </button>
         <PresentationStudio />
       </div>
@@ -120,119 +112,105 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   }
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in pb-20 relative">
-      <div className="bg-slate-950 p-12 md:p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border border-white/5 group">
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <span className="px-5 py-2 bg-orange-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl">AKADEMİK REZONANS SİSTEMİ</span>
-              <div className="h-px w-20 bg-white/20"></div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.5em]">REAL-TIME DATABASE V3.0</span>
-            </div>
-            <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.85] italic">
-              Kadrolu<br/>Klinik Zeka
-            </h2>
-          </div>
-          <div className="flex flex-col items-end gap-6">
-             <div className="flex gap-4">
-                <button onClick={() => setIsAddStaffOpen(true)} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-[3rem] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95">
-                   + HIZLI PERSONEL EKLE
-                </button>
-                <button onClick={() => setActiveTab('studio')} className="px-12 py-6 bg-white text-slate-900 rounded-[3rem] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 hover:text-white transition-all active:scale-95 group">
-                    <span className="flex items-center gap-3">
-                      <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                      AKADEMİK STÜDYO (SUNUM)
-                    </span>
-                </button>
-             </div>
-             <div className="grid grid-cols-2 gap-6 w-full">
-                <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 backdrop-blur-xl text-center">
-                   <p className="text-4xl font-black text-orange-500">%{stats.avgScore}</p>
-                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-2">VERİM</p>
-                </div>
-                <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 backdrop-blur-xl text-center">
-                   <p className="text-4xl font-black text-emerald-500">%{stats.growth}</p>
-                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-2">BÜYÜME</p>
-                </div>
-             </div>
+    <div className="flex flex-col gap-4 animate-fade-in pb-10 relative h-full">
+      {/* COMPACT HEADER */}
+      <div className="bg-slate-900 p-6 rounded-[2rem] text-white shadow-lg relative overflow-hidden border border-white/5 shrink-0 flex items-center justify-between">
+        <div className="relative z-10 flex items-center gap-6">
+          <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center font-black text-lg shadow-lg">ARMS</div>
+          <div>
+             <h2 className="text-2xl font-black tracking-tight uppercase leading-none">Kadrolu Klinik Zeka</h2>
+             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Real-Time Academic Database v3.0</p>
           </div>
         </div>
-        <div className="absolute -left-40 -bottom-40 w-[600px] h-[600px] bg-orange-600/5 rounded-full blur-[200px] group-hover:scale-110 transition-transform duration-[5s]"></div>
+        <div className="relative z-10 flex items-center gap-4">
+             <div className="flex gap-4 mr-4">
+                <div className="text-right">
+                   <p className="text-xl font-black text-orange-500 leading-none">%{stats.avgScore}</p>
+                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">VERİM</p>
+                </div>
+                <div className="text-right">
+                   <p className="text-xl font-black text-emerald-500 leading-none">%{stats.growth}</p>
+                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">BÜYÜME</p>
+                </div>
+             </div>
+             <button onClick={() => setIsAddStaffOpen(true)} className="px-5 py-2.5 bg-white/10 border border-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all">
+                + PERSONEL
+             </button>
+             <button onClick={() => setActiveTab('studio')} className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg hover:bg-orange-600 hover:text-white transition-all">
+                 SUNUM STÜDYOSU
+             </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        <div className="xl:col-span-3 space-y-6">
-          <div className="p-8 bg-white rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden">
-             <div className="mb-8">
-                <input type="text" placeholder="Personel Sorgula..." className="w-full bg-slate-50 rounded-2xl p-4 text-[11px] font-bold outline-none border border-transparent focus:border-orange-500 transition-all shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-             </div>
-             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {isLoading && staffList.length === 0 ? (
-                  [1,2,3].map(i => <div key={i} className="h-20 bg-slate-50 rounded-3xl animate-pulse"></div>)
-                ) : filteredStaff.length === 0 ? (
-                  <p className="text-[10px] font-black text-slate-300 uppercase text-center py-10">Kayıt Bulunamadı</p>
-                ) : (
-                  filteredStaff.map(s => (
-                    <button key={s.id} onClick={() => setSelectedStaffId(s.id)} className={`w-full p-5 rounded-3xl border-2 transition-all flex items-center gap-5 text-left relative group/item ${selectedStaffId === s.id ? 'bg-slate-950 border-slate-950 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-50 hover:border-orange-200'}`}>
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all ${selectedStaffId === s.id ? 'bg-orange-600' : 'bg-slate-100 text-slate-400'}`}>
-                        {s.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-black uppercase tracking-tight truncate leading-none mb-2">{s.name}</p>
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 truncate">{s.branch}</p>
-                      </div>
-                      {s.last_score !== undefined && (
-                        <div className={`px-2 py-1 rounded-lg text-[9px] font-black ${s.last_score > 70 ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>%{s.last_score}</div>
-                      )}
-                    </button>
-                  ))
-                )}
-             </div>
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-0">
+        {/* LIST PANEL */}
+        <div className="xl:col-span-3 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+             <input type="text" placeholder="Personel Ara..." className="w-full bg-white rounded-xl p-2.5 text-[10px] font-bold outline-none border border-slate-200 focus:border-orange-500 transition-all" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+             {isLoading && staffList.length === 0 ? (
+               [1,2,3].map(i => <div key={i} className="h-14 bg-slate-50 rounded-xl animate-pulse"></div>)
+             ) : filteredStaff.length === 0 ? (
+               <p className="text-[9px] font-bold text-slate-300 uppercase text-center py-6">Kayıt Yok</p>
+             ) : (
+               filteredStaff.map(s => (
+                 <button key={s.id} onClick={() => setSelectedStaffId(s.id)} className={`w-full p-3 rounded-xl border transition-all flex items-center gap-3 text-left group ${selectedStaffId === s.id ? 'bg-slate-900 border-slate-900 text-white shadow-md' : 'bg-white border-slate-100 hover:border-orange-200'}`}>
+                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 transition-all ${selectedStaffId === s.id ? 'bg-orange-600' : 'bg-slate-100 text-slate-400'}`}>
+                     {s.name.charAt(0)}
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <p className="text-[10px] font-black uppercase truncate leading-tight">{s.name}</p>
+                     <p className={`text-[8px] font-bold uppercase truncate ${selectedStaffId === s.id ? 'text-slate-400' : 'text-slate-400'}`}>{s.branch}</p>
+                   </div>
+                   {s.last_score !== undefined && (
+                     <span className={`text-[9px] font-black ${s.last_score > 70 ? 'text-emerald-500' : 'text-orange-500'}`}>%{s.last_score}</span>
+                   )}
+                 </button>
+               ))
+             )}
           </div>
         </div>
 
-        <div className="xl:col-span-9">
+        {/* DETAIL PANEL */}
+        <div className="xl:col-span-9 h-full min-h-0 overflow-y-auto custom-scrollbar">
           {selectedStaffId ? (
             <StaffProfileView staffId={selectedStaffId} />
           ) : (
-            <div className="h-[800px] bg-white border-4 border-dashed border-slate-100 rounded-[5rem] flex flex-col items-center justify-center text-center p-24 opacity-30 grayscale">
-               <div className="w-40 h-40 bg-slate-50 rounded-[4rem] flex items-center justify-center mb-12 shadow-inner border border-slate-100">
-                  <svg className="w-20 h-20 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div className="h-full bg-white border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-center opacity-30 p-10">
+               <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                </div>
-               <h3 className="text-3xl font-black text-slate-300 uppercase tracking-[1em]">Klinik Dosya Seçin</h3>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Klinik Dosya Seçin</p>
             </div>
           )}
         </div>
       </div>
 
       {isAddStaffOpen && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in no-print">
-           <div className="bg-white rounded-[4rem] w-full max-w-lg p-12 shadow-2xl border border-white/20 animate-scale-in">
-              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8">Hızlı Kadro Aktivasyonu</h3>
-              <div className="space-y-6">
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Ad Soyad</label>
-                    <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.name} onChange={e => setNewStaffForm({...newStaffForm, name: e.target.value})} />
+        <div className="fixed inset-0 z-[150] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in no-print">
+           <div className="bg-white rounded-[2rem] w-full max-w-sm p-8 shadow-2xl animate-scale-in">
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-6">Hızlı Kadro Ekle</h3>
+              <div className="space-y-4">
+                 <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Ad Soyad</label>
+                    <input className="w-full bg-slate-50 rounded-xl p-3 text-xs font-bold outline-none border border-slate-100 focus:border-orange-500" value={newStaffForm.name} onChange={e => setNewStaffForm({...newStaffForm, name: e.target.value})} />
                  </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Kurumsal E-Posta</label>
-                    <input type="email" className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.email} onChange={e => setNewStaffForm({...newStaffForm, email: e.target.value})} />
+                 <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">E-Posta</label>
+                    <input type="email" className="w-full bg-slate-50 rounded-xl p-3 text-xs font-bold outline-none border border-slate-100 focus:border-orange-500" value={newStaffForm.email} onChange={e => setNewStaffForm({...newStaffForm, email: e.target.value})} />
                  </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Branş</label>
-                    <select className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none" value={newStaffForm.branch} onChange={e => setNewStaffForm({...newStaffForm, branch: e.target.value as Branch})}>
+                 <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Branş</label>
+                    <select className="w-full bg-slate-50 rounded-xl p-3 text-xs font-bold outline-none border border-slate-100" value={newStaffForm.branch} onChange={e => setNewStaffForm({...newStaffForm, branch: e.target.value as Branch})}>
                        {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                  </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Geçici Şifre</label>
-                    <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold outline-none text-slate-400" value={newStaffForm.password} readOnly />
-                 </div>
                  
-                 <div className="flex gap-4 pt-4">
-                    <button onClick={() => setIsAddStaffOpen(false)} className="flex-1 py-5 text-slate-400 text-[11px] font-black uppercase tracking-widest">İptal</button>
-                    <button onClick={handleAddStaff} disabled={isAdding} className="flex-2 px-10 py-5 bg-slate-900 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all">
-                       {isAdding ? 'Ekleniyor...' : 'Atamayı Onayla'}
+                 <div className="flex gap-3 pt-4">
+                    <button onClick={() => setIsAddStaffOpen(false)} className="flex-1 py-3 text-slate-400 text-[10px] font-black uppercase tracking-widest bg-slate-50 rounded-xl hover:bg-slate-100">İptal</button>
+                    <button onClick={handleAddStaff} disabled={isAdding} className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-black transition-all">
+                       {isAdding ? '...' : 'Ekle'}
                     </button>
                  </div>
               </div>
