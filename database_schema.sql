@@ -1,13 +1,11 @@
 
 -- ======================================================
 -- YENI GUN AKADEMI - ARMS (ACADEMIC RESONANCE SYSTEM)
--- VERITABANI MIMARISI v7.0 (FULL SYNC)
+-- VERITABANI MIMARISI v8.0 (STABILITY UPDATE)
 -- ======================================================
 
--- 1. GEREKLI EKLENTILER
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. ZAMANLAYICI FONKSIYON
 CREATE OR REPLACE FUNCTION arms_update_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -16,7 +14,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 3. ADAY YONETIM TABLOSU (GUNCEL)
+-- ADAY YONETIM TABLOSU
 CREATE TABLE IF NOT EXISTS candidates (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -45,29 +43,18 @@ CREATE TABLE IF NOT EXISTS candidates (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- MIGRATION: EKSİK SÜTUNLARI ZORLA EKLE (Tablo varsa bile çalışır)
-DO $$ 
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='candidates' AND column_name='marital_status') THEN
-        ALTER TABLE candidates ADD COLUMN marital_status TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='candidates' AND column_name='age') THEN
-        ALTER TABLE candidates ADD COLUMN age INTEGER;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='candidates' AND column_name='gender') THEN
-        ALTER TABLE candidates ADD COLUMN gender TEXT;
-    END IF;
-END $$;
-
+-- INDEXES FOR PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_arms_cand_status ON candidates(status);
 CREATE INDEX IF NOT EXISTS idx_arms_cand_email ON candidates(email);
+CREATE INDEX IF NOT EXISTS idx_arms_cand_archive ON candidates(archive_category);
 
+-- TRIGGER FOR UPDATED_AT
 DROP TRIGGER IF EXISTS tr_arms_update_candidates ON candidates;
 CREATE TRIGGER tr_arms_update_candidates
 BEFORE UPDATE ON candidates
 FOR EACH ROW EXECUTE FUNCTION arms_update_timestamp();
 
--- 4. AKADEMIK PERSONEL TABLOSU
+-- AKADEMIK PERSONEL TABLOSU
 CREATE TABLE IF NOT EXISTS staff (
     id TEXT PRIMARY KEY,
     origin_candidate_id TEXT REFERENCES candidates(id) ON DELETE SET NULL,
@@ -87,12 +74,41 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TRIGGER IF EXISTS tr_arms_update_staff ON staff;
-CREATE TRIGGER tr_arms_update_staff
-BEFORE UPDATE ON staff
-FOR EACH ROW EXECUTE FUNCTION arms_update_timestamp();
+-- PERSONEL DEGERLENDIRME TABLOSU
+CREATE TABLE IF NOT EXISTS staff_assessments (
+    id SERIAL PRIMARY KEY,
+    staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
+    battery_id TEXT NOT NULL,
+    answers JSONB NOT NULL,
+    score INTEGER NOT NULL,
+    ai_tags JSONB DEFAULT '[]'::jsonb,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(staff_id, battery_id)
+);
 
--- 5. SISTEM AYARLARI
+-- INDIVIDUAL DEVELOPMENT PLANS (IDP)
+CREATE TABLE IF NOT EXISTS staff_idp (
+    id SERIAL PRIMARY KEY,
+    staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
+    data JSONB NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ILETISIM KAYITLARI
+CREATE TABLE IF NOT EXISTS communication_logs (
+    id SERIAL PRIMARY KEY,
+    target_id TEXT,
+    target_email TEXT,
+    channel TEXT,
+    subject TEXT,
+    content_preview TEXT,
+    status TEXT,
+    error_message TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- SISTEM AYARLARI
 CREATE TABLE IF NOT EXISTS system_config (
     id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     data JSONB NOT NULL,
