@@ -3,7 +3,7 @@ import { FormStep, Question, Branch, Certification } from './types';
 
 export const FORM_STEPS: FormStep[] = [
   { id: 'personal', title: 'Profil & Akademik Kimlik', description: 'Uzmanlık yolculuğunuzun dijital izini oluşturun.' },
-  { id: 'clinical_logic', title: 'Sabit Klinik Katman', description: 'Evrensel uygulama sadakati ve metodolojik temel.' },
+  { id: 'clinical_logic', title: 'Sabit Klinik & Pedagojik Katman', description: 'Evrensel uygulama sadakati ve metodolojik temel.' },
   { id: 'ethics_parent', title: 'Etik & Veli Yönetimi', description: 'Profesyonel sınırlar ve etik refleks analizi.' },
   { id: 'resilience_team', title: 'Resilians & Takım Uyumu', description: 'Kriz yönetimi ve psikolojik dayanıklılık.' },
   { id: 'vision_loyalty', title: 'Vizyon & Sadakat', description: 'Kurumsal aidiyet ve akademik büyüme projeksiyonu.' }
@@ -194,7 +194,7 @@ export const CERTIFICATIONS: Certification[] = [
 ];
 
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
-  // --- KATMAN 1: SABİT KLİNİK KATMAN (5 SORU) ---
+  // --- KATMAN 1: SABİT KLİNİK KATMAN (+20 YENİ SORU: 10 Klinik + 10 Pedagojik) ---
   clinical_logic: [
     {
       id: 'clin_1', category: 'technicalExpertise', type: 'radio',
@@ -226,29 +226,111 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
         { label: 'Müfredat bittiğinde, bir sonraki yıla hazırlık olarak.', weights: { clinical: 0.1 }, analysisInsight: 'Zamanlama hatası.' }
       ]
     },
+    // ... [KLİNİK YETERLİLİK - YENİ SORULAR - PART 1] ...
     {
-      id: 'clin_4', category: 'technicalExpertise', type: 'radio',
-      text: '"Hata Üretmeden Öğretim" (Errorless Teaching) tekniğinde temel amaç nedir?',
+      id: 'clin_ext_1', category: 'technicalExpertise', type: 'radio',
+      text: '"Pekiştirme Tarifesi" (Reinforcement Schedule) geçişlerinde, Sürekli Pekiştirmeden (FR1) Aralıklı Pekiştirmeye (VR) erken geçilirse ne risk oluşur?',
       weightedOptions: [
-        { label: 'Çocuğun hiç yorulmamasını sağlamak.', weights: { clinical: 0.2 }, analysisInsight: 'Pedagojik yanılgı.' },
-        { label: 'İpucu silikleştirme ile çocuğun yanlış yapma ve motivasyon kaybetme riskini minimize etmek.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru metodoloji.' },
-        { label: 'İpucunu sürekli vererek çocuğun doğruyu her zaman yapmasını sağlamak.', weights: { clinical: 0.4 }, analysisInsight: 'İpucu bağımlılığı riski.' },
-        { label: 'Dersi daha hızlı bitirebilmek.', weights: { clinical: 0.0 }, analysisInsight: 'Mesleki etik zayıflığı.' }
+        { label: 'Çocuk beceriyi daha hızlı öğrenir.', weights: { clinical: 0.2 }, analysisInsight: 'Metodolojik yanılgı.' },
+        { label: 'Sönme (Extinction) benzeri bir etki oluşarak davranışta bozulma ve motivasyon kaybı yaşanır.', weights: { clinical: 1.0 }, analysisInsight: 'Derin teknik bilgi.' },
+        { label: 'Çocuk ödüle bağımlı hale gelir.', weights: { clinical: 0.3 }, analysisInsight: 'Yanlış kavram eşleşmesi.' },
+        { label: 'Hiçbir risk yoktur, pekiştireç tasarrufu sağlanır.', weights: { clinical: 0.0 }, analysisInsight: 'Pedagojik körlük.' }
       ]
     },
     {
-      id: 'clin_5', category: 'technicalExpertise', type: 'radio',
-      text: 'Multidisipliner bir ekipte (OT, DKT, ÖE) seans çakışması durumunda öncelik nasıl belirlenir?',
+      id: 'clin_ext_2', category: 'technicalExpertise', type: 'radio',
+      text: 'İpucu Silikleştirme (Prompt Fading) sürecinde "Gecikmeli İpucu" (Time Delay) yöntemi hangi durumda en etkilidir?',
       weightedOptions: [
-        { label: 'Kurumda en uzun süre çalışan öğretmenin dediği olur.', weights: { fit: 0.2 }, analysisInsight: 'Hiyerarşik katılık.' },
-        { label: 'Çocuğun o anki regülasyon ve temel bariyer ihtiyacına göre ortak karar alınır.', weights: { clinical: 1.0, fit: 1.0 }, analysisInsight: 'Sistemik çözüm.' },
-        { label: 'Veli hangi derse girmek istiyorsa o tercih edilir.', weights: { fit: 0.4, clinical: 0.3 }, analysisInsight: 'Veli manipülasyonu.' },
-        { label: 'Sadece akademik (derste başarılı olma) odaklı branş öncelenir.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış öncelik.' }
+        { label: 'Çocuk beceriyi hiç bilmiyorsa.', weights: { clinical: 0.2 }, analysisInsight: 'Hata riski yüksek.' },
+        { label: 'Çocuk beceriyi kazanmış ancak bağımsız başlatmada (initiation) sorun yaşıyorsa.', weights: { clinical: 1.0 }, analysisInsight: 'Doğru strateji.' },
+        { label: 'Problem davranış anında.', weights: { clinical: 0.0 }, analysisInsight: 'Kriz yönetimi hatası.' },
+        { label: 'Veli odadayken.', weights: { clinical: 0.1 }, analysisInsight: 'İlgisiz bağlam.' }
+      ]
+    },
+    {
+      id: 'clin_ext_3', category: 'technicalExpertise', type: 'radio',
+      text: 'ABC kaydında, davranışın hemen öncesinde (Antecedent) "Yönerge verilmesi" ve hemen sonrasında (Consequence) "Çocuğun masadan kalkması" varsa, davranışın muhtemel işlevi nedir?',
+      weightedOptions: [
+        { label: 'Dikkat çekme (Attention).', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış analiz.' },
+        { label: 'Kaçma/Kaçınma (Escape/Avoidance).', weights: { clinical: 1.0 }, analysisInsight: 'Fonksiyonel analiz yetkinliği.' },
+        { label: 'Duyusal uyaran elde etme (Sensory).', weights: { clinical: 0.3 }, analysisInsight: 'Eksik veri.' },
+        { label: 'Nesne elde etme (Tangible).', weights: { clinical: 0.1 }, analysisInsight: 'Bağlam hatası.' }
+      ]
+    },
+    {
+      id: 'clin_ext_4', category: 'technicalExpertise', type: 'radio',
+      text: 'Duyusal Regülasyon bozukluğu (Meltdown) ile Davranışsal Öfke Nöbeti (Tantrum) arasındaki kritik fark nedir?',
+      weightedOptions: [
+        { label: 'Tantrumda çocuk bir amaç (nesne/ilgi) güder ve seyirciye bakar; Meltdown nörolojik bir aşırı yüklenmedir ve amaçsızdır.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik ayrım uzmanlığı.' },
+        { label: 'Meltdown daha kısa sürer.', weights: { clinical: 0.2 }, analysisInsight: 'Yanlış bilgi.' },
+        { label: 'İkisi de aynı şeydir, sadece isimleri farklıdır.', weights: { clinical: 0.0 }, analysisInsight: 'Temel bilgi eksikliği.' },
+        { label: 'Tantrum sadece evde olur.', weights: { clinical: 0.1 }, analysisInsight: 'Genelleme hatası.' }
+      ]
+    },
+    {
+      id: 'clin_ext_5', category: 'technicalExpertise', type: 'radio',
+      text: 'Şekil Verme (Shaping) tekniği uygulanırken "Ardışık Yaklaşıklıklar" (Successive Approximations) nasıl pekiştirilmelidir?',
+      weightedOptions: [
+        { label: 'Sadece en son, mükemmel davranış pekiştirilir.', weights: { clinical: 0.3 }, analysisInsight: 'Süreç hatası.' },
+        { label: 'Her aşama pekiştirilir ve bir önceki aşama sönmeye bırakılarak davranış hedefe yaklaştırılır.', weights: { clinical: 1.0 }, analysisInsight: 'Davranış mühendisliği.' },
+        { label: 'Çocuk yorulmasın diye sürekli yardım edilir.', weights: { clinical: 0.1 }, analysisInsight: 'İpucu bağımlılığı.' },
+        { label: 'Rastgele pekiştirme yapılır.', weights: { clinical: 0.0 }, analysisInsight: 'Verisiz işlem.' }
+      ]
+    },
+    // ... [PEDAGOJİK ALTYAPI - YENİ SORULAR - PART 2] ...
+    {
+      id: 'ped_ext_1', category: 'pedagogicalAnalysis', type: 'radio',
+      text: 'Vygotsky\'nin "Yakınsal Gelişim Alanı" (Zone of Proximal Development) kavramı özel eğitimde nasıl uygulanır?',
+      weightedOptions: [
+        { label: 'Çocuğun tek başına yapabildiği becerileri tekrar ettirerek.', weights: { clinical: 0.2 }, analysisInsight: 'Gelişim duraklaması.' },
+        { label: 'Çocuğun henüz yapamadığı ama destekle yapabileceği becerilere "İskele" (Scaffolding) kurarak.', weights: { clinical: 1.0 }, analysisInsight: 'Pedagojik derinlik.' },
+        { label: 'Çocuğun yaşının çok üzerindeki hedefleri çalışarak.', weights: { clinical: 0.1 }, analysisInsight: 'Frustrasyon riski.' },
+        { label: 'Sınıfın ortalamasına göre ders anlatarak.', weights: { clinical: 0.0 }, analysisInsight: 'Bireysellik ihlali.' }
+      ]
+    },
+    {
+      id: 'ped_ext_2', category: 'pedagogicalAnalysis', type: 'radio',
+      text: 'Grupta farklı seviyelerde (heterojen) öğrenciler varsa "Farklılaştırılmış Öğretim" (Differentiated Instruction) nasıl kurgulanır?',
+      weightedOptions: [
+        { label: 'Herkes aynı etkinliği yapar, hızlı bitiren bekler.', weights: { clinical: 0.1 }, analysisInsight: 'Geleneksel hata.' },
+        { label: 'Zayıf öğrencilere daha kolay sorular, ileri öğrencilere zenginleştirilmiş materyaller sunarak süreç ve ürün farklılaştırılır.', weights: { clinical: 1.0 }, analysisInsight: 'Modern pedagoji.' },
+        { label: 'Sınıf ikiye bölünür, sadece iyilerle ders işlenir.', weights: { ethics: -1.0, clinical: 0.0 }, analysisInsight: 'Etik ihlal.' },
+        { label: 'Veliye özel ders alması söylenir.', weights: { clinical: 0.2 }, analysisInsight: 'Sorumluluk devri.' }
+      ]
+    },
+    {
+      id: 'ped_ext_3', category: 'pedagogicalAnalysis', type: 'radio',
+      text: 'Soyut kavramların öğretiminde "Somut-Yarı Somut-Soyut" (CRA) döngüsü neden atlanmamalıdır?',
+      weightedOptions: [
+        { label: 'Çünkü çocuklar oyuncakları sever.', weights: { clinical: 0.2 }, analysisInsight: 'Yüzeysel yorum.' },
+        { label: 'Nöral bağlantıların kalıcı olması ve kavramın içselleştirilmesi için fiziksel manipülasyon şarttır.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel gelişim uzmanlığı.' },
+        { label: 'Materyal kullanmak zaman kaybıdır, direkt karta geçilmelidir.', weights: { clinical: 0.0 }, analysisInsight: 'Ezberci yaklaşım.' },
+        { label: 'Veliler materyal görünce mutlu olur.', weights: { clinical: 0.1 }, analysisInsight: 'Maskeleme.' }
+      ]
+    },
+    {
+      id: 'ped_ext_4', category: 'pedagogicalAnalysis', type: 'radio',
+      text: '"Aktif Katılım" (Active Responding) oranı düşük olan bir derste öğrenme hızı neden düşer?',
+      weightedOptions: [
+        { label: 'Çocuk sıkıldığı için.', weights: { clinical: 0.3 }, analysisInsight: 'Basit açıklama.' },
+        { label: 'Öğrenme nöral yolların ateşlenmesiyle olur; pasif dinleme sinaptik bağlantı kurmaz.', weights: { clinical: 1.0 }, analysisInsight: 'Nöro-pedagoji.' },
+        { label: 'Öğretmen çok konuştuğu için.', weights: { clinical: 0.4 }, analysisInsight: 'Kısmen doğru ama eksik.' },
+        { label: 'Sınıf çok sıcak olduğu için.', weights: { clinical: 0.1 }, analysisInsight: 'Çevresel bahane.' }
+      ]
+    },
+    {
+      id: 'ped_ext_5', category: 'pedagogicalAnalysis', type: 'radio',
+      text: 'İçsel Motivasyon (Intrinsic) oluşturmak için "Dışsal Ödüller" (Extrinsic) nasıl yönetilmelidir?',
+      weightedOptions: [
+        { label: 'Sürekli şeker/çikolata verilmeli.', weights: { clinical: 0.1 }, analysisInsight: 'Bağımlılık riski.' },
+        { label: 'Ödüller zamanla sosyal onaya ve başarma hissine dönüştürülerek (silikleştirilerek) içselleştirilmelidir.', weights: { clinical: 1.0 }, analysisInsight: 'Motivasyon yönetimi.' },
+        { label: 'Hiç ödül verilmemeli, çocuk kendi öğrenmeli.', weights: { clinical: 0.2 }, analysisInsight: 'Gerçekçi olmayan beklenti.' },
+        { label: 'Sadece veli ödül vermeli.', weights: { clinical: 0.0 }, analysisInsight: 'Rol karmaşası.' }
       ]
     }
   ],
 
-  // --- KATMAN 2: ETİK VE VELİ YÖNETİMİ (5 SORU) ---
+  // --- KATMAN 2: ETİK VE VELİ YÖNETİMİ (+10 YENİ SORU) ---
   ethics_parent: [
     {
       id: 'eth_1', category: 'workEthics', type: 'radio',
@@ -270,39 +352,110 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
         { label: 'Kendi kendime not alır, kimseye söylemem.', weights: { ethics: 0.0 }, analysisInsight: 'Kritik sessizlik.' }
       ]
     },
+    // ... [İŞ ETİĞİ & SINIR - YENİ SORULAR] ...
     {
-      id: 'eth_3', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli, diğer bir öğretmenin mülakat performansı veya kişiliği hakkında sizinle dedikodu yapmaya çalışırsa?',
+      id: 'eth_ext_1', category: 'workEthics', type: 'radio',
+      text: 'Bir veli sizi akşam yemeğine ailesiyle tanışmak üzere ısrarla davet ediyor. Yanıtınız?',
       weightedOptions: [
-        { label: 'Dinlerim ama yorum yapmam.', weights: { parentStudentRelations: 0.5, fit: 0.3 }, analysisInsight: 'Pasif onay.' },
-        { label: 'Benim de benzer şikayetlerim olduğunu belirtip dertleşirim.', weights: { parentStudentRelations: -0.5, fit: -1.0 }, analysisInsight: 'Takım yıkıcılığı.' },
-        { label: 'Nazikçe profesyonel sınırları çizer ve konuyu öğrencinin gelişimine geri getiririm.', weights: { parentStudentRelations: 1.0, fit: 1.0 }, analysisInsight: 'Sınır koruma.' },
-        { label: 'Veliye hak verir ama "öğretmen arkadaşımdır" diyerek savunurum.', weights: { parentStudentRelations: 0.3, fit: 0.4 }, analysisInsight: 'Çatışmalı duruş.' }
+        { label: 'Kırmamak için kabul ederim.', weights: { ethics: 0.2 }, analysisInsight: 'Profesyonel sınır ihlali.' },
+        { label: 'Nazikçe teşekkür eder, kurum politikası ve terapötik sınır gereği dışarıda görüşemeyeceğimizi belirtirim.', weights: { ethics: 1.0 }, analysisInsight: 'Sınır koruma.' },
+        { label: 'Müdürden izin alıp giderim.', weights: { ethics: 0.5 }, analysisInsight: 'Sorumluluk devri.' },
+        { label: 'Sadece kahve içmeye giderim.', weights: { ethics: 0.3 }, analysisInsight: 'Gri alan riski.' }
       ]
     },
     {
-      id: 'eth_4', category: 'workEthics', type: 'radio',
-      text: '"İkili İlişkiler" (Dual Relationships) kapsamında sosyal medyada velilerle arkadaşlık kurmayı nasıl değerlendirirsiniz?',
+      id: 'eth_ext_2', category: 'workEthics', type: 'radio',
+      text: 'Öğretmenler odasında bir meslektaşınızın, bir velinin özel hayatı hakkında dedikodu yaptığını duydunuz. Tepkiniz?',
       weightedOptions: [
-        { label: 'Sadece çok samimi olduğum ve güvendiğim velileri eklerim.', weights: { ethics: 0.2 }, analysisInsight: 'Öznel sınır yönetimi.' },
-        { label: 'Eklerim ama paylaşımlarımı kısıtlarım.', weights: { ethics: 0.4 }, analysisInsight: 'Gri alan tercihi.' },
-        { label: 'Klinik objektifliği ve profesyonel mesafeyi korumak adına kesinlikle kaçınırım.', weights: { ethics: 1.0 }, analysisInsight: 'Etik olgunluk.' },
-        { label: 'Modern dünyada bir sakıncası yoktur, iletişimi artırır.', weights: { ethics: 0.0 }, analysisInsight: 'Etik körlük.' }
+        { label: 'Dinlerim ama yorum yapmam.', weights: { ethics: 0.4 }, analysisInsight: 'Pasif suç ortaklığı.' },
+        { label: 'Ben de bildiğim bir şeyi anlatırım.', weights: { ethics: -1.0 }, analysisInsight: 'Aktif ihlal.' },
+        { label: 'Konuyu değiştirir veya ortamı terk eder, devam ederse uyarırım.', weights: { ethics: 1.0 }, analysisInsight: 'Etik duruş.' },
+        { label: 'Hemen veliye söylerim.', weights: { ethics: 0.2 }, analysisInsight: 'Kaos yaratma.' }
       ]
     },
     {
-      id: 'eth_5', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli, kurumun/koordinatörün belirlediği yöntemin (örn: ABA) yanlış olduğunu ve başka bir şey (örn: Montessori) istediğini söylüyor.',
+      id: 'eth_ext_3', category: 'workEthics', type: 'radio',
+      text: 'Öğrencinizle çok başarılı bir seans geçirdiniz. Fotoğrafını çekip kişisel Instagram hesabınızda paylaşır mısınız?',
       weightedOptions: [
-        { label: 'Veli haklıdır, gizlice onun istediği gibi çalışırım.', weights: { ethics: -0.8, institutionalLoyalty: -1.0 }, analysisInsight: 'Gizli ajanda.' },
-        { label: 'Yöntemin bilimsel dayanağını açıklar, koordinatörü sürece dahil ederek ortak dil kurarım.', weights: { parentStudentRelations: 1.0, clinical: 0.8 }, analysisInsight: 'Arabulucu uzman.' },
-        { label: 'Sert bir dille "uzman benim" diyerek veliyi sustururum.', weights: { parentStudentRelations: 0.2 }, analysisInsight: 'İletişim hatası.' },
-        { label: 'Kararı tamamen yönetime bırakır, sorumluluk almam.', weights: { fit: 0.4 }, analysisInsight: 'Zayıf inisiyatif.' }
+        { label: 'Evet, veliden sözlü izin alarak paylaşırım.', weights: { ethics: 0.3 }, analysisInsight: 'Yasal risk.' },
+        { label: 'Yüzünü emojiyle kapatıp paylaşırım.', weights: { ethics: 0.5 }, analysisInsight: 'Yetersiz önlem.' },
+        { label: 'Hayır, KVKK ve çocuk hakları gereği kişisel hesabımdan asla öğrenci paylaşımı yapmam.', weights: { ethics: 1.0 }, analysisInsight: 'Hukuki ve etik bilinç.' },
+        { label: 'Sadece "Hikaye" (Story) olarak atarım, 24 saatte silinir.', weights: { ethics: 0.1 }, analysisInsight: 'Etik körlük.' }
+      ]
+    },
+    {
+      id: 'eth_ext_4', category: 'workEthics', type: 'radio',
+      text: 'Veli, "Acil durumlar için" diyerek şahsi cep telefonu numaranızı ısrarla istiyor. Verir misiniz?',
+      weightedOptions: [
+        { label: 'Veririm, iletişim önemlidir.', weights: { ethics: 0.2 }, analysisInsight: 'Sınır kaybı.' },
+        { label: 'Veririm ama "sadece mesaj atın" derim.', weights: { ethics: 0.4 }, analysisInsight: 'Yönetilemez risk.' },
+        { label: 'Kurumsal hattı veya ofis numarasını vererek, iletişimin resmi kanaldan yürümesi gerektiğini belirtirim.', weights: { ethics: 1.0 }, analysisInsight: 'Profesyonel kanal.' },
+        { label: 'Numaramı verip sonra engellerim.', weights: { ethics: 0.0 }, analysisInsight: 'Olgunluk dışı.' }
+      ]
+    },
+    {
+      id: 'eth_ext_5', category: 'workEthics', type: 'radio',
+      text: 'Koridorda bir meslektaşınızın çocuğa bağırdığını ve sertçe kolundan tuttuğunu gördünüz. Ne yaparsınız?',
+      weightedOptions: [
+        { label: 'Görmezden gelirim, herkesin tarzı farklıdır.', weights: { ethics: -1.0 }, analysisInsight: 'İhmal suçu.' },
+        { label: 'O an müdahale eder, çocuğu güvenliğe alır ve derhal tutanakla yönetime bildiririm.', weights: { ethics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Çocuk güvenliği önceliği.' },
+        { label: 'Arkadaşımı kenara çeker "dikkat et, biri görür" derim.', weights: { ethics: -0.5 }, analysisInsight: 'Suç ortaklığı.' },
+        { label: 'Velisine söylerim.', weights: { ethics: 0.5 }, analysisInsight: 'Prosedür dışı kriz.' }
+      ]
+    },
+    {
+      id: 'eth_ext_6', category: 'workEthics', type: 'radio',
+      text: 'Veli, seans ücreti haricinde size zarf içinde nakit para (bahşiş) uzatıyor. Tepkiniz?',
+      weightedOptions: [
+        { label: 'Teşekkür edip alırım.', weights: { ethics: -0.8 }, analysisInsight: 'Etik ihlal.' },
+        { label: 'Kızarım ve parayı yere atarım.', weights: { ethics: 0.1 }, analysisInsight: 'Duygusal tepki.' },
+        { label: 'Nazikçe ama kesin bir dille meslek etiğine aykırı olduğunu belirtip iade ederim.', weights: { ethics: 1.0 }, analysisInsight: 'Profesyonel onur.' },
+        { label: 'Alıp kurum bağış kutusuna atarım.', weights: { ethics: 0.6 }, analysisInsight: 'İnisiyatif (riskli).' }
+      ]
+    },
+    {
+      id: 'eth_ext_7', category: 'workEthics', type: 'radio',
+      text: 'Boşanmış bir veli (bekar baba/anne) size duygusal ilgi gösteriyor ve kahve içmeye davet ediyor.',
+      weightedOptions: [
+        { label: 'Kabul ederim, özel hayatımdır.', weights: { ethics: -1.0 }, analysisInsight: 'Dual relationship ihlali.' },
+        { label: 'Terapötik ilişkinin zedeleneceğini ve bunun etik olmadığını net bir dille ifade edip mesafe koyarım.', weights: { ethics: 1.0 }, analysisInsight: 'Sınır yönetimi.' },
+        { label: 'Görmezden gelip seanslara devam ederim.', weights: { ethics: 0.4 }, analysisInsight: 'Pasif risk.' },
+        { label: 'Yönetimden habersiz flört ederim.', weights: { ethics: -2.0 }, analysisInsight: 'Meslekten men sebebi.' }
+      ]
+    },
+    {
+      id: 'eth_ext_8', category: 'workEthics', type: 'radio',
+      text: 'Veli, kurumun fiziki şartlarını eleştiriyor ve "Sizce de burası çok havasız değil mi?" diye onay istiyor.',
+      weightedOptions: [
+        { label: '"Evet, maalesef çok kötü" diyerek katılırım.', weights: { institutionalLoyalty: -0.5 }, analysisInsight: 'Kurum karalama.' },
+        { label: '"Bu konuyu yönetimle görüşmeniz daha sağlıklı olur, ben eğitime odaklanıyorum" diyerek topu doğru yere atarım.', weights: { institutionalLoyalty: 1.0, ethics: 0.8 }, analysisInsight: 'Kurumsal duruş.' },
+        { label: 'Yalan söyleyip "Burası harika" derim.', weights: { ethics: 0.4 }, analysisInsight: 'Samimiyetsizlik.' },
+        { label: '"Başka kurumlara bakın" derim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Sabotaj.' }
+      ]
+    },
+    {
+      id: 'eth_ext_9', category: 'workEthics', type: 'radio',
+      text: 'Kurumun hazırladığı özgün bir materyal setini fotokopi çekip evdeki arşivinize aldınız. Bu durum nedir?',
+      weightedOptions: [
+        { label: 'Kendimi geliştirmek içindir, sorun yok.', weights: { ethics: 0.3 }, analysisInsight: 'Fikri mülkiyet bilinci zayıf.' },
+        { label: 'Kurumun fikri mülkiyetini izinsiz kopyalamak hırsızlıktır.', weights: { ethics: 1.0 }, analysisInsight: 'Yüksek etik bilinç.' },
+        { label: 'Herkes yapıyor.', weights: { ethics: 0.1 }, analysisInsight: 'Toplumsal yozlaşma.' },
+        { label: 'Sadece bir kopyadan bir şey olmaz.', weights: { ethics: 0.2 }, analysisInsight: 'Minimalizasyon.' }
+      ]
+    },
+    {
+      id: 'eth_ext_10', category: 'workEthics', type: 'radio',
+      text: 'Akşam ofisten çıkarken masanızın üzerinde öğrenci dosyalarını açık unuttuğunuzu fark ettiniz. Geri döner misiniz?',
+      weightedOptions: [
+        { label: 'Hayır, sabah toplarım. Temizlikçi dışında kimse görmez.', weights: { ethics: 0.0 }, analysisInsight: 'Gizlilik ihlali.' },
+        { label: 'Evet, üşenmeden döner ve dosyaları kilitli dolaba kaldırırım. (KVKK/Gizlilik)', weights: { ethics: 1.0 }, analysisInsight: 'Sorumluluk bilinci.' },
+        { label: 'Sabah erken gidip toplarım.', weights: { ethics: 0.5 }, analysisInsight: 'Risk alma.' },
+        { label: 'Önemli değil.', weights: { ethics: -0.5 }, analysisInsight: 'İhmalkarlık.' }
       ]
     }
   ],
 
-  // --- KATMAN 3: RESİLİANS VE TAKIM UYUMU (5 SORU) ---
+  // --- KATMAN 3: RESİLİANS VE TAKIM UYUMU (+10 YENİ SORU) ---
   resilience_team: [
     {
       id: 'res_1', category: 'sustainability', type: 'radio',
@@ -314,49 +467,110 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
         { label: 'Çocuğa gegen sesimi yükseltir veya sertleşirim.', weights: { sustainability: -1.0, ethics: -1.0 }, analysisInsight: 'Kritik tehlike.' }
       ]
     },
+    // ... [RESİLİANS - YENİ SORULAR] ...
     {
-      id: 'res_2', category: 'fit', type: 'radio',
-      text: 'Takım toplantısında yaptığınız bir uygulama koordinatör tarafından sertçe eleştirildiğinde tepkiniz?',
+      id: 'res_ext_1', category: 'sustainability', type: 'radio',
+      text: 'Ders sırasında öğrenci aniden size saldırdı ve canınız yandı. İlk tepkiniz?',
       weightedOptions: [
-        { label: 'Kişisel algılar ve toplantı sonrası modumu düşürürüm.', weights: { fit: 0.4 }, analysisInsight: 'Duygusal kırılganlık.' },
-        { label: 'Eleştiriyi gelişim fırsatı olarak görür, dayanaklarımı sunar ve ortak noktada kendimi güncellerim.', weights: { fit: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Yüksek uyum.' },
-        { label: 'Hatalı olduğumu düşünmesem de tartışmamak için "tamam" derim.', weights: { fit: 0.5 }, analysisInsight: 'Pasif-agresif.' },
-        { label: 'Onun da hatalarını herkesin içinde yüzüne vururum.', weights: { fit: -0.8 }, analysisInsight: 'Toksik tutum.' }
+        { label: 'Refleks olarak çocuğu itmek.', weights: { ethics: -1.0, sustainability: 0.0 }, analysisInsight: 'Fiziksel risk.' },
+        { label: 'Odayı terk edip ağlamak.', weights: { sustainability: 0.2 }, analysisInsight: 'Duygusal çöküş.' },
+        { label: 'Güvenli duruş pozisyonuna geçmek, duygusal nötr kalarak krizi yönetmek ve seans sonrası pansuman yapmak.', weights: { sustainability: 1.0, technicalExpertise: 0.8 }, analysisInsight: 'Profesyonel soğukkanlılık.' },
+        { label: 'Veliye bağırarak durumu anlatmak.', weights: { sustainability: 0.1 }, analysisInsight: 'Profesyonellik kaybı.' }
       ]
     },
     {
-      id: 'res_3', category: 'sustainability', type: 'radio',
-      text: 'Kurumda iş yükünün aniden arttığı (ek seanslar, raporlama dönemi) stresli bir haftayı nasıl yönetirsiniz?',
+      id: 'res_ext_2', category: 'sustainability', type: 'radio',
+      text: 'Veli telefonda size hakaret vari konuşuyor ve suçluyor. Dayanıklılığınızı nasıl korursunuz?',
       weightedOptions: [
-        { label: 'Hepsini yetiştirmeye çalışırken hata yaparım.', weights: { sustainability: 0.4 }, analysisInsight: 'Yüksek kaygı.' },
-        { label: 'Öncelik matrisi hazırlar, zaman yönetimi teknikleriyle iş akışını organize ederim.', weights: { sustainability: 1.0 }, analysisInsight: 'Planlama gücü.' },
-        { label: 'Yöneticilere bu kadar işin yapılamayacağını söyleyip şikayet ederim.', weights: { sustainability: 0.2, fit: 0.1 }, analysisInsight: 'Düşük motivasyon.' },
-        { label: 'Bazı raporları kopyala-yapıştır ile hızlıca geçerim.', weights: { ethics: -0.7, clinical: -0.5 }, analysisInsight: 'Liyakat kaybı.' }
+        { label: 'Telefonu yüzüne kapatırım.', weights: { sustainability: 0.3 }, analysisInsight: 'İletişim kopukluğu.' },
+        { label: 'Aynı tonda karşılık veririm.', weights: { sustainability: 0.0, ethics: -0.5 }, analysisInsight: 'Ego savaşı.' },
+        { label: 'Sakinliğimi koruyarak "Şu an sağlıklı iletişim kuramıyoruz, daha sonra görüşelim" diyerek sınır çizerim.', weights: { sustainability: 1.0 }, analysisInsight: 'Sınır koyma becerisi.' },
+        { label: 'Kendimi yetersiz hissedip depresyona girerim.', weights: { sustainability: 0.1 }, analysisInsight: 'Kırılgan özsaygı.' }
       ]
     },
     {
-      id: 'res_4', category: 'fit', type: 'radio',
-      text: 'Yeni işe başlayan bir iş arkadaşınızın klinik bir hata yaptığını fark ettiniz. Aksiyonunuz?',
+      id: 'res_ext_3', category: 'sustainability', type: 'radio',
+      text: 'Aynı gün içinde 8 seans ve 3 raporlama yapmanız gerekiyor. Enerjinizi nasıl yönetirsiniz?',
       weightedOptions: [
-        { label: 'Diğer arkadaşlarıma anlatıp "bakın ne yapmış" derim.', weights: { fit: -0.5 }, analysisInsight: 'Dedikodu/Toksik.' },
-        { label: 'Kendisiyle yapıcı bir dille birebir konuşur, gerekirse üst yönetimi doğru kanaldan bilgilendiririm.', weights: { fit: 1.0, ethics: 0.8 }, analysisInsight: 'Yapıcı denetçi.' },
-        { label: 'Beni ilgilendirmediğini düşünüp sessiz kalırım.', weights: { fit: 0.3, clinical: -0.2 }, analysisInsight: 'Sorumluluktan kaçınma.' },
-        { label: 'Derhal koordinatöre şikayet ederim.', weights: { fit: 0.6 }, analysisInsight: 'Sert hiyerarşi.' }
+        { label: 'Hepsini baştan savma yaparım.', weights: { ethics: -0.5 }, analysisInsight: 'Kalite kaybı.' },
+        { label: 'Sürekli kahve içerek ayakta durmaya çalışırım.', weights: { sustainability: 0.4 }, analysisInsight: 'Geçici çözüm.' },
+        { label: 'Seans aralarında mikro-molalar vererek nefes egzersizi yapar, raporları gün içine yayarım.', weights: { sustainability: 1.0 }, analysisInsight: 'Enerji yönetimi.' },
+        { label: 'Yönetime hasta olduğumu söylerim.', weights: { ethics: -0.8 }, analysisInsight: 'Kaçış.' }
       ]
     },
     {
-      id: 'res_5', category: 'sustainability', type: 'radio',
-      text: 'Özel eğitimde "Küçük Adımlar" prensibi bazen çok yavaş ilerler. Aylarca ilerleme kaydedemediğiniz bir vakada motivasyonunuzu ne sağlar?',
+      id: 'res_ext_4', category: 'sustainability', type: 'radio',
+      text: '6 aydır takip ettiğiniz bir öğrencide beklenen ilerleme gerçekleşmedi. Hissettiğiniz duygu?',
       weightedOptions: [
-        { label: 'Çocuğun potansiyelinin bu kadar olduğuna inanırım.', weights: { sustainability: 0.2 }, analysisInsight: 'Düşük beklenti hatası.' },
-        { label: 'Verileri tekrar analiz eder, küçük başarıları (successive approximations) bulur ve metodumu sorgularım.', weights: { sustainability: 1.0, clinical: 0.9 }, analysisInsight: 'Bilimsel azim.' },
-        { label: 'Veliye "bu çocuktan bir şey olmaz" mesajı veririm.', weights: { ethics: -1.0, parentStudentRelations: -1.0 }, analysisInsight: 'Ağır pedagojik risk.' },
-        { label: 'Kendi başarısızlığım olarak görüp moralimi bozarım.', weights: { sustainability: 0.4 }, analysisInsight: 'Kaygı odaklı.' }
+        { label: 'Çaresizlik ve mesleği bırakma isteği.', weights: { sustainability: 0.1 }, analysisInsight: 'Tükenmişlik.' },
+        { label: 'Suçu aileye atma rahatlığı.', weights: { ethics: 0.3 }, analysisInsight: 'Dışsallaştırma.' },
+        { label: 'Merak ve analiz isteği; "Neyi değiştirmeliyim?" sorusuna odaklanma.', weights: { sustainability: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Gelişim odaklı direnç.' },
+        { label: 'Umursamazlık.', weights: { sustainability: 0.0 }, analysisInsight: 'Mesleki körlük.' }
+      ]
+    },
+    {
+      id: 'res_ext_5', category: 'sustainability', type: 'radio',
+      text: 'Kişisel hayatınızda (boşanma, kayıp vb.) büyük bir kriz varken seansa nasıl girersiniz?',
+      weightedOptions: [
+        { label: 'Suratım asık girerim, çocuk anlar.', weights: { sustainability: 0.2 }, analysisInsight: 'Profesyonellik ihlali.' },
+        { label: 'Veliye durumumu anlatıp anlayış beklerim.', weights: { ethics: 0.4 }, analysisInsight: 'Sınır ihlali.' },
+        { label: '"Kapı Eşiği" tekniğiyle kişisel dertlerimi dışarıda bırakır, tamamen çocuğa odaklanırım (Kompartmantalizasyon).', weights: { sustainability: 1.0 }, analysisInsight: 'Duygusal regülasyon.' },
+        { label: 'Rapor alıp gelmem.', weights: { sustainability: 0.5 }, analysisInsight: 'Kaçınma (bazen gereklidir ama süreklilik arz etmemeli).' }
+      ]
+    },
+    {
+      id: 'res_ext_6', category: 'fit', type: 'radio',
+      text: 'Koordinatörünüz sizinle aynı fikirde değil ve uygulamanızı değiştirmenizi istiyor. Tepkiniz?',
+      weightedOptions: [
+        { label: '"Tamam" deyip bildiğimi okurum.', weights: { fit: -0.5 }, analysisInsight: 'Pasif direniş.' },
+        { label: 'Tartışıp istifa ederim.', weights: { sustainability: 0.0 }, analysisInsight: 'Dürtüsel kopuş.' },
+        { label: 'Geri bildirimi dinler, mantığını sorgular ve profesyonel gelişimin bir parçası olarak uyum sağlarım.', weights: { fit: 1.0 }, analysisInsight: 'Takım uyumu.' },
+        { label: 'Arkadaşlarıma dert yanarım.', weights: { fit: 0.2 }, analysisInsight: 'Dedikodu.' }
+      ]
+    },
+    {
+      id: 'res_ext_7', category: 'sustainability', type: 'radio',
+      text: '"Merhamet Yorgunluğu" (Compassion Fatigue) belirtileri (sürekli yorgunluk, hissizleşme) hissettiğinizde ne yaparsınız?',
+      weightedOptions: [
+        { label: 'Daha çok çalışarak unutmaya çalışırım.', weights: { sustainability: 0.2 }, analysisInsight: 'Riskli başa çıkma.' },
+        { label: 'Profesyonel destek alır ve öz-bakım (self-care) rutinlerimi artırırım.', weights: { sustainability: 1.0 }, analysisInsight: 'Bilinçli iyileşme.' },
+        { label: 'Çocuklara karşı sertleşirim.', weights: { ethics: -1.0 }, analysisInsight: 'Klinik tehlike.' },
+        { label: 'İşi bırakırım.', weights: { sustainability: 0.1 }, analysisInsight: 'Pes etme.' }
+      ]
+    },
+    {
+      id: 'res_ext_8', category: 'sustainability', type: 'radio',
+      text: 'Son dakika program değişikliği oldu ve hazırlıksız olduğunuz zor bir öğrenci size verildi.',
+      weightedOptions: [
+        { label: 'Panik yapıp itiraz ederim.', weights: { sustainability: 0.2 }, analysisInsight: 'Esneklik yok.' },
+        { label: 'Doğaçlama yapar, günü kurtarırım.', weights: { sustainability: 0.5 }, analysisInsight: 'Orta seviye uyum.' },
+        { label: 'Hızlıca öğrenci dosyasını (IDP) inceler, temel materyalleri alır ve adaptasyon yeteneğimi kullanırım.', weights: { sustainability: 1.0 }, analysisInsight: 'Bilişsel esneklik.' },
+        { label: 'Seansı boş geçiririm.', weights: { ethics: 0.0 }, analysisInsight: 'Etik ihlal.' }
+      ]
+    },
+    {
+      id: 'res_ext_9', category: 'fit', type: 'radio',
+      text: 'Ekip arkadaşınızın "toksik" ve sürekli negatif konuştuğu bir ortamda nasıl barınırsınız?',
+      weightedOptions: [
+        { label: 'Ondan etkilenip ben de negatifleşirim.', weights: { fit: 0.2 }, analysisInsight: 'Düşük bağışıklık.' },
+        { label: 'Onu dışlar ve küserim.', weights: { fit: 0.3 }, analysisInsight: 'Çocuksu tepki.' },
+        { label: 'Mesafemi korur, profesyonel ilişkiyi sürdürür ama duygusal alanıma girmesine izin vermem.', weights: { fit: 1.0 }, analysisInsight: 'Olgunluk.' },
+        { label: 'Yönetime ispiyonlarım.', weights: { fit: 0.4 }, analysisInsight: 'Güven kaybı.' }
+      ]
+    },
+    {
+      id: 'res_ext_10', category: 'sustainability', type: 'radio',
+      text: 'Büyük bir kriz (çocuğun kendine zarar vermesi) sonrası "Adrenalin Çöküşü" (Post-crisis crash) yaşıyorsunuz. Toparlanma stratejiniz?',
+      weightedOptions: [
+        { label: 'Sigara/kahve ile geçiştiririm.', weights: { sustainability: 0.4 }, analysisInsight: 'Kısa vadeli çözüm.' },
+        { label: 'Olayı zihnimde sürekli tekrar yaşarım (Rumination).', weights: { sustainability: 0.1 }, analysisInsight: 'Travmatizasyon.' },
+        { label: 'Debriefing (Olay sonu değerlendirme) yaparak duyguyu boşaltır ve mantıksal zemine oturttuktan sonra devam ederim.', weights: { sustainability: 1.0 }, analysisInsight: 'Profesyonel onarım.' },
+        { label: 'Eve gidip uyurum.', weights: { sustainability: 0.3 }, analysisInsight: 'Kaçış.' }
       ]
     }
   ],
 
-  // --- KATMAN 4: VİZYON VE SADAKAT (5 SORU) ---
+  // --- KATMAN 4: VİZYON VE SADAKAT (+20 YENİ SORU: 10 Sadakat + 10 Gelişim) ---
   vision_loyalty: [
     {
       id: 'vis_1', category: 'institutionalLoyalty', type: 'radio',
@@ -368,44 +582,206 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
         { label: 'Sadece maaş artışı eşlik ederse kabul ederim.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Materyalist odak.' }
       ]
     },
+    // ... [KURUMSAL SADAKAT - YENİ SORULAR] ...
     {
-      id: 'vis_2', category: 'developmentOpenness', type: 'radio',
-      text: 'Akademik bir makaleyi veya yeni bir müdahale yöntemini öğrenip takıma sunmanız istendiğinde?',
+      id: 'loy_ext_1', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Rakip bir kurumdan %20 daha yüksek maaş teklifi aldınız. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'İş tanımımda "sunum yapmak" olmadığını belirtirim.', weights: { developmentOpenness: -0.5, fit: -0.5 }, analysisInsight: 'Gelişime kapalılık.' },
-        { label: 'Zevkle araştırır, literatürü tarar ve en güncel bilgiyi ekibe aktarırım.', weights: { developmentOpenness: 1.0, fit: 0.8 }, analysisInsight: 'Akademik liderlik.' },
-        { label: 'Vaktim olursa yaparım.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Düşük öncelik.' },
-        { label: 'Hazır bir sunumu internetten bulur, üzerinde durmam.', weights: { developmentOpenness: 0.1, ethics: -0.2 }, analysisInsight: 'Zayıf emek.' }
+        { label: 'Hemen kabul eder, istifa ederim.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Parasal odak.' },
+        { label: 'Mevcut kurumumla görüşür, kariyer hedeflerim ve huzurumla birlikte maddi şartları teraziye koyarım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Dengeli sadakat.' },
+        { label: 'Teklifi mevcut kuruma şantaj olarak kullanırım.', weights: { institutionalLoyalty: -0.5 }, analysisInsight: 'Manipülatif.' },
+        { label: 'Reddederim, para önemli değil.', weights: { institutionalLoyalty: 0.8 }, analysisInsight: 'Fazla idealist (Gerçekçi değil).' }
       ]
     },
     {
-      id: 'vis_3', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Mesleki hayaliniz/hedefiniz nedir?',
+      id: 'loy_ext_2', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Sosyal bir ortamda kurumunuz hakkında asılsız ve kötüleyici konuşulduğuna şahit oldunuz.',
       weightedOptions: [
-        { label: 'Kendi merkezimi açmak.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Potansiyel rakip.' },
-        { label: 'Alanında otorite bir akademisyen/uzman olup bu kurumu bir mükemmeliyet merkezi yapmak.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Vizyoner.' },
-        { label: 'Daha az çalışıp daha çok kazanabileceğim bir düzen kurmak.', weights: { sustainability: 0.0 }, analysisInsight: 'Düşük enerji.' },
-        { label: 'Şu anki durumumu korumak, huzurlu çalışmak.', weights: { fit: 0.7 }, analysisInsight: 'Stabil personel.' }
+        { label: 'Sessiz kalırım, bulaşmam.', weights: { institutionalLoyalty: 0.3 }, analysisInsight: 'Pasiflik.' },
+        { label: 'Ben de bir iki eleştiri eklerim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'İhanet.' },
+        { label: 'Kurumun itibarını profesyonelce savunur ve yanlış bilgiyi düzeltirim.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Marka elçisi.' },
+        { label: 'Kavga çıkarırım.', weights: { institutionalLoyalty: 0.5, fit: -0.5 }, analysisInsight: 'Agresif savunma.' }
       ]
     },
     {
-      id: 'vis_4', category: 'developmentOpenness', type: 'radio',
-      text: 'Mevcut bildiğiniz bir yöntemin (örn: Geleneksel) kurum tarafından "artık kullanılmayacağı" söylendiğinde?',
+      id: 'loy_ext_3', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Kurum tasarruf tedbirleri kapsamında bazı pahalı materyalleri almanızı kısıtladı. Tepkiniz?',
       weightedOptions: [
-        { label: 'Eski yöntemin daha iyi olduğunu savunur, direnç gösteririm.', weights: { fit: 0.2 }, analysisInsight: 'Statükocu.' },
-        { label: 'Nedenini sorgular, bilimsel gerekçeleri anlar ve yeni yönteme hızla adapte olurum.', weights: { developmentOpenness: 1.0, fit: 1.0 }, analysisInsight: 'Bilişsel esneklik.' },
-        { label: 'Öğrenmiş gibi yapar, bildiğimi okumaya devam ederim.', weights: { ethics: -0.8, fit: -0.5 }, analysisInsight: 'Gizli direnç.' },
-        { label: 'Yyenisini de öğrenir ama ikisini karıştırırım.', weights: { clinical: 0.4 }, analysisInsight: 'Metodik karmaşa.' }
+        { label: 'Eğitim bitti, böyle çalışılmaz derim.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Yıkıcı eleştiri.' },
+        { label: 'Mevcut materyallerle yaratıcı çözümler üretir (DIY) ve kurumsal kaynakları verimli kullanırım.', weights: { institutionalLoyalty: 1.0, sustainability: 1.0 }, analysisInsight: 'Kaynak yönetimi.' },
+        { label: 'Veliye materyalleri aldırmaya çalışırım.', weights: { ethics: -0.5 }, analysisInsight: 'Etik ihlal.' },
+        { label: 'Gizlice kendim alıp faturasını kuruma kesmeye çalışırım.', weights: { ethics: -1.0 }, analysisInsight: 'Dolandırıcılık.' }
       ]
     },
     {
-      id: 'vis_5', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumun itibarını zedeleyecek bir durumla (örn: bir iş arkadaşının uygunsuz paylaşımı) karşılaştınız. Ne yaparsınız?',
+      id: 'loy_ext_4', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Kurum içinde yayılan ve motivasyonu düşüren bir dedikodu zinciri (Rumor Mill) var. Duruşunuz?',
       weightedOptions: [
-        { label: 'Beni ilgilendirmez, görmezden gelirim.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Aidiyet eksikliği.' },
-        { label: 'Kurumu korumak adına durumu derhal üst yönetime resmi kanallardan iletirim.', weights: { institutionalLoyalty: 1.0, ethics: 1.0 }, analysisInsight: 'Kurumsal muhafız.' },
-        { label: 'Arkadaşımı uyarırım ama kuruma söylemem.', weights: { institutionalLoyalty: 0.5 }, analysisInsight: 'Kişisel sadakat önceliği.' },
-        { label: 'Ben de sosyal medyada benzer paylaşımlar yaparım.', weights: { fit: -1.0 }, analysisInsight: 'Kültürel uyumsuzluk.' }
+        { label: 'Merak edip dinlerim.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Pasif katılım.' },
+        { label: 'Zinciri kırarım; dedikoduya dahil olmaz ve gerekirse pozitif gündem yaratırım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Kültür koruyucusu.' },
+        { label: 'Kaynağı bulup kavga ederim.', weights: { fit: -0.5 }, analysisInsight: 'Çatışma.' },
+        { label: 'Dedikoduyu ben yayarım.', weights: { institutionalLoyalty: -2.0 }, analysisInsight: 'Toksik eleman.' }
+      ]
+    },
+    {
+      id: 'loy_ext_5', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Hafta sonu kurumun düzenlediği gönüllü bir etkinliğe (Piknik/Kermes) katılım durumunuz?',
+      weightedOptions: [
+        { label: 'Asla gelmem, hafta sonu benimdir.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Sadece iş odaklı.' },
+        { label: 'Ekip ruhunu desteklemek için katılır ve aktif rol alırım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Takım oyuncusu.' },
+        { label: 'Zorla gelirim, kenarda otururum.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Gönülsüz uyum.' },
+        { label: 'Ekstra ücret isterim.', weights: { institutionalLoyalty: 0.3 }, analysisInsight: 'Ticari bakış.' }
+      ]
+    },
+    {
+      id: 'loy_ext_6', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Yeni başlayan tecrübesiz bir öğretmene mentorluk yapmanız istendi (Ek ücret yok).',
+      weightedOptions: [
+        { label: 'Kabul etmem, benim işim değil.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Bencillik.' },
+        { label: 'Kabul ederim ama baştan savma yaparım.', weights: { institutionalLoyalty: 0.4 }, analysisInsight: 'Kalite riski.' },
+        { label: 'Kurumun kalitesinin artması için bilgimi cömertçe paylaşır ve bundan gurur duyarım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Liderlik potansiyeli.' },
+        { label: 'Ona yanlış şeyler öğretirim.', weights: { ethics: -2.0 }, analysisInsight: 'Sabotaj.' }
+      ]
+    },
+    {
+      id: 'loy_ext_7', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Kişisel kariyer hedeflerinizle kurumun hedefleri ne kadar örtüşüyor?',
+      weightedOptions: [
+        { label: 'Örtüşmüyor, burası geçici bir durak.', weights: { institutionalLoyalty: 0.1 }, analysisInsight: 'Kısa vadeli.' },
+        { label: 'Kurum büyüdükçe ben de büyümek istiyorum, vizyonumuz ortak.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Stratejik ortaklık.' },
+        { label: 'Sadece maaşımı almak istiyorum.', weights: { institutionalLoyalty: 0.5 }, analysisInsight: 'Memur zihniyeti.' },
+        { label: 'Kurumun hedeflerini bilmiyorum.', weights: { institutionalLoyalty: 0.3 }, analysisInsight: 'İlgisizlik.' }
+      ]
+    },
+    {
+      id: 'loy_ext_8', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Yönetim ani bir kararla "Kıyafet Yönetmeliği"ni değiştirdi ve daha resmi olmanızı istedi.',
+      weightedOptions: [
+        { label: 'İtiraz eder, giymem.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Uyumsuzluk.' },
+        { label: 'Kurumsal imajın bir parçası olduğu için uyum sağlarım.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Profesyonellik.' },
+        { label: 'Arkadan söylenerek giyerim.', weights: { institutionalLoyalty: 0.5 }, analysisInsight: 'Pasif agresyon.' },
+        { label: 'Eski kıyafetlerle gelip "unuttum" derim.', weights: { institutionalLoyalty: 0.3 }, analysisInsight: 'Çocuksu direnç.' }
+      ]
+    },
+    {
+      id: 'loy_ext_9', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Koridorda yerde bir çöp gördünüz ama temizlik görevlisi ortada yok.',
+      weightedOptions: [
+        { label: 'Benim işim değil, basıp geçerim.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Sahiplenmeme.' },
+        { label: 'Temizlikçiyi arayıp azarlarım.', weights: { fit: 0.3 }, analysisInsight: 'Kibir.' },
+        { label: 'Eğilip alırım; burası benim evim gibidir.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek aidiyet.' },
+        { label: 'Görevliye haber veririm.', weights: { institutionalLoyalty: 0.7 }, analysisInsight: 'Standart prosedür.' }
+      ]
+    },
+    {
+      id: 'loy_ext_10', category: 'institutionalLoyalty', type: 'radio',
+      text: 'Gelecek 5 yıl içinde kendinizi bu kurumda nerede görüyorsunuz?',
+      weightedOptions: [
+        { label: 'Burada olacağımı sanmıyorum.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Ayrılık sinyali.' },
+        { label: 'Birim koordinatörü veya eğitim direktörü olarak.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Kariyer hedefi.' },
+        { label: 'Aynı pozisyonda, düzenim bozulmadan.', weights: { institutionalLoyalty: 0.6 }, analysisInsight: 'Stabilite.' },
+        { label: 'Kendi yerimi açmış olarak.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Rakip.' }
+      ]
+    },
+    // ... [GELİŞİME AÇIKLIK - YENİ SORULAR] ...
+    {
+      id: 'dev_ext_1', category: 'developmentOpenness', type: 'radio',
+      text: 'En son ne zaman alanınızla ilgili akademik bir makale okudunuz?',
+      weightedOptions: [
+        { label: 'Üniversitede okumuştum.', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Bilgi eskimesi.' },
+        { label: 'Geçen ay, güncel bir araştırma üzerine inceleme yaptım.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Akademik takip.' },
+        { label: 'Instagram\'dan takip ediyorum, o yeterli.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Popüler bilim yüzeyselliği.' },
+        { label: 'Vaktim yok.', weights: { developmentOpenness: 0.0 }, analysisInsight: 'Gelişime kapalılık.' }
+      ]
+    },
+    {
+      id: 'dev_ext_2', category: 'developmentOpenness', type: 'radio',
+      text: 'Hiç bilmediğiniz bir konuda (örn: Odyoloji) bir öğrenci geldi. Ne yaparsınız?',
+      weightedOptions: [
+        { label: '"Ben bakamam" deyip reddederim.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Konfor alanı.' },
+        { label: 'Biliyormuş gibi yaparım.', weights: { ethics: -1.0 }, analysisInsight: 'Tehlikeli özgüven.' },
+        { label: 'Dürüstçe bilmediğimi belirtir, süpervizyon ve eğitim talep ederek öğrenmeye başlarım.', weights: { developmentOpenness: 1.0, ethics: 1.0 }, analysisInsight: 'Öğrenme iştahı.' },
+        { label: 'İnternetten bakıp bir şeyler denerim.', weights: { developmentOpenness: 0.5 }, analysisInsight: 'Riskli deneme.' }
+      ]
+    },
+    {
+      id: 'dev_ext_3', category: 'developmentOpenness', type: 'radio',
+      text: 'Yapay Zeka (AI) teknolojilerinin özel eğitimde kullanımı hakkında ne düşünüyorsunuz?',
+      weightedOptions: [
+        { label: 'Gereksiz icatlar, insan yerini tutmaz.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Teknofobi/Direnç.' },
+        { label: 'Veri analizi ve materyal üretiminde büyük bir yardımcıdır, kullanmayı öğreniyorum.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Vizyoner bakış.' },
+        { label: 'Sadece ödev yaptırmak için kullanırım.', weights: { developmentOpenness: 0.4 }, analysisInsight: 'Kısıtlı vizyon.' },
+        { label: 'Hiç duymadım.', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Çağ dışı.' }
+      ]
+    },
+    {
+      id: 'dev_ext_4', category: 'developmentOpenness', type: 'radio',
+      text: 'Bir eğitim seminerine "Hafta sonu" gitmeniz önerildi (Ücreti kurum karşılıyor).',
+      weightedOptions: [
+        { label: 'Hafta sonumu feda edemem.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Düşük motivasyon.' },
+        { label: 'Büyük bir hevesle giderim, öğrenmek dinlenmekten değerlidir.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Yüksek motivasyon.' },
+        { label: 'Mesai ücreti verilirse giderim.', weights: { developmentOpenness: 0.5 }, analysisInsight: 'Ticari bakış.' },
+        { label: 'Giderim ama erken çıkarım.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Yarım gönüllülük.' }
+      ]
+    },
+    {
+      id: 'dev_ext_5', category: 'developmentOpenness', type: 'radio',
+      text: 'Kullandığınız bir öğretim yönteminin artık "bilimsel geçerliliği olmadığı" kanıtlandı. Tepkiniz?',
+      weightedOptions: [
+        { label: '"Ben yıllardır böyle yapıyorum, işe yarıyor" derim.', weights: { developmentOpenness: 0.0 }, analysisInsight: 'Dogmatik direnç.' },
+        { label: 'Hemen terk eder ve kanıta dayalı yeni yöntemi öğrenirim.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Bilimsel sadakat.' },
+        { label: 'Gizlice eski yöntemi kullanmaya devam ederim.', weights: { ethics: -0.8 }, analysisInsight: 'Etik ihlal.' },
+        { label: 'Moralim bozulur.', weights: { developmentOpenness: 0.4 }, analysisInsight: 'Duygusal tepki.' }
+      ]
+    },
+    {
+      id: 'dev_ext_6', category: 'developmentOpenness', type: 'radio',
+      text: 'Kendi seans videonuzu izleyip analiz etmeniz (Video Modeling) istendi.',
+      weightedOptions: [
+        { label: 'Utanırım, izleyemem.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Özgüven eksikliği.' },
+        { label: 'Hatalarımı görmek istemem.', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Ego koruması.' },
+        { label: 'Harika bir fırsat; dış gözle kendimi eleştirir ve düzeltirim.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Öz-denetim.' },
+        { label: 'Sadece iyi kısımları izlerim.', weights: { developmentOpenness: 0.4 }, analysisInsight: 'Filtreli bakış.' }
+      ]
+    },
+    {
+      id: 'dev_ext_7', category: 'developmentOpenness', type: 'radio',
+      text: 'Farklı bir branştan (örn: Fizyoterapist) arkadaşınız size bir teknik öğretmek istiyor.',
+      weightedOptions: [
+        { label: '"Benim alanım değil" derim.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Silo mentalitesi.' },
+        { label: 'İlgiyle öğrenirim; transdisipliner çalışmak vizyonumu açar.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Bütüncül bakış.' },
+        { label: 'Dinler gibi yaparım.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Saygısızlık.' },
+        { label: 'Ona kendi işine bakmasını söylerim.', weights: { fit: -0.5 }, analysisInsight: 'Çatışma.' }
+      ]
+    },
+    {
+      id: 'dev_ext_8', category: 'developmentOpenness', type: 'radio',
+      text: 'Yıl sonunda kendinize bir "Beceri Karnesi" çıkarsanız ne dersiniz?',
+      weightedOptions: [
+        { label: '"Mükemmelim, eksiğim yok."', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Dunning-Kruger etkisi.' },
+        { label: '"Hala öğrenmem gereken çok şey var."', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Büyüme zihniyeti (Growth Mindset).' },
+        { label: '"Yeterince iyiyim."', weights: { developmentOpenness: 0.5 }, analysisInsight: 'Ortalama tuzağı.' },
+        { label: '"Çok kötüyüm."', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Aşırı öz-eleştiri.' }
+      ]
+    },
+    {
+      id: 'dev_ext_9', category: 'developmentOpenness', type: 'radio',
+      text: 'Kurumda İngilizce makale çeviri saati başlatıldı. İngilizceniz zayıfsa ne yaparsınız?',
+      weightedOptions: [
+        { label: 'Katılmam.', weights: { developmentOpenness: 0.1 }, analysisInsight: 'Kaçış.' },
+        { label: 'Çeviri araçlarını kullanarak çabalar ve dilimi geliştirmeye çalışırım.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Çaba ve azim.' },
+        { label: 'Türkçe kaynaklar yetmiyor mu diye sorarım.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Vizyonsuzluk.' },
+        { label: 'Başkasına çevirtirim.', weights: { ethics: -0.5 }, analysisInsight: 'Hile.' }
+      ]
+    },
+    {
+      id: 'dev_ext_10', category: 'developmentOpenness', type: 'radio',
+      text: 'Bir uzmanlık sertifikası (örn: DIR Floortime 201) almanız için maaşınızdan kesinti yapılacak ama kariyeriniz parlayacak.',
+      weightedOptions: [
+        { label: 'Kabul etmem, eğitim bedava olmalı.', weights: { developmentOpenness: 0.3 }, analysisInsight: 'Beklentili tutum.' },
+        { label: 'Kabul ederim; bu bir harcama değil, kendime yatırımdır.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Yatırımcı zihniyeti.' },
+        { label: 'Düşünürüm.', weights: { developmentOpenness: 0.5 }, analysisInsight: 'Kararsızlık.' },
+        { label: 'Kurum ödemezse gitmem.', weights: { developmentOpenness: 0.4 }, analysisInsight: 'Şartlı gelişim.' }
       ]
     }
   ]
