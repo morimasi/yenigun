@@ -36,15 +36,15 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
-    GÖREV: Adayın mülakat başarısını garanti altına alacak bir "Stratejik Playbook" üret.
+    ROL: Yeni Gün Akademi Klinik Projeksiyon Laboratuvarı.
+    GÖREV: Adayın 24 aylık kurumsal evrimini simüle et.
     
-    PLAYBOOK KURALLARI:
-    1. Safha 1 (Klinik): Adayın cevaplarındaki teknik boşlukları hedefle.
-    2. Safha 2 (Etik/Stres): Adayın 'Sosyal Maskeleme' yaptığı alanları deşifre edecek kurgular hazırla.
-    3. Safha 3 (Vizyon): Adayın kurumsal sadakatini "para" dışındaki motivasyonlarla sına.
+    PROJEKSİYON KURALLARI:
+    1. Adayın "Klinik Olgunlaşma Eğrisi"ni (Growth Forecast) ay bazında (0, 3, 6, 12, 18, 24) puanla.
+    2. Zaman çizelgesini (Evolution Timeline) 3 ana faza ayır: Oryantasyon, Stabilizasyon, Otorite.
+    3. Her faz için beklenen somut davranışları ve yöneticiye kritik tavsiyeleri üret.
+    4. Analiz dili: Gelecek odaklı, olasılık temelli ama kesin klinik gözlemler içeren.
     
-    ANALİZ DİLİ: Keskin, direkt, klinik jargon içeren ve mülakatçıyı yönlendiren bir üslup.
     ÇIKTI: Saf JSON.
   `;
 
@@ -57,7 +57,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 10000 }, 
+        thinkingConfig: { thinkingBudget: 12000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -74,9 +74,42 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 burnoutRisk: { type: Type.NUMBER },
                 learningVelocity: { type: Type.NUMBER },
                 leadershipPotential: { type: Type.NUMBER },
-                evolutionPath: { type: Type.STRING }
+                evolutionPath: { type: Type.STRING },
+                evolutionTimeline: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      phase: { type: Type.STRING },
+                      timeframe: { type: Type.STRING },
+                      expectedBehaviors: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      clinicalGrowth: { type: Type.STRING },
+                      managementAdvice: { type: Type.STRING }
+                    },
+                    required: ["phase", "timeframe", "expectedBehaviors", "clinicalGrowth", "managementAdvice"]
+                  }
+                },
+                growthForecast: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      month: { type: Type.NUMBER },
+                      score: { type: Type.NUMBER }
+                    },
+                    required: ["month", "score"]
+                  }
+                },
+                riskMitigation: {
+                  type: Type.OBJECT,
+                  properties: {
+                    primaryRisk: { type: Type.STRING },
+                    preventionStrategy: { type: Type.STRING }
+                  },
+                  required: ["primaryRisk", "preventionStrategy"]
+                }
               },
-              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
+              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath", "evolutionTimeline", "growthForecast", "riskMitigation"]
             },
             deepAnalysis: {
               type: Type.OBJECT,

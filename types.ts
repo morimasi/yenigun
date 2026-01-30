@@ -133,6 +133,18 @@ export interface AIReport {
     learningVelocity: number; 
     leadershipPotential: number; 
     evolutionPath: string;
+    evolutionTimeline: Array<{
+      phase: string;
+      timeframe: string;
+      expectedBehaviors: string[];
+      clinicalGrowth: string;
+      managementAdvice: string;
+    }>;
+    growthForecast: Array<{ month: number; score: number }>;
+    riskMitigation: {
+      primaryRisk: string;
+      preventionStrategy: string;
+    };
   }; 
   interviewGuidance: { 
     phases: InterviewPhase[];
