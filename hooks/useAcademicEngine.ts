@@ -32,20 +32,31 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
       const candidate = candidates.find(c => c.id === candidateId);
       if (!candidate) throw new Error("Aday bulunamadı.");
 
-      const algoReport = calculateAlgorithmicAnalysis(candidate, config);
+      // Muhakeme motorunu tetikle
       const aiReport = await generateCandidateAnalysis(candidate, config);
+      const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       
-      const updatedCandidate = { ...candidate, report: aiReport, algoReport, timestamp: Date.now() };
+      const updatedCandidate = { 
+        ...candidate, 
+        report: aiReport, 
+        algoReport: algoReport, 
+        timestamp: Date.now() 
+      };
       
-      // OPTIMISTIC UPDATE: DB sonucunu beklemeden state'i güncelle
-      setCandidates(prev => prev.map(c => c.id === candidateId ? updatedCandidate : c));
+      // REAKTİF GÜNCELLEME: Yerel state'i anında zorla
+      setCandidates(prev => {
+        const next = prev.map(c => c.id === candidateId ? updatedCandidate : c);
+        // UI Re-render Force
+        return [...next];
+      });
       
-      // Ardından DB'ye yaz
+      // Kalıcı depolama (Fire and forget)
       await storageService.updateCandidate(updatedCandidate);
+      
       return { success: true };
     } catch (e) {
-      console.error("Hook Analysis Error:", e);
-      return { success: false, error: "AI Analizi başarısız." };
+      console.error("Nöral Analiz Hatası:", e);
+      return { success: false, error: "AI Analizi başarısız oldu. Model zaman aşımı." };
     } finally {
       setIsProcessing(false);
     }

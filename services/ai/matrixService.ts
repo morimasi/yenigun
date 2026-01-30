@@ -4,48 +4,33 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const cleanAndParseJSON = (rawText: string | undefined): any => {
-  if (!rawText) throw new Error("AI yanıtı boş.");
-  let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+/**
+ * NÖRAL VERİ AYIKLAYICI (V3)
+ * AI çıktısındaki gürültüyü temizler ve en derin JSON objesini kurtarır.
+ */
+const extractPureJSON = (text: string): any => {
   try {
-    return JSON.parse(cleanText);
-  } catch (e) {
-    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try { return JSON.parse(jsonMatch[0]); } catch (inner) {
-        let fixed = jsonMatch[0];
-        const opens = (fixed.match(/\{/g) || []).length;
-        const closes = (fixed.match(/\}/g) || []).length;
-        if (opens > closes) fixed += "}".repeat(opens - closes);
-        return JSON.parse(fixed);
-      }
-    }
-    throw e;
-  }
-};
+    // 1. Standart temizlik
+    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    // 2. İlk parantez ve son parantez arasını bul (Thinking metni dışarıda kalsın)
+    const firstBrace = cleanText.indexOf('{');
+    const lastBrace = cleanText.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1) throw new Error("JSON Yapısı Bulunamadı");
+    
+    let jsonCandidate = cleanText.substring(firstBrace, lastBrace + 1);
 
-const FALLBACK_REPORT: AIReport = {
-  score: 1,
-  integrityIndex: 50,
-  socialMaskingScore: 50,
-  summary: "Nöral analiz motoru zaman aşımına uğradı. Lütfen tekrar deneyiniz.",
-  detailedAnalysisNarrative: "Düşünme süreci beklenenden uzun sürdü.",
-  recommendation: "Tekrar Analiz Et",
-  predictiveMetrics: { retentionProbability: 0, burnoutRisk: 0, learningVelocity: 0, leadershipPotential: 0, evolutionPath: "Veri Hatası" },
-  deepAnalysis: {
-    workEthics: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    technicalExpertise: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    pedagogicalAnalysis: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    parentStudentRelations: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    sustainability: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    institutionalLoyalty: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    developmentOpenness: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    formality: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    criticismTolerance: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] },
-    personality: { score: 0, status: 'critical', reasoning: 'Hata', behavioralIndicators: [], institutionalImpact: '', pros: [], cons: [], risks: [] }
-  },
-  swot: { strengths: [], weaknesses: [], opportunities: [], threats: [] },
-  interviewGuidance: { strategicQuestions: ["Sistem hatası, lütfen yeniden başlatın."], criticalObservations: [], simulationTasks: [] }
+    // 3. Eksik parantez tamamlama (Klinik Kurtarma)
+    const opens = (jsonCandidate.match(/\{/g) || []).length;
+    const closes = (jsonCandidate.match(/\}/g) || []).length;
+    if (opens > closes) jsonCandidate += "}".repeat(opens - closes);
+
+    return JSON.parse(jsonCandidate);
+  } catch (e) {
+    console.error("Neural Extraction Failure:", text);
+    throw new Error("AI veri akışı deşifre edilemedi.");
+  }
 };
 
 const SEGMENT_SCHEMA = {
@@ -65,21 +50,23 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Klinik Baş Denetçisi (Deep Reasoning Mode).
-    GÖREV: Aday verilerini nöro-psikolojik ve klinik düzeyde analiz et. 
-    STRATEJİ: Adayın mülakat maskesini düşür, cevaplarındaki metodolojik açıkları 'Think' katmanında parçala.
-    DİL: Üst düzey akademik Türkçe.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
+    MODEL: Gemini-3-Flash (Thinking Mode Activated).
+    GÖREV: Adayın beyanlarını ve mülakat reflekslerini parçala. 
+    STRATEJİ: Düşünme aşamasında (Thinking Phase) adayın her cevabını literatürle (ABA, Floortime, BEP) karşılaştır. Sonuç aşamasında KESİNLİKLE sadece saf JSON döndür.
+    DİL: Akademik Türkçe.
   `;
 
   try {
-    const { cvData, ...candidateClean } = candidate;
+    const { cvData, ...candidateData } = candidate;
+    
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ADAY DOSYASI: ${JSON.stringify(candidateClean)}` }], 
+      contents: [{ text: `ANALİZ EDİLECEK ADAY VERİSİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }, // MAKSİMUM AKILLI DÜŞÜNME
+        thinkingConfig: { thinkingBudget: 24576 }, // MAKSİMUM MUHAKEME GÜCÜ
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -104,17 +91,17 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               type: Type.OBJECT,
               properties: {
                 workEthics: SEGMENT_SCHEMA,
+                technicalExpertise: SEGMENT_SCHEMA,
                 pedagogicalAnalysis: SEGMENT_SCHEMA,
                 parentStudentRelations: SEGMENT_SCHEMA,
-                formality: SEGMENT_SCHEMA,
-                developmentOpenness: SEGMENT_SCHEMA,
                 sustainability: SEGMENT_SCHEMA,
-                technicalExpertise: SEGMENT_SCHEMA,
+                institutionalLoyalty: SEGMENT_SCHEMA,
+                developmentOpenness: SEGMENT_SCHEMA,
+                formality: SEGMENT_SCHEMA,
                 criticismTolerance: SEGMENT_SCHEMA,
-                personality: SEGMENT_SCHEMA,
-                institutionalLoyalty: SEGMENT_SCHEMA
+                personality: SEGMENT_SCHEMA
               },
-              required: ["workEthics", "pedagogicalAnalysis", "parentStudentRelations", "formality", "developmentOpenness", "sustainability", "technicalExpertise", "criticismTolerance", "personality", "institutionalLoyalty"]
+              required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness"]
             },
             swot: {
               type: Type.OBJECT,
@@ -141,9 +128,9 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       }
     });
 
-    return cleanAndParseJSON(response.text);
+    return extractPureJSON(response.text);
   } catch (error) {
-    console.error("AI Matrix Error:", error);
-    return FALLBACK_REPORT;
+    console.error("AI Nöral Hata:", error);
+    throw error;
   }
 };
