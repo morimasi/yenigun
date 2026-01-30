@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PresentationConfig, TrainingSlide } from '../../types';
 import { armsService } from '../../services/ai/armsService';
+import PptxGenJS from 'pptxgenjs';
+import { jsPDF } from 'jspdf';
 
 interface PresentationStudioProps {
   onClose?: () => void;
@@ -12,9 +14,9 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [slides, setSlides] = useState<TrainingSlide[]>([]);
   
-  // Live Mode States
+  // Live Mode States (Internal Player)
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
-  const [showNotes, setShowNotes] = useState(false); // Görsel notlar
+  const [showNotes, setShowNotes] = useState(false); 
   const [isLaserActive, setIsLaserActive] = useState(false);
   const [laserPos, setLaserPos] = useState({ x: 0, y: 0 });
   const [isBlackout, setIsBlackout] = useState(false);
@@ -34,6 +36,234 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
     depth: 'intermediate',
     slideCount: 8
   });
+
+  // --- EXPORT ENGINES ---
+
+  const handleExportPPTX = () => {
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_16x9';
+    pptx.author = 'Yeni Gün Akademi - MIA AI';
+    pptx.company = 'Yeni Gün Akademi';
+    pptx.title = config.topic;
+
+    // Master Slide Definition
+    pptx.defineSlideMaster({
+      title: 'MASTER_SLIDE',
+      background: { color: '0F172A' },
+      objects: [
+        { rect: { x: 0, y: 0, w: '100%', h: 0.15, fill: { color: 'EA580C' } } }, // Top Orange Bar
+        { text: { text: 'YENİ GÜN AKADEMİ | AKADEMİK KURUL', options: { x: 0.5, y: 0.05, w: '90%', fontSize: 10, color: 'FFFFFF', bold: true } } }
+      ]
+    });
+
+    slides.forEach((slide, index) => {
+      const s = pptx.addSlide({ masterName: 'MASTER_SLIDE' });
+      
+      // Title
+      s.addText(slide.title, { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: 'FFFFFF', fontFace: 'Arial' });
+      
+      // Subtitle or Content
+      if (slide.type === 'title') {
+         if (slide.subtitle) s.addText(slide.subtitle, { x: 0.5, y: 1.5, w: '90%', fontSize: 24, color: '94A3B8', italic: true });
+      } else {
+         const items = (slide.content || []).map(p => ({ text: p, options: { bullet: true, color: 'E2E8F0', fontSize: 18, breakLine: true } }));
+         s.addText(items, { x: 0.5, y: 1.8, w: '60%', h: 4, valign: 'top' });
+         
+         // Visual Prompt Box
+         if(slide.visualPrompt) {
+             s.addShape(pptx.ShapeType.rect, { x: 7.5, y: 1.8, w: 5, h: 3, fill: { color: '1E293B' }, line: { color: 'EA580C', width: 1 } });
+             s.addText("GÖRSEL TASVİRİ:", { x: 7.6, y: 1.9, fontSize: 10, color: 'EA580C', bold: true });
+             s.addText(slide.visualPrompt, { x: 7.6, y: 2.2, w: 4.8, fontSize: 12, color: '94A3B8', italic: true });
+         }
+      }
+
+      // Speaker Notes
+      if(slide.speakerNotes) s.addNotes(slide.speakerNotes);
+    });
+
+    pptx.writeFile({ fileName: `YG_Sunum_${Date.now()}.pptx` });
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    
+    slides.forEach((slide, index) => {
+        if (index > 0) doc.addPage();
+        
+        // Background
+        doc.setFillColor(15, 23, 42); // Slate-900
+        doc.rect(0, 0, 297, 210, 'F');
+        
+        // Header Bar
+        doc.setFillColor(234, 88, 12); // Orange-600
+        doc.rect(0, 0, 297, 5, 'F');
+
+        // Content
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        const titleLines = doc.splitTextToSize(slide.title.toUpperCase(), 250);
+        doc.text(titleLines, 20, 30);
+
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(203, 213, 225); // Slate-300
+        
+        let yPos = 60;
+        if (slide.subtitle) {
+            doc.text(slide.subtitle, 20, 50);
+            yPos = 70;
+        }
+
+        (slide.content || []).forEach(point => {
+            const lines = doc.splitTextToSize(`• ${point}`, 250);
+            doc.text(lines, 20, yPos);
+            yPos += (lines.length * 8) + 5;
+        });
+
+        // Notes Footer
+        if(slide.speakerNotes) {
+            doc.setFillColor(30, 41, 59); // Slate-800
+            doc.rect(0, 180, 297, 30, 'F');
+            doc.setFontSize(10);
+            doc.setTextColor(148, 163, 184); // Slate-400
+            doc.text("YÖNETİCİ NOTU:", 20, 190);
+            doc.setTextColor(255, 255, 255);
+            const noteLines = doc.splitTextToSize(slide.speakerNotes, 260);
+            doc.text(noteLines, 20, 196);
+        }
+        
+        // Page Number
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Slayt ${index + 1} / ${slides.length}`, 280, 205, { align: 'right' });
+    });
+
+    doc.save(`YG_Sunum_${Date.now()}.pdf`);
+  };
+
+  const handleLaunchSeparateWindow = () => {
+    // Standalone Player HTML Generator
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="tr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${config.topic} - Canlı Sunum</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: white; overflow: hidden; user-select: none; }
+          .slide-enter { animation: fadeIn 0.8s ease-out forwards; }
+          @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+          .laser { width: 20px; height: 20px; background: red; border-radius: 50%; position: absolute; pointer-events: none; box-shadow: 0 0 15px red; z-index: 9999; display: none; }
+        </style>
+      </head>
+      <body>
+        <div id="laser" class="laser"></div>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 z-50">
+           <h1 class="text-4xl font-black text-white mb-8">SUNUM HAZIR</h1>
+           <button onclick="startPresentation()" class="px-10 py-5 bg-orange-600 hover:bg-white hover:text-orange-600 text-white rounded-full font-black uppercase tracking-[0.2em] transition-all shadow-2xl">
+             TAM EKRAN BAŞLAT
+           </button>
+        </div>
+
+        <!-- Main Stage -->
+        <div id="stage" class="fixed inset-0 hidden flex flex-col p-16">
+           <div class="flex-1 flex flex-col justify-center" id="slide-container">
+              <!-- Dynamic Content -->
+           </div>
+           
+           <!-- Controls -->
+           <div class="fixed bottom-0 left-0 w-full p-6 flex justify-between items-end opacity-0 hover:opacity-100 transition-opacity duration-500">
+              <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest" id="progress-text"></div>
+              <div class="flex gap-4">
+                 <button onclick="prevSlide()" class="p-4 bg-white/10 rounded-full hover:bg-white/20 transition-all">←</button>
+                 <button onclick="nextSlide()" class="p-4 bg-white/10 rounded-full hover:bg-white/20 transition-all">→</button>
+              </div>
+           </div>
+        </div>
+
+        <script>
+          const slides = ${JSON.stringify(slides)};
+          let currentIdx = 0;
+          let isLaser = false;
+
+          function renderSlide() {
+            const s = slides[currentIdx];
+            const container = document.getElementById('slide-container');
+            const progress = document.getElementById('progress-text');
+            
+            progress.innerText = \`SLAYT \${currentIdx + 1} / \${slides.length}\`;
+
+            let html = '';
+            if(s.type === 'title') {
+               html = \`
+                 <div class="text-center slide-enter space-y-8">
+                    <span class="px-4 py-2 bg-orange-600/20 text-orange-500 rounded-full text-xs font-black uppercase tracking-[0.4em]">YENİ GÜN AKADEMİ</span>
+                    <h1 class="text-7xl md:text-8xl font-black uppercase leading-tight">\${s.title}</h1>
+                    <p class="text-3xl text-slate-400 italic">\${s.subtitle || ''}</p>
+                 </div>
+               \`;
+            } else {
+               html = \`
+                 <div class="grid grid-cols-12 gap-12 items-center slide-enter h-full">
+                    <div class="col-span-7 space-y-12">
+                       <h2 class="text-6xl font-black uppercase leading-none border-l-8 border-orange-600 pl-8">\${s.title}</h2>
+                       <div class="space-y-6 pl-10">
+                          \${(s.content || []).map(p => \`<p class="text-3xl font-bold text-slate-300 leading-snug flex gap-4"><span class="text-orange-600">▪</span> \${p}</p>\`).join('')}
+                       </div>
+                    </div>
+                    <div class="col-span-5 flex flex-col gap-8 justify-center">
+                       \${s.visualPrompt ? \`<div class="p-8 bg-white/5 rounded-[3rem] border border-white/10 italic text-slate-400 text-xl">\${s.visualPrompt}</div>\` : ''}
+                       \${s.interactiveElement ? \`<div class="p-10 bg-orange-600 rounded-[3rem] text-white shadow-2xl"><span class="text-xs font-black uppercase tracking-widest block mb-4 text-orange-200">TARTIŞMA</span><p class="text-2xl font-black uppercase italic">"\${s.interactiveElement.question}"</p></div>\` : ''}
+                    </div>
+                 </div>
+               \`;
+            }
+            container.innerHTML = html;
+          }
+
+          function nextSlide() {
+            if(currentIdx < slides.length - 1) { currentIdx++; renderSlide(); }
+          }
+          function prevSlide() {
+            if(currentIdx > 0) { currentIdx--; renderSlide(); }
+          }
+
+          function startPresentation() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('stage').style.display = 'flex';
+            document.documentElement.requestFullscreen().catch(e => console.log(e));
+            renderSlide();
+          }
+
+          // Keyboard & Laser
+          document.addEventListener('keydown', (e) => {
+             if(e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+             if(e.key === 'ArrowLeft') prevSlide();
+             if(e.key === 'l') { isLaser = !isLaser; document.getElementById('laser').style.display = isLaser ? 'block' : 'none'; document.body.style.cursor = isLaser ? 'none' : 'default'; }
+          });
+
+          document.addEventListener('mousemove', (e) => {
+             if(isLaser) {
+                const l = document.getElementById('laser');
+                l.style.left = (e.clientX - 10) + 'px';
+                l.style.top = (e.clientY - 10) + 'px';
+             }
+          });
+        </script>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=1280,height=720');
+  };
 
   // --- AUDIO ENGINE ---
   const stopAudio = () => {
@@ -442,12 +672,26 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
        <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
           <div className="flex items-center gap-4">
              <button onClick={() => setMode('config')} className="px-6 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 transition-all">← Konfigürasyon</button>
-             <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight ml-4">{config.topic}</h3>
+             <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight ml-4 truncate max-w-xl">{config.topic}</h3>
           </div>
-          <button onClick={() => setMode('live')} className="px-8 py-4 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl active:scale-95 flex items-center gap-3">
-             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-             CANLI SUNUM MODU
-          </button>
+          
+          <div className="flex items-center gap-3">
+             <div className="flex bg-slate-100 p-1 rounded-xl">
+               <button onClick={handleExportPDF} className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-orange-600 transition-all">PDF İNDİR</button>
+               <div className="w-px bg-slate-200 my-1"></div>
+               <button onClick={handleExportPPTX} className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-orange-600 transition-all">PPTX İNDİR</button>
+             </div>
+             
+             <button onClick={handleLaunchSeparateWindow} className="px-6 py-4 bg-white border-2 border-slate-900 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                AYRI PENCEREDE AÇ
+             </button>
+
+             <button onClick={() => setMode('live')} className="px-8 py-4 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl active:scale-95 flex items-center gap-3">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                CANLI SUNUM MODU
+             </button>
+          </div>
        </div>
 
        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
