@@ -4,26 +4,37 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+/**
+ * NÖRAL JSON KURTARICI (V5) - HEURISTIC RECOVERY
+ * AI yanıtı token limitine takılsa bile mevcut veriyi geçerli bir JSON'a dönüştürür.
+ */
 const extractPureJSON = (text: string): any => {
   try {
-    // Düşünme balonlarını ve markdown bloklarını temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
     
-    if (firstBrace === -1) throw new Error("JSON Yapısı Bulunamadı");
+    if (firstBrace === -1) return null;
     
-    let jsonStr = cleanText.substring(firstBrace, lastBrace + 1);
+    let jsonStr = lastBrace > firstBrace 
+      ? cleanText.substring(firstBrace, lastBrace + 1)
+      : cleanText.substring(firstBrace);
 
-    // Kapanmamış parantezleri onar
-    const openCount = (jsonStr.match(/\{/g) || []).length;
-    const closeCount = (jsonStr.match(/\}/g) || []).length;
-    if (openCount > closeCount) jsonStr += "}".repeat(openCount - closeCount);
+    // Otomatik Kapatma Döngüsü (Eksik parantezleri tamamla)
+    let openCount = (jsonStr.match(/\{/g) || []).length;
+    let closeCount = (jsonStr.match(/\}/g) || []).length;
+    while (openCount > closeCount) {
+      jsonStr += "}";
+      closeCount++;
+    }
+
+    // Yarım kalan array/string hatalarını temizle
+    jsonStr = jsonStr.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
 
     return JSON.parse(jsonStr);
   } catch (e) {
-    console.error("Neural Extraction Failure. Raw text length:", text.length);
+    console.error("Parse Error. Raw text head:", text.substring(0, 100));
     return null;
   }
 };
@@ -46,9 +57,10 @@ const SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
-    GÖREV: Adayın liyakat dosyasını DERİN AKADEMİK MUHAKEME ile analiz et.
-    KURAL: Yanıtın sonunda KESİNLİKLE sadece geçerli bir JSON objesi döndür. Düşüncelerini 'Thinking' aşamasında tut.
-    ŞEMA: workEthics, technicalExpertise, pedagogicalAnalysis, parentStudentRelations, sustainability, institutionalLoyalty, developmentOpenness anahtarlarını KESİNLİKLE kullan.
+    GÖREV: Adayın dosyasını PARÇALA ve liyakat matrisine dönüştür.
+    KURAL 1: Sadece JSON döndür. 
+    KURAL 2: 'workEthics', 'technicalExpertise', 'pedagogicalAnalysis', 'parentStudentRelations', 'sustainability', 'institutionalLoyalty', 'developmentOpenness' anahtarlarını KESİNLİKLE doldur.
+    KURAL 3: Düşüncelerini 'Think' katmanında tut, JSON içinde asla yorum yapma.
   `;
 
   try {
@@ -56,12 +68,12 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ANALİZ VERİSİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `VERİ PAKETİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // OPTİMİZE BÜTÇE: 8k düşünme (muhakeme için yeterli), 30k+ çıktı (JSON için güvenli)
-        thinkingConfig: { thinkingBudget: 8000 }, 
+        // IQ-DENGESİ: 5k düşünme (yeterli), 35k cevap (JSON güvenliği için geniş)
+        thinkingConfig: { thinkingBudget: 5000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -121,10 +133,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     });
 
     const parsedData = extractPureJSON(response.text);
-    if (!parsedData) throw new Error("JSON Deşifre Edilemedi");
+    if (!parsedData) throw new Error("ANALİZ MOTORU VERİYİ MÜHÜRLEYEMEDİ.");
     return parsedData;
   } catch (error) {
-    console.error("AI Nöral Analiz Hatası:", error);
+    console.error("AI Matrix Engine Crash:", error);
     throw error;
   }
 };
