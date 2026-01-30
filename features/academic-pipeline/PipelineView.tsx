@@ -15,6 +15,7 @@ interface PipelineViewProps {
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
   
   // SEÇİM SİSTEMİ STATE'LERİ
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -106,7 +107,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
         </div>
 
         {/* LİSTE İÇERİĞİ */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
            {filteredCandidates.map(c => {
               const isSelected = selectedId === c.id;
               const isChecked = checkedIds.has(c.id);
@@ -116,8 +117,10 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
               return (
                 <div 
                   key={c.id} 
+                  onMouseEnter={() => setHoveredCandidateId(c.id)}
+                  onMouseLeave={() => setHoveredCandidateId(null)}
                   onClick={() => setSelectedId(c.id)}
-                  className={`px-4 py-3 border-b border-slate-100 cursor-pointer transition-colors hover:bg-white flex items-center gap-3 ${
+                  className={`relative px-4 py-3 border-b border-slate-100 cursor-pointer transition-colors hover:bg-white flex items-center gap-3 group ${
                     isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm' : 'border-l-4 border-l-transparent'
                   }`}
                 >
@@ -132,6 +135,58 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                     </div>
                     <p className="text-[9px] font-medium text-slate-400 truncate uppercase">{c.branch}</p>
                   </div>
+
+                  {/* HOVER KPI CARD (POP-OVER) */}
+                  {hoveredCandidateId === c.id && (
+                    <div className="absolute left-[90%] top-0 ml-4 z-[500] w-[260px] bg-slate-900 p-5 rounded-2xl shadow-2xl border border-slate-700 animate-scale-in pointer-events-none">
+                       {/* Arrow */}
+                       <div className="absolute top-4 -left-2 w-4 h-4 bg-slate-900 rotate-45 border-l border-b border-slate-700"></div>
+                       
+                       <div className="relative z-10 space-y-4">
+                          <div className="border-b border-white/10 pb-3">
+                             <h5 className="text-[12px] font-black text-white uppercase tracking-tight">{c.name}</h5>
+                             <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase">{c.branch}</span>
+                                <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                                <span className="text-[9px] font-bold text-slate-400">{c.experienceYears} Yıl</span>
+                             </div>
+                          </div>
+
+                          {c.report ? (
+                             <div className="space-y-3">
+                                <div>
+                                   <div className="flex justify-between items-end mb-1">
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">LİYAKAT SKORU</span>
+                                      <span className="text-[11px] font-black text-orange-500">%{c.report.score}</span>
+                                   </div>
+                                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                      <div className="h-full bg-orange-600 transition-all" style={{ width: `${c.report.score}%` }}></div>
+                                   </div>
+                                </div>
+                                <div>
+                                   <div className="flex justify-between items-end mb-1">
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ETİK ENDEKSİ</span>
+                                      <span className="text-[11px] font-black text-emerald-500">%{c.report.integrityIndex || 0}</span>
+                                   </div>
+                                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                      <div className="h-full bg-emerald-500 transition-all" style={{ width: `${c.report.integrityIndex || 0}%` }}></div>
+                                   </div>
+                                </div>
+                                {c.report.socialMaskingScore > 60 && (
+                                   <div className="bg-rose-900/30 border border-rose-800 p-2 rounded-lg flex items-center gap-2">
+                                      <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></div>
+                                      <span className="text-[9px] font-bold text-rose-300 uppercase">Yüksek Sosyal Maskeleme</span>
+                                   </div>
+                                )}
+                             </div>
+                          ) : (
+                             <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analiz Bekleniyor</span>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                  )}
                 </div>
               );
            })}
