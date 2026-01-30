@@ -106,6 +106,19 @@ export interface Certification { id: string; label: string; description: string;
 export interface SimulationResult { scenario: string; parentPersona: string; candidateResponse: string; stressLevel: number; aiEvaluation: { ethicalBoundaryScore: number; empathyCalibration: number; professionalDistance: number; crisisResolutionEfficiency: number; clinicalTruths: string[]; criticalMistakes: string[]; neuralDivergence: { contradictionIndex: number; decisionPath: string; alternativeOutcome: string; dominantEmotion: string; }; microBehaviors: { toneAnalysis: string; nonVerbalPrediction: string; silenceTolerance: string; }; }; }
 export interface IntelligenceSegment { score: number; status: 'optimal' | 'warning' | 'critical'; reasoning: string; behavioralIndicators: string[]; institutionalImpact: string; pros: string[]; cons: string[]; risks: string[]; }
 
+export interface InterviewPhase {
+  id: number;
+  title: string;
+  goal: string;
+  questions: Array<{
+    text: string;
+    why: string;
+    lookFor: string;
+  }>;
+  redFlags: string[];
+  subliminalCues: string[];
+}
+
 export interface AIReport { 
   score: number; 
   integrityIndex: number; 
@@ -120,20 +133,9 @@ export interface AIReport {
     learningVelocity: number; 
     leadershipPotential: number; 
     evolutionPath: string;
-    evolutionTimeline: {
-      phase1_onboarding: string;
-      phase2_consolidation: string;
-      phase3_mastery: string;
-    };
   }; 
   interviewGuidance: { 
-    phases: Array<{
-      title: string;
-      goal: string;
-      questions: string[];
-      redFlags: string[];
-      subliminalCues: string[];
-    }>;
+    phases: InterviewPhase[];
     criticalObservations: string[]; 
     simulationTasks: string[]; 
   }; 

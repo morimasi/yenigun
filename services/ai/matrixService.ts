@@ -37,10 +37,15 @@ const SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
-    GÖREV: Adayın dosyasını PARÇALA ve liyakat matrisine dönüştür.
-    PROJEKSİYON KURALI: Adayın kurumdaki ilk 24 ayını aşamalı olarak tahmin et.
-    STRATEJİ KURALI: Mülakatı 3 safhalı bir playbook olarak kurgula: (1) Klinik Derinlik, (2) Etik/Stres, (3) Vizyon/Uyum.
-    ÇIKTI: Sadece JSON. Düşüncelerini 'Think' katmanında tut.
+    GÖREV: Adayın mülakat başarısını garanti altına alacak bir "Stratejik Playbook" üret.
+    
+    PLAYBOOK KURALLARI:
+    1. Safha 1 (Klinik): Adayın cevaplarındaki teknik boşlukları hedefle.
+    2. Safha 2 (Etik/Stres): Adayın 'Sosyal Maskeleme' yaptığı alanları deşifre edecek kurgular hazırla.
+    3. Safha 3 (Vizyon): Adayın kurumsal sadakatini "para" dışındaki motivasyonlarla sına.
+    
+    ANALİZ DİLİ: Keskin, direkt, klinik jargon içeren ve mülakatçıyı yönlendiren bir üslup.
+    ÇIKTI: Saf JSON.
   `;
 
   try {
@@ -48,11 +53,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `VERİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `ADAY ANALİZ VERİSİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 8000 }, 
+        thinkingConfig: { thinkingBudget: 10000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -69,18 +74,9 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 burnoutRisk: { type: Type.NUMBER },
                 learningVelocity: { type: Type.NUMBER },
                 leadershipPotential: { type: Type.NUMBER },
-                evolutionPath: { type: Type.STRING },
-                evolutionTimeline: {
-                  type: Type.OBJECT,
-                  properties: {
-                    phase1_onboarding: { type: Type.STRING },
-                    phase2_consolidation: { type: Type.STRING },
-                    phase3_mastery: { type: Type.STRING }
-                  },
-                  required: ["phase1_onboarding", "phase2_consolidation", "phase3_mastery"]
-                }
+                evolutionPath: { type: Type.STRING }
               },
-              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath", "evolutionTimeline"]
+              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
             },
             deepAnalysis: {
               type: Type.OBJECT,
@@ -109,18 +105,30 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               type: Type.OBJECT,
               properties: {
                 phases: {
-                   type: Type.ARRAY,
-                   items: {
-                     type: Type.OBJECT,
-                     properties: {
-                       title: { type: Type.STRING },
-                       goal: { type: Type.STRING },
-                       questions: { type: Type.ARRAY, items: { type: Type.STRING } },
-                       redFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                       subliminalCues: { type: Type.ARRAY, items: { type: Type.STRING } }
-                     },
-                     required: ["title", "goal", "questions", "redFlags", "subliminalCues"]
-                   }
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      id: { type: Type.NUMBER },
+                      title: { type: Type.STRING },
+                      goal: { type: Type.STRING },
+                      questions: {
+                        type: Type.ARRAY,
+                        items: {
+                          type: Type.OBJECT,
+                          properties: {
+                            text: { type: Type.STRING },
+                            why: { type: Type.STRING },
+                            lookFor: { type: Type.STRING }
+                          },
+                          required: ["text", "why", "lookFor"]
+                        }
+                      },
+                      redFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      subliminalCues: { type: Type.ARRAY, items: { type: Type.STRING } }
+                    },
+                    required: ["id", "title", "goal", "questions", "redFlags", "subliminalCues"]
+                  }
                 },
                 criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
                 simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -134,9 +142,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     });
 
     const parsedData = extractPureJSON(response.text);
-    if (!parsedData) throw new Error("JSON Parse Error");
+    if (!parsedData) throw new Error("JSON_RECOVERY_FAILED");
     return parsedData;
   } catch (error) {
+    console.error("AI_STRATEGY_ENGINE_ERROR:", error);
     throw error;
   }
 };
