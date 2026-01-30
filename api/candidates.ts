@@ -5,220 +5,127 @@ export const config = {
   runtime: 'edge',
 };
 
-// --- SELF-HEALING SCHEMA MECHANISM ---
-async function ensureSchema() {
-  console.log("MIA System: Veritabanı şeması onarılıyor...");
+async function initializeDatabase() {
   try {
+    // Ana tablo ve kolonların varlığını garanti et
+    await sql`
+      CREATE TABLE IF NOT EXISTS candidates (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT,
+        age INTEGER,
+        gender TEXT,
+        branch TEXT,
+        university TEXT,
+        department TEXT,
+        experience_years INTEGER,
+        previous_institutions TEXT,
+        all_trainings JSONB DEFAULT '[]'::jsonb,
+        answers JSONB DEFAULT '{}'::jsonb,
+        status TEXT DEFAULT 'pending',
+        report JSONB,
+        algo_report JSONB,
+        interview_schedule JSONB,
+        cv_data JSONB,
+        admin_notes TEXT,
+        reminder_note TEXT,
+        archive_category TEXT,
+        archive_note TEXT,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    // Gerekli kolonların sonradan eklenmesi (Migration)
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_category TEXT;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_note TEXT;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reminder_note TEXT;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
     await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;`;
-    console.log("MIA System: Şema onarımı tamamlandı.");
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
   } catch (e) {
-    console.error("MIA System: Şema onarımı sırasında hata:", e);
+    console.error("DB Init Error:", e);
   }
 }
 
 export default async function handler(request: Request) {
-  const method = request.method;
+  const { method } = request;
   const { searchParams } = new URL(request.url);
   const authHeader = request.headers.get('Authorization');
 
-  // STRICT CACHE CONTROL HEADERS
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
+    'Cache-Control': 'no-store, no-cache, must-revalidate'
   };
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
-  if (method === 'GET' || method === 'DELETE') {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401, headers });
-    }
-  }
+  // Her istekte tabloyu kontrol et (Cold start koruması)
+  await initializeDatabase();
 
   try {
     if (method === 'GET') {
       const id = searchParams.get('id');
 
-      // DETAY SORGUSU (Tekil Aday - Full Data)
       if (id) {
-        try {
-          const { rows } = await sql`SELECT * FROM candidates WHERE id = ${id}`;
-          if (rows.length === 0) return new Response(JSON.stringify({ error: 'NOT_FOUND' }), { status: 404, headers });
-          
-          const candidate = rows[0];
-          return new Response(JSON.stringify({
-              ...candidate,
-              timestamp: new Date(candidate.updated_at || candidate.created_at).getTime()
-          }), { status: 200, headers });
-        } catch (err: any) {
-          // Eğer sütun hatası varsa onar ve tekrar dene
-          if (err.message.includes('does not exist')) {
-            await ensureSchema();
-            const { rows } = await sql`SELECT * FROM candidates WHERE id = ${id}`;
-            if (rows.length === 0) return new Response(JSON.stringify({ error: 'NOT_FOUND' }), { status: 404, headers });
-            return new Response(JSON.stringify({
-                ...rows[0],
-                timestamp: new Date(rows[0].updated_at || rows[0].created_at).getTime()
-            }), { status: 200, headers });
-          }
-          throw err;
-        }
+        const { rows } = await sql`SELECT * FROM candidates WHERE id = ${id}`;
+        if (rows.length === 0) return new Response(JSON.stringify({ error: 'NOT_FOUND' }), { status: 404, headers });
+        return new Response(JSON.stringify(rows[0]), { status: 200, headers });
       }
 
-      // LISTE SORGUSU (Optimized - No BLOBs)
-      try {
-        const { rows } = await sql`
-          SELECT 
-            id, name, email, phone, age, gender, branch, university, department,
-            experience_years, previous_institutions, status, archive_category,
-            updated_at, created_at,
-            (report->>'score')::int as score,
-            (cv_data IS NOT NULL) as has_cv
-          FROM candidates 
-          ORDER BY updated_at DESC;
-        `;
+      // Liste sorgusunda NULL değerlere karşı COALESCE kullan
+      const { rows } = await sql`
+        SELECT 
+          id, name, branch, status, experience_years as "experienceYears",
+          COALESCE(report, '{}'::jsonb) as report,
+          updated_at
+        FROM candidates 
+        ORDER BY updated_at DESC;
+      `;
+      
+      const sanitizedRows = rows.map(r => ({
+        ...r,
+        timestamp: new Date(r.updated_at).getTime(),
+        report: r.report && r.report.score ? { score: r.report.score } : null
+      }));
 
-        const candidates = rows.map(row => ({
-          id: row.id,
-          name: row.name || 'İsimsiz',
-          email: row.email || '',
-          phone: row.phone || '',
-          age: row.age || 0,
-          branch: row.branch || '',
-          experienceYears: row.experience_years || 0,
-          status: row.status || 'pending',
-          archiveCategory: row.archive_category,
-          report: row.score ? { score: row.score } : null,
-          hasCv: row.has_cv,
-          timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
-        }));
-        
-        return new Response(JSON.stringify(candidates), { status: 200, headers });
-      } catch (err: any) {
-        if (err.message.includes('does not exist')) {
-          await ensureSchema();
-          // Retry logic duplicated for safety
-          const { rows } = await sql`
-            SELECT 
-              id, name, email, phone, age, gender, branch, university, department,
-              experience_years, previous_institutions, status, archive_category,
-              updated_at, created_at,
-              (report->>'score')::int as score,
-              (cv_data IS NOT NULL) as has_cv
-            FROM candidates 
-            ORDER BY updated_at DESC;
-          `;
-          const candidates = rows.map(row => ({
-            id: row.id,
-            name: row.name || 'İsimsiz',
-            email: row.email || '',
-            phone: row.phone || '',
-            age: row.age || 0,
-            branch: row.branch || '',
-            experienceYears: row.experience_years || 0,
-            status: row.status || 'pending',
-            archiveCategory: row.archive_category,
-            report: row.score ? { score: row.score } : null,
-            hasCv: row.has_cv,
-            timestamp: new Date(row.updated_at || row.created_at || Date.now()).getTime()
-          }));
-          return new Response(JSON.stringify(candidates), { status: 200, headers });
-        }
-        throw err;
-      }
+      return new Response(JSON.stringify(sanitizedRows), { status: 200, headers });
     }
 
     if (method === 'POST') {
       const body = await request.json();
       const now = new Date().toISOString();
       
-      const allTrainings = JSON.stringify(body.allTrainings || []);
-      const answers = JSON.stringify(body.answers || {});
-      const report = body.report ? JSON.stringify(body.report) : null;
-      const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
-      const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
-
-      const executeUpsert = async () => {
-        await sql`
-          INSERT INTO candidates (
-            id, name, email, phone, age, gender, branch, university, department,
-            experience_years, previous_institutions, all_trainings, answers, 
-            status, admin_notes, reminder_note, report, algo_report, cv_data, 
-            archive_category, archive_note, updated_at
-          ) VALUES (
-            ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
-            ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears}, 
-            ${body.previousInstitutions}, ${allTrainings}, ${answers}, ${body.status},
-            ${body.adminNotes}, ${body.reminderNote}, ${report}, ${algoReport}, ${cvData}, 
-            ${body.archiveCategory}, ${body.archiveNote}, ${now}
-          ) ON CONFLICT (id) DO UPDATE SET 
-            name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, age = EXCLUDED.age, 
-            gender = EXCLUDED.gender, branch = EXCLUDED.branch, university = EXCLUDED.university, 
-            department = EXCLUDED.department, experience_years = EXCLUDED.experience_years, 
-            previous_institutions = EXCLUDED.previous_institutions, all_trainings = EXCLUDED.all_trainings, 
-            answers = EXCLUDED.answers, status = EXCLUDED.status, admin_notes = EXCLUDED.admin_notes, 
-            reminder_note = EXCLUDED.reminder_note, report = EXCLUDED.report, algo_report = EXCLUDED.algo_report, 
-            cv_data = CASE WHEN EXCLUDED.cv_data IS NOT NULL THEN EXCLUDED.cv_data ELSE candidates.cv_data END, 
-            archive_category = EXCLUDED.archive_category, 
-            archive_note = EXCLUDED.archive_note, updated_at = EXCLUDED.updated_at;
-        `;
-      };
-
-      try {
-        await executeUpsert();
-      } catch (err: any) {
-        if (err.message.includes('does not exist')) {
-          await ensureSchema();
-          await executeUpsert(); // Retry after schema fix
-        } else {
-          throw err;
-        }
-      }
-
-      if (body.status === 'archived' && body.archiveCategory === 'HIRED_CONTRACTED') {
-        const staffId = `STF-${body.id.toUpperCase().substring(0, 6)}`;
-        const defaultPassword = 'yenigun2024';
-
-        await sql`
-          INSERT INTO staff (
-            id, origin_candidate_id, name, email, phone, password_hash, role, branch, 
-            university, department, experience_years, all_trainings, onboarding_complete, status, updated_at
-          ) VALUES (
-            ${staffId}, ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${defaultPassword}, 
-            'user', ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears},
-            ${allTrainings}, FALSE, 'active', ${now}
-          )
-          ON CONFLICT (email) DO UPDATE SET
-            branch = EXCLUDED.branch,
-            origin_candidate_id = EXCLUDED.origin_candidate_id,
-            updated_at = EXCLUDED.updated_at;
-        `;
-      }
+      await sql`
+        INSERT INTO candidates (
+          id, name, email, phone, age, gender, branch, university, department,
+          experience_years, previous_institutions, all_trainings, answers, 
+          status, report, algo_report, cv_data, archive_category, archive_note, updated_at
+        ) VALUES (
+          ${body.id}, ${body.name}, ${body.email}, ${body.phone}, ${body.age}, ${body.gender},
+          ${body.branch}, ${body.university}, ${body.department}, ${body.experienceYears}, 
+          ${body.previousInstitutions}, ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers || {})},
+          ${body.status}, ${JSON.stringify(body.report || null)}, ${JSON.stringify(body.algoReport || null)},
+          ${JSON.stringify(body.cvData || null)}, ${body.archiveCategory}, ${body.archiveNote}, ${now}
+        ) ON CONFLICT (id) DO UPDATE SET 
+          status = EXCLUDED.status, report = EXCLUDED.report, 
+          algo_report = EXCLUDED.algo_report, updated_at = EXCLUDED.updated_at,
+          archive_category = EXCLUDED.archive_category, archive_note = EXCLUDED.archive_note;
+      `;
 
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
     if (method === 'DELETE') {
       const id = searchParams.get('id');
-      if (id) {
-        await sql`DELETE FROM candidates WHERE id = ${id}`;
-        return new Response(JSON.stringify({ success: true }), { status: 200, headers });
-      }
+      await sql`DELETE FROM candidates WHERE id = ${id}`;
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    return new Response(JSON.stringify({ error: 'INVALID_METHOD' }), { status: 405, headers });
   } catch (error: any) {
-    console.error("Candidate API Error:", error);
-    return new Response(JSON.stringify({ error: 'DB_ERROR', message: error.message }), { status: 500, headers });
+    console.error("API 500 Error:", error);
+    return new Response(JSON.stringify({ error: 'SERVER_ERROR', details: error.message }), { status: 500, headers });
   }
+  return new Response(null, { status: 405 });
 }

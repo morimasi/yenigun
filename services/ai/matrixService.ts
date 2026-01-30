@@ -4,41 +4,26 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-/**
- * HEURISTIC JSON RECOVERY (V4)
- * AI yanıtı kesilse veya kirlense bile veriyi kurtarır.
- */
 const extractPureJSON = (text: string): any => {
   try {
-    // 1. Temizlik: Markdown ve Monologları ayıkla
+    // Düşünme balonlarını ve markdown bloklarını temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    // 2. İlk '{' ve son '}' arasını bul
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
     
-    if (firstBrace === -1) throw new Error("Başlangıç parantezi yok.");
+    if (firstBrace === -1) throw new Error("JSON Yapısı Bulunamadı");
     
-    let jsonCandidate = lastBrace !== -1 
-      ? cleanText.substring(firstBrace, lastBrace + 1)
-      : cleanText.substring(firstBrace); // Kesilmişse sonuna kadar al
+    let jsonStr = cleanText.substring(firstBrace, lastBrace + 1);
 
-    // 3. Otomatik Kapatma (Kesilmiş JSON'lar için)
-    let openBraces = (jsonCandidate.match(/\{/g) || []).length;
-    let closeBraces = (jsonCandidate.match(/\}/g) || []).length;
-    
-    while (openBraces > closeBraces) {
-      jsonCandidate += "}";
-      closeBraces++;
-    }
+    // Kapanmamış parantezleri onar
+    const openCount = (jsonStr.match(/\{/g) || []).length;
+    const closeCount = (jsonStr.match(/\}/g) || []).length;
+    if (openCount > closeCount) jsonStr += "}".repeat(openCount - closeCount);
 
-    // 4. JSON Temizliği (Hatalı virgüller vb.)
-    jsonCandidate = jsonCandidate.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-
-    return JSON.parse(jsonCandidate);
+    return JSON.parse(jsonStr);
   } catch (e) {
-    console.error("Critical Neural Parse Error:", text);
-    // UI'ın çökmemesi için boş ama yapısal bir fallback dön
+    console.error("Neural Extraction Failure. Raw text length:", text.length);
     return null;
   }
 };
@@ -61,10 +46,9 @@ const SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
-    GÖREV: Adayın liyakat dosyasını DERİN MUHAKEME ile analiz et.
-    DİL: Akademik Türkçe.
-    FORMAT: Sadece JSON döndür. 
-    STRATEJİ: Her analizi somut bir klinik nedene bağla.
+    GÖREV: Adayın liyakat dosyasını DERİN AKADEMİK MUHAKEME ile analiz et.
+    KURAL: Yanıtın sonunda KESİNLİKLE sadece geçerli bir JSON objesi döndür. Düşüncelerini 'Thinking' aşamasında tut.
+    ŞEMA: workEthics, technicalExpertise, pedagogicalAnalysis, parentStudentRelations, sustainability, institutionalLoyalty, developmentOpenness anahtarlarını KESİNLİKLE kullan.
   `;
 
   try {
@@ -72,12 +56,12 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `VERİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `ANALİZ VERİSİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // BÜTÇE OPTİMİZASYONU: 12k düşünme, 20k cevap alanı bırakır.
-        thinkingConfig: { thinkingBudget: 12000 }, 
+        // OPTİMİZE BÜTÇE: 8k düşünme (muhakeme için yeterli), 30k+ çıktı (JSON için güvenli)
+        thinkingConfig: { thinkingBudget: 8000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -137,7 +121,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     });
 
     const parsedData = extractPureJSON(response.text);
-    if (!parsedData) throw new Error("JSON Kurtarılamadı");
+    if (!parsedData) throw new Error("JSON Deşifre Edilemedi");
     return parsedData;
   } catch (error) {
     console.error("AI Nöral Analiz Hatası:", error);

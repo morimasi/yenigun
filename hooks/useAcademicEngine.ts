@@ -13,52 +13,51 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('yeni_gun_admin_token'));
 
   const loadData = useCallback(async (isManual = true) => {
-    if (isManual) setIsProcessing(true);
+    if (isManual) setIsLoading(true);
     try {
       const data = await storageService.getCandidates(true);
-      setCandidates(data);
+      if (Array.isArray(data)) {
+        setCandidates(data);
+      }
       const remoteConfig = await storageService.getConfig();
       if (remoteConfig) setConfig(prev => ({ ...prev, ...remoteConfig }));
     } catch (e: any) {
       if (e.message === "UNAUTHORIZED") setIsLoggedIn(false);
     } finally {
-      setIsProcessing(false);
+      setIsLoading(false);
     }
   }, []);
 
   const analyzeCandidate = async (candidateId: string) => {
     setIsProcessing(true);
     try {
-      const candidate = candidates.find(c => c.id === candidateId);
-      if (!candidate) throw new Error("Aday bulunamadı.");
+      // Önce veritabanından adayın full verisini çek (CV vb. için)
+      const freshCandidates = await storageService.getCandidates(true);
+      const candidate = freshCandidates.find(c => c.id === candidateId);
+      if (!candidate) throw new Error("Aday dosyası bulunamadı.");
 
-      // Muhakeme motorunu tetikle
+      // AI ve Algoritmik analizleri çalıştır
       const aiReport = await generateCandidateAnalysis(candidate, config);
       const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       
-      const updatedCandidate = JSON.parse(JSON.stringify({ 
+      const updatedCandidate = { 
         ...candidate, 
         report: aiReport, 
         algoReport: algoReport, 
         timestamp: Date.now() 
-      }));
+      };
       
-      // REAKTİF GÜNCELLEME: Global state'i mühürle
-      setCandidates(prev => {
-        const index = prev.findIndex(c => c.id === candidateId);
-        if (index === -1) return prev;
-        const newList = [...prev];
-        newList[index] = updatedCandidate;
-        return newList;
-      });
-      
-      // Kalıcı depolama
-      await storageService.updateCandidate(updatedCandidate);
+      // Veritabanına kaydet
+      const saveResult = await storageService.updateCandidate(updatedCandidate);
+      if (!saveResult.success) throw new Error("Veritabanı kayıt hatası");
+
+      // Local state güncelle
+      setCandidates(prev => prev.map(c => c.id === candidateId ? updatedCandidate : c));
       
       return { success: true };
     } catch (e) {
-      console.error("Nöral Analiz Hatası:", e);
-      return { success: false, error: "AI Analizi başarısız oldu. Model zaman aşımı." };
+      console.error("Analiz Motoru Çökmesi:", e);
+      return { success: false, error: "AI Analizi başarısız oldu. Teknik detay: JSON Truncation or DB Lock." };
     } finally {
       setIsProcessing(false);
     }
@@ -76,6 +75,8 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
 
   return {
     candidates, config, isProcessing, isLoading, isLoggedIn,
-    setIsLoggedIn, loadData, submitCandidate, analyzeCandidate, logout: () => { localStorage.removeItem('yeni_gun_admin_token'); setIsLoggedIn(false); }, setConfig
+    setIsLoggedIn, loadData, submitCandidate, analyzeCandidate, 
+    logout: () => { localStorage.removeItem('yeni_gun_admin_token'); setIsLoggedIn(false); }, 
+    setConfig
   };
 };
