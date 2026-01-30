@@ -1,6 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
-import { Candidate, GlobalConfig, Branch } from '../../types';
+import React, { useState, useMemo, useRef } from 'react';
+import { Candidate, GlobalConfig } from '../../types';
 import CandidateDetail from './CandidateDetail';
 import { exportService } from '../../services/exportService';
 
@@ -15,7 +15,10 @@ interface PipelineViewProps {
 const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdateCandidate, onDeleteCandidate, onRefresh }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
-  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
+  
+  // HOVER POP-OVER STATE (FIXED POSITIONING)
+  const [hoveredCandidate, setHoveredCandidate] = useState<Candidate | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ top: number, left: number } | null>(null);
   
   // SEÇİM SİSTEMİ STATE'LERİ
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -34,6 +37,18 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
     candidates.find(c => c.id === selectedId), 
     [candidates, selectedId]
   );
+
+  const handleMouseEnter = (e: React.MouseEvent, candidate: Candidate) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // Kartın sağ kenarının 10px yanına, üst kenarıyla hizalı
+    setHoverPosition({ top: rect.top, left: rect.right + 12 });
+    setHoveredCandidate(candidate);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredCandidate(null);
+    setHoverPosition(null);
+  };
 
   const toggleCheck = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,8 +84,90 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
   };
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] overflow-hidden gap-0 bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div className="flex h-[calc(100vh-5rem)] overflow-hidden gap-0 bg-white rounded-xl border border-slate-200 shadow-sm relative">
       
+      {/* GLOBAL HOVER KPI CARD (FIXED ON TOP OF EVERYTHING) */}
+      {hoveredCandidate && hoverPosition && (
+        <div 
+            className="fixed z-[9999] w-[280px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 p-5 animate-scale-in pointer-events-none"
+            style={{ top: hoverPosition.top, left: hoverPosition.left }}
+        >
+            {/* Arrow Pointer */}
+            <div className="absolute top-6 -left-2 w-4 h-4 bg-slate-900 rotate-45 border-l border-b border-slate-700"></div>
+
+            <div className="relative z-10 space-y-4">
+                {/* Header Info */}
+                <div className="border-b border-white/10 pb-3">
+                    <h5 className="text-[14px] font-black text-white uppercase tracking-tight leading-none">{hoveredCandidate.name}</h5>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="px-2 py-0.5 bg-white/10 rounded text-[9px] font-bold text-orange-400 uppercase tracking-wide">{hoveredCandidate.branch}</span>
+                        <span className="text-[9px] font-bold text-slate-400">{hoveredCandidate.experienceYears} Yıl</span>
+                    </div>
+                </div>
+
+                {/* KPI Metrics */}
+                {hoveredCandidate.report ? (
+                    <div className="space-y-3">
+                        {/* Liyakat Skoru */}
+                        <div>
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">LİYAKAT SKORU</span>
+                                <span className={`text-[12px] font-black ${hoveredCandidate.report.score > 75 ? 'text-emerald-400' : hoveredCandidate.report.score < 50 ? 'text-rose-400' : 'text-orange-400'}`}>
+                                    %{hoveredCandidate.report.score}
+                                </span>
+                            </div>
+                            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                    className={`h-full transition-all ${hoveredCandidate.report.score > 75 ? 'bg-emerald-500' : hoveredCandidate.report.score < 50 ? 'bg-rose-500' : 'bg-orange-500'}`} 
+                                    style={{ width: `${hoveredCandidate.report.score}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                        {/* Etik Endeksi */}
+                        <div>
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ETİK GÜVEN</span>
+                                <span className={`text-[12px] font-black ${hoveredCandidate.report.integrityIndex > 80 ? 'text-blue-400' : 'text-slate-300'}`}>
+                                    %{hoveredCandidate.report.integrityIndex || 0}
+                                </span>
+                            </div>
+                            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 transition-all" style={{ width: `${hoveredCandidate.report.integrityIndex || 0}%` }}></div>
+                            </div>
+                        </div>
+
+                        {/* Risk Uyarıları */}
+                        {hoveredCandidate.report.socialMaskingScore > 60 && (
+                            <div className="bg-rose-500/10 border border-rose-500/30 p-2 rounded-lg flex items-start gap-2 mt-2">
+                                <div className="w-1.5 h-1.5 bg-rose-500 rounded-full mt-1 animate-pulse shrink-0"></div>
+                                <div>
+                                    <p className="text-[9px] font-black text-rose-400 uppercase">YÜKSEK MASKELEME</p>
+                                    <p className="text-[8px] text-rose-300/80 leading-tight">Adayın beyanı ile klinik refleksleri uyuşmuyor.</p>
+                                </div>
+                            </div>
+                        )}
+                         
+                        {/* Pozitif Highlight */}
+                        {hoveredCandidate.report.score > 85 && (
+                             <div className="bg-emerald-500/10 border border-emerald-500/30 p-2 rounded-lg flex items-center gap-2 mt-2">
+                                <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                <span className="text-[9px] font-black text-emerald-400 uppercase">HİPO (YÜKSEK POTANSİYEL)</span>
+                             </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
+                        <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analiz Bekleniyor</span>
+                    </div>
+                )}
+            </div>
+        </div>
+      )}
+
       {/* EXPORT OVERLAY */}
       {isExporting && (
         <div className="fixed inset-0 z-[1000] bg-slate-900/90 backdrop-blur-2xl flex items-center justify-center p-12">
@@ -117,11 +214,11 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
               return (
                 <div 
                   key={c.id} 
-                  onMouseEnter={() => setHoveredCandidateId(c.id)}
-                  onMouseLeave={() => setHoveredCandidateId(null)}
+                  onMouseEnter={(e) => handleMouseEnter(e, c)}
+                  onMouseLeave={handleMouseLeave}
                   onClick={() => setSelectedId(c.id)}
-                  className={`relative px-4 py-3 border-b border-slate-100 cursor-pointer transition-all hover:bg-white flex items-center gap-3 group hover:z-50 hover:shadow-lg ${
-                    isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm z-40' : 'border-l-4 border-l-transparent z-0'
+                  className={`candidate-card relative px-4 py-3 border-b border-slate-100 cursor-pointer transition-all hover:bg-white flex items-center gap-3 group ${
+                    isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm' : 'border-l-4 border-l-transparent'
                   }`}
                 >
                   <div onClick={(e) => toggleCheck(c.id, e)} className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isChecked ? 'bg-slate-900 border-slate-900' : 'border-slate-300 hover:border-orange-500'}`}>
@@ -135,58 +232,6 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                     </div>
                     <p className="text-[9px] font-medium text-slate-400 truncate uppercase">{c.branch}</p>
                   </div>
-
-                  {/* HOVER KPI CARD (POP-OVER) */}
-                  {hoveredCandidateId === c.id && (
-                    <div className="absolute left-[90%] top-0 ml-4 z-[500] w-[260px] bg-slate-900 p-5 rounded-2xl shadow-2xl border border-slate-700 animate-scale-in pointer-events-none">
-                       {/* Arrow */}
-                       <div className="absolute top-4 -left-2 w-4 h-4 bg-slate-900 rotate-45 border-l border-b border-slate-700"></div>
-                       
-                       <div className="relative z-10 space-y-4">
-                          <div className="border-b border-white/10 pb-3">
-                             <h5 className="text-[12px] font-black text-white uppercase tracking-tight">{c.name}</h5>
-                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase">{c.branch}</span>
-                                <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
-                                <span className="text-[9px] font-bold text-slate-400">{c.experienceYears} Yıl</span>
-                             </div>
-                          </div>
-
-                          {c.report ? (
-                             <div className="space-y-3">
-                                <div>
-                                   <div className="flex justify-between items-end mb-1">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">LİYAKAT SKORU</span>
-                                      <span className="text-[11px] font-black text-orange-500">%{c.report.score}</span>
-                                   </div>
-                                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                      <div className="h-full bg-orange-600 transition-all" style={{ width: `${c.report.score}%` }}></div>
-                                   </div>
-                                </div>
-                                <div>
-                                   <div className="flex justify-between items-end mb-1">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ETİK ENDEKSİ</span>
-                                      <span className="text-[11px] font-black text-emerald-500">%{c.report.integrityIndex || 0}</span>
-                                   </div>
-                                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                      <div className="h-full bg-emerald-500 transition-all" style={{ width: `${c.report.integrityIndex || 0}%` }}></div>
-                                   </div>
-                                </div>
-                                {c.report.socialMaskingScore > 60 && (
-                                   <div className="bg-rose-900/30 border border-rose-800 p-2 rounded-lg flex items-center gap-2">
-                                      <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></div>
-                                      <span className="text-[9px] font-bold text-rose-300 uppercase">Yüksek Sosyal Maskeleme</span>
-                                   </div>
-                                )}
-                             </div>
-                          ) : (
-                             <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analiz Bekleniyor</span>
-                             </div>
-                          )}
-                       </div>
-                    </div>
-                  )}
                 </div>
               );
            })}
@@ -203,7 +248,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
       </div>
 
       {/* SAĞ: DETAY PANELİ (KANVAS) */}
-      <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
+      <div className="flex-1 flex flex-col bg-white overflow-hidden relative z-0">
         {selectedCandidate ? (
           <CandidateDetail 
             candidate={selectedCandidate}
