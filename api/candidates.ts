@@ -7,7 +7,7 @@ export const config = {
 
 async function initializeDatabase() {
   try {
-    // 1. Ana tablo kurulumu
+    // 1. Ana tabloyu oluştur (Eğer yoksa)
     await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
@@ -37,21 +37,28 @@ async function initializeDatabase() {
       );
     `;
     
-    // 2. Self-healing: Mevcut tabloya eksik olan TÜM sütunları zorla ekle
-    const columns = [
-      "phone TEXT", "age INTEGER", "gender TEXT", "marital_status TEXT",
-      "university TEXT", "department TEXT", "experience_years INTEGER",
-      "previous_institutions TEXT", "all_trainings JSONB", "answers JSONB",
-      "report JSONB", "algo_report JSONB", "cv_data JSONB", "archive_category TEXT",
-      "archive_note TEXT", "reminder_note TEXT", "interview_schedule JSONB"
-    ];
+    // 2. Eksik sütunları tek tek ve güvenli bir şekilde ekle (Self-healing)
+    // Sütun ekleme işlemlerini tekil sorgular olarak gönderiyoruz
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS age INTEGER;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS marital_status TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS university TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS department TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS experience_years INTEGER DEFAULT 0;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS previous_institutions TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS all_trainings JSONB DEFAULT '[]'::jsonb;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS answers JSONB DEFAULT '{}'::jsonb;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS algo_report JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS cv_data JSONB;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_category TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS archive_note TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reminder_note TEXT;`;
+    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;`;
 
-    for (const col of columns) {
-      const [name] = col.split(' ');
-      await sql.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS ${col};`);
-    }
   } catch (e) {
-    console.error("DB Init Failure:", e);
+    console.error("Critical: Database Schema Sync Failure", e);
   }
 }
 
@@ -69,6 +76,7 @@ export default async function handler(request: Request) {
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
+  // Her istekte şemayı doğrula (Gerekliyse)
   await initializeDatabase();
 
   try {
@@ -91,6 +99,7 @@ export default async function handler(request: Request) {
       const body = await request.json();
       const now = new Date().toISOString();
       
+      // Veritabanı mühürleme işlemi
       await sql`
         INSERT INTO candidates (
           id, name, email, phone, age, gender, marital_status, branch, university, department,
@@ -98,15 +107,28 @@ export default async function handler(request: Request) {
           status, report, algo_report, cv_data, archive_category, archive_note, 
           interview_schedule, updated_at
         ) VALUES (
-          ${body.id}, ${body.name}, ${body.email}, ${body.phone ?? null}, 
-          ${body.age ?? null}, ${body.gender ?? 'Belirtilmemiş'}, ${body.maritalStatus ?? 'Bekar'},
-          ${body.branch}, ${body.university ?? null}, ${body.department ?? null}, 
-          ${body.experienceYears ?? 0}, ${body.previousInstitutions ?? null}, 
-          ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers || {})},
-          ${body.status || 'pending'}, ${JSON.stringify(body.report || null)}, 
-          ${JSON.stringify(body.algoReport || null)}, ${JSON.stringify(body.cvData || null)}, 
-          ${body.archiveCategory ?? null}, ${body.archiveNote ?? null}, 
-          ${JSON.stringify(body.interviewSchedule || null)}, ${now}
+          ${body.id}, 
+          ${body.name}, 
+          ${body.email}, 
+          ${body.phone || null}, 
+          ${body.age || null}, 
+          ${body.gender || 'Belirtilmemiş'}, 
+          ${body.maritalStatus || 'Bekar'},
+          ${body.branch}, 
+          ${body.university || null}, 
+          ${body.department || null}, 
+          ${body.experienceYears || 0}, 
+          ${body.previousInstitutions || null}, 
+          ${JSON.stringify(body.allTrainings || [])}, 
+          ${JSON.stringify(body.answers || {})},
+          ${body.status || 'pending'}, 
+          ${JSON.stringify(body.report || null)}, 
+          ${JSON.stringify(body.algoReport || null)}, 
+          ${JSON.stringify(body.cvData || null)}, 
+          ${body.archiveCategory || null}, 
+          ${body.archiveNote || null}, 
+          ${JSON.stringify(body.interviewSchedule || null)}, 
+          ${now}
         ) 
         ON CONFLICT (email) DO UPDATE SET 
           name = EXCLUDED.name,
@@ -141,10 +163,10 @@ export default async function handler(request: Request) {
     }
 
   } catch (error: any) {
-    console.error("Critical API 500 Recovery:", error);
+    console.error("Critical API Error:", error);
     return new Response(JSON.stringify({ 
       error: 'DATABASE_WRITE_ERROR', 
-      message: 'Veritabanı mühürleme hatası. Sütun uyuşmazlığı gideriliyor olabilir.',
+      message: 'Veritabanı mühürleme hatası. Şema otomatik olarak onarıldı, lütfen işlemi tekrar deneyiniz.',
       details: error.message 
     }), { status: 500, headers });
   }
