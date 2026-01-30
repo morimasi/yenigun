@@ -36,16 +36,21 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Klinik Projeksiyon Laboratuvarı.
-    GÖREV: Adayın 24 aylık kurumsal evrimini simüle et.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçisi ve Stratejik Analist.
+    GÖREV: Adayın kurumsal liyakatini parçala ve bir "Playbook" üret.
     
-    PROJEKSİYON KURALLARI:
-    1. Adayın "Klinik Olgunlaşma Eğrisi"ni (Growth Forecast) ay bazında (0, 3, 6, 12, 18, 24) puanla.
-    2. Zaman çizelgesini (Evolution Timeline) 3 ana faza ayır: Oryantasyon, Stabilizasyon, Otorite.
-    3. Her faz için beklenen somut davranışları ve yöneticiye kritik tavsiyeleri üret.
-    4. Analiz dili: Gelecek odaklı, olasılık temelli ama kesin klinik gözlemler içeren.
+    DERİN PROJEKSİYON KURALLARI:
+    1. Adayın 24 aylık kurumsal evrimini 3 fazda simüle et: (1) Oryantasyon, (2) Stabilizasyon, (3) Otorite.
+    2. Ay bazlı klinik olgunlaşma skoru (Growth Forecast) üret.
+    3. Birincil tükenmişlik riskini ve koruma stratejisini belirle.
     
-    ÇIKTI: Saf JSON.
+    DERİN STRATEJİ KURALLARI:
+    1. Mülakatı 3 safhalı bir harekata dönüştür: (1) Klinik Derinlik, (2) Etik/Stres, (3) Vizyon.
+    2. Her soru için "Why" (Neden bu soru?) ve "Look-for" (Hangi cevabı/davranışı arıyoruz?) detayı ver.
+    3. Adayın kaçırmaya meyilli olduğu 'Subliminal Cues' (Nöral İpuçları) listesini ekle.
+    
+    ANALİZ DİLİ: Keskin, akademik, direkt ve stratejik.
+    ÇIKTI: Sadece JSON.
   `;
 
   try {
@@ -53,11 +58,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ADAY ANALİZ VERİSİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `ADAY VERİSİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 12000 }, 
+        thinkingConfig: { thinkingBudget: 15000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -175,10 +180,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     });
 
     const parsedData = extractPureJSON(response.text);
-    if (!parsedData) throw new Error("JSON_RECOVERY_FAILED");
+    if (!parsedData) throw new Error("AI_ENGINE_JSON_FAIL");
     return parsedData;
   } catch (error) {
-    console.error("AI_STRATEGY_ENGINE_ERROR:", error);
+    console.error("AI_ENGINE_CORE_ERROR:", error);
     throw error;
   }
 };

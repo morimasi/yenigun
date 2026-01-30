@@ -43,7 +43,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
       setSelectedSegment('workEthics');
     } catch (e: any) { 
-      alert("Hata: Analiz motoru veriyi mühürleyemedi."); 
+      alert("Hata: Analiz motoru mühürlenemedi."); 
     } finally { 
       setIsAnalysing(false); 
     }
@@ -59,7 +59,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   return (
     <div className="flex flex-col h-full bg-white relative">
       
-      {/* HEADER */}
+      {/* HEADER (ULTRA COMPACT) */}
       <div className="h-[60px] border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 shadow-sm z-10">
          <div className="flex items-center gap-4 overflow-hidden">
             <div className={`w-2.5 h-2.5 rounded-full ${candidate.status === 'interview_scheduled' ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
@@ -99,7 +99,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex gap-4 overflow-x-auto no-scrollbar shrink-0">
          {[
            { id: 'matrix', label: 'MATRİS (DERİN OKUMA)' }, 
-           { id: 'dna', label: 'SPEKTRUM & MİZAÇ' }, 
+           { id: 'dna', label: 'DNA & SPEKTRUM' }, 
            { id: 'predictions', label: 'PROJEKSİYON (24 AY)' }, 
            { id: 'strategy', label: 'STRATEJİ (PLAYBOOK)' }
          ].map(t => (
@@ -118,7 +118,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
          {!candidate.report || !candidate.report.deepAnalysis ? (
             <div className="h-full flex flex-col items-center justify-center opacity-30 text-center">
                <div className="w-16 h-16 bg-slate-200 rounded-2xl mb-4 animate-pulse"></div>
-               <p className="text-xs font-black uppercase tracking-widest text-slate-400">Veri Bekleniyor...</p>
+               <p className="text-xs font-black uppercase tracking-widest text-slate-400">Analiz Verisi Bekleniyor...</p>
             </div>
          ) : (
             <div className="space-y-8 max-w-6xl mx-auto animate-fade-in pb-20">
@@ -145,7 +145,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                            <div className="space-y-6 animate-slide-up">
                               <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
                                  <div className="absolute top-0 left-0 w-2 h-full bg-slate-900"></div>
-                                 <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-4">KLİNİK NEDENSELLİK</h4>
+                                 <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-4">KLİNİK NEDENSELLİK (ROOT CAUSE)</h4>
                                  <p className="text-[13px] font-medium text-slate-700 leading-relaxed text-justify">"{currentData.reasoning}"</p>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -327,26 +327,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                            </div>
                         </div>
                      </div>
-
-                     {/* 4. LAYER: EXECUTIVE VERDICT */}
-                     <div className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-10">
-                        <div className="flex-1 space-y-4">
-                           <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">NİHAİ KARİYER YÖRÜNGESİ</h5>
-                           <p className="text-2xl font-black text-slate-900 leading-tight uppercase italic border-l-8 border-slate-900 pl-8">
-                              "{candidate.report.predictiveMetrics?.evolutionPath}"
-                           </p>
-                        </div>
-                        <div className="md:w-72 p-6 bg-slate-900 rounded-[2.5rem] text-white text-center">
-                           <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-2">LİDERLİK POTANSİYELİ</p>
-                           <p className="text-5xl font-black">%{candidate.report.predictiveMetrics?.leadershipPotential}</p>
-                        </div>
-                     </div>
-
                   </div>
                )}
 
+               {/* --- STRATEJİ (PLAYBOOK) MODÜLÜ --- */}
                {activeTab === 'strategy' && (
-                  <div className="space-y-8 animate-fade-in">
+                  <div className="space-y-8 animate-fade-in pb-10">
                      
                      {/* PLAYBOOK NAVIGATION */}
                      <div className="flex bg-white p-2 rounded-[2rem] border border-slate-200 shadow-sm gap-2">
@@ -385,11 +371,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                              <h5 className="text-lg font-black text-slate-800 leading-tight uppercase">"{q.text}"</h5>
                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                   <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-2">ANALİZ NEDENİ</span>
+                                                   <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-2">ANALİZ NEDENİ (WHY)</span>
                                                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed italic">{q.why}</p>
                                                 </div>
                                                 <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                                   <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest block mb-2">İDEAL CEVAP KRİTERİ</span>
+                                                   <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest block mb-2">İDEAL CEVAP KRİTERİ (LOOK-FOR)</span>
                                                    <p className="text-[11px] font-bold text-slate-600 leading-relaxed italic">{q.lookFor}</p>
                                                 </div>
                                              </div>
