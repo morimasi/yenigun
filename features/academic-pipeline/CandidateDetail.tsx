@@ -10,6 +10,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  const [activeInterviewPhase, setActiveInterviewPhase] = useState(0);
   
   const segments = useMemo(() => [
     { key: 'workEthics', label: 'İŞ AHLAKI' },
@@ -21,7 +22,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     { key: 'developmentOpenness', label: 'GELİŞİME AÇIKLIK' }
   ], []);
 
-  // Analiz bittiğinde otomatik segment seçimi
   useEffect(() => {
     if (candidate.report?.deepAnalysis && !selectedSegment) {
       setSelectedSegment('workEthics');
@@ -39,16 +39,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     try {
       const aiReport = await generateCandidateAnalysis(candidate, config);
       const algoReport = calculateAlgorithmicAnalysis(candidate, config);
-      
-      onUpdate({ 
-        ...candidate, 
-        report: aiReport, 
-        algoReport: algoReport, 
-        timestamp: Date.now() 
-      });
-      setSelectedSegment('workEthics');
+      onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
     } catch (e: any) { 
-      alert("Muhakeme motoru yanıt vermedi veya token limiti aşıldı. Lütfen tekrar deneyiniz."); 
+      alert("Analiz Motoru Hatası."); 
     } finally { 
       setIsAnalysing(false); 
     }
@@ -56,11 +49,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const handleDecision = async (decision: 'hired' | 'rejected') => {
     if (!confirm(decision === 'hired' ? "Personel olarak atanacak?" : "Arşive kaldırılacak?")) return;
-    onUpdate({
-      ...candidate,
-      status: decision === 'hired' ? 'hired' : 'rejected',
-      timestamp: Date.now()
-    });
+    onUpdate({ ...candidate, status: decision === 'hired' ? 'hired' : 'rejected', timestamp: Date.now() });
   };
 
   const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
@@ -82,7 +71,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
          </div>
 
          <div className="flex items-center gap-2 shrink-0">
-            {candidate.report && candidate.report.score > 0 && (
+            {candidate.report && (
                <div className="mr-3 text-right hidden md:block">
                   <span className="text-[10px] font-black text-emerald-600 block leading-none">%{candidate.report.score}</span>
                   <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">LİYAKAT</span>
@@ -127,9 +116,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
          {!candidate.report || !candidate.report.deepAnalysis ? (
             <div className="h-full flex flex-col items-center justify-center opacity-30 text-center">
                <div className="w-16 h-16 bg-slate-200 rounded-2xl mb-4 animate-pulse"></div>
-               <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  {isAnalysing ? 'Nöral Muhakeme Devreye Girdi... (Lütfen Bekleyiniz)' : 'Veri Hazırlanıyor...'}
-               </p>
+               <p className="text-xs font-black uppercase tracking-widest text-slate-400">Veri Hazırlanıyor...</p>
             </div>
          ) : (
             <div className="space-y-8 max-w-6xl mx-auto animate-fade-in">
@@ -138,7 +125,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                      <div className="md:col-span-3 space-y-1">
                         {segments.map(s => {
-                           const score = candidate.report?.deepAnalysis?.[s.key]?.score || 0;
                            const isSelected = selectedSegment === s.key;
                            return (
                              <button 
@@ -147,27 +133,24 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                 className={`w-full p-4 rounded-xl border text-left transition-all relative ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}
                              >
                                 <span className={`text-[10px] font-black uppercase block ${isSelected ? 'text-orange-500' : 'text-slate-400'}`}>{s.label}</span>
-                                <span className="text-lg font-black mt-1">%{score}</span>
-                                {isSelected && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-600 rounded-l-full"></div>}
+                                <span className="text-lg font-black mt-1">%{candidate.report?.deepAnalysis?.[s.key]?.score || 0}</span>
                              </button>
                            );
                         })}
                      </div>
-                     
                      <div className="md:col-span-9 space-y-6">
-                        {currentData ? (
+                        {currentData && (
                            <div className="space-y-6 animate-slide-up">
                               <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
                                  <div className="absolute top-0 left-0 w-2 h-full bg-slate-900"></div>
                                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-4">KLİNİK NEDENSELLİK (ROOT CAUSE)</h4>
-                                 <p className="text-[13px] font-medium text-slate-700 leading-relaxed text-justify">"{currentData.reasoning || 'Düşünme süreci devam ediyor...'}"</p>
+                                 <p className="text-[13px] font-medium text-slate-700 leading-relaxed text-justify">"{currentData.reasoning}"</p>
                               </div>
-
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                  <div className="bg-orange-50 p-6 rounded-[2rem] border border-orange-100">
                                     <h5 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-4">MİKRO-DAVRANIŞLAR</h5>
                                     <ul className="space-y-2">
-                                       {(currentData.behavioralIndicators || []).map((b: string, i: number) => (
+                                       {(currentData.behavioralIndicators || []).map((b, i) => (
                                           <li key={i} className="flex gap-3 items-start text-[11px] font-bold text-slate-700 leading-tight">
                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 shrink-0"></div>
                                              {b}
@@ -177,12 +160,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                  </div>
                                  <div className="bg-slate-900 p-6 rounded-[2rem] text-white">
                                     <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">KURUMSAL ETKİ</h5>
-                                    <p className="text-[12px] font-medium text-slate-300 leading-relaxed">{currentData.institutionalImpact || 'Etki analizi kilitlendi.'}</p>
+                                    <p className="text-[12px] font-medium text-slate-300 leading-relaxed">{currentData.institutionalImpact}</p>
                                  </div>
                               </div>
                            </div>
-                        ) : (
-                          <div className="p-20 text-center opacity-20 uppercase font-black text-slate-400 tracking-widest">Kategori Seçimi Bekleniyor</div>
                         )}
                      </div>
                   </div>
@@ -217,39 +198,154 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         </div>
                         <div className="p-8 bg-white rounded-[2.5rem] border border-slate-200">
                            <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-4">ÖZET KARAKTER ANALİZİ</h4>
-                           <p className="text-[13px] font-medium text-slate-600 leading-relaxed text-justify">{candidate.report.detailedAnalysisNarrative || 'Analiz metni oluşturulamadı.'}</p>
+                           <p className="text-[13px] font-medium text-slate-600 leading-relaxed text-justify">{candidate.report.detailedAnalysisNarrative}</p>
                         </div>
                      </div>
                   </div>
                )}
 
                {activeTab === 'predictions' && (
-                  <div className="space-y-8">
-                     <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-                        <h4 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-6">24 AYLIK EVRİM YOLU</h4>
-                        <p className="text-xl md:text-2xl font-black leading-snug italic tracking-tight">"{candidate.report.predictiveMetrics?.evolutionPath || 'Projeksiyon kilitlendi.'}"</p>
-                        <div className="absolute right-0 top-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px]"></div>
+                  <div className="space-y-8 animate-fade-in pb-10">
+                     {/* Üst Karar Matrisi */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex flex-col justify-center">
+                           <h4 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-6">24 AYLIK EVRİM ÖNGÖRÜSÜ</h4>
+                           <p className="text-2xl font-black leading-snug italic tracking-tight relative z-10">"{candidate.report.predictiveMetrics?.evolutionPath}"</p>
+                           <div className="absolute right-0 top-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px]"></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                           <PredictBar label="SADAKAT" value={candidate.report.predictiveMetrics?.retentionProbability || 0} color="text-emerald-600" />
+                           <PredictBar label="ÖĞRENME" value={candidate.report.predictiveMetrics?.learningVelocity || 0} color="text-blue-600" />
+                           <PredictBar label="DİRENÇ" value={100 - (candidate.report.predictiveMetrics?.burnoutRisk || 0)} color="text-rose-600" />
+                           <PredictBar label="LİDERLİK" value={candidate.report.predictiveMetrics?.leadershipPotential || 0} color="text-orange-600" />
+                        </div>
                      </div>
-                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <PredictBar label="SADAKAT" value={candidate.report.predictiveMetrics?.retentionProbability || 0} color="text-emerald-600" />
-                        <PredictBar label="ÖĞRENME" value={candidate.report.predictiveMetrics?.learningVelocity || 0} color="text-blue-600" />
-                        <PredictBar label="DİRENÇ" value={100 - (candidate.report.predictiveMetrics?.burnoutRisk || 0)} color="text-rose-600" />
-                        <PredictBar label="LİDERLİK" value={candidate.report.predictiveMetrics?.leadershipPotential || 0} color="text-orange-600" />
+
+                     {/* Klinik Olgunlaşma Zaman Çizelgesi */}
+                     <div className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-xl">
+                        <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.3em] mb-12 border-l-4 border-orange-600 pl-4">KLİNİK OLGUNLAŞMA TAKVİMİ</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 relative">
+                           <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 -translate-y-1/2 hidden md:block"></div>
+                           
+                           {[
+                              { phase: 'phase1_onboarding', label: '0-6 AY: ADAPTASYON', color: 'bg-blue-500', desc: candidate.report.predictiveMetrics?.evolutionTimeline?.phase1_onboarding },
+                              { phase: 'phase2_consolidation', label: '6-12 AY: STABİLİZASYON', color: 'bg-orange-500', desc: candidate.report.predictiveMetrics?.evolutionTimeline?.phase2_consolidation },
+                              { phase: 'phase3_mastery', label: '12-24 AY: OTORİTE', color: 'bg-emerald-500', desc: candidate.report.predictiveMetrics?.evolutionTimeline?.phase3_mastery }
+                           ].map((item, idx) => (
+                              <div key={idx} className="relative p-6 group">
+                                 <div className={`w-8 h-8 ${item.color} rounded-lg mb-6 flex items-center justify-center text-white font-black text-xs shadow-lg relative z-10 transition-transform group-hover:scale-110`}>{idx + 1}</div>
+                                 <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-3">{item.label}</h5>
+                                 <p className="text-[13px] font-bold text-slate-500 leading-relaxed italic">"{item.desc || 'Tahmin yapılamadı.'}"</p>
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+
+                     {/* Yönetici Tavsiyesi Bento */}
+                     <div className="bg-orange-50 p-10 rounded-[3rem] border border-orange-100 flex items-start gap-8">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-orange-600 shadow-sm shrink-0 font-black text-2xl">!</div>
+                        <div className="space-y-2">
+                           <h5 className="text-[11px] font-black text-orange-900 uppercase tracking-[0.2em]">KRİTİK ATAMA TAVSİYESİ</h5>
+                           <p className="text-lg font-bold text-orange-950 leading-relaxed italic">"{candidate.report.recommendation}"</p>
+                        </div>
                      </div>
                   </div>
                )}
 
                {activeTab === 'strategy' && (
-                  <div className="space-y-8 animate-fade-in">
-                     <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-xl">
-                        <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.3em] mb-8 border-l-4 border-orange-600 pl-4">STRATEJİK MÜLAKAT REHBERİ</h4>
-                        <div className="space-y-6">
-                           {(candidate.report.interviewGuidance?.strategicQuestions || []).map((q, i) => (
-                              <div key={i} className="flex gap-6 items-start group p-4 hover:bg-slate-50 rounded-2xl transition-all">
-                                 <span className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 group-hover:bg-orange-600 transition-colors">{i+1}</span>
-                                 <p className="text-[14px] font-bold text-slate-800 italic leading-snug">"{q}"</p>
-                              </div>
+                  <div className="space-y-8 animate-fade-in pb-10">
+                     {/* Mülakat Safhaları (Tabbed View) */}
+                     <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-2xl overflow-hidden flex flex-col md:flex-row">
+                        <div className="md:w-72 bg-slate-50 border-r border-slate-100 p-6 space-y-2">
+                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">MÜLAKAT SAFHALARI</h4>
+                           {(candidate.report.interviewGuidance?.phases || []).map((phase: any, i: number) => (
+                              <button 
+                                 key={i}
+                                 onClick={() => setActiveInterviewPhase(i)}
+                                 className={`w-full p-4 rounded-2xl text-left transition-all ${activeInterviewPhase === i ? 'bg-slate-900 text-white shadow-xl translate-x-2' : 'hover:bg-white text-slate-500'}`}
+                              >
+                                 <p className={`text-[9px] font-black uppercase ${activeInterviewPhase === i ? 'text-orange-500' : 'text-slate-400'}`}>SAFHA 0{i+1}</p>
+                                 <p className="text-[11px] font-bold uppercase truncate">{phase.title}</p>
+                              </button>
                            ))}
+                        </div>
+                        
+                        <div className="flex-1 p-10 bg-white min-h-[500px]">
+                           {candidate.report.interviewGuidance?.phases?.[activeInterviewPhase] && (
+                              <div className="space-y-10 animate-fade-in">
+                                 <div>
+                                    <h5 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">HEDEF & AMAÇ</h5>
+                                    <p className="text-xl font-black text-slate-900 tracking-tight">"{candidate.report.interviewGuidance.phases[activeInterviewPhase].goal}"</p>
+                                 </div>
+                                 
+                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                                    <div className="lg:col-span-7 space-y-6">
+                                       <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-2">STRATEJİK SORU SETİ</h6>
+                                       <div className="space-y-4">
+                                          {candidate.report.interviewGuidance.phases[activeInterviewPhase].questions.map((q: string, idx: number) => (
+                                             <div key={idx} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-orange-200 transition-all">
+                                                <div className="flex gap-4">
+                                                   <span className="text-orange-600 font-black">?</span>
+                                                   <p className="text-[14px] font-bold text-slate-800 italic leading-snug">"{q}"</p>
+                                                </div>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="lg:col-span-5 space-y-8">
+                                       <div className="p-6 bg-rose-50 rounded-[2.5rem] border border-rose-100">
+                                          <h6 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-4">RED FLAG (DİKKAT!)</h6>
+                                          <div className="space-y-3">
+                                             {candidate.report.interviewGuidance.phases[activeInterviewPhase].redFlags.map((flag: string, idx: number) => (
+                                                <div key={idx} className="flex gap-3 items-start">
+                                                   <div className="w-1.5 h-1.5 bg-rose-500 rounded-full mt-1.5 shrink-0"></div>
+                                                   <p className="text-[11px] font-bold text-rose-900 uppercase tracking-tight">{flag}</p>
+                                                </div>
+                                             ))}
+                                          </div>
+                                       </div>
+                                       <div className="p-6 bg-slate-900 rounded-[2.5rem] text-white">
+                                          <h6 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">NÖRAL İPUÇLARI</h6>
+                                          <div className="space-y-3">
+                                             {candidate.report.interviewGuidance.phases[activeInterviewPhase].subliminalCues.map((cue: string, idx: number) => (
+                                                <div key={idx} className="flex gap-3 items-start opacity-80">
+                                                   <div className="w-1.5 h-1.5 bg-white rounded-full mt-1.5 shrink-0"></div>
+                                                   <p className="text-[11px] font-medium text-slate-300 italic">{cue}</p>
+                                                </div>
+                                             ))}
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                     </div>
+
+                     {/* Simülasyon Görevleri Bento */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="p-10 bg-white border border-slate-200 rounded-[3rem] shadow-sm">
+                           <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">SAHA SİMÜLASYONLARI (UYGULAMA TESTİ)</h5>
+                           <div className="space-y-4">
+                              {(candidate.report.interviewGuidance?.simulationTasks || []).map((task, i) => (
+                                 <div key={i} className="flex gap-5 items-center p-4 bg-slate-50 rounded-2xl group hover:bg-slate-900 transition-all">
+                                    <div className="w-8 h-8 bg-white text-slate-900 rounded-lg flex items-center justify-center font-black text-xs group-hover:text-orange-500">►</div>
+                                    <p className="text-[13px] font-bold text-slate-700 group-hover:text-white">{task}</p>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                        <div className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem]">
+                           <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">KRİTİK GÖZLEM NOKTALARI</h5>
+                           <div className="space-y-4">
+                              {(candidate.report.interviewGuidance?.criticalObservations || []).map((obs, i) => (
+                                 <div key={i} className="flex gap-5 items-start">
+                                    <div className="w-10 h-[2px] bg-orange-600 mt-2.5"></div>
+                                    <p className="text-[13px] font-bold text-slate-600 uppercase tracking-tight leading-relaxed">{obs}</p>
+                                 </div>
+                              ))}
+                           </div>
                         </div>
                      </div>
                   </div>

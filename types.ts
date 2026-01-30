@@ -22,7 +22,6 @@ export enum Branch {
   SinifOgretmenligi = 'Sınıf Öğretmenliği'
 }
 
-// --- COMMUNICATION TYPES ---
 export type CommChannel = 'email' | 'whatsapp' | 'sms';
 export interface CommTemplate {
   id: string;
@@ -106,6 +105,7 @@ export interface Question { id: string; category: string; text: string; type: 'r
 export interface Certification { id: string; label: string; description: string; category: string; verificationQuestions: Question[]; }
 export interface SimulationResult { scenario: string; parentPersona: string; candidateResponse: string; stressLevel: number; aiEvaluation: { ethicalBoundaryScore: number; empathyCalibration: number; professionalDistance: number; crisisResolutionEfficiency: number; clinicalTruths: string[]; criticalMistakes: string[]; neuralDivergence: { contradictionIndex: number; decisionPath: string; alternativeOutcome: string; dominantEmotion: string; }; microBehaviors: { toneAnalysis: string; nonVerbalPrediction: string; silenceTolerance: string; }; }; }
 export interface IntelligenceSegment { score: number; status: 'optimal' | 'warning' | 'critical'; reasoning: string; behavioralIndicators: string[]; institutionalImpact: string; pros: string[]; cons: string[]; risks: string[]; }
+
 export interface AIReport { 
   score: number; 
   integrityIndex: number; 
@@ -114,13 +114,34 @@ export interface AIReport {
   detailedAnalysisNarrative: string; 
   recommendation: string; 
   deepAnalysis: Record<string, IntelligenceSegment>; 
-  predictiveMetrics: { retentionProbability: number; burnoutRisk: number; learningVelocity: number; leadershipPotential: number; evolutionPath: string; }; 
-  interviewGuidance: { strategicQuestions: string[]; criticalObservations: string[]; simulationTasks: string[]; }; 
+  predictiveMetrics: { 
+    retentionProbability: number; 
+    burnoutRisk: number; 
+    learningVelocity: number; 
+    leadershipPotential: number; 
+    evolutionPath: string;
+    evolutionTimeline: {
+      phase1_onboarding: string;
+      phase2_consolidation: string;
+      phase3_mastery: string;
+    };
+  }; 
+  interviewGuidance: { 
+    phases: Array<{
+      title: string;
+      goal: string;
+      questions: string[];
+      redFlags: string[];
+      subliminalCues: string[];
+    }>;
+    criticalObservations: string[]; 
+    simulationTasks: string[]; 
+  }; 
   swot: { strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[]; };
-  // Extended for Presentation Storage
   presentationSlides?: TrainingSlide[];
   presentationConfig?: PresentationConfig;
 }
+
 export interface AlgorithmicReport { overallScore: number; reliabilityIndex: number; ethicsScore: number; experienceWeight: number; retentionScore: number; burnoutResistance: number; fitScore: number; riskFlags: string[]; }
 export interface Candidate { id: string; name: string; email: string; phone: string; age: number; gender: Gender; maritalStatus: MaritalStatus; branch: string; university: string; department: string; experienceYears: number; previousInstitutions: string; allTrainings: string[]; answers: Record<string, string | string[]>; timestamp: number; status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived'; archiveCategory?: ArchiveCategory; archiveNote?: string; adminNotes?: string; reminderNote?: string; report?: AIReport; algoReport?: AlgorithmicReport; interviewSchedule?: { date: string; time: string; method: string; location: string; }; cvData?: { base64: string; mimeType: string; fileName: string; }; }
 

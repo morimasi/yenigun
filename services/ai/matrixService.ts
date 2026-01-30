@@ -4,39 +4,19 @@ import { Candidate, AIReport, GlobalConfig } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-/**
- * NÖRAL JSON KURTARICI (V5) - HEURISTIC RECOVERY
- * AI yanıtı token limitine takılsa bile mevcut veriyi geçerli bir JSON'a dönüştürür.
- */
 const extractPureJSON = (text: string): any => {
   try {
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
-    
     if (firstBrace === -1) return null;
-    
-    let jsonStr = lastBrace > firstBrace 
-      ? cleanText.substring(firstBrace, lastBrace + 1)
-      : cleanText.substring(firstBrace);
-
-    // Otomatik Kapatma Döngüsü (Eksik parantezleri tamamla)
+    let jsonStr = lastBrace > firstBrace ? cleanText.substring(firstBrace, lastBrace + 1) : cleanText.substring(firstBrace);
     let openCount = (jsonStr.match(/\{/g) || []).length;
     let closeCount = (jsonStr.match(/\}/g) || []).length;
-    while (openCount > closeCount) {
-      jsonStr += "}";
-      closeCount++;
-    }
-
-    // Yarım kalan array/string hatalarını temizle
+    while (openCount > closeCount) { jsonStr += "}"; closeCount++; }
     jsonStr = jsonStr.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-
     return JSON.parse(jsonStr);
-  } catch (e) {
-    console.error("Parse Error. Raw text head:", text.substring(0, 100));
-    return null;
-  }
+  } catch (e) { return null; }
 };
 
 const SEGMENT_SCHEMA = {
@@ -58,9 +38,9 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçisi.
     GÖREV: Adayın dosyasını PARÇALA ve liyakat matrisine dönüştür.
-    KURAL 1: Sadece JSON döndür. 
-    KURAL 2: 'workEthics', 'technicalExpertise', 'pedagogicalAnalysis', 'parentStudentRelations', 'sustainability', 'institutionalLoyalty', 'developmentOpenness' anahtarlarını KESİNLİKLE doldur.
-    KURAL 3: Düşüncelerini 'Think' katmanında tut, JSON içinde asla yorum yapma.
+    PROJEKSİYON KURALI: Adayın kurumdaki ilk 24 ayını aşamalı olarak tahmin et.
+    STRATEJİ KURALI: Mülakatı 3 safhalı bir playbook olarak kurgula: (1) Klinik Derinlik, (2) Etik/Stres, (3) Vizyon/Uyum.
+    ÇIKTI: Sadece JSON. Düşüncelerini 'Think' katmanında tut.
   `;
 
   try {
@@ -68,12 +48,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `VERİ PAKETİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `VERİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // IQ-DENGESİ: 5k düşünme (yeterli), 35k cevap (JSON güvenliği için geniş)
-        thinkingConfig: { thinkingBudget: 5000 }, 
+        thinkingConfig: { thinkingBudget: 8000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -90,9 +69,18 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 burnoutRisk: { type: Type.NUMBER },
                 learningVelocity: { type: Type.NUMBER },
                 leadershipPotential: { type: Type.NUMBER },
-                evolutionPath: { type: Type.STRING }
+                evolutionPath: { type: Type.STRING },
+                evolutionTimeline: {
+                  type: Type.OBJECT,
+                  properties: {
+                    phase1_onboarding: { type: Type.STRING },
+                    phase2_consolidation: { type: Type.STRING },
+                    phase3_mastery: { type: Type.STRING }
+                  },
+                  required: ["phase1_onboarding", "phase2_consolidation", "phase3_mastery"]
+                }
               },
-              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath"]
+              required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath", "evolutionTimeline"]
             },
             deepAnalysis: {
               type: Type.OBJECT,
@@ -120,11 +108,24 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
             interviewGuidance: {
               type: Type.OBJECT,
               properties: {
-                strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                phases: {
+                   type: Type.ARRAY,
+                   items: {
+                     type: Type.OBJECT,
+                     properties: {
+                       title: { type: Type.STRING },
+                       goal: { type: Type.STRING },
+                       questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                       redFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                       subliminalCues: { type: Type.ARRAY, items: { type: Type.STRING } }
+                     },
+                     required: ["title", "goal", "questions", "redFlags", "subliminalCues"]
+                   }
+                },
                 criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
                 simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
               },
-              required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
+              required: ["phases", "criticalObservations", "simulationTasks"]
             }
           },
           required: ["score", "integrityIndex", "socialMaskingScore", "summary", "detailedAnalysisNarrative", "recommendation", "predictiveMetrics", "deepAnalysis", "swot", "interviewGuidance"]
@@ -133,10 +134,9 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     });
 
     const parsedData = extractPureJSON(response.text);
-    if (!parsedData) throw new Error("ANALİZ MOTORU VERİYİ MÜHÜRLEYEMEDİ.");
+    if (!parsedData) throw new Error("JSON Parse Error");
     return parsedData;
   } catch (error) {
-    console.error("AI Matrix Engine Crash:", error);
     throw error;
   }
 };
