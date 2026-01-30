@@ -120,8 +120,8 @@ const PipelineView: React.FC<PipelineViewProps> = ({ candidates, config, onUpdat
                   onMouseEnter={() => setHoveredCandidateId(c.id)}
                   onMouseLeave={() => setHoveredCandidateId(null)}
                   onClick={() => setSelectedId(c.id)}
-                  className={`relative px-4 py-3 border-b border-slate-100 cursor-pointer transition-colors hover:bg-white flex items-center gap-3 group ${
-                    isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm' : 'border-l-4 border-l-transparent'
+                  className={`relative px-4 py-3 border-b border-slate-100 cursor-pointer transition-all hover:bg-white flex items-center gap-3 group hover:z-50 hover:shadow-lg ${
+                    isSelected ? 'bg-white border-l-4 border-l-orange-600 shadow-sm z-40' : 'border-l-4 border-l-transparent z-0'
                   }`}
                 >
                   <div onClick={(e) => toggleCheck(c.id, e)} className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isChecked ? 'bg-slate-900 border-slate-900' : 'border-slate-300 hover:border-orange-500'}`}>
