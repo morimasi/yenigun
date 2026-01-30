@@ -19,14 +19,24 @@ const extractPureJSON = (text: string): any => {
   } catch (e) { return null; }
 };
 
-const SEGMENT_SCHEMA = {
+const DEEP_SEGMENT_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } },
-    institutionalImpact: { type: Type.STRING },
+    reasoning: { 
+      type: Type.STRING, 
+      description: "MİNİMUM 250 KELİME. Adayın cevaplarındaki klinik mantığı, literatürle (ABA, DIR, CBT vb.) bağdaştırarak, neden-sonuç ilişkisi içinde derinlemesine açıkla." 
+    },
+    behavioralIndicators: { 
+      type: Type.ARRAY, 
+      items: { type: Type.STRING },
+      description: "Adayın mülakat esnasında sergilemesi beklenen, bu segmente dair 5 spesifik ve detaylı mikro-davranış tahmini."
+    },
+    institutionalImpact: { 
+      type: Type.STRING,
+      description: "Adayın kurumun kalitesine, veli sadakatine ve ekip uyumuna 24 aylık süreçteki net projeksiyonu ve etkisi."
+    },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
     risks: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -36,21 +46,17 @@ const SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Denetçisi ve Stratejik Analist.
-    GÖREV: Adayın kurumsal liyakatini parçala ve bir "Playbook" üret.
+    ROL: Yeni Gün Akademi Baş Klinik Analisti ve Stratejik İK Direktörü.
+    GÖREV: Adayın liyakat matrisini "Hiper-Derinlikli" bir analizle işle.
     
-    DERİN PROJEKSİYON KURALLARI:
-    1. Adayın 24 aylık kurumsal evrimini 3 fazda simüle et: (1) Oryantasyon, (2) Stabilizasyon, (3) Otorite.
-    2. Ay bazlı klinik olgunlaşma skoru (Growth Forecast) üret.
-    3. Birincil tükenmişlik riskini ve koruma stratejisini belirle.
+    TALİMATLAR:
+    1. ANALİZ DERİNLİĞİ: Her bir analiz segmentinde (İş Ahlakı, Klinik Bilgi vb.) yüzeysel yorumlardan kaçın. Adayın teknik terminolojiye hakimiyetini ve etik reflekslerini en ince ayrıntısına kadar (Nöro-pedagojik temellerle) açıkla.
+    2. KLİNİK NEDENSELLİK: Adayın mülakat sorularına verdiği spesifik şıkları veya metin yanıtlarını kaynak göstererek "neden bu puanı hak ettiğini" akademik bir dille açıkla.
+    3. KURUMSAL ETKİ: Bu adayın sınıfa girdiği ilk günden 1 yıl sonrasına kadar yaratacağı "Domino Etkisi"ni (Veli güveni, seans kalitesi, mentorluk potansiyeli) detaylandır.
+    4. MİKRO-DAVRANIŞLAR: Mülakatçının mülakat esnasında adayın hangi kelime seçimlerine, duraksamalarına veya vurgularına odaklanması gerektiğini vaka örnekleriyle anlat.
     
-    DERİN STRATEJİ KURALLARI:
-    1. Mülakatı 3 safhalı bir harekata dönüştür: (1) Klinik Derinlik, (2) Etik/Stres, (3) Vizyon.
-    2. Her soru için "Why" (Neden bu soru?) ve "Look-for" (Hangi cevabı/davranışı arıyoruz?) detayı ver.
-    3. Adayın kaçırmaya meyilli olduğu 'Subliminal Cues' (Nöral İpuçları) listesini ekle.
-    
-    ANALİZ DİLİ: Keskin, akademik, direkt ve stratejik.
-    ÇIKTI: Sadece JSON.
+    DİL: Üst düzey akademik, direkt, analiz odaklı ve hatasız.
+    ÇIKTI: Saf JSON.
   `;
 
   try {
@@ -58,7 +64,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ADAY VERİSİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `ADAY DETAYLI VERİ SETİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -119,13 +125,13 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
             deepAnalysis: {
               type: Type.OBJECT,
               properties: {
-                workEthics: SEGMENT_SCHEMA,
-                technicalExpertise: SEGMENT_SCHEMA,
-                pedagogicalAnalysis: SEGMENT_SCHEMA,
-                parentStudentRelations: SEGMENT_SCHEMA,
-                sustainability: SEGMENT_SCHEMA,
-                institutionalLoyalty: SEGMENT_SCHEMA,
-                developmentOpenness: SEGMENT_SCHEMA
+                workEthics: DEEP_SEGMENT_SCHEMA,
+                technicalExpertise: DEEP_SEGMENT_SCHEMA,
+                pedagogicalAnalysis: DEEP_SEGMENT_SCHEMA,
+                parentStudentRelations: DEEP_SEGMENT_SCHEMA,
+                sustainability: DEEP_SEGMENT_SCHEMA,
+                institutionalLoyalty: DEEP_SEGMENT_SCHEMA,
+                developmentOpenness: DEEP_SEGMENT_SCHEMA
               },
               required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness"]
             },
