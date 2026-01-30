@@ -26,16 +26,16 @@ const DEEP_SEGMENT_SCHEMA = {
     status: { type: Type.STRING },
     reasoning: { 
       type: Type.STRING, 
-      description: "MİNİMUM 250 KELİME. Adayın cevaplarındaki klinik mantığı, literatürle (ABA, DIR, CBT vb.) bağdaştırarak, neden-sonuç ilişkisi içinde derinlemesine açıkla." 
+      description: "MİNİMUM 250 KELİME. Adayın cevaplarındaki klinik mantığı, literatürle (ABA, DIR, CBT vb.) bağdaştırarak derinlemesine açıkla." 
     },
     behavioralIndicators: { 
       type: Type.ARRAY, 
       items: { type: Type.STRING },
-      description: "Adayın mülakat esnasında sergilemesi beklenen, bu segmente dair 5 spesifik ve detaylı mikro-davranış tahmini."
+      description: "Adayın mülakat esnasında sergilemesi beklenen 5 spesifik mikro-davranış."
     },
     institutionalImpact: { 
       type: Type.STRING,
-      description: "Adayın kurumun kalitesine, veli sadakatine ve ekip uyumuna 24 aylık süreçteki net projeksiyonu ve etkisi."
+      description: "Adayın kurumun kalitesine ve ekip uyumuna 24 aylık süreçteki net projeksiyonu."
     },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -47,15 +47,18 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Stratejik İK Direktörü.
-    GÖREV: Adayın liyakat matrisini "Hiper-Derinlikli" bir analizle işle.
+    GÖREV: Adayın kurumsal liyakatini hiper-derinlikli bir analizle mühürle.
     
-    TALİMATLAR:
-    1. ANALİZ DERİNLİĞİ: Her bir analiz segmentinde (İş Ahlakı, Klinik Bilgi vb.) yüzeysel yorumlardan kaçın. Adayın teknik terminolojiye hakimiyetini ve etik reflekslerini en ince ayrıntısına kadar (Nöro-pedagojik temellerle) açıkla.
-    2. KLİNİK NEDENSELLİK: Adayın mülakat sorularına verdiği spesifik şıkları veya metin yanıtlarını kaynak göstererek "neden bu puanı hak ettiğini" akademik bir dille açıkla.
-    3. KURUMSAL ETKİ: Bu adayın sınıfa girdiği ilk günden 1 yıl sonrasına kadar yaratacağı "Domino Etkisi"ni (Veli güveni, seans kalitesi, mentorluk potansiyeli) detaylandır.
-    4. MİKRO-DAVRANIŞLAR: Mülakatçının mülakat esnasında adayın hangi kelime seçimlerine, duraksamalarına veya vurgularına odaklanması gerektiğini vaka örnekleriyle anlat.
+    DERİN PROJEKSİYON KURALLARI:
+    1. Adayın 24 aylık kurumsal evrimini 3 fazda simüle et: (1) Oryantasyon, (2) Stabilizasyon, (3) Otorite/Mentorluk.
+    2. Ay bazlı (0, 3, 6, 12, 18, 24) klinik olgunlaşma skorları (Growth Forecast) üret.
+    3. Birincil tükenmişlik riskini ve koruma stratejisini (Risk Mitigation) belirle.
     
-    DİL: Üst düzey akademik, direkt, analiz odaklı ve hatasız.
+    DERİN STRATEJİ KURALLARI:
+    1. Mülakatı 3 safhalı bir playbook'a dönüştür: (1) Klinik Derinlik, (2) Etik/Stres, (3) Kurumsal Vizyon.
+    2. Her soru için "Why" (Neden bu soru?) ve "Look-for" (Hangi cevabı/davranışı arıyoruz?) detayı ver.
+    3. Adayın kaçırmaya meyilli olduğu 'Subliminal Cues' (Nöral İpuçları) listesini ekle.
+    
     ÇIKTI: Saf JSON.
   `;
 
@@ -64,7 +67,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ text: `ADAY DETAYLI VERİ SETİ: ${JSON.stringify(candidateData)}` }], 
+      contents: [{ text: `ADAY VERİ SETİ: ${JSON.stringify(candidateData)}` }], 
       config: {
         systemInstruction,
         responseMimeType: "application/json",
