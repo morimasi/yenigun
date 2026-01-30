@@ -10,7 +10,7 @@ interface DecisionAdvisorChatProps {
 
 const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, onClose }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: `Yeni Gün Akademi Stratejik Danışmanlık Ünitesi. Seçtiğiniz ${candidates.length} aday üzerinde derin muhakeme (Deep Reasoning) protokolü aktif. Hangi aday kurum kültürümüze daha yüksek liyakatle hizmet edebilir?` }
+    { role: 'ai', text: `Yeni Gün Akademi Stratejik Danışmanlık. Adaylar üzerinde derin muhakeme (Gemini-3 Thinking Mode) aktif. Seçtiğiniz ${candidates.length} aday arasındaki klinik ve kültürel farkları analiz edebilirim.` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -33,31 +33,23 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const systemInstruction = `
         ROL: Yeni Gün Akademi Stratejik Karar Danışmanı.
-        MODEL: Gemini-3-Flash Deep Reasoning.
-        BÜTÇE: 32,768 Thinking Tokens.
-        
-        GÖREV: Karşılaştırılacak Adaylar: ${candidates.map(c => `${c.name} (${c.branch})`).join(', ')}.
-        
-        ANALİZ PROTOKOLÜ:
-        1. Liyakat Dürüstlüğü: Kimin cevapları klinik olarak daha tutarlı?
-        2. Sosyal Maske Analizi: Kim kendini daha fazla parlatmaya çalışıyor?
-        3. Kültürel Fit: Yeni Gün'ün akademik sertliğine kim daha dayanıklı?
-        
-        STİL: Sert akademik dil, kanıta dayalı yargı, net tavsiye.
+        MODEL: Gemini-3-Flash.
+        MOD: Deep Thinking (24k Budget).
+        GÖREV: Adaylar arasındaki kritik liyakat ayrışmalarını tespit et ve adil bir karar tavsiyesi üret.
       `;
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Analiz Talebi: ${userText}`,
+        contents: `ADAYLAR: ${JSON.stringify(candidates.map(c => ({ name: c.name, branch: c.branch, score: c.report?.score })))} | SORU: ${userText}`,
         config: { 
           systemInstruction, 
-          thinkingConfig: { thinkingBudget: 32768 } 
+          thinkingConfig: { thinkingBudget: 24576 } 
         }
       });
 
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Muhakeme motoru bu senaryoda karar veremedi." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: response.text || "Muhakeme motoru yanıt üretemedi." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Stratejik bağlantı hatası: Sunucu meşgul." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Stratejik bağlantı hatası: Sunucu yoğunluğu." }]);
     } finally {
       setIsTyping(false);
     }
@@ -73,13 +65,12 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
               </div>
               <div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Muhakeme Ünitesi</h3>
-                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Deep Reasoning Mode Active</p>
+                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">Gemini-3 Flash Thinking Mode</p>
               </div>
            </div>
            <button onClick={onClose} className="p-5 hover:bg-rose-50 rounded-[2rem] text-rose-400 transition-all z-10">
              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
            </button>
-           <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/5 rounded-full blur-3xl"></div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar bg-[#FAFAFA]" ref={scrollRef}>
@@ -89,7 +80,6 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
                  m.role === 'user' ? 'bg-orange-600 text-white' : 'bg-white border border-slate-100 text-slate-800'
                }`}>
                   <p className="text-[13px] font-bold leading-relaxed whitespace-pre-wrap">{m.text}</p>
-                  {m.role === 'ai' && <div className="absolute -left-2 top-8 w-4 h-4 bg-white rotate-45 border-l border-b border-slate-100"></div>}
                </div>
             </div>
           ))}
@@ -101,27 +91,27 @@ const DecisionAdvisorChat: React.FC<DecisionAdvisorChatProps> = ({ candidates, o
                    <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce delay-100"></div>
                    <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce delay-200"></div>
                  </div>
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Zeka Katmanı Sorgulanıyor</span>
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nöral Muhakeme Devrede...</span>
                </div>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleAsk} className="p-10 border-t border-slate-50 bg-white shadow-inner">
+        <form onSubmit={handleAsk} className="p-10 border-t border-slate-50 bg-white">
            <div className="flex gap-5">
               <input 
                 autoFocus
                 type="text" 
                 className="flex-1 bg-slate-50 rounded-[2.5rem] p-6 text-base font-bold outline-none border-2 border-transparent focus:border-orange-600 shadow-inner"
-                placeholder="Adaylar arasındaki kritik farkları sorgulayın..."
+                placeholder="Karar destek için analiz talebinizi yazın..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />
               <button 
                 type="submit"
-                className="w-20 h-20 bg-slate-900 text-white rounded-[2.5rem] flex items-center justify-center hover:bg-orange-600 transition-all shadow-2xl active:scale-95 group"
+                className="w-20 h-20 bg-slate-900 text-white rounded-[2.5rem] flex items-center justify-center hover:bg-orange-600 transition-all shadow-2xl active:scale-95"
               >
-                <svg className="w-8 h-8 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z"/></svg>
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z"/></svg>
               </button>
            </div>
         </form>

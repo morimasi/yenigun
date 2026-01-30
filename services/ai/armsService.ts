@@ -6,50 +6,28 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
   async generateIDP(staff: any): Promise<IDP> {
-    // Personelin test geçmişini ve ai_tag'lerini konsolide et
-    const assessmentSummary = staff.assessments?.map((a: any) => ({
-      battery: a.battery_id,
-      score: a.score,
-      tags: a.ai_tags,
-      timestamp: a.timestamp
-    })) || [];
-
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Kıdemli Akademik Mentor ve Nöral Gelişim Stratejisti.
-      GÖREV: Personelin değerlendirme verilerini analiz et ve 12 aylık Bireysel Gelişim Planı (IDP) oluştur.
-      
-      ANALİZ PROTOKOLÜ:
-      1. Veri Madenciliği: Personelin düşük skor aldığı (özellikle %50 altı) testlerdeki "ai_tags"leri odak noktası yap.
-      2. Klinik Tahkim: Eğer personel sürekli "boundary_failure" veya "low_stress_tolerance" etiketleri alıyorsa, etik ve kriz yönetimi odaklı bir roadmap kur.
-      3. Uzmanlık Yörüngesi: Branşına (${staff.branch}) özel en güncel metodolojileri (örn: DIR-202, ABA-Advanced Data) roadmap'e ekle.
-      
-      TON: Otoriter, akademik, teşvik edici ve derinlemesine klinik.
-    `;
-
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: `PERSONEL PROFİLİ: ${JSON.stringify(staff.profile)}
-                 TEST GEÇMİŞİ VE ETİKETLER: ${JSON.stringify(assessmentSummary)}
-                 GÖREV: Bu verileri çapraz sorgulayarak "Nöral Gelişim Planı"nı JSON olarak üret.`,
+      model: 'gemini-3-flash-preview',
+      contents: `PERSONEL DATA: ${JSON.stringify(staff)}`,
       config: {
-        systemInstruction,
+        systemInstruction: "Yeni Gün Akademi Baş Mentor. Personelin klinik gelişim planını 'Think' katmanında analiz ederek en zayıf halkaya odaklanan bir roadmap oluştur. JSON formatında yanıt ver.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
+        thinkingConfig: { thinkingBudget: 20000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            focusArea: { type: Type.STRING, description: "Personelin en kritik zayıf halkası üzerine kurulu ana odak alanı." },
-            identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Saptanan somut klinik boşluklar." },
+            focusArea: { type: Type.STRING },
+            identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
             roadmap: {
               type: Type.OBJECT,
               properties: {
-                shortTerm: { type: Type.STRING, description: "İlk 3 ayda yapılması gereken acil müdahaleler." },
-                midTerm: { type: Type.STRING, description: "3-6 ay arası uzmanlık derinleşmesi." },
-                longTerm: { type: Type.STRING, description: "12 ay sonundaki akademik hedef." }
+                shortTerm: { type: Type.STRING },
+                midTerm: { type: Type.STRING },
+                longTerm: { type: Type.STRING }
               },
               required: ["shortTerm", "midTerm", "longTerm"]
             },
-            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Okunması gereken literatür veya alınması gereken akreditasyonlar." }
+            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
           required: ["focusArea", "identifiedGaps", "roadmap", "recommendedTrainings"]
         }
@@ -65,76 +43,79 @@ export const armsService = {
     };
   },
 
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    // Legacy support for older IDP calls
-    const config: PresentationConfig = {
-        topic: `Bireysel Gelişim: ${idp.focusArea}`,
-        targetAudience: 'individual',
-        tone: 'academic',
-        depth: 'intermediate',
-        slideCount: 5
-    };
-    return this.generateCustomPresentation(config, { idpData: idp, branch });
-  },
-
   /**
-   * YENİ NESİL SUNUM MOTORU (NEURAL PRESENTATION ENGINE)
-   * Tamamen özelleştirilebilir, derinlikli ve interaktif sunumlar üretir.
+   * @fix Added missing generateTrainingSlides method to resolve property access error in StaffProfileView.tsx.
+   * This method generates specialized training slides based on a staff member's Individual Development Plan (IDP).
    */
-  async generateCustomPresentation(config: PresentationConfig, contextData?: any): Promise<TrainingSlide[]> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Akademik Direktörü ve Eğitim Teknoloğu.
-      GÖREV: Verilen parametrelere göre üst düzey, modern ve klinik derinliği olan bir eğitim sunumu hazırla.
-      
-      SUNUM KONFİGÜRASYONU:
-      - KONU: ${config.topic}
-      - HEDEF KİTLE: ${config.targetAudience} (Dil ve üslubu buna göre ayarla. Veli ise empatik ve net, Ekip ise teknik ve motive edici).
-      - TON: ${config.tone}
-      - DERİNLİK: ${config.depth} (Expert ise temel tanımları geç, vaka analizine odaklan).
-      - SLAYT SAYISI: ${config.slideCount}
-      
-      BAĞLAM VERİSİ (Varsa): ${JSON.stringify(contextData || {})}
-      
-      TALİMATLAR:
-      1. Her slayt bir amaca hizmet etmeli. Boş laf yok.
-      2. 'speakerNotes': Sunumu yapan yöneticiye, slaytı anlatırken kullanacağı "içgörü" ve "anekdot" notları ver.
-      3. 'interactiveElement': Slaytı pasiflikten çıkaracak bir soru, tartışma veya rol yapma görevi ekle.
-      4. DİL: Kusursuz Türkçe, akademik terminolojiye hakim.
-    `;
-
-    const slideSchema = {
-      type: Type.OBJECT,
-      properties: {
-        id: { type: Type.STRING },
-        type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
-        title: { type: Type.STRING },
-        subtitle: { type: Type.STRING },
-        content: { type: Type.ARRAY, items: { type: Type.STRING } },
-        speakerNotes: { type: Type.STRING, description: "Sunucunun ekrana bakmadan söyleyeceği derinlikli notlar." },
-        visualPrompt: { type: Type.STRING, description: "Bu slayt için oluşturulabilecek görselin kısa betimlemesi (örn: 'Brain scan showing amygdala activity')." },
-        interactiveElement: {
-          type: Type.OBJECT,
-          properties: {
-            question: { type: Type.STRING },
-            expectedAnswer: { type: Type.STRING },
-            misconception: { type: Type.STRING, description: "Bu konuda sık yapılan yanlış inanç." }
-          },
-          nullable: true
-        }
-      },
-      required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
-    };
-
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: `Yukarıdaki konfigürasyona uygun ${config.slideCount} adet slayt üret. Çıktı bir JSON Array olsun.`,
+      model: 'gemini-3-flash-preview',
+      contents: `GELİŞİM PLANI: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
       config: {
-        systemInstruction,
+        systemInstruction: "Yeni Gün Akademi Akademik Tasarımcı. Personelin bireysel gelişim planı (IDP) temelinde, eksik olduğu klinik alanları kapatmaya yönelik eğitim slaytları tasarla. JSON Array formatında yanıt ver.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 28000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.ARRAY,
-          items: slideSchema
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
+              title: { type: Type.STRING },
+              subtitle: { type: Type.STRING },
+              content: { type: Type.ARRAY, items: { type: Type.STRING } },
+              speakerNotes: { type: Type.STRING },
+              visualPrompt: { type: Type.STRING },
+              interactiveElement: {
+                type: Type.OBJECT,
+                properties: {
+                  question: { type: Type.STRING },
+                  expectedAnswer: { type: Type.STRING },
+                  misconception: { type: Type.STRING }
+                }
+              }
+            },
+            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+          }
+        }
+      }
+    });
+
+    return JSON.parse(response.text || '[]');
+  },
+
+  async generateCustomPresentation(config: PresentationConfig, contextData?: any): Promise<TrainingSlide[]> {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)} | BAĞLAM: ${JSON.stringify(contextData)}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi Akademik Tasarımcı. Klinik derinliği olan eğitim slaytları tasarla. Her slayt bir vaka veya interaktif tartışma içermeli. JSON Array formatında yanıt ver.",
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 },
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
+              title: { type: Type.STRING },
+              subtitle: { type: Type.STRING },
+              content: { type: Type.ARRAY, items: { type: Type.STRING } },
+              speakerNotes: { type: Type.STRING },
+              visualPrompt: { type: Type.STRING },
+              interactiveElement: {
+                type: Type.OBJECT,
+                properties: {
+                  question: { type: Type.STRING },
+                  expectedAnswer: { type: Type.STRING },
+                  misconception: { type: Type.STRING }
+                }
+              }
+            },
+            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+          }
         }
       }
     });

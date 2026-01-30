@@ -8,30 +8,15 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
   const poolSnapshot = candidates.map(c => ({
     branch: c.branch,
     score: c.report?.score || 0,
-    integrity: c.report?.integrityIndex || 0,
-    experience: c.experienceYears,
-    university: c.university,
-    masking: c.report?.socialMaskingScore || 0
+    masking: c.report?.socialMaskingScore || 0,
+    experience: c.experienceYears
   }));
-
-  const systemInstruction = `
-    ROL: Yeni Gün Akademi Stratejik İK ve Klinik Veri Bilimcisi.
-    GÖREV: Aday havuzunu analiz et ve kurumun 'Akademik Sağlık Raporu'nu oluştur.
-    
-    ANALİZ KRİTERLERİ:
-    1. Talent Density: Hangi branşlarda liyakat yoğunluğu var?
-    2. Educational ROI: Hangi üniversitelerden gelen adaylar daha yüksek klinik skor alıyor?
-    3. Ethical Risk Map: Havuzda sosyal maskeleme eğilimi hangi alanlarda artış gösteriyor?
-    4. Strategic Gap: Kurumun gelecekte hangi branşta uzman bulmakta zorlanacağını tahmin et.
-    
-    DİL: Üst düzey yönetici özeti, analitik, keskin.
-  `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `ADAY HAVUZU VERİ SETİ: ${JSON.stringify(poolSnapshot)}`,
+    contents: `HAVUZ VERİSİ: ${JSON.stringify(poolSnapshot)}`,
     config: {
-      systemInstruction,
+      systemInstruction: "Yeni Gün Akademi Stratejik Planlama. Havuzdaki liyakat yoğunluğunu ve gelecekteki branş açıklarını 'Think' katmanında analiz et.",
       responseMimeType: "application/json",
       thinkingConfig: { thinkingBudget: 16000 },
       responseSchema: {
@@ -41,7 +26,7 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
           topPerformingBranch: { type: Type.STRING },
           criticalRiskArea: { type: Type.STRING },
           recommendedAction: { type: Type.STRING },
-          marketPrediction: { type: Type.STRING, description: "Önümüzdeki 6 ay için işe alım piyasası tahmini." }
+          marketPrediction: { type: Type.STRING }
         },
         required: ["executiveSummary", "topPerformingBranch", "criticalRiskArea", "recommendedAction", "marketPrediction"]
       }
