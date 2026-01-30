@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { BRANCH_QUESTIONS, CERTIFICATIONS } from '../../constants';
 import { Question } from '../../types';
@@ -22,16 +23,18 @@ const MethodologyInventoryView: React.FC = () => {
 
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
+  
+  // --- EDITOR STATES ---
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false); // True: Düzenleme, False: Yeni Ekleme
 
-  // --- YENİ SORU STATE ---
   const [draftQuestion, setDraftQuestion] = useState<Partial<Question>>({
     id: '',
     text: '',
     category: 'technicalExpertise',
     type: 'radio',
-    options: [], // Düz metin seçenekler (legacy support)
-    weightedOptions: [] // Gelişmiş seçenekler
+    options: [],
+    weightedOptions: []
   });
 
   // --- OPTION BUILDER STATE ---
@@ -49,10 +52,38 @@ const MethodologyInventoryView: React.FC = () => {
     });
   }, [questions, activeCategory, search]);
 
+  // --- ACTIONS ---
+
+  const openNewQuestionEditor = () => {
+    setDraftQuestion({
+      id: '',
+      text: '',
+      category: 'technicalExpertise',
+      type: 'radio',
+      options: [],
+      weightedOptions: []
+    });
+    setEditMode(false);
+    setIsEditorOpen(true);
+  };
+
+  const handleEditQuestion = (q: Question) => {
+    // Deep copy to avoid mutating state directly during edit
+    setDraftQuestion(JSON.parse(JSON.stringify(q)));
+    setEditMode(true);
+    setIsEditorOpen(true);
+  };
+
+  const handleDeleteQuestion = (id: string) => {
+    if (confirm("KRİTİK UYARI: Bu soru envanterden kalıcı olarak silinecek. Analiz raporlarında bu soru artık görünmeyecek. Devam edilsin mi?")) {
+      setQuestions(prev => prev.filter(q => q.id !== id));
+      setIsEditorOpen(false);
+    }
+  };
+
   const handleAddOptionToDraft = () => {
     if (!draftOption.label) return;
     
-    // Sadece 0 olmayan ağırlıkları temizle
     const cleanWeights: Record<string, number> = {};
     Object.entries(draftOption.weights).forEach(([k, value]) => {
         const v = value as number;
@@ -62,7 +93,7 @@ const MethodologyInventoryView: React.FC = () => {
     const newOption = {
       label: draftOption.label,
       weights: cleanWeights,
-      analysisInsight: 'Kullanıcı tanımlı yeni parametre.'
+      analysisInsight: 'Kullanıcı tanımlı parametre.'
     };
 
     setDraftQuestion(prev => ({
@@ -70,11 +101,10 @@ const MethodologyInventoryView: React.FC = () => {
       weightedOptions: [...(prev.weightedOptions || []), newOption]
     }));
 
-    // Reset Option Draft
     setDraftOption({ label: '', weights: { clinical: 0, ethics: 0, resilience: 0, fit: 0 } });
   };
 
-  const handleRemoveOption = (idx: number) => {
+  const handleRemoveOptionFromDraft = (idx: number) => {
     setDraftQuestion(prev => ({
       ...prev,
       weightedOptions: prev.weightedOptions?.filter((_, i) => i !== idx)
@@ -91,23 +121,23 @@ const MethodologyInventoryView: React.FC = () => {
       return;
     }
 
-    const newQ: Question = {
-      id: `custom_${Date.now()}`,
-      category: draftQuestion.category!,
-      text: draftQuestion.text!,
-      type: 'radio',
-      weightedOptions: draftQuestion.weightedOptions as any,
-      requiredBranch: []
-    };
+    if (editMode && draftQuestion.id) {
+      // UPDATE EXISTING
+      setQuestions(prev => prev.map(q => q.id === draftQuestion.id ? (draftQuestion as Question) : q));
+      alert("Soru başarıyla güncellendi.");
+    } else {
+      // CREATE NEW
+      const newQ: Question = {
+        ...(draftQuestion as Question),
+        id: `custom_${Date.now()}`,
+        type: 'radio',
+        requiredBranch: []
+      };
+      setQuestions(prev => [newQ, ...prev]);
+      alert("Soru envantere eklendi.");
+    }
 
-    setQuestions(prev => [newQ, ...prev]);
     setIsEditorOpen(false);
-    
-    // Reset Form
-    setDraftQuestion({
-      id: '', text: '', category: 'technicalExpertise', type: 'radio', options: [], weightedOptions: []
-    });
-    alert("Soru envantere eklendi ve analiz motoruna dahil edildi.");
   };
 
   return (
@@ -143,7 +173,7 @@ const MethodologyInventoryView: React.FC = () => {
 
         <div className="p-6 border-t border-slate-100">
            <button 
-             onClick={() => setIsEditorOpen(true)}
+             onClick={openNewQuestionEditor}
              className="w-full py-4 bg-orange-600 hover:bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
            >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
@@ -172,15 +202,19 @@ const MethodologyInventoryView: React.FC = () => {
          {/* Content Grid */}
          <div className="p-8 overflow-y-auto custom-scrollbar space-y-6 pb-32">
             {filteredQuestions.map((q, i) => (
-               <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+               <div key={q.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
                   <div className="flex justify-between items-start mb-6">
                      <div className="flex items-center gap-4">
                         <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black text-white uppercase tracking-widest ${CATEGORIES.find(c => c.id === q.category)?.color || 'bg-slate-400'}`}>
                            {CATEGORIES.find(c => c.id === q.category)?.label || q.category}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-300 uppercase">ID: {q.id}</span>
+                        <span className="text-[10px] font-bold text-slate-300 uppercase">ID: {q.id.substring(0, 12)}...</span>
                      </div>
-                     <button className="text-slate-300 hover:text-orange-600 transition-colors">
+                     <button 
+                        onClick={() => handleEditQuestion(q)}
+                        className="p-2 bg-slate-50 hover:bg-indigo-600 hover:text-white rounded-xl text-slate-400 transition-all shadow-sm"
+                        title="Düzenle"
+                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                      </button>
                   </div>
@@ -208,13 +242,16 @@ const MethodologyInventoryView: React.FC = () => {
          </div>
       </div>
 
-      {/* SAĞ: SLIDE-OVER EDİTÖR (YENİ SORU) */}
+      {/* SAĞ: SLIDE-OVER EDİTÖR (YENİ / DÜZENLE) */}
       {isEditorOpen && (
          <div className="absolute inset-y-0 right-0 w-[600px] bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col animate-slide-left">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div className={`p-8 border-b border-slate-100 flex justify-between items-center ${editMode ? 'bg-indigo-50' : 'bg-orange-50'}`}>
                <div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Soru Tasarımcısı</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Yeni Envanter Girişi</p>
+                  <div className="flex items-center gap-2 mb-1">
+                     <span className={`w-2 h-2 rounded-full ${editMode ? 'bg-indigo-600 animate-pulse' : 'bg-orange-600'}`}></span>
+                     <p className={`text-[10px] font-bold uppercase tracking-widest ${editMode ? 'text-indigo-600' : 'text-orange-600'}`}>{editMode ? 'UPDATE MODE' : 'CREATE MODE'}</p>
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{editMode ? 'Soruyu Düzenle' : 'Yeni Soru Ekle'}</h3>
                </div>
                <button onClick={() => setIsEditorOpen(false)} className="p-3 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all border border-slate-200">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -224,7 +261,7 @@ const MethodologyInventoryView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                {/* 1. KATEGORİ SEÇİMİ */}
                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hedef Kategori</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Analiz Kategorisi</label>
                   <div className="grid grid-cols-2 gap-2">
                      {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
                         <button 
@@ -247,7 +284,7 @@ const MethodologyInventoryView: React.FC = () => {
                <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Soru Metni</label>
                   <textarea 
-                     className="w-full p-5 bg-slate-50 rounded-2xl font-bold text-sm text-slate-900 border-2 border-transparent focus:border-orange-500 focus:bg-white outline-none transition-all h-32 resize-none shadow-inner"
+                     className="w-full p-5 bg-slate-50 rounded-2xl font-bold text-sm text-slate-900 border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all h-32 resize-none shadow-inner"
                      placeholder="Klinik veya etik bir senaryo yazınız..."
                      value={draftQuestion.text}
                      onChange={e => setDraftQuestion({...draftQuestion, text: e.target.value})}
@@ -258,16 +295,17 @@ const MethodologyInventoryView: React.FC = () => {
                <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-200">
                   <div className="flex justify-between items-center">
                      <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Cevap Seçenekleri</label>
-                     <span className="text-[9px] font-bold text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">{draftQuestion.weightedOptions?.length || 0} EKLENDİ</span>
+                     <span className="text-[9px] font-bold text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">{draftQuestion.weightedOptions?.length || 0} SEÇENEK</span>
                   </div>
 
                   <div className="space-y-3">
                      <input 
                         type="text" 
                         placeholder="Seçenek metni (Örn: Kabul ederim çünkü...)" 
-                        className="w-full p-4 rounded-xl border border-slate-200 text-xs font-bold focus:border-orange-500 outline-none"
+                        className="w-full p-4 rounded-xl border border-slate-200 text-xs font-bold focus:border-indigo-500 outline-none transition-all"
                         value={draftOption.label}
                         onChange={e => setDraftOption({...draftOption, label: e.target.value})}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddOptionToDraft()}
                      />
                      
                      <div className="grid grid-cols-4 gap-2">
@@ -293,25 +331,27 @@ const MethodologyInventoryView: React.FC = () => {
                      <button 
                         onClick={handleAddOptionToDraft}
                         disabled={!draftOption.label}
-                        className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all disabled:opacity-50"
+                        className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50"
                      >
                         + Listeye Ekle
                      </button>
                   </div>
 
                   {/* EKLENEN SEÇENEKLER ÖNİZLEME */}
-                  <div className="space-y-2 mt-4">
+                  <div className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                      {draftQuestion.weightedOptions?.map((opt, idx) => (
                         <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-xl border border-slate-200 shadow-sm group">
                            <div className="flex-1 min-w-0 pr-3">
                               <p className="text-[10px] font-bold text-slate-600 truncate">{opt.label}</p>
-                              <div className="flex gap-1 mt-1">
+                              <div className="flex gap-1 mt-1 flex-wrap">
                                  {Object.entries(opt.weights).map(([k, v]) => (
-                                    <span key={k} className="text-[8px] px-1 bg-slate-100 rounded text-slate-500">{k.substring(0,3)}:{v}</span>
+                                    <span key={k} className="text-[8px] px-1 bg-slate-100 rounded text-slate-500 font-mono">
+                                       {k.substring(0,3).toUpperCase()}: {v}
+                                    </span>
                                  ))}
                               </div>
                            </div>
-                           <button onClick={() => handleRemoveOption(idx)} className="text-slate-300 hover:text-rose-500">
+                           <button onClick={() => handleRemoveOptionFromDraft(idx)} className="p-2 hover:bg-rose-50 rounded-lg text-slate-300 hover:text-rose-500 transition-all">
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                            </button>
                         </div>
@@ -320,12 +360,20 @@ const MethodologyInventoryView: React.FC = () => {
                </div>
             </div>
 
-            <div className="p-8 border-t border-slate-200 bg-slate-50">
+            <div className="p-8 border-t border-slate-200 bg-slate-50 flex gap-4">
+               {editMode && draftQuestion.id && (
+                 <button 
+                    onClick={() => handleDeleteQuestion(draftQuestion.id!)}
+                    className="px-6 py-5 bg-white border-2 border-rose-100 text-rose-500 rounded-[2rem] font-black text-[11px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                 >
+                    SİL
+                 </button>
+               )}
                <button 
                   onClick={handleSaveQuestion}
-                  className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-emerald-600 transition-all active:scale-95"
+                  className={`flex-1 py-5 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 ${editMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-slate-900 hover:bg-orange-600'}`}
                >
-                  SORUYU MÜHÜRLE VE YAYINLA
+                  {editMode ? 'GÜNCELLEMEYİ KAYDET' : 'SORUYU YAYINLA'}
                </button>
             </div>
          </div>

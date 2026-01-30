@@ -599,3 +599,14 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
                       <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">GİZLİ NOT</span>
                          <p className="text-xs font-medium text-slate-500">{slides[activeSlideIdx]?.speakerNotes}</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+  );
+};
+
+export default PresentationStudio;
