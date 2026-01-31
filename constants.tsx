@@ -29,12 +29,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir problem davranışın işlevi "Kaçma/Kaçınma" (Escape) olarak belirlendi. Ancak çocuk o gün hasta görünüyor (Grip). "Talep Gönderme" (Demanding) konusunda stratejiniz ne olur?',
+        text: 'Bir problem davranışın işlevi "Kaçma/Kaçınma" (Escape) olarak belirlendi ve sönme prosedürü uygulanıyor. Ancak çocuk o gün fizyolojik olarak hasta görünüyor (Grip belirtileri). "Talep Gönderme" (Demanding) konusunda o günkü stratejiniz ne olur?',
         weightedOptions: [
-          { label: 'Klinik Esneklik (Demand Fading): Fizyolojik bariyer (hastalık) kritiktir; kaçınmayı pekiştirmemek için talebi tamamen kaldırmam, ancak zorluk derecesini %80 düşürerek "başarı momentumunu" korurum.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Usta Klinisyen: Prosedürü bozmadan insani uyarlama yapabilme.' },
-          { label: 'Şefkat Önceliği: Çocuk hasta olduğu için tüm akademik talepleri kaldırır, günü serbest oyun ve eşleşme (Pairing) ile geçirerek konforunu sağlarım.', weights: { clinical: -0.5, empathy: 1.0 }, analysisInsight: 'Şefkat Tuzağı: Hastalığı, kaçınma davranışı için meşru bir araç haline getirme riski.' },
-          { label: 'Prosedürel Sadakat: Hastalık davranışı etkilemez; tutarlılık adına belirlenen programı aynen uygularım, taviz verirsem davranış artar.', weights: { clinical: 0.2, empathy: -1.0 }, analysisInsight: 'Mekanik Uygulama: Fizyolojik durumu ihmal eden katı yaklaşım.' },
-          { label: 'Sorumluluk Devri: Sağlık durumu nedeniyle riske girmemek adına seansı iptal eder veya ebeveyne devrederim.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Sorumluluktan Kaçış.' }
+          { label: 'Klinik Esneklik (Demand Fading): Fizyolojik bariyer (hastalık) performansı etkiler; kaçınma davranışını pekiştirmemek için talebi tamamen kaldırmam (çünkü çocuk hastalığı kaçış için kullanmayı öğrenebilir), ancak zorluk derecesini %80 düşürerek "başarı momentumunu" ve işbirliğini korurum.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Usta Klinisyen: Prosedürü bozmadan insani uyarlama yapabilme.' },
+          { label: 'Şefkat Önceliği (Non-Contingent Reinforcement): Çocuk hasta olduğu için kortizol seviyesi yüksektir. Tüm akademik talepleri o gün için kaldırır, günü tamamen serbest oyun ve eşleşme (Pairing) ile geçirerek çocuğun kuruma olan güvenini tazelerim.', weights: { clinical: -0.5, empathy: 1.0 }, analysisInsight: 'Şefkat Tuzağı: Hastalığı, kaçınma davranışı için meşru bir araç haline getirme riski (İyi niyetli ama teknik hata).' },
+          { label: 'Prosedürel Sadakat (Strict Adherence): Hastalık bir değişkendir ancak davranış planı tutarlılık gerektirir. Eğer çocuk okula geldiyse, belirlenen programı aynen uygularım; aksi takdirde "hastayım" taklidi yapmayı (malingering) öğrenebilir.', weights: { clinical: 0.2, empathy: -1.0 }, analysisInsight: 'Mekanik Uygulama: Fizyolojik durumu ihmal eden, ilişkiyi zedeleyebilecek katı yaklaşım.' },
+          { label: 'Risk Yönetimi ve Devir: Çocuğun sağlık durumu bulaş riski veya kriz tetikleyicisi olabileceğinden, riske girmemek adına seansı iptal eder veya çocuğu dinlenmesi için ailesine teslim ederim.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Sorumluluktan Kaçış: Kurumsal süreci yönetmek yerine pasifize olma.' }
         ]
       }
     ]
@@ -49,10 +49,10 @@ export const CERTIFICATIONS: Certification[] = [
         id: 'vq_dir_1', category: 'technicalExpertise', type: 'radio',
         text: 'Çocuk "Shared Attention" (Ortak Dikkat) kuramıyor ve sürekli kendi etrafında dönüyor (Vestibüler Arayış). Floortime yaklaşımına göre ilk hamle ne olmalıdır?',
         weightedOptions: [
-          { label: 'Davranışsal Müdahale: Dönmesini fiziksel olarak durdurup, yüzünü bana çevirmesini sağlayarak dikkatini regüle ederim.', weights: { clinical: -0.5, pedagogicalAnalysis: -0.3 }, analysisInsight: 'Model Karmaşası: İlişki temelli modele davranışçı (kontrolcü) müdahale.' },
-          { label: 'Aynalama (Join-in): Onunla birlikte, aynı yöne ve aynı hızda dönerek onun dünyasına girer, vestibüler girdiyi paylaşarak ilişki kapısını aralarım.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Klinik Rezonans: Çocuğun ilgisi üzerinden ilişki başlatma ustalığı.' },
-          { label: 'Gözlem: Müdahale etmeden dönmesinin bitmesini bekler, bitince ilgisini çekecek oyuncaklar sunarım.', weights: { clinical: 0.2 }, analysisInsight: 'Pasif Terapist.' },
-          { label: 'Güvenlik: Başının dönüp düşmemesi için onu sandalyeye oturtur ve masa başı etkinliğe geçerim.', weights: { clinical: -0.2, empathy: 0.5 }, analysisInsight: 'Koruyucu Refleks (Aşırı Kontrol).' }
+          { label: 'Regülasyon ve Yönlendirme: Dönmesini fiziksel olarak durdurup, yüzünü bana çevirmesini sağlayarak dikkatini regüle ederim ve sakinleşene kadar "Deep Pressure" (Derin Bası) uygularım.', weights: { clinical: -0.5, pedagogicalAnalysis: -0.3 }, analysisInsight: 'Model Karmaşası: İlişki temelli modele davranışçı/duyusal bütünleme müdahalesi karıştırma.' },
+          { label: 'Aynalama ve Katılım (Join-in): Onunla birlikte, aynı yöne ve aynı hızda dönerek onun dünyasına girer, vestibüler girdiyi paylaşarak ilişki kapısını aralarım ve sonrasında oyunu çeşitlendiririm (Expand).', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Klinik Rezonans: Çocuğun ilgisi üzerinden ilişki başlatma ustalığı.' },
+          { label: 'Pasif Gözlem ve Bekleme: Müdahale etmeden dönmesinin bitmesini bekler, bitince ilgisini çekecek oyuncaklar sunarak "Kendiliğinden Başlatma" (Initiation) yapmasını umarım.', weights: { clinical: 0.2 }, analysisInsight: 'Pasif Terapist: Çocuğun dünyasına girmek yerine dışarıda bekleyen yaklaşım.' },
+          { label: 'Güvenlik Odaklı Masa Başı: Başının dönüp düşmemesi için onu sandalyeye oturtur ve masa başı etkinliğe geçirerek dikkatini daha yapılandırılmış bir alana çekerim.', weights: { clinical: -0.2, empathy: 0.5 }, analysisInsight: 'Koruyucu Refleks (Aşırı Kontrol): Gelişimsel fırsatı güvenlik kaygısıyla kaçırma.' }
         ]
       }
     ]
@@ -71,12 +71,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_cas_1', category: 'technicalExpertise', type: 'radio',
-        text: 'PASS teorisine göre "Eşzamanlı İşlemleme" (Simultaneous Processing) zayıflığı olan bir öğrenciye okuma-yazma öğretirken hangi yöntemden kaçınılmalıdır?',
+        text: 'PASS teorisine göre "Eşzamanlı İşlemleme" (Simultaneous Processing) zayıflığı olan bir öğrenciye okuma-yazma öğretirken hangi yöntem en yüksek riski taşır?',
         weightedOptions: [
-          { label: 'Bütüncül (Global) okuma yöntemleri ve karmaşık görsel matrisler.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Eşleştirme Doğruluğu.' },
-          { label: 'Ses temelli cümle yöntemi.', weights: { clinical: 0.3 }, analysisInsight: 'Nötr tercih.' },
-          { label: 'Sıralı işlemleme (Ardıl) gerektiren hafıza oyunları.', weights: { clinical: -0.5 }, analysisInsight: 'Kavram Karmaşası.' },
-          { label: 'Çoktan seçmeli testler.', weights: { clinical: 0.0 }, analysisInsight: 'İlişkisiz cevap.' }
+          { label: 'Bütüncül (Global) Yöntemler: Kelimeyi bir bütün resim gibi algılamayı gerektiren, parçalar arası ilişkiyi aynı anda görmeyi zorunlu kılan karmaşık görsel matrisler.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Eşleştirme Doğruluğu: Zayıf alanın üzerine yüklenen yanlış yöntem tespiti.' },
+          { label: 'Ses Temelli Cümle Yöntemi: Harfleri tek tek (Ardıl) birleştirerek hece ve kelimeye ulaşan, sıralı işlemleme becerisini kullanan yöntemler.', weights: { clinical: 0.3 }, analysisInsight: 'Nötr Tercih: Genellikle ardıl işlemlemeyi kullanır, eşzamanlı zayıflıkta işe yarayabilir.' },
+          { label: 'Ardıl İşlemleme Oyunları: Birbirini takip eden olayları sıralama, hafızada tutma ve yönerge takip etme çalışmaları.', weights: { clinical: -0.5 }, analysisInsight: 'Kavram Karmaşası: Bu yöntem çocuğun güçlü yanına hitap edebilir, riskli değildir.' },
+          { label: 'Çoktan Seçmeli Testler: Görsel tarama gerektirse de okuma öğretim yöntemi değildir.', weights: { clinical: 0.0 }, analysisInsight: 'İlişkisiz Cevap.' }
         ]
       }
     ]
@@ -96,12 +96,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_wisc_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Çocuğun "Çalışma Belleği" (Working Memory) indeksi düşük, "Sözel Kavrama"sı çok yüksek. Bu profildeki bir öğrenciye yönerge verirken neye dikkat edersiniz?',
+        text: 'WISC-V profilinde "Çalışma Belleği" (Working Memory) indeksi düşük, buna karşın "Sözel Kavrama"sı (VCI) çok yüksek çıkan bir öğrenciye akademik yönerge verirken nasıl bir strateji izlenmelidir?',
         weightedOptions: [
-          { label: 'Kapasite Kullanımı: Sözel zekası yüksek olduğu için detaylı, uzun ve zengin içerikli yönergeler vererek dil becerisini kullanmasını sağlarım.', weights: { clinical: -0.8 }, analysisInsight: 'Klinik Hata: Bellek kapasitesini sözel zeka ile karıştırma.' },
-          { label: 'Adaptasyon: Yönergeleri parçalara böler, "chunking" tekniği uygular ve görsel ipuçlarıyla destekleyerek bellek yükünü azaltırım.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Profil Adaptasyonu.' },
-          { label: 'Not Alma: Her söylediğimi not almasını isterim, böylece unutmaz.', weights: { clinical: 0.4 }, analysisInsight: 'Kısmen doğru ama her yaşa uygun değil.' },
-          { label: 'Fiziksel Düzenleme: Dikkatini toplaması için onu en ön sıraya ve öğretmene yakın oturturum.', weights: { clinical: 0.2 }, analysisInsight: 'Klasik ama sığ yaklaşım.' }
+          { label: 'Sözel Kapasiteyi Kullanma: Sözel zekası güçlü olduğu için, detaylı, zengin ve bağlamsal açıklamalar yaparak konuyu derinlemesine anlatır ve dil becerisini aktif kullanmasını sağlarım.', weights: { clinical: -0.8 }, analysisInsight: 'Klinik Hata: Bellek darboğazını (bottleneck) görmezden gelip güçlü alana aşırı yüklenme.' },
+          { label: 'Bilişsel İskele (Scaffolding): Yönergeleri parçalara böler (Chunking), her adımı görsel ipuçlarıyla destekler ve sözel açıklamayı minimumda tutarak bellek yükünü azaltırım.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Profil Adaptasyonu: Zayıf alanı protezleyerek güçlü alanı devreye sokma.' },
+          { label: 'Kayıt ve Tekrar Stratejisi: Çocuğa her söylediğimi not aldırır veya ses kaydı yapmasına izin veririm, böylece unuttuğunda tekrar dinleyebilir.', weights: { clinical: 0.4 }, analysisInsight: 'Kısmen Doğru: Telafi edici bir stratejidir ancak öğretim anındaki işlemleme sorununu çözmez.' },
+          { label: 'Çevresel Düzenleme: Dikkatini toplaması için onu sınıfın en ön sırasına, öğretmenin tam karşısına oturtur ve göz teması kurarım.', weights: { clinical: 0.2 }, analysisInsight: 'Klasik Yöntem: Dikkat eksikliği için geçerlidir ancak bellek kapasitesi sorununu doğrudan çözmez.' }
         ]
       }
     ]
@@ -120,12 +120,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_prompt_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Apraksili bir çocukta "Motor Planlama" (Motor Planning) üzerinde çalışırken, terapist neden işitsel ipucu yerine taktil (dokunsal) ipucunu önceler?',
+        text: 'Apraksili bir çocukta "Motor Planlama" (Motor Planning) üzerinde çalışırken, terapist neden geleneksel "işitsel ipucu" (Benim dediğimi tekrar et) yerine "taktil-kinestetik" (dokunsal) ipucunu önceler?',
         weightedOptions: [
-          { label: 'Çocuk duymadığı için.', weights: { clinical: -0.5 }, analysisInsight: 'Yanlış Tanı: Apraksi işitme sorunu değildir.' },
-          { label: 'Beyne giden propriyoseptif geri bildirimi artırıp kas hafızasını (Muscle Memory) yeniden kodlamak için.', weights: { clinical: 1.0 }, analysisInsight: 'Nöro-Motor Hakimiyet.' },
-          { label: 'Çocuğun dikkatini yüze çekmek için.', weights: { clinical: 0.3 }, analysisInsight: 'İkincil fayda.' },
-          { label: 'Dudak okumayı öğretmek için.', weights: { clinical: 0.0 }, analysisInsight: 'Yöntem dışı.' }
+          { label: 'İşitsel İşlemleme Bozukluğu: Apraksili çocukların çoğu aynı zamanda işitme sorunu yaşadığı için görsel/dokunsal kanal daha etkilidir.', weights: { clinical: -0.5 }, analysisInsight: 'Yanlış Tanı: Apraksi bir motor planlama sorunudur, duyusal girdi sorunu değildir.' },
+          { label: 'Nöro-Motor Haritalama: İşitsel girdi motor planlamayı tetiklemekte yetersiz kalırken, çene/dudak kaslarına verilen dokunsal girdi beyne doğrudan propriyoseptif geri bildirim göndererek yeni nöral yollar (Muscle Memory) oluşturur.', weights: { clinical: 1.0 }, analysisInsight: 'Nöro-Motor Hakimiyet: Tekniğin nörofizyolojik temelini kavrama.' },
+          { label: 'Dikkat ve Odaklanma: Çocuğun yüzüne dokunmak, dikkatini terapiste vermesini sağlar ve göz temasını artırarak iletişimi başlatır.', weights: { clinical: 0.3 }, analysisInsight: 'İkincil Fayda: Bu bir sonuçtur, tekniğin asıl amacı değildir.' },
+          { label: 'Dudak Okuma Desteği: Çocuğun terapistin ağız hareketlerini daha iyi görmesini ve taklit etmesini sağlamak için.', weights: { clinical: 0.0 }, analysisInsight: 'Yöntem Dışı: Bu görsel modellemedir, PROMPT tekniği değildir.' }
         ]
       }
     ]
@@ -145,12 +145,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_si_1', category: 'technicalExpertise', type: 'radio',
-        text: '"Vestibüler Güvensizlik" (Gravitational Insecurity) yaşayan bir çocuk, ayağının yerden kesildiği aktivitelerde ağlıyor. Terapötik yaklaşım ne olmalıdır?',
+        text: '"Vestibüler Güvensizlik" (Gravitational Insecurity) yaşayan bir çocuk, ayağının yerden kesildiği aktivitelerde (Salıncak, Tırmanma) yoğun korku ve ağlama tepkisi veriyor. Terapötik yaklaşım ne olmalıdır?',
         weightedOptions: [
-          { label: 'Duyarsızlaştırma: "Korkacak bir şey yok" diyerek harekete devam etmek ve çocuğun bu hisse alışmasını sağlamak.', weights: { clinical: -0.8, empathy: -0.5 }, analysisInsight: 'Travmatize Etme Riski.' },
-          { label: 'Dereceli Maruz Bırakma: Çocuğun kontrolünde, ayaklarının yere değebileceği alçak seviyeli doğrusal (lineer) hareketlerle güven inşa etmek.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Klinik Ustalık: Güven ve nörolojik adaptasyon.' },
-          { label: 'Masa Başı: Vestibüler sistemden kaçınarak sadece masa başı ince motor çalışmak.', weights: { clinical: 0.0 }, analysisInsight: 'Sorundan kaçınma.' },
-          { label: 'Görsel Blokaj: Gözlerini kapatmasını söyleyerek görsel uyaranı kesmek.', weights: { clinical: -0.5 }, analysisInsight: 'Güvensizliği artırma.' }
+          { label: 'Duyarsızlaştırma (Flooding): "Korkacak bir şey yok" diyerek harekete devam etmek, çocuğu güvenli bir şekilde tutarak bu hisse maruz bırakmak ve alışmasını sağlamak.', weights: { clinical: -0.8, empathy: -0.5 }, analysisInsight: 'Travmatize Etme Riski: Güvensizlik yaşayan bir çocuğu zorlamak korkuyu pekiştirir.' },
+          { label: 'Dereceli ve Kontrollü Maruz Bırakma: Çocuğun kontrolünde olan, ayaklarının yere değebileceği, öngörülebilir ve alçak seviyeli doğrusal (lineer) hareketlerle başlayıp, güven inşa ettikçe yoğunluğu artırmak.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Klinik Ustalık: Nörolojik adaptasyon ve güven ilişkisi.' },
+          { label: 'Kaçınma ve Alternatif Arayışı: Vestibüler sistem çocuğu çok zorladığı için bu alanı pas geçip, daha çok masa başı ince motor veya taktil çalışmalara odaklanmak.', weights: { clinical: 0.0 }, analysisInsight: 'Sorundan Kaçınma: Çocuğun gelişimsel ihtiyacını görmezden gelme.' },
+          { label: 'Görsel Blokaj: Gözlerini kapatmasını söyleyerek görsel uyaranı kesmek, böylece yükseklik algısını azaltıp vestibüler girdiye odaklanmasını sağlamak.', weights: { clinical: -0.5 }, analysisInsight: 'Güvensizliği Artırma: Görsel referansın kaybı kaygıyı daha da artırabilir.' }
         ]
       }
     ]
@@ -176,12 +176,12 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_cbt_1', category: 'technicalExpertise', type: 'radio',
-        text: 'OKB tanılı bir çocukta "Maruz Bırakma ve Tepki Önleme" (ERP) çalışırken, çocuk ritüelini yapamadığı için yoğun anksiyete yaşıyor. Ne yaparsınız?',
+        text: 'OKB tanılı bir çocukta "Maruz Bırakma ve Tepki Önleme" (ERP) çalışırken, çocuk kirlendiğini düşündüğü için ellerini yıkamak istiyor (Ritüel) ve yoğun anksiyete yaşıyor. Terapist o an ne yapmalıdır?',
         weightedOptions: [
-          { label: 'Anksiyete Azaltma: Ritüeli yapmasına izin veririm, önemli olan çocuğun sakinleşmesidir.', weights: { clinical: -0.5, empathy: 0.5 }, analysisInsight: 'Döngüyü Besleme: Anksiyeteyi geçici düşürüp OKB\'yi güçlendirme.' },
-          { label: 'Surfing the Urge: Anksiyete seviyesini (SUDs) derecelendirmesini ister, o duyguyla kalabilmesi için eşlik ederim. Anksiyetenin tepe yapıp kendiliğinden düşmesini bekleriz.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Klinik Ustalık: Terapötik pencerede kalma.' },
-          { label: 'Dikkat Dağıtma: Dikkatini hemen sevdiği bir oyuna çekerim.', weights: { clinical: 0.2 }, analysisInsight: 'Geçici Çözüm.' },
-          { label: 'Bilişsel İkna: Bunun saçma olduğunu mantıklı argümanlarla anlatırım.', weights: { clinical: -1.0 }, analysisInsight: 'Bilişsel Hata.' }
+          { label: 'Kademeli İzin (Anksiyete Azaltma): Anksiyete krize dönüşmemesi için ritüeli yapmasına (ellerini yıkamasına) kısa süreli izin veririm, ancak bir dahaki sefere süreyi uzatacağımıza dair anlaşma yaparım.', weights: { clinical: -0.5, empathy: 0.5 }, analysisInsight: 'Döngüyü Besleme: Anksiyeteyi geçici düşürürken obsesyonu güçlendirme hatası.' },
+          { label: 'Dürtü Sörfü (Surfing the Urge): Anksiyete seviyesini (SUDs) derecelendirmesini isterim. Ritüeli engellerim ancak çocukla o duygu içinde kalarak, anksiyetenin tepe noktasına ulaşıp kendiliğinden sönümleneceğini (Habituation) deneyimlemesine eşlik ederim.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Klinik Ustalık: Terapötik pencerede kalma ve nöral yeniden öğrenme.' },
+          { label: 'Dikkat Dağıtma (Distraction): Hemen dikkatini sevdiği bir oyuna veya konuya çekerek o anki kirlilik düşüncesinden uzaklaşmasını sağlarım.', weights: { clinical: 0.2 }, analysisInsight: 'Geçici Çözüm: Bilişsel kaçınmayı pekiştirir, kalıcı iyileşme sağlamaz.' },
+          { label: 'Bilişsel İkna (Cognitive Restructuring): Ellerinin aslında kirli olmadığını, mikroskopla baksak bile mikrop göremeyeceğimizi mantıklı argümanlarla anlatırım.', weights: { clinical: -1.0 }, analysisInsight: 'Bilişsel Hata: OKB mantıkla çalışmaz, "güvence arama" davranışını besleyebilir.' }
         ]
       }
     ]
@@ -204,228 +204,92 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_shadow_1', category: 'technicalExpertise', type: 'radio',
       text: 'Yoğun bir "Problem Davranış" (Örn: Kafasını masaya vurma) anında, çocuğun burnunun aktığını ve salyasının aktığını fark ettiniz. Bu durum çocuğun dikkatini de dağıtıyor. Saniyelik kararınız?',
       weightedOptions: [
-        { label: 'Hijyen ve Şefkat (Temas): Hijyen ve konfor önceliklidir; hemen müdahale eder, çocuğun yüzünü temizler ve sakinleşince derse dönerim.', weights: { clinical: -0.6, empathy: 1.0, sustainability: -0.2 }, analysisInsight: 'Şefkat Tuzağı: Davranış anında fiziksel temas ve ilgi (temizlik) sağlayarak problem davranışı yanlışlıkla pekiştirme (Accidental Reinforcement) riski.' },
-        { label: 'Klinik Sadakat (Planned Ignoring): Kafasını korumak için el yastığı yaparım ama göz teması kurmadan, nötr bir yüzle krizin sönmesini bekler, temizliği kriz tamamen bitince yaparım.', weights: { clinical: 1.0, empathy: 0.2, sustainability: 0.8 }, analysisInsight: 'Klinik Sadakat: Güvenliği sağlarken "İlgi Çekme" veya "Kaçış" işlevini beslememe disiplini. (Planned Ignoring + Safety).' },
-        { label: 'Sözel Uyarı: "Yapma oğlum" diyerek çocuğu tutarım ve sakinleştirmeye çalışırım.', weights: { clinical: -0.8, empathy: 0.2, sustainability: -0.5 }, analysisInsight: 'Veri Kirliliği: Sözel uyaran vererek davranışı besleme (Social Attention) hatası.' },
-        { label: 'Seans İptali: Dersi o an sonlandırır, veliye çocuğu temizlemesi için teslim ederim.', weights: { clinical: -1.0, empathy: -0.5, institutionalLoyalty: -0.5 }, analysisInsight: 'Kaçınma Davranışı: Terapistin kriz anında otoriteyi ve sorumluluğu terk etmesi.' }
+        { label: 'Hijyen ve Şefkat Odaklı Müdahale: Öncelik çocuğun konforu ve hijyenidir. Davranışı durdurmaya çalışırken aynı zamanda cebimden peçete çıkarıp yüzünü silerim, böylece rahatlayıp sakinleşmesine yardımcı olurum.', weights: { clinical: -0.6, empathy: 1.0, sustainability: -0.2 }, analysisInsight: 'Şefkat Tuzağı: Davranış anında fiziksel temas ve bakım vererek (reinforcement), problem davranışın işlevini "ilgi" veya "rahatlama" ile farkında olmadan pekiştirme riski.' },
+        { label: 'Klinik Sadakat ve Planlı Görmezden Gelme: Kafasını korumak için el yastığı yaparım (güvenlik) ancak göz teması kurmadan, nötr bir yüzle krizin sönmesini beklerim. Temizlik, kriz tamamen bitip çocuk regüle olduktan sonra yapılır.', weights: { clinical: 1.0, empathy: 0.2, sustainability: 0.8 }, analysisInsight: 'Klinik Disiplin: Güvenliği sağlarken davranışı beslememe (Extinction) becerisi.' },
+        { label: 'Sözel Yönerge ve Kontrol: Çocuğun ellerini tutarak "Yapma, burnunu silelim" derim ve sakinleşmesi için sözel telkinlerde bulunurum.', weights: { clinical: -0.8, empathy: 0.2, sustainability: -0.5 }, analysisInsight: 'Veri Kirliliği: Kriz anında verilen sözel uyaranlar ve temas, davranışı besleyen "sosyal dikkat" (Social Attention) hatasına dönüşebilir.' },
+        { label: 'Seans İptali ve Aileye Devir: Hijyen sorunu ve kendine zarar verme riski birleştiğinde ders işlenemez. Seansı sonlandırır, çocuğu temizlemesi ve sakinleştirmesi için veliye teslim ederim.', weights: { clinical: -1.0, empathy: -0.5, institutionalLoyalty: -0.5 }, analysisInsight: 'Mesleki Kaçınma: Terapistin kriz anında otoriteyi ve sorumluluğu terk etmesi.' }
       ]
     },
     {
       id: 'clin_shadow_2', category: 'technicalExpertise', type: 'radio',
       text: 'Çocuk aylar sonra ilk kez hedeflediğiniz kelimeyi (örn: "Su") söyledi ancak o sırada sandalyede tehlikeli bir şekilde, tek ayak üzerinde dengede duruyor. Pekiştireci (Çikolata) nasıl sunarsınız?',
       weightedOptions: [
-        { label: 'Önce Güvenlik: Güvenlik her şeyden önemlidir. Önce "Otur" derim, düzgün oturunca "Aferin" der ve ödülü veririm.', weights: { clinical: -0.4, pedagogicalAnalysis: -0.5, sustainability: 0.5 }, analysisInsight: 'Zamanlama Hatası (Blocking): Hedef davranış (Konuşma) ile pekiştireç arasına "Oturma" talebi sokarak öğrenmeyi bozma.' },
-        { label: 'Fırsat Yakalama (Catching the Moment): Hiç beklemeden coşkuyla ödülü veririm; o an düşme riskini göze alırım çünkü "Su" demesi benim için altın değerindedir.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0, formality: -0.3 }, analysisInsight: 'Öncelik Yönetimi: Kritik beceriyi yakalamak için ikincil riskleri (kontrollü şekilde) yönetme zekası.' },
-        { label: 'Mükemmeliyetçilik: Görmezden gelirim, her şey mükemmel olmadan (hem oturuş hem konuşma) ödül verilirse yanlış davranış pekişir.', weights: { clinical: -0.7, empathy: -0.5, pedagogicalAnalysis: -0.8 }, analysisInsight: 'Mükemmeliyetçilik Tuzağı: Fırsat öğretimini kaçırma ve sönmeye sebep olma.' }
+        { label: 'Güvenlik Öncelikli Zincirleme: Güvenlik her şeyden önemlidir. Önce "Otur" komutu verip güvenli pozisyona geçmesini sağlarım, oturduktan sonra "Aferin" diyerek ödülü veririm.', weights: { clinical: -0.4, pedagogicalAnalysis: -0.5, sustainability: 0.5 }, analysisInsight: 'Bloklama Etkisi (Blocking): Hedef davranış (Konuşma) ile pekiştireç arasına "Oturma" talebi sokarak dil öğrenimini geciktirme veya yanlış davranışı (oturmayı) pekiştirme riski.' },
+        { label: 'Anlık Fırsat Yakalama (Catching the Moment): Hiç beklemeden büyük bir coşkuyla ödülü veririm; o an düşme riskini göze alırım (veya elimle desteklerim) çünkü "Su" demesi benim için altın değerindedir ve anında pekiştirilmelidir.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0, formality: -0.3 }, analysisInsight: 'Öncelik Yönetimi: Kritik beceriyi yakalamak için ikincil riskleri (kontrollü şekilde) yönetme zekası.' },
+        { label: 'Mükemmeliyetçi Yaklaşım (Shaping): Görmezden gelirim. Hem oturuş hem konuşma aynı anda düzgün olmadan ödül verilirse, çocuk "tehlikeli hareket ederek ödül almayı" öğrenebilir.', weights: { clinical: -0.7, empathy: -0.5, pedagogicalAnalysis: -0.8 }, analysisInsight: 'Sönme Riski: Fırsat öğretimini kaçırma ve çocuğun motivasyonunu kırma.' }
       ]
     },
     {
       id: 'clin_shadow_3', category: 'technicalExpertise', type: 'radio',
       text: 'Seansın bitmesine 2 dakika var ve çocuk nihayet derse odaklandı, çok verimli bir akış ("Flow") yakaladınız. Ancak kapıda bir sonraki öğrenci ve velisi bekliyor. Kararınız?',
       weightedOptions: [
-        { label: 'Esneklik: Akışı bozmam, 5-10 dakika uzatırım. Eğitimdeki bu an, dışarıdaki velinin beklemesinden daha değerlidir.', weights: { clinical: 0.6, ethics: -0.4, institutionalLoyalty: -0.5 }, analysisInsight: 'Sınır İhlali (Time Boundary): İyi niyetli ama kurumsal zaman yönetimini ve diğer ailenin hakkını ihlal eden eylem.' },
-        { label: 'Katı Kuralcılık: Tam dakikasında keserim. Kurallar kuraldır, diğer öğrencinin hakkına giremem.', weights: { clinical: -0.3, formality: 1.0, empathy: -0.2 }, analysisInsight: 'Mekanik Uygulama: Pedagojik kazancı prosedüre kurban etme.' },
-        { label: 'Pedagojik Final (Peak-End): Mevcut akışı "en yüksek noktada" (Peak) sonlandırıp, çocuğun "başarma hissiyle" ve tadı damağında kalarak çıkmasını sağlarım.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.8, institutionalLoyalty: 0.8 }, analysisInsight: 'Pedagojik Ustalık: Kısıtlılığı avantaja çevirme (Leave them wanting more) ve kurumsal düzene uyum.' }
+        { label: 'Pedagojik Esneklik: Akışı bozmam, seansı 5-10 dakika uzatırım. Eğitimdeki bu "altın an", dışarıdaki velinin beklemesinden daha değerlidir ve durumu sonra izah edebilirim.', weights: { clinical: 0.6, ethics: -0.4, institutionalLoyalty: -0.5 }, analysisInsight: 'Sınır İhlali (Time Boundary): İyi niyetli ama kurumsal zaman yönetimini ve diğer ailenin hakkını ihlal eden eylem.' },
+        { label: 'Katı Kurumsal Sadakat: Tam dakikasında keserim. Kurallar kuraldır, diğer öğrencinin hakkına giremem ve kurumun zaman çizelgesini bozamam.', weights: { clinical: -0.3, formality: 1.0, empathy: -0.2 }, analysisInsight: 'Mekanik Uygulama: Pedagojik kazancı prosedüre kurban etme, "öğrenme aşkını" söndürme riski.' },
+        { label: 'Peak-End Kuralı (Zirvede Bırakma): Mevcut akışı "en yüksek noktada" ve coşkuyla sonlandırıp, çocuğun "başarma hissiyle" ve tadı damağında kalarak çıkmasını sağlarım. Bu, bir sonraki derse motivasyonla gelmesini sağlar.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.8, institutionalLoyalty: 0.8 }, analysisInsight: 'Pedagojik Ustalık: Kısıtlılığı avantaja çevirme ve kurumsal düzene uyum.' }
       ]
     },
     {
       id: 'clin_shadow_4', category: 'pedagogicalAnalysis', type: 'radio',
       text: 'Çocuğun sevdiği oyuncağı kullanarak çalışıyorsunuz. Çocuk oyuncağı elinizden hışımla çekip aldı ve vermiyor. Güç mücadelesine girmeden kontrolü nasıl geri alırsınız?',
       weightedOptions: [
-        { label: 'Otorite: "Ver onu bana, yoksa ders biter!" diye net bir sınır koyarım.', weights: { pedagogicalAnalysis: -0.4, empathy: -0.6, clinical: -0.2 }, analysisInsight: 'Güç Savaşı (Power Struggle): Çocuğu savunmaya iten ve ilişkiyi zedeleyen eski ekol yaklaşımı.' },
-        { label: 'Motivasyonel Kontrol (Environmental Control): Elindeki oyuncağın "eksik parçasını" (örn: arabanın yolu, bebeğin biberonu) elimde tutup, oyunu devam ettirmek için bana muhtaç olmasını (Motivasyonel Operasyon) sağlarım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9, empathy: 0.5 }, analysisInsight: 'Ortam Kontrolü: Fiziksel güç yerine motivasyonel kontrol ve zeka kullanımı.' },
-        { label: 'Teslimiyet: Bırakırım oynasın, yeter ki ağlamasın, sonra ikna ederim.', weights: { clinical: -0.6, sustainability: -0.4, workEthics: -0.3 }, analysisInsight: 'Liderlik Kaybı: Terapötik liderliğin kaybı ve çocuğa kontrolü verme.' }
+        { label: 'Otoriter Sınır Koyma: "Ver onu bana, yoksa ders biter!" diyerek net bir sınır koyarım ve gerekirse fiziksel olarak elinden alırım. Liderin kim olduğunu bilmeli.', weights: { pedagogicalAnalysis: -0.4, empathy: -0.6, clinical: -0.2 }, analysisInsight: 'Güç Savaşı (Power Struggle): Çocuğu savunmaya iten ve ilişkiyi zedeleyen eski ekol yaklaşımı.' },
+        { label: 'Çevresel Kontrol (Environmental Control): Oyuncağı almasına izin veririm ama o oyuncağın çalışması için gereken "eksik parçayı" (pil, anahtar, diğer parça) elimde tutarım. Böylece oyunu devam ettirmek için bana muhtaç olmasını (Motivasyonel Operasyon) sağlarım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9, empathy: 0.5 }, analysisInsight: 'Klinik Zeka: Fiziksel güç yerine motivasyonel kontrol ve ortam düzenlemesi.' },
+        { label: 'Pasif Uyum ve İkna: Oynamasına izin veririm, yeter ki ağlamasın. Bir süre sonra sıkılınca "Hadi şimdi bana ver" diyerek ikna etmeye çalışırım.', weights: { clinical: -0.6, sustainability: -0.4, workEthics: -0.3 }, analysisInsight: 'Liderlik Kaybı: Terapötik liderliğin kaybı ve çocuğa kontrolü verme.' }
       ]
     },
     {
       id: 'clin_shadow_5', category: 'technicalExpertise', type: 'radio',
       text: 'Veri toplama kağıdınız (Data Sheet) o gün kaybolmuş veya unutulmuş. Seansa girdiniz. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'Hafıza Güveni: Veri tutmam, aklımda tutarım, seanstan sonra hatırlar yazarım.', weights: { clinical: -0.6, workEthics: -0.4 }, analysisInsight: 'Hafıza Yanılgısı: Subjektif veri riski ve profesyonel ihmal.' },
-        { label: 'İptal: Seansı iptal eder veya çocuğu bırakıp kağıdı aramaya giderim.', weights: { clinical: -0.3, institutionalLoyalty: -0.5 }, analysisInsight: 'Operasyonel Aksama: Çözüm odaklı olmama ve zaman kaybı.' },
-        { label: 'Doğaçlama Kayıt: Hemen bir boş kağıda, peçeteye veya elime "Tally" (çentik) atarak geçici bir kayıt sistemi kurarım. Verisiz seans olmaz.', weights: { clinical: 1.0, sustainability: 0.8, workEthics: 0.9 }, analysisInsight: 'Klinik Refleks: Şartlar ne olursa olsun veriye sadakat ve çözüm üretme.' }
+        { label: 'Hafıza Güveni: O gün veri tutmam, çocuğa odaklanırım. Seanstan çıktıktan sonra aklımda kalanları tahmini olarak sisteme girerim.', weights: { clinical: -0.6, workEthics: -0.4 }, analysisInsight: 'Hafıza Yanılgısı: Subjektif veri riski ve profesyonel ihmal.' },
+        { label: 'Operasyonel İptal: Seansı iptal eder veya çocuğu yardımcı ablaya bırakıp kağıdı/tableti aramaya giderim. Verisiz seans yapılamaz.', weights: { clinical: -0.3, institutionalLoyalty: -0.5 }, analysisInsight: 'Operasyonel Aksama: Çözüm odaklı olmama ve zaman kaybı.' },
+        { label: 'Doğaçlama Kayıt Sistemi: Hemen bir boş kağıda, peçeteye veya elime basit bir "Tally" (çentik) sistemi kurarak o anki hedef davranışları kaydederim. Format önemli değildir, verinin varlığı esastır.', weights: { clinical: 1.0, sustainability: 0.8, workEthics: 0.9 }, analysisInsight: 'Klinik Refleks: Şartlar ne olursa olsun veriye sadakat ve çözüm üretme.' }
       ]
     },
     // YENİ EKLENEN: KLİNİK YETERLİLİK & PEDAGOJİK ALTYAPI (10+10 = 20 SORU)
     {
       id: 'clin_new_1', category: 'technicalExpertise', type: 'radio',
-      text: 'Otizmli bir öğrenci "Sözel Stereotipi" (Ekolali) yapıyor. Veli bunu "konuşuyor" sanıp seviniyor. Veliye gerçeği nasıl aktarırsınız?',
+      text: 'Otizmli bir öğrenci sürekli reklam jeneriklerini tekrar ediyor (Sözel Stereotipi / Ekolali). Veli bunu "konuşuyor" sanıp seviniyor. Veliye durumu nasıl izah edersiniz?',
       weightedOptions: [
-        { label: 'Gerçekçi Yaklaşım: "Bu konuşma değil, anlamsız papağan tekrarı" diyerek net konuşurum, aileyi boş yere umutlandırmam.', weights: { clinical: 0.5, empathy: -0.8 }, analysisInsight: 'Kaba Gerçekçilik: Aileyi demoralize etme riski.' },
-        { label: 'Pembe Yalan: "Evet, konuşması harika!" diyerek ailenin moralini bozmam.', weights: { clinical: -1.0, ethics: -0.8 }, analysisInsight: 'Profesyonel Yalan: Gelişimi sabote eden yanıltıcı bilgi.' },
-        { label: 'Fonksiyonel Dönüşüm: "Ses çıkarması harika bir başlangıç. Şimdi bu sesleri "iletişimsel amaca" (fonksiyonel) dönüştürmek için çalışacağız" diyerek çerçeveyi değiştiririm.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Klinik Diplomasisi: Pozitifi koruyarak bilimsel hedefe yönlendirme.' }
+        { label: 'Radikal Gerçekçilik: "Hanımefendi bu konuşma değil, anlamsız papağan tekrarı. Beyninde bir kısa devre gibi düşünün, buna sevinmeyin." diyerek aileyi sarsarım.', weights: { clinical: 0.5, empathy: -0.8 }, analysisInsight: 'Kaba Gerçekçilik: Aileyi demoralize etme ve işbirliğini kaybetme riski.' },
+        { label: 'Yatıştırıcı Yaklaşım (Pembe Tablo): "Evet, harika! Konuşması açılıyor, zamanla düzelecek merak etmeyin." diyerek ailenin moralini bozmam.', weights: { clinical: -1.0, ethics: -0.8 }, analysisInsight: 'Profesyonel Yalan: Gelişimi sabote eden yanıltıcı bilgi.' },
+        { label: 'Fonksiyonel Dönüşüm Çerçevesi: "Ses çıkarması harika bir başlangıç motoru. Ancak şu an bu sesler \'iletişim amaçlı\' değil. Bizim hedefimiz bu potansiyeli alıp, \'istek bildiren\' (fonksiyonel) dile dönüştürmek." diyerek ailenin umudunu teknik bir hedefe kanalize ederim.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Klinik Diplomasisi: Pozitifi koruyarak bilimsel hedefe yönlendirme.' }
       ]
     },
     {
       id: 'clin_new_2', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Çocuk masadaki materyalleri sürekli yere atıyor. Bu davranışı "Duyusal Arayış" mı yoksa "Dikkat Çekme" mi olduğunu nasıl anlarsınız?',
+      text: 'Çocuk masadaki materyalleri sürekli yere atıyor. Bu davranışı "Duyusal Arayış" mı yoksa "Dikkat Çekme" mi olduğunu anlamak için yapacağınız ilk test nedir?',
       weightedOptions: [
-        { label: 'Sözel Sorgu: Çocuğa "Neden atıyorsun?" diye sorarım.', weights: { clinical: -0.5 }, analysisInsight: 'Bilişsel Hata: Sözel olmayan çocuktan içgörü bekleme.' },
-        { label: 'İşlevsel Analiz (Test): Ona kızdığımda (dikkat verdiğimde) artıyor mu, yoksa ben yokken de (sesi duymak için) atıyor mu diye test ederim.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Bilimsel Gözlem: Davranışın işlevini test etme yetisi.' },
-        { label: 'Genel Müdahale: Farketmez, her türlü engellerim.', weights: { clinical: -0.2, pedagogicalAnalysis: -0.5 }, analysisInsight: 'Yüzeysel Müdahale.' }
+        { label: 'Sözel Sorgulama: Çocuğa "Neden atıyorsun? Ses mi istiyorsun yoksa bana mı kızdın?" diye sorarım.', weights: { clinical: -0.5 }, analysisInsight: 'Bilişsel Hata: Sözel olmayan veya ifade edici dili zayıf çocuktan içgörü bekleme.' },
+        { label: 'İşlevsel Analiz (A/B Testi): Ona kızdığımda (dikkat verdiğimde) artıyor mu, yoksa ben odayı terk ettiğimde veya ilgilenmediğimde de (sesi duymak için) atmaya devam ediyor mu diye test ederim.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Bilimsel Gözlem: Davranışın işlevini manipüle ederek test etme yetisi.' },
+        { label: 'Standart Engelleme: Farketmez, her türlü engellerim ve "Atma" derim. Önemli olan davranışın durmasıdır.', weights: { clinical: -0.2, pedagogicalAnalysis: -0.5 }, analysisInsight: 'Yüzeysel Müdahale: İşlevi anlamadan yapılan müdahale davranışı söndürmez.' }
       ]
     },
     {
       id: 'clin_new_3', category: 'technicalExpertise', type: 'radio',
-      text: 'Öğrenciniz derste uyuyor. Veli "Gece uyumadı, lütfen onu zorlamayın, uyusun" dedi. Ne yaparsınız?',
+      text: 'Öğrenciniz derste uyuyor. Veli "Gece uyumadı, lütfen onu zorlamayın, bırakın uyusun" dedi. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'Veli Talebi: Veliye saygı duyar, çocuğu uyuturum.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Pasif Bakıcılık: Kurumun eğitim misyonunu ihlal.' },
-        { label: 'Eğitim Disiplini: Çocuğun yüzünü yıkar, hareketli aktivitelerle uyarılmasını sağlarım. Burası okul, uyuma yeri değil.', weights: { clinical: 1.0, sustainability: 0.5 }, analysisInsight: 'Profesyonel Duruş: Eğitimin sürekliliğini sağlama.' },
-        { label: 'İptal: Dersi iptal eder, veliye teslim ederim.', weights: { clinical: -0.5 }, analysisInsight: 'Kaçış.' }
+        { label: 'Veli Talebine İtaat: Veliye saygı duyar, çocuğun üzerini örter ve uyumasına izin veririm. Dinlenmiş çocuk daha iyi öğrenir.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Pasif Bakıcılık: Kurumun eğitim misyonunu ve profesyonel sınırları ihlal (Okul, otel değildir).' },
+        { label: 'Eğitim Disiplini ve Aktivasyon: Çocuğun yüzünü yıkar, hareketli aktivitelerle, müzikle veya duyusal uyaranlarla uyarılmasını sağlarım. Burası okul, uyuma yeri değil; uykusu varsa evde kalmalıydı.', weights: { clinical: 1.0, sustainability: 0.5 }, analysisInsight: 'Profesyonel Duruş: Eğitimin sürekliliğini sağlama ve ortamın amacını koruma.' },
+        { label: 'İdari İptal: "Uyuyan çocukla ders işleyemem" diyerek dersi iptal eder, çocuğu veliye teslim ederim.', weights: { clinical: -0.5 }, analysisInsight: 'Kolaycılık/Kaçış: Çözüm üretmek yerine süreci sonlandırma.' }
       ]
     },
     {
       id: 'clin_new_4', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Çocuğa "Kırmızı"yı öğretiyorsunuz. Masada sadece Kırmızı Kart var. Çocuk doğru gösterdi. Bu öğretim yeterli midir?',
+      text: 'Çocuğa "Kırmızı" kavramını öğretiyorsunuz. Masada sadece Kırmızı Kart var. "Kırmızıyı ver" dediniz ve çocuk verdi. Bu öğretim yeterli midir?',
       weightedOptions: [
-        { label: 'Yeterli: Evet, bildi.', weights: { pedagogicalAnalysis: -0.8 }, analysisInsight: 'Hatalı Öğretim: Şans faktörünü (50/50 bile değil, %100) eleyememe.' },
-        { label: 'Ayırt Etme (Discrimination): Hayır, masaya "Mavi" (Çeldirici) koyup ayırt etmesini (Discrimination) sağlamadan öğrenme gerçekleşmiş sayılmaz.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.8 }, analysisInsight: 'Ayırt Etme Öğretimi: Gerçek öğrenme kriteri.' },
-        { label: 'Genelleme: Kırmızı elma da göstermeliyim.', weights: { pedagogicalAnalysis: 0.2 }, analysisInsight: 'Genelleme (Doğru ama öncelik ayırt etme).' }
+        { label: 'Yeterlidir (Başarı): Evet, yönergeyi aldı ve doğru kartı verdi. Pekiştiririm.', weights: { pedagogicalAnalysis: -0.8 }, analysisInsight: 'Hatalı Öğretim: Şans faktörünü (50/50 bile değil, %100 şans) eleyememe. Masada başka seçenek yokken bilmesi anlamsızdır.' },
+        { label: 'Ayırt Etme (Discrimination Training): Hayır, masaya "Mavi" veya başka bir çeldirici (distractor) koyup, ikisi arasından doğru olanı ayırt etmesini sağlamadan öğrenme gerçekleşmiş sayılmaz.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.8 }, analysisInsight: 'Ayırt Etme Öğretimi: Gerçek öğrenme kriteri.' },
+        { label: 'Genelleme Eksikliği: Hayır, kırmızı elma ve kırmızı araba da göstermeliyim.', weights: { pedagogicalAnalysis: 0.2 }, analysisInsight: 'Genelleme (Doğru bir adım ama öncelik ayırt etmedir).' }
       ]
     },
     {
       id: 'clin_new_5', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuk ağladığında susması için ona telefon veren bir ebeveyn gördüğünüzde tepkiniz?',
+      text: 'Koridorda, bir çocuğun ağladığını ve ebeveyninin sussun diye ona telefon verdiğini gördünüz. Tepkiniz?',
       weightedOptions: [
-        { label: 'Kayıtsızlık: Karışmam, ebeveynin tercihi.', weights: { clinical: -0.5, ethics: -0.2 }, analysisInsight: 'Sorumsuzluk.' },
-        { label: 'Korkutma: "Sakın vermeyin, otizm yapar!" diye korkuturum.', weights: { clinical: -0.2, empathy: -0.8 }, analysisInsight: 'Bilimsel Olmayan Korkutma.' },
-        { label: 'Psiko-Eğitim: Uygun bir zamanda, bu eylemin ağlamayı nasıl "ödüllendirdiğini" ve gelecekte ağlama krizlerini artıracağını ABC döngüsüyle açıklarım.', weights: { clinical: 1.0, parentStudentRelations: 0.8 }, analysisInsight: 'Psiko-Eğitim: Ebeveyni suçlamadan mekanizmayı öğretme.' }
-      ]
-    },
-    {
-      id: 'clin_new_6', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Grup dersinde bir öğrenci diğerine vurdu. İlk müdahale kime yapılmalı?',
-      weightedOptions: [
-        { label: 'Ceza: Vurana kızılmalı ve mola (time-out) verilmeli.', weights: { pedagogicalAnalysis: -0.2 }, analysisInsight: 'Cezalandırıcı Yaklaşım.' },
-        { label: 'Mağdur Onarımı: Vurulan çocuğa ilgi gösterilmeli ki vuran çocuk "ilgi çekmek için vurma" davranışının işe yaramadığını görsün.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9 }, analysisInsight: 'Stratejik İhmal: Zorbalığı beslemeyen sosyal mühendislik.' },
-        { label: 'Nötr: İkisi de ayrılmalı.', weights: { pedagogicalAnalysis: 0.0 }, analysisInsight: 'Nötr.' }
-      ]
-    },
-    {
-      id: 'clin_new_7', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuk derste sürekli "Tuvaletim geldi" diyerek dersten kaçıyor (Escape). Gerçekten tuvaleti olup olmadığını bilmiyorsunuz. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Yasaklama: İzin vermem, altına yapsa da derste kalacak.', weights: { clinical: -0.5, ethics: -1.0 }, analysisInsight: 'İnsan Hakları İhlali Riski.' },
-        { label: 'İzin Verme: Her seferinde gönderirim, fizyolojik ihtiyaçtır.', weights: { clinical: -0.5 }, analysisInsight: 'Davranışsal Manipülasyona Teslimiyet.' },
-        { label: 'Kaçınmayı Söndürme: Tuvalete götürürüm ama orada "bekleme süresi" ekleyerek veya tuvaleti "sıkıcı" hale getirerek (nötr kalarak) kaçışın ödül değerini düşürürüm.', weights: { clinical: 1.0 }, analysisInsight: 'Kaçınmayı Söndürme: Fizyolojik ihtiyacı reddetmeden motivasyonu kırma.' }
-      ]
-    },
-    {
-      id: 'clin_new_8', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Okuma yazma öğretiminde çocuk "b" ve "d" harflerini karıştırıyor. En etkili strateji nedir?',
-      weightedOptions: [
-        { label: 'Tekrar: Yüz kere yazdırırım.', weights: { pedagogicalAnalysis: -0.5 }, analysisInsight: 'Ezberci Ceza.' },
-        { label: 'Çok Duyulu Öğretim: Görsel ipuçları (Örn: "b" baba, "d" dede göbeği) ve çok duyulu (kumda yazma) yöntemlerle bedensel hafızayı devreye sokarım.', weights: { pedagogicalAnalysis: 1.0 }, analysisInsight: 'Multisensory Öğretim.' },
-        { label: 'Punto: Daha büyük punto ile yazarım.', weights: { pedagogicalAnalysis: 0.2 }, analysisInsight: 'Yetersiz Uyarlama.' }
-      ]
-    },
-    {
-      id: 'clin_new_9', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuğun gelişim raporunda "Göz teması kurar" yazıyor ama çocuk sadece siz elinizde şeker varken bakıyor. Bu beceri kazanılmış mıdır?',
-      weightedOptions: [
-        { label: 'Kazanılmış: Evet, sonuçta bakıyor.', weights: { clinical: -0.8 }, analysisInsight: 'Klinik Körlük: Koşullu bakışı genellenmiş beceri sanma.' },
-        { label: 'Kazanılmamış: Hayır, bu "Pekiştireç Odaklı" bakıştır. Sosyal amaçlı spontane bakış olmadan beceri kazanılmış sayılmaz.', weights: { clinical: 1.0 }, analysisInsight: 'Klinik Doğruluk.' },
-        { label: 'Kısmen: Bazen kuruyor.', weights: { clinical: 0.0 }, analysisInsight: 'Belirsiz.' }
-      ]
-    },
-    {
-      id: 'clin_new_10', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Çocuk seansta size tükürdü. Duygusal tepkiniz ne olmalıdır?',
-      weightedOptions: [
-        { label: 'Duygusal Tepki: "Terbiyesiz!" diye bağırıp otorite kurmak.', weights: { pedagogicalAnalysis: -0.8, clinical: -0.5 }, analysisInsight: 'Duygusal Kontrol Kaybı.' },
-        { label: 'Nötr Yüz (Poker Face): Tamamen nötr kalarak, tükürmenin bende bir duygu (öfke/üzüntü) yaratmadığını gösterip davranışın "güç/kontrol" işlevini boşa çıkarmak.', weights: { pedagogicalAnalysis: 1.0, clinical: 1.0 }, analysisInsight: 'Profesyonel Sönümleme: Davranışı besleyen duygusal yakıtı kesmek.' },
-        { label: 'İğrenme: İğrenmiş bir yüz ifadesiyle silmek.', weights: { pedagogicalAnalysis: -0.4 }, analysisInsight: 'Sosyal Ceza (Bazen işe yarar ama riskli).' }
-      ]
-    },
-    // PEDAGOJİK EKLEMELER
-    {
-      id: 'clin_new_11', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Otizmli bir öğrenciye "Soyut Kavramları" (Örn: Mutluluk, Hüzün) öğretirken nasıl bir yol izlersiniz?',
-      weightedOptions: [
-        { label: 'Sözlük Tanımı: Sözlük anlamını anlatırım.', weights: { pedagogicalAnalysis: -0.5 }, analysisInsight: 'Soyut Hata: Otizmde sözel açıklama yetersizdir.' },
-        { label: 'Deneyimsel Etiketleme: O an yaşadığı deneyimle (örn: salıncakta gülerken) "Bak şu an mutlusun" diyerek etiketi o duyguya anlık yapıştırırım (Labeling Live).', weights: { pedagogicalAnalysis: 1.0 }, analysisInsight: 'Deneyimsel Öğretim.' },
-        { label: 'Görsel Kart: Sadece emoji kartları gösteririm.', weights: { pedagogicalAnalysis: 0.2 }, analysisInsight: 'Sığ Görselleştirme.' }
-      ]
-    },
-    {
-      id: 'clin_new_12', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuğun takıntısı (Obsesyon) ders işlemenize engel oluyor (Örn: Sürekli arabaları diziyor). Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Engelleme: Arabaları saklarım.', weights: { clinical: -0.5 }, analysisInsight: 'Kriz Tetikleme.' },
-        { label: 'İlgi Alanını Kullanma: Arabaları dizme eylemini dersin içine katarım (Örn: "Kırmızı arabayı diz", "İki araba diz") ve takıntıyı öğretim aracına dönüştürürüm.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'İlgi Alanını Kullanma (Using Special Interests).' },
-        { label: 'Serbest Bırakma: Takıntısına izin veririm, mutlu olsun.', weights: { clinical: -0.5 }, analysisInsight: 'Amaçsız Vakit Geçirme.' }
-      ]
-    },
-    {
-      id: 'clin_new_13', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Çok hareketli (Hiperaktif) bir çocukla masa başı çalışması nasıl başlatılır?',
-      weightedOptions: [
-        { label: 'Fiziksel Zorlama: Zorla oturtup "Kalkmak yasak" diyerek.', weights: { pedagogicalAnalysis: -0.6 }, analysisInsight: 'Fiziksel Zorlama.' },
-        { label: 'Premack & Shaping: Önce 1 dakika otur, sonra 5 dakika zıpla (Premack) şeklinde başlayıp, oturma süresini kademeli artırarak (Shaping).', weights: { pedagogicalAnalysis: 1.0, clinical: 0.8 }, analysisInsight: 'Kademeli Şekillendirme.' },
-        { label: 'Yer Çalışması: Masa başı çalışmam, hep yerde oynarım.', weights: { pedagogicalAnalysis: 0.0 }, analysisInsight: 'Okula Hazırlık Eksikliği.' }
-      ]
-    },
-    {
-      id: 'clin_new_14', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuk "Ben yapamam" diyerek (Öğrenilmiş Çaresizlik) görevi reddediyor. Yaklaşımınız?',
-      weightedOptions: [
-        { label: 'Motivasyon: "Yaparsın aslanım" diye gaz veririm.', weights: { clinical: 0.0 }, analysisInsight: 'Boş Motivasyon.' },
-        { label: 'Hatasız Öğretim: Görevi, çocuğun "Hata yapmasının imkansız olduğu" kadar küçük parçalara bölerek (Errorless Learning) ona başarı hissini tattırırım.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Hatasız Öğretim ve Başarı Zinciri.' },
-        { label: 'Tehdit: Yapmazsan teneffüs yok derim.', weights: { clinical: -0.8 }, analysisInsight: 'Tehdit.' }
-      ]
-    },
-    {
-      id: 'clin_new_15', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Kaynaştırma öğrencisi olan bir çocuk sınıfta dışlanıyor. Öğretmen olarak rolünüz?',
-      weightedOptions: [
-        { label: 'Emir: Diğer çocuklara "Onunla oynayın" diye emrederim.', weights: { pedagogicalAnalysis: -0.5 }, analysisInsight: 'Zoraki Sosyalleşme.' },
-        { label: 'Sosyal Mühendislik: Çocuğun en iyi yaptığı şeyi (örn: iyi resim çiziyor) ön plana çıkararak sınıfta "doğal bir hayranlık ve statü" kazanmasını sağlarım.', weights: { pedagogicalAnalysis: 1.0, empathy: 0.8 }, analysisInsight: 'Sosyal Mühendislik ve Güçlendirme.' },
-        { label: 'İhmal: Kendi haline bırakırım.', weights: { pedagogicalAnalysis: -1.0 }, analysisInsight: 'İhmal.' }
-      ]
-    },
-    {
-      id: 'clin_new_16', category: 'technicalExpertise', type: 'radio',
-      text: 'Otizmli çocuk size sarılmak istiyor. Sınırınız ne olmalı?',
-      weightedOptions: [
-        { label: 'Sınırsızlık: Ben de sarılır öperim, sevgi iyileştirir.', weights: { clinical: -0.5, ethics: -0.3 }, analysisInsight: 'Profesyonel Sınır İhlali.' },
-        { label: 'Sosyal Beceri: Sarılma ihtiyacını nazikçe "Çak bir beşlik" veya "Tokalaşma" gibi sosyal olarak daha uygun bir selamlaşmaya dönüştürürüm.', weights: { clinical: 1.0, socialSkills: 1.0 }, analysisInsight: 'Sosyal Beceri Öğretimi.' },
-        { label: 'Red: İterim, bana dokunma derim.', weights: { clinical: -1.0, empathy: -1.0 }, analysisInsight: 'Reddedilme Travması.' }
-      ]
-    },
-    {
-      id: 'clin_new_17', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Çocuğun dikkati 10 saniye sürüyor. 40 dakikalık dersi nasıl işlersiniz?',
-      weightedOptions: [
-        { label: 'Zorlama: 40 dakika boyunca oturması için zorlarım.', weights: { pedagogicalAnalysis: -0.8 }, analysisInsight: 'İşkence.' },
-        { label: 'Mikro-Dersler: Dersi "Mikro-Derslere" bölerim. 2 dakika ders, 1 dakika hareket molası şeklinde yoğunlaştırılmış kısa intervaller uygularım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9 }, analysisInsight: 'Interval Eğitim ve Dikkat Yönetimi.' },
-        { label: 'Serbest: Sadece oyun oynarım.', weights: { pedagogicalAnalysis: -0.4 }, analysisInsight: 'Hedefsizlik.' }
-      ]
-    },
-    {
-      id: 'clin_new_18', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuk her soruya "Evet" diyor (Uyumlu görünme stratejisi). Gerçekten anlayıp anlamadığını nasıl test edersiniz?',
-      weightedOptions: [
-        { label: 'Sözel Teyit: "Emin misin?" diye sorarım.', weights: { clinical: 0.2 }, analysisInsight: 'Yetersiz Kontrol.' },
-        { label: 'Çeldirici Soru: Cevabı "Hayır" olan absürt sorular (Örn: "İnekler uçar mı?") sorarak otomatikleştirdiği "Evet" cevabını kırmasını sağlarım.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.8 }, analysisInsight: 'Çeldirici Soru Tekniği.' },
-        { label: 'Kızma: Kızarım.', weights: { clinical: -0.5 }, analysisInsight: 'Gereksiz.' }
-      ]
-    },
-    {
-      id: 'clin_new_19', category: 'pedagogicalAnalysis', type: 'radio',
-      text: 'Materyal kullanırken çocuk materyali amacından saptırıyor (Örn: Legoları üst üste takmak yerine fırlatıyor).',
-      weightedOptions: [
-        { label: 'Kaldırma: Materyali kaldırırım.', weights: { pedagogicalAnalysis: -0.5 }, analysisInsight: 'Fırsatı Kaçırma.' },
-        { label: 'Hata Düzeltme: Elini tutup (Fiziksel İpucu) doğru yapmasını sağlar, yapar yapmaz ödüllendiririm.', weights: { pedagogicalAnalysis: 1.0 }, analysisInsight: 'Hata Düzeltme (Correction) ve İpucu.' },
-        { label: 'Sözel Uyarı: Sözlü olarak uyarırım.', weights: { pedagogicalAnalysis: 0.0 }, analysisInsight: 'Etkisiz Uyaran.' }
-      ]
-    },
-    {
-      id: 'clin_new_20', category: 'technicalExpertise', type: 'radio',
-      text: 'Çocuk "Alıcı Dil"de (Komut alma) iyi ama "İfade Edici Dil"de (Konuşma) yok. Veli "Konuşsun" diye baskı yapıyor. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Yalan: "Konuşur merak etmeyin" derim.', weights: { clinical: -0.5, ethics: -0.5 }, analysisInsight: 'Yalan.' },
-        { label: 'Süreç Bilgilendirmesi: Alıcı dil deposu dolmadan ifade edici dilin başlamayacağını, şu an "Sözcük dağarcığını" doldurduğumuzu, konuşmanın bunun doğal sonucu olacağını anlatırım.', weights: { clinical: 1.0, parentStudentRelations: 1.0 }, analysisInsight: 'Gelişimsel Süreç Bilgilendirmesi.' },
-        { label: 'Baskı: Çocuğu konuşmaya zorlarım.', weights: { clinical: -0.8 }, analysisInsight: 'Travma Riski.' }
+        { label: 'Kayıtsızlık: Benim öğrencim değil, karışmam. Her ailenin yoğurt yiyişi farklıdır.', weights: { clinical: -0.5, ethics: -0.2 }, analysisInsight: 'Kurumsal Sorumsuzluk.' },
+        { label: 'Korku Kültürü: Gidip "Sakın vermeyin, otizm yapar, beyni erir!" diye korkutarak telefonu elinden alırım.', weights: { clinical: -0.2, empathy: -0.8 }, analysisInsight: 'Bilimsel Olmayan Korkutma ve Sınır İhlali.' },
+        { label: 'Fırsat Eğitimi (Teachable Moment): Uygun bir zamanda (kriz anında değil), bu eylemin ağlamayı nasıl "ödüllendirdiğini" ve gelecekte ağlama krizlerini artıracağını ABC döngüsüyle, suçlamadan açıklarım.', weights: { clinical: 1.0, parentStudentRelations: 0.8 }, analysisInsight: 'Psiko-Eğitim: Ebeveyni suçlamadan mekanizmayı öğretme.' }
       ]
     }
   ],
@@ -439,127 +303,45 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'eth_shadow_1', category: 'workEthics', type: 'radio',
       text: 'Kurumun "Veliyle Şahsi Telefonlaşma Yasak" kuralı var. Ancak bir veli, çocuğunun gece geçirdiği nöbetin videosunu atmak için, panik halinde şahsi numaranızı istiyor. Tavrınız?',
       weightedOptions: [
-        { label: 'İnsani İhlal: Veririm, sağlık söz konusu, o an kural düşünülmez.', weights: { workEthics: -0.5, empathy: 0.8, institutionalLoyalty: -0.6 }, analysisInsight: 'Sınır İhlali (Boundary Violation): İyi niyetli ama yönetilemez bir iletişim kapısı açma ve kurumsal protokolü delme riski.' },
-        { label: 'Profesyonel Sınır: Numaramı vermem, kurumsal hattan atmasını isterim. O an atamıyorsa "Sakin olun, sabah ilk iş izleyeceğim" derim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0, empathy: 0.3 }, analysisInsight: 'Profesyonel Sınır: Kriz anında bile kurumsal kanalı koruma ve veliyi regüle etme.' },
-        { label: 'Gizli Anlaşma: Numaramı veririm ama "Sakın beni aramayın, sadece videoyu atın ve sonra silin" derim.', weights: { workEthics: -0.3, sustainability: -0.5 }, analysisInsight: 'Naiflik: Sınırın delineceğini öngörememe ve gizli anlaşma yapma.' }
+        { label: 'İnsani İhlal (Savior Complex): Veririm, sağlık söz konusu, o an kural düşünülmez. Vicdanım prosedürden önce gelir.', weights: { workEthics: -0.5, empathy: 0.8, institutionalLoyalty: -0.6 }, analysisInsight: 'Sınır İhlali (Boundary Violation): İyi niyetli ama yönetilemez bir iletişim kapısı açma ve kurumsal protokolü delme riski.' },
+        { label: 'Profesyonel Sınır ve Yönlendirme: Numaramı vermem. "Sizi çok iyi anlıyorum, lütfen videoyu Kurumsal WhatsApp hattına atın, ben şu an oradan takip ediyorum" diyerek hem erişilebilir olurum hem de sınırı korurum.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0, empathy: 0.3 }, analysisInsight: 'Profesyonel Sınır: Kriz anında bile kurumsal kanalı koruma ve veliyi regüle etme.' },
+        { label: 'Gizli Anlaşma: Numaramı veririm ama "Sakın beni aramayın, sadece videoyu atın ve sonra silin, yönetim duymasın" derim.', weights: { workEthics: -0.3, sustainability: -0.5 }, analysisInsight: 'Naiflik ve Güvenilirlik Sorunu: Sınırın delineceğini öngörememe ve kurumdan gizli iş yapma.' }
       ]
     },
     {
       id: 'eth_shadow_2', category: 'parentStudentRelations', type: 'radio',
       text: 'Çocuğun 6 aydır yerinde saydığını (Plato) görüyorsunuz ama Koordinatör veliye "Her şey harika gidiyor" diyor. Veli size dönüp "Hocam sizce de öyle mi, ben ilerleme göremiyorum?" diye sordu. Cevabınız?',
       weightedOptions: [
-        { label: 'Bürokratik Sığınma: "Müdürüm ne diyorsa doğrudur, ben yorum yapamam." derim.', weights: { workEthics: -0.6, institutionalLoyalty: 0.4, personality: -0.4 }, analysisInsight: 'Bürokratik Sığınma: Pasif suç ortaklığı ve mesleki kimliksizlik.' },
-        { label: 'Yıkıcı Dürüstlük: "Hayır, çocuğunuz hiç ilerlemiyor, sizi oyalıyorlar." derim.', weights: { institutionalLoyalty: -1.0, workEthics: 0.3, personality: -0.6 }, analysisInsight: 'Kurumsal Sabotaj: Doğruyu söylerken kurumu yıkma (Yıkıcı Dürüstlük) ve ekip içi güveni bitirme.' },
-        { label: 'Diplomatik Dürüstlük: "Bazı alanlarda güzel çabaları var ancak X ve Y konularında (yerinde saydığı alanlar) daha yoğun çalışmamız ve strateji değiştirmemiz gerekiyor." diyerek gerçeği yumuşatmadan ama profesyonelce sunarım.', weights: { workEthics: 1.0, parentStudentRelations: 1.0, institutionalLoyalty: 0.6 }, analysisInsight: 'Diplomatik Dürüstlük: Kurumu korurken gerçeği manipüle etmeme, veliyi bilgilendirme ve çözüm odaklılık.' }
+        { label: 'Bürokratik Sığınma: "Müdürüm ne diyorsa doğrudur, ben yorum yapamam, yetkim yok." derim.', weights: { workEthics: -0.6, institutionalLoyalty: 0.4, personality: -0.4 }, analysisInsight: 'Bürokratik Sığınma: Pasif suç ortaklığı ve mesleki kimliksizlik.' },
+        { label: 'Yıkıcı Dürüstlük: "Hayır, çocuğunuz hiç ilerlemiyor, sizi oyalıyorlar. Bence başka yer bakın." derim.', weights: { institutionalLoyalty: -1.0, workEthics: 0.3, personality: -0.6 }, analysisInsight: 'Kurumsal Sabotaj: Doğruyu söylerken kurumu yıkma ve ekip içi güveni bitirme.' },
+        { label: 'Diplomatik ve Analitik Dürüstlük: "Bazı alanlarda (örn: uyum) güzel çabaları var ancak X konusunda haklısınız, bir duraksama var. Bunu aşmak için strateji değişikliği planlıyoruz, detayları toplantıda konuşalım." diyerek gerçeği yumuşatmadan ama profesyonelce sunarım.', weights: { workEthics: 1.0, parentStudentRelations: 1.0, institutionalLoyalty: 0.6 }, analysisInsight: 'Diplomatik Dürüstlük: Kurumu korurken gerçeği manipüle etmeme, veliyi bilgilendirme ve çözüm odaklılık.' }
       ]
     },
     {
       id: 'eth_shadow_3', category: 'workEthics', type: 'radio',
       text: 'Seans sırasında çocuğun vücudunda bir morluk gördünüz. Veliye sordunuz, "Düştü" dedi ama çocuk tedirgin. (İstismar şüphesi). Ne yaparsınız?',
       weightedOptions: [
-        { label: 'İhmal: Veliye inandığımı söylerim, aile işine karışmak haddim değil.', weights: { workEthics: -1.0, clinical: -0.8 }, analysisInsight: 'İhmal: Çocuğun güvenliğini riske atma ve yasal sorumluluğu yok sayma.' },
-        { label: 'Dürtüsel Eylem: Hemen polisi veya sosyal hizmetleri ararım.', weights: { workEthics: 0.6, institutionalLoyalty: -0.4, sustainability: -0.3 }, analysisInsight: 'Dürtüsel Eylem: Kurumsal protokolü ve silsileyi atlayarak kriz yaratma riski.' },
-        { label: 'Prosedürel Yetkinlik: Vücut haritasına (Body Chart) morluğu işler, tutanak tutar ve derhal Kurum Müdürü/Psikoloğu ile "Kritik Vaka Toplantısı" talep ederim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0, clinical: 0.9 }, analysisInsight: 'Prosedürel Yetkinlik: Yasal ve kurumsal silsileyi doğru işletme, veriyi kaydetme.' }
+        { label: 'İnkar ve Güven: Veliye inandığımı söylerim, aile işine karışmak haddim değil. Yanlış anlaşılırsam başım belaya girer.', weights: { workEthics: -1.0, clinical: -0.8 }, analysisInsight: 'İhmal: Çocuğun güvenliğini riske atma ve yasal sorumluluğu yok sayma.' },
+        { label: 'Dürtüsel Eylem: Hemen polisi veya sosyal hizmetleri ararım. Çocuğu o aileye teslim etmem.', weights: { workEthics: 0.6, institutionalLoyalty: -0.4, sustainability: -0.3 }, analysisInsight: 'Dürtüsel Eylem: Kurumsal protokolü ve silsileyi atlayarak, kanıt olmadan kriz yaratma riski.' },
+        { label: 'Prosedürel Yetkinlik ve Kayıt: Vücut haritasına (Body Chart) morluğu işler, tutanak tutar ve derhal Kurum Müdürü/Psikoloğu ile "Kritik Vaka Toplantısı" talep ederim. Süreci kurumla birlikte yönetirim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0, clinical: 0.9 }, analysisInsight: 'Prosedürel Yetkinlik: Yasal ve kurumsal silsileyi doğru işletme, veriyi kaydetme.' }
       ]
     },
-    {
-      id: 'eth_shadow_4', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli size çok umutsuz bir tonda "Hocam dürüst olun, bizim çocuktan adam olur mu, boşuna mı uğraşıyoruz?" diye sordu. Yanıtınız?',
-      weightedOptions: [
-        { label: 'Pembe Tablo: "Tabii ki olur, o çok zeki bir çocuk, merak etmeyin, zamanla hepsi düzelecek." (Yalan bile olsa).', weights: { workEthics: -0.5, parentStudentRelations: 0.4 }, analysisInsight: 'Pembe Tablo: Etik olmayan sahte umut satışı ve profesyonel olmayan güvence.' },
-        { label: 'Soğuk Mesafe: "Geleceği bilemeyiz, biz işimizi yapıyoruz." (Kaçamak).', weights: { parentStudentRelations: -0.3, personality: -0.2 }, analysisInsight: 'Soğukluk: Veliyi duygusal boşlukta bırakma ve empatik bağ kuramama.' },
-        { label: 'Profesyonel Umut: "Potansiyeli var ancak bu bir maraton. Biz şu anki hedefimiz olan X becerisine odaklanalım, orayı aştıkça önümüzü daha net göreceğiz." (Realist & Yönlendirici).', weights: { parentStudentRelations: 1.0, workEthics: 1.0, clinical: 0.6 }, analysisInsight: 'Profesyonel Umut: Gerçekçi, sürece odaklayan, ne aşırı vaat veren ne de umut kıran dengeli liderlik.' }
-      ]
-    },
-    // YENİ EKLENEN: İŞ ETİĞİ & SINIR (10 SORU)
     {
       id: 'eth_new_1', category: 'workEthics', type: 'radio',
-      text: 'Veli size zarf içinde "Hocam bu ekstradan sizin emeğiniz için" diyerek para uzattı. Odada kamera yok.',
+      text: 'Veli size zarf içinde "Hocam bu ekstradan sizin emeğiniz için, lütfen kabul edin, yoksa kırılırım" diyerek para uzattı. Odada kamera yok.',
       weightedOptions: [
-        { label: 'Kabul: Alırım, sonuçta çok emek veriyorum ve maaşım düşük.', weights: { workEthics: -1.0, integrity: -1.0 }, analysisInsight: 'Rüşvet/Etik İhlal.' },
-        { label: 'Etik Red: Nazikçe reddederim, "Benim ödülüm çocuğun başarısıdır, kurum prensipleri gereği alamam" derim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Etik Duruş.' },
-        { label: 'Gizli İttifak: Alırım ama "Aramızda kalsın" derim.', weights: { workEthics: -1.0 }, analysisInsight: 'Gizli İttifak.' }
-      ]
-    },
-    {
-      id: 'eth_new_2', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli sizi Instagram\'dan ekledi ve DM\'den çocuğun evdeki videosunu attı. Cevabınız?',
-      weightedOptions: [
-        { label: 'Sosyal Sınır İhlali: İsteği kabul ederim, DM\'den cevap yazarım.', weights: { workEthics: -0.5, boundary: -0.5 }, analysisInsight: 'Sosyal Sınır İhlali.' },
-        { label: 'İletişim Kopukluğu: İsteği reddederim, videoyu görmezden gelirim.', weights: { parentStudentRelations: -0.3 }, analysisInsight: 'İletişim Kopukluğu.' },
-        { label: 'Profesyonel Kanal: Sosyal medyadan eklemem (mesafeyi korurum) ama DM\'e resmi bir dille "Videoyu kurumsal hattımızdan atarsanız dosrasına ekleyip inceleyebilirim" yazarım.', weights: { workEthics: 1.0, boundary: 1.0 }, analysisInsight: 'Profesyonel Kanal Yönetimi.' }
-      ]
-    },
-    {
-      id: 'eth_new_3', category: 'workEthics', type: 'radio',
-      text: 'Veli, boşanma aşamasında olduğunu ve eşinin çocukla ilgili bilgi almasını istemediğini söyledi (Velayet ortak). Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Yasal Risk: "Tamam, babaya bilgi vermem" derim.', weights: { workEthics: -0.5, legal: -0.8 }, analysisInsight: 'Yasal Risk: Ortak velayette iki tarafın da bilgi alma hakkı vardır.' },
-        { label: 'Yasal Prosedür: Kurum müdürüne ve avukatına danışmadan karar vermem, mahkeme kararını (velayet belgesini) isterim. Resmi belge gelene kadar standart prosedürü uygularım.', weights: { workEthics: 1.0, legal: 1.0 }, analysisInsight: 'Yasal Prosedüre Uygunluk.' },
-        { label: 'Duygusal Tarafgirlik: Anneyi desteklerim, üzgün görünüyor.', weights: { workEthics: -0.2, empathy: 0.5 }, analysisInsight: 'Duygusal Tarafgirlik.' }
-      ]
-    },
-    {
-      id: 'eth_new_4', category: 'parentStudentRelations', type: 'radio',
-      text: 'Çok sevdiğiniz bir öğrencinizin velisi sizi düğününe davet etti. Gider misiniz?',
-      weightedOptions: [
-        { label: 'Çoklu İlişki: Giderim, aile gibi olduk.', weights: { workEthics: -0.4, boundary: -0.6 }, analysisInsight: 'Çoklu İlişki Riski (Dual Relationship).' },
-        { label: 'Sosyal Nezaket: Gitmem ama çiçek veya tebrik kartı göndererek nazikçe mesafemi korurum.', weights: { workEthics: 1.0, socialSkills: 0.8 }, analysisInsight: 'Sosyal Nezaket ve Sınır.' },
-        { label: 'Kabalık: Gitmem, işim olmaz.', weights: { parentStudentRelations: -0.5 }, analysisInsight: 'Kabalık.' }
+        { label: 'Kabul ve Rasyonalizasyon: Alırım, sonuçta çok emek veriyorum ve maaşım düşük. Bu bir hediye, rüşvet değil.', weights: { workEthics: -1.0, integrity: -1.0 }, analysisInsight: 'Etik İhlal: Profesyonel ilişkinin ticari ilişkiye dönüşmesi.' },
+        { label: 'Etik ve Nazik Red: "Düşünmeniz beni çok mutlu etti ancak prensiplerim ve kurum kuralları gereği bunu kabul edemem. Benim en büyük ödülüm çocuğun başarısıdır." diyerek kesin bir dille reddederim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Etik Duruş: Saygılı ama net sınır.' },
+        { label: 'Gizli İttifak: Alırım ama "Aramızda kalsın, kimseye söylemeyin" derim.', weights: { workEthics: -1.0 }, analysisInsight: 'Gizli İttifak: Veli ile suç ortaklığı kurma.' }
       ]
     },
     {
       id: 'eth_new_5', category: 'workEthics', type: 'radio',
-      text: 'Veli, "Hocam hafta sonu evde 2 saat özel ders verir misiniz? Kurumun haberi olmasın." teklifinde bulundu.',
+      text: 'Veli, "Hocam hafta sonu evde 2 saat özel ders verir misiniz? Kurumun haberi olmasın, daha iyi ücret öderim." teklifinde bulundu.',
       weightedOptions: [
-        { label: 'Etik Dışı: Kabul ederim, ek gelir olur.', weights: { workEthics: -1.0, institutionalLoyalty: -1.0 }, analysisInsight: 'Etik Dışı / Sadakatsizlik.' },
-        { label: 'Yetersiz Red: "Kurumda çalışmam daha verimli oluyor" diyerek geçiştiririm.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Yetersiz Red.' },
-        { label: 'Tam Sadakat: Kurum sözleşmem gereği dışarıda ders veremeyeceğimi net bir dille belirtir ve durumu yönetime raporlarım.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Tam Etik Sadakat.' }
-      ]
-    },
-    {
-      id: 'eth_new_6', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli, başka bir öğretmenin yetersiz olduğunu söyleyip dedikodu yapmaya başladı. Tavrınız?',
-      weightedOptions: [
-        { label: 'Dedikoduya İştirak: "Evet, maalesef biraz tecrübesiz" diyerek onaylarım.', weights: { workEthics: -0.8, team: -1.0 }, analysisInsight: 'Meslektaşı Satış / Dedikoduya İştirak.' },
-        { label: 'Pasif Onay: Sessiz kalırım.', weights: { workEthics: 0.0 }, analysisInsight: 'Pasif Onay.' },
-        { label: 'Mesleki Sınır: "Meslektaşım hakkında konuşmam etik değil, dilerseniz endişelerinizi idare ile görüşebilirsiniz" diyerek konuyu kapatırım.', weights: { workEthics: 1.0, team: 1.0 }, analysisInsight: 'Mesleki Dayanışma ve Sınır.' }
-      ]
-    },
-    {
-      id: 'eth_new_7', category: 'workEthics', type: 'radio',
-      text: 'Çocuğa yanlışlıkla yasaklı bir yiyecek (alerjen) verdiniz ama çocukta reaksiyon olmadı. Veliye söyler misiniz?',
-      weightedOptions: [
-        { label: 'Güven İhlali: Söylemem, boşuna panik yapmasınlar.', weights: { workEthics: -1.0, trust: -1.0 }, analysisInsight: 'Güven İhlali ve Risk Gizleme.' },
-        { label: 'Yarım Sorumluluk: Sadece müdüre söylerim.', weights: { workEthics: 0.5 }, analysisInsight: 'Yarım Sorumluluk.' },
-        { label: 'Radikal Dürüstlük: Dürüstçe veliyi arar, hatamı kabul eder ve çocuğu gözlemlemesi için uyarırım. Güven, dürüstlükle inşa edilir.', weights: { workEthics: 1.0, integrity: 1.0 }, analysisInsight: 'Radikal Dürüstlük ve Sorumluluk.' }
-      ]
-    },
-    {
-      id: 'eth_new_8', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli seanstan 15 dakika geç geldi. "Trafik vardı, lütfen süreyi tamamlayalım, paramız boşa gitmesin" dedi. Bir sonraki öğrenci kapıda.',
-      weightedOptions: [
-        { label: 'Hak Gaspı: Tamamlarım, dışarıdaki beklesin.', weights: { workEthics: -0.5, justice: -1.0 }, analysisInsight: 'Diğer Öğrencinin Hakkını Gasp.' },
-        { label: 'Empatisiz Red: "Maalesef süreniz doldu" der kestirip atarım.', weights: { parentStudentRelations: -0.5 }, analysisInsight: 'Empatisiz Red.' },
-        { label: 'Adaletli Sınır: Kalan süreyi en verimli şekilde kullanırım ama seansı vaktinde bitiririm. "Diğer öğrencinin hakkına giremem, telafi için başka bir boşluk bakalım" derim.', weights: { workEthics: 1.0, justice: 1.0 }, analysisInsight: 'Adaletli Sınır Yönetimi.' }
-      ]
-    },
-    {
-      id: 'eth_new_9', category: 'workEthics', type: 'radio',
-      text: 'Kurumun belirlediği bir materyalin (örn: tablet) çocuk için zararlı olduğuna inanıyorsunuz. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Gizli İsyankar: Gizlice kullanmam.', weights: { institutionalLoyalty: -0.2, transparency: -0.5 }, analysisInsight: 'Gizli İsyankar.' },
-        { label: 'Sorgusuz İtaat: Kullanırım, emir demiri keser.', weights: { clinical: -0.5 }, analysisInsight: 'Sorgusuz İtaat.' },
-        { label: 'Yapıcı Eleştiri: Bilimsel dayanaklarıyla (makale vs.) yönetime sunum yapar ve bu materyalin neden değiştirilmesi gerektiğini savunurum.', weights: { workEthics: 1.0, initiative: 1.0 }, analysisInsight: 'Yapıcı Eleştiri ve Gelişim.' }
-      ]
-    },
-    {
-      id: 'eth_new_10', category: 'parentStudentRelations', type: 'radio',
-      text: 'Veli "Hocam sizce çocuğum normal okula gidebilecek mi?" diye sordu. Çocuk ağır otizmli.',
-      weightedOptions: [
-        { label: 'Umut Tacirliği: "Tabii ki, çok akıllı çocuk" derim.', weights: { ethics: -0.8 }, analysisInsight: 'Umut Tacirliği.' },
-        { label: 'Yıkıcı Gerçekçilik: "Zor, bence gidemez" derim.', weights: { empathy: -0.8 }, analysisInsight: 'Yıkıcı Gerçekçilik.' },
-        { label: 'Süreç Odaklılık: "Şu anki hedefimiz bağımsız yaşam becerileri. Geleceği bugünkü çalışmalarımız şekillendirecek, adım adım gidelim" diyerek odağı bugüne çekerim.', weights: { ethics: 1.0, communication: 1.0 }, analysisInsight: 'Profesyonel Gerçekçilik ve Süreç Odaklılık.' }
+        { label: 'Fırsatçı Yaklaşım: Kabul ederim, ek gelir olur. Kurum benim hafta sonuma karışamaz.', weights: { workEthics: -1.0, institutionalLoyalty: -1.0 }, analysisInsight: 'Etik Dışı / Sadakatsizlik: Kurumun öğrencisini çalma (poaching) ve rekabet yasağını ihlal.' },
+        { label: 'Yetersiz Red: "Kurumda çalışmam daha verimli oluyor" diyerek geçiştiririm ama kapıyı tam kapatmam.', weights: { institutionalLoyalty: 0.2 }, analysisInsight: 'Yetersiz Red: Veliye tekrar teklif etme cesareti verme.' },
+        { label: 'Tam Sadakat ve Raporlama: "Kurum sözleşmem ve meslek etiği gereği dışarıda ders veremem. Bu eğitimlerin kurum çatısı altında sürmesi çocuğun yararınadır." derim ve durumu yönetime raporlarım.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Tam Etik Sadakat ve Şeffaflık.' }
       ]
     }
   ],
@@ -573,118 +355,27 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'res_shadow_1', category: 'sustainability', type: 'radio',
       text: 'Partner öğretmeniniz (eküri) derse sürekli geç geliyor ve bu yüzden sizin seanslarınız sarkıyor. Yönetim bunu fark etmiyor. Ne yaparsınız?',
       weightedOptions: [
-        { label: 'İspiyon: Onu hemen müdüre şikayet ederim, işini düzgün yapsın.', weights: { sustainability: 0.3, fit: -0.6 }, analysisInsight: 'İspiyonculuk/Çatışma: Takım içi güveni zedeleme ve sorunu birebir çözme yetisinden yoksunluk.' },
-        { label: 'Pasif Agresyon: Küserek konuşmam, trip atarım, anlasın.', weights: { sustainability: -0.6, personality: -0.7 }, analysisInsight: 'Pasif Agresyon: Profesyonellik dışı çocuksu tepki.' },
-        { label: 'Olgun İletişim: Onu kenara çeker, "Geç kalman benim planımı bozuyor ve beni zor durumda bırakıyor, buna bir çözüm bulalım" diyerek "Ben Dili" ile konuşurum.', weights: { sustainability: 1.0, fit: 1.0, personality: 0.9 }, analysisInsight: 'Olgun İletişim (Assertiveness): Sorunu kaynağında, çatışma yaratmadan ve yönetimi meşgul etmeden çözme.' }
+        { label: 'Hiyerarşik Çözüm (İspiyon): Onu hemen müdüre şikayet ederim. Herkes işini düzgün yapsın, ben mağdur olamam.', weights: { sustainability: 0.3, fit: -0.6 }, analysisInsight: 'İspiyonculuk/Çatışma: Takım içi güveni zedeleme ve sorunu birebir çözme yetisinden yoksunluk.' },
+        { label: 'Pasif Agresyon: Küserek konuşmam, ben de onun işlerini aksatırım, belki anlar.', weights: { sustainability: -0.6, personality: -0.7 }, analysisInsight: 'Pasif Agresyon: Profesyonellik dışı çocuksu tepki.' },
+        { label: 'Olgun İletişim (Assertiveness): Onu kenara çeker, "Geç kalman benim planımı bozuyor ve beni zor durumda bırakıyor, buna bir çözüm bulalım" diyerek "Ben Dili" ile konuşurum. Düzelmezse o zaman yönetime giderim.', weights: { sustainability: 1.0, fit: 1.0, personality: 0.9 }, analysisInsight: 'Olgun İletişim: Sorunu kaynağında, çatışma yaratmadan çözme girişimi.' }
       ]
     },
     {
       id: 'res_shadow_2', category: 'sustainability', type: 'radio',
       text: 'Çok emek verdiğiniz bir öğrenci, 3 ayın sonunda size vurdu ve yüzünüze tükürdü. O an hissettiğiniz duygu ve eyleminiz?',
       weightedOptions: [
-        { label: 'Duygusal Çöküş: Öfkelenirim ve "Terbiyesiz, bir daha yapma!" diye bağırırım.', weights: { sustainability: -1.0, clinical: -1.0 }, analysisInsight: 'Duygusal Çöküş: Davranışı kişiselleştirme ve profesyonel maskeyi düşürme.' },
-        { label: 'Kırılganlık: Çok üzülürüm, demek ki ben başarısızım, bana saygısı yok diye düşünürüm.', weights: { sustainability: -0.6, personality: -0.4 }, analysisInsight: 'Kırılganlık: Özgüven kaybı ve tükenmişlik sinyali.' },
-        { label: 'Profesyonel Zırh: Duygusal olarak etkilenmemeye çalışırım. "Bu bir davranış, şahsıma değil" derim ve ABC kaydına "Saldırganlık" olarak nötr şekilde işlerim.', weights: { sustainability: 1.0, clinical: 1.0, workEthics: 0.8 }, analysisInsight: 'Profesyonel Zırh (Depersonalization): Davranışı klinik bir veri olarak görme ve soğukkanlılık.' }
+        { label: 'Duygusal Çöküş ve Tepki: Öfkelenirim ve "Terbiyesiz, bir daha yapma!" diye bağırırım. İnsanım sonuçta, benim de bir onurum var.', weights: { sustainability: -1.0, clinical: -1.0 }, analysisInsight: 'Duygusal Çöküş: Davranışı kişiselleştirme ve profesyonel maskeyi düşürme.' },
+        { label: 'İçselleştirme ve Kırılganlık: Çok üzülürüm, "Demek ki ben başarısızım, bana saygısı yok, beni sevmiyor" diye düşünürüm.', weights: { sustainability: -0.6, personality: -0.4 }, analysisInsight: 'Kırılganlık: Özgüven kaybı ve tükenmişlik (Burnout) sinyali.' },
+        { label: 'Profesyonel Zırh (Depersonalization): Duygusal olarak etkilenmemeye çalışırım. "Bu şahsıma değil, otoriteye veya talebe verilen bir tepki" derim ve ABC kaydına "Saldırganlık" olarak nötr şekilde işlerim.', weights: { sustainability: 1.0, clinical: 1.0, workEthics: 0.8 }, analysisInsight: 'Profesyonel Zırh: Davranışı klinik bir veri olarak görme ve soğukkanlılık.' }
       ]
     },
-    {
-      id: 'res_shadow_3', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumda o gün herkesin katıldığı bir doğum günü kutlaması var ama sizin yetiştirmeniz gereken çok acil raporlar var. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Sosyal İzolasyon: Gitmem, işim daha önemli, sosyalleşmek zorunda değilim.', weights: { institutionalLoyalty: 0.3, fit: -0.5 }, analysisInsight: 'Sosyal İzolasyon: Takım ruhunu önemsememe ve yabancılaşma.' },
-        { label: 'İş Disiplini Zafiyeti: İşleri bırakır tüm gün kutlamada otururum, ayıp olmasın.', weights: { workEthics: -0.4, fit: 0.3 }, analysisInsight: 'İş Disiplini Zafiyeti: Sosyal onayı işin önüne koyma.' },
-        { label: 'Sosyal Zeka: 5-10 dakika uğrar, görünür, tebrik eder ve "Yetiştirmem gereken raporlar var, size iyi eğlenceler" diyerek nazikçe ayrılırım.', weights: { institutionalLoyalty: 1.0, fit: 1.0, sustainability: 0.7 }, analysisInsight: 'Sosyal Zeka ve Denge: Hem takıma aidiyet gösterme hem de sorumluluğu yerine getirme.' }
-      ]
-    },
-    // YENİ EKLENEN: RESİLİANS (DİRENÇ) (10 SORU)
     {
       id: 'res_new_1', category: 'sustainability', type: 'radio',
-      text: 'Gün sonunda çok yorgunsunuz, son seansın öğrencisi ise çok hiperaktif. İçinizden "Keşke gelmese" diye geçirdiniz ve öğrenci geldi. Tavrınız?',
+      text: 'Gün sonunda çok yorgunsunuz, son seansın öğrencisi ise çok hiperaktif ve zorlayıcı. İçinizden "Keşke gelmese" diye geçirdiniz ve öğrenci geldi. Tavrınız?',
       weightedOptions: [
-        { label: 'Yansıtma: Çocuğa "Bugün uslu dur, başım ağrıyor" derim.', weights: { sustainability: -0.5 }, analysisInsight: 'Profesyonellik Dışı: Kendi sorununu çocuğa yükleme.' },
-        { label: 'Profesyonel Dayanıklılık: Enerjimi toplamak için bir kahve içer, "Sahneye Çıkış" moduna geçerim. Benim yorgunluğum çocuğun eğitim hakkını etkilememeli.', weights: { sustainability: 1.0, workEthics: 1.0 }, analysisInsight: 'Profesyonel Dayanıklılık (Professional Stamina).' },
-        { label: 'Mesleki Tükenmişlik: Çocuğu serbest bırakır, dinlenirim.', weights: { sustainability: -1.0, workEthics: -1.0 }, analysisInsight: 'Mesleki Tükenmişlik.' }
-      ]
-    },
-    {
-      id: 'res_new_2', category: 'sustainability', type: 'radio',
-      text: 'Koordinatörünüz hazırladığınız BEP planını beğenmedi ve sert bir dille eleştirdi ("Bu olmamış, baştan yaz"). Tepkiniz?',
-      weightedOptions: [
-        { label: 'Duygusal Kırılganlık: Moralim bozulur, ağlarım veya küserim.', weights: { sustainability: -0.5, personality: -0.5 }, analysisInsight: 'Duygusal Kırılganlık.' },
-        { label: 'Savunma: Sinirlenirim, "Siz daha iyisini yapın o zaman" derim.', weights: { sustainability: -0.5, fit: -0.8 }, analysisInsight: 'Eleştiriye Kapalılık.' },
-        { label: 'Gelişim Odaklılık: Eleştiriyi şahsıma değil işime yapılmış sayarım. "Neleri düzeltmemi önerirsiniz?" diye sorarak geri bildirimi gelişim fırsatına çeviririm.', weights: { sustainability: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Gelişim Odaklılık (Growth Mindset).' }
-      ]
-    },
-    {
-      id: 'res_new_3', category: 'sustainability', type: 'radio',
-      text: 'Bir öğrencide 6 aydır yoğun çalışmanıza rağmen "sıfır ilerleme" var. Kendinizi nasıl hissedersiniz?',
-      weightedOptions: [
-        { label: 'Yetersizlik: "Ben yetersizim" diye düşünür, mesleği sorgularım.', weights: { sustainability: -0.5 }, analysisInsight: 'Yetersizlik Hissi.' },
-        { label: 'Dışsallaştırma: "Çocukta iş yok" derim.', weights: { sustainability: -0.2, empathy: -0.5 }, analysisInsight: 'Suçu Dışsallaştırma.' },
-        { label: 'Çözüm Odaklılık: Yöntemimi sorgularım. "Demek ki bu yol çalışmıyor, başka ne deneyebilirim?" diyerek süpervizörden destek isterim.', weights: { sustainability: 1.0, problemSolving: 1.0 }, analysisInsight: 'Çözüm Odaklı Direnç.' }
-      ]
-    },
-    {
-      id: 'res_new_4', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Ekip arkadaşınızın özel hayatındaki bir sorun işine yansıyor ve sürekli hata yapıyor. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Kurtarıcı Rolü: Onun açıklarını ben kapatırım, idare ederim.', weights: { sustainability: 0.5, boundary: -0.5 }, analysisInsight: 'Kurtarıcı Rolü (Sürdürülemez).' },
-        { label: 'Şikayet: Yönetime şikayet ederim.', weights: { fit: -0.5 }, analysisInsight: 'Destek Eksikliği.' },
-        { label: 'Dengeli Destek: Onunla konuşur, destek olabileceğimi ama işlerin aksadığını, gerekirse izin alması gerektiğini dostça belirtirim.', weights: { fit: 1.0, sustainability: 1.0 }, analysisInsight: 'Dengeli Takım Arkadaşlığı.' }
-      ]
-    },
-    {
-      id: 'res_new_5', category: 'sustainability', type: 'radio',
-      text: 'Üst üste 3 seans boyunca çocuklardan fiziksel şiddet (ısırma, vurma) gördünüz. Akşam eve gidince ne düşünürsünüz?',
-      weightedOptions: [
-        { label: 'Tükenmişlik: "Bu iş yapılmaz, delireceğim."', weights: { sustainability: -1.0 }, analysisInsight: 'Tükenmişlik Sinyali.' },
-        { label: 'Kurban Psikolojisi: "Neden ben? Hep bana zor çocuklar veriyorlar."', weights: { sustainability: -0.5 }, analysisInsight: 'Kurban Psikolojisi.' },
-        { label: 'Sağlamlık: "Bugün zordu. Yarın güvenlik önlemlerimi artırmalı ve davranış planını gözden geçirmeliyim." der, işi kapıda bırakır dinlenirim.', weights: { sustainability: 1.0, selfRegulation: 1.0 }, analysisInsight: 'Psikolojik Sağlamlık.' }
-      ]
-    },
-    {
-      id: 'res_new_6', category: 'sustainability', type: 'radio',
-      text: 'Kurumda maaşlar 2 gün gecikti. Tepkiniz?',
-      weightedOptions: [
-        { label: 'Kaos Yaratma: Hemen dedikoduya başlar, "Batıyoruz galiba" derim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Kaos Yaratma.' },
-        { label: 'Motivasyon Kaybı: Motivasyonum düşer, derslere isteksiz girerim.', weights: { workEthics: -0.5 }, analysisInsight: 'Profesyonellik Kaybı.' },
-        { label: 'Olgunluk: Sakin kalırım, yönetime durumu sorarım ama işime yansıtmam. Profesyonellik bunu gerektirir.', weights: { sustainability: 1.0, institutionalLoyalty: 0.8 }, analysisInsight: 'Olgunluk.' }
-      ]
-    },
-    {
-      id: 'res_new_7', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Çok başarılı bir projeniz var ama yönetici "Şu an bütçemiz yok" diyerek reddetti. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Pasif Agresyon: Küserim, bir daha fikir sunmam.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'Pasif Agresyon.' },
-        { label: 'Azim: Projeyi daha düşük maliyetle nasıl yapabileceğimi araştırır, tekrar sunarım.', weights: { sustainability: 1.0, creativity: 1.0 }, analysisInsight: 'Azim ve Yaratıcılık.' },
-        { label: 'Sadakatsizlik: Başka kurumlara fikrimi satmaya çalışırım.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Sadakatsizlik.' }
-      ]
-    },
-    {
-      id: 'res_new_8', category: 'sustainability', type: 'radio',
-      text: 'Veli size haksız yere bağırdı ve hakaret etti. O an ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Öfke Kontrolsüzlüğü: Ben de ona bağırırım, kendimi ezdirmem.', weights: { sustainability: -1.0, professionalDistance: -1.0 }, analysisInsight: 'Öfke Kontrolsüzlüğü.' },
-        { label: 'Çöküş: Ağlayarak odayı terk ederim.', weights: { sustainability: -0.5 }, analysisInsight: 'Yetersiz Kriz Yönetimi.' },
-        { label: 'Soğukkanlılık: Sakinliğimi korur, "Şu an gerginsiniz, sakinleşince konuşalım" diyerek sınırı çizer ve tartışmaya girmem.', weights: { sustainability: 1.0, professionalDistance: 1.0 }, analysisInsight: 'Profesyonel Soğukkanlılık.' }
-      ]
-    },
-    {
-      id: 'res_new_9', category: 'sustainability', type: 'radio',
-      text: 'Yıllık izniniz iptal edildi çünkü kurumun size ihtiyacı var. Tepkiniz?',
-      weightedOptions: [
-        { label: 'İş Ahlakı Sorunu: Rapor alır gelmem.', weights: { workEthics: -1.0 }, analysisInsight: 'İş Ahlakı Sorunu.' },
-        { label: 'Dürtüsellik: İstifa tehdidi savururum.', weights: { sustainability: -0.5 }, analysisInsight: 'Dürtüsellik.' },
-        { label: 'Sorumluluk Bilinci: Durumu anlarım ama telafisinin ne zaman olacağını netleştiririm. Kurumu yarı yolda bırakmam.', weights: { sustainability: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Sorumluluk Bilinci.' }
-      ]
-    },
-    {
-      id: 'res_new_10', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Ekipte herkesin "Bu çocuktan bir şey olmaz" dediği bir öğrenci size verildi. Yaklaşımınız?',
-      weightedOptions: [
-        { label: 'Negatif Bakış: "Bana ceza verdiler" diye düşünürüm.', weights: { sustainability: -0.5 }, analysisInsight: 'Negatif Bakış.' },
-        { label: 'Meydan Okuma: "Herkesin yanıldığını kanıtlayacağım" diyerek hırslanırım.', weights: { sustainability: 0.8, motivation: 1.0 }, analysisInsight: 'Meydan Okuma (Challenge) Motivasyonu.' },
-        { label: 'İhanet: Ben de uğraşmam, vakit doldururum.', weights: { workEthics: -1.0 }, analysisInsight: 'Mesleki İhanet.' }
+        { label: 'Yansıtma ve Sitem: Çocuğa "Bugün uslu dur, başım ağrıyor, beni yorma" derim ve günü pasif geçiririm.', weights: { sustainability: -0.5 }, analysisInsight: 'Profesyonellik Dışı: Kendi sorununu çocuğa yükleme.' },
+        { label: 'Profesyonel Dayanıklılık (Stamina): Enerjimi toplamak için bir kahve içer, yüzümü yıkar ve "Sahneye Çıkış" moduna geçerim. Benim yorgunluğum çocuğun eğitim hakkını etkilememeli.', weights: { sustainability: 1.0, workEthics: 1.0 }, analysisInsight: 'Profesyonel Dayanıklılık: Duygusal durumu yöneterek performansı koruma.' },
+        { label: 'Tükenmişlik (Burnout): Çocuğu serbest bırakır, eline tablet verir, ben de masada dinlenirim.', weights: { sustainability: -1.0, workEthics: -1.0 }, analysisInsight: 'Mesleki Tükenmişlik ve İhmal.' }
       ]
     }
   ],
@@ -698,199 +389,27 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'vis_shadow_1', category: 'institutionalLoyalty', type: 'radio',
       text: 'Kurum size pahalı bir eğitim olan "X Yöntemi"ni finanse edecek ama karşılığında 2 yıl kurumdan ayrılmama taahhüdü (sözleşme) istiyor. İmzalar mısınız?',
       weightedOptions: [
-        { label: 'Bağlılık Sorunu: Asla imzalamam, özgürlüğüm kısıtlanamaz, ben eğitimi kendim alırım.', weights: { institutionalLoyalty: -0.6, developmentOpenness: 0.2 }, analysisInsight: 'Bağlılık Sorunu: Yatırıma ve uzun vadeli işbirliğine kapalı profil.' },
-        { label: 'Etik Risk: İmzalarım ama daha iyi teklif gelirse tazminatı öder kaçarım.', weights: { institutionalLoyalty: -0.8, workEthics: -0.6 }, analysisInsight: 'Etik Risk: Güvenilmez ve fırsatçı profil.' },
-        { label: 'Kariyer Ortaklığı: Memnuniyetle imzalarım. Kurumun bana yatırım yapması, bana değer verdiğini gösterir ve kariyerim için bir fırsattır.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Kariyer Ortaklığı: Kurumla büyüme vizyonu ve karşılıklı güven.' }
+        { label: 'Özgürlükçü Yaklaşım: Asla imzalamam, özgürlüğüm kısıtlanamaz. Geleceğin ne getireceği belli olmaz, ben eğitimi kendim alırım.', weights: { institutionalLoyalty: -0.6, developmentOpenness: 0.2 }, analysisInsight: 'Bağlılık Sorunu: Yatırıma ve uzun vadeli işbirliğine kapalı profil.' },
+        { label: 'Stratejik/Fırsatçı Yaklaşım: İmzalarım ama daha iyi teklif gelirse tazminatı öder kaçarım. Önemli olan sertifikayı almaktır.', weights: { institutionalLoyalty: -0.8, workEthics: -0.6 }, analysisInsight: 'Etik Risk: Güvenilmez ve fırsatçı profil.' },
+        { label: 'Kariyer Ortaklığı: Memnuniyetle imzalarım. Kurumun bana yatırım yapması, bana değer verdiğini gösterir. 2 yıl zaten uzmanlaşmak için gereken süredir.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Kariyer Ortaklığı: Kurumla büyüme vizyonu ve karşılıklı güven.' }
       ]
     },
     {
       id: 'vis_shadow_2', category: 'developmentOpenness', type: 'radio',
       text: 'Yönetim, Yapay Zeka (AI) destekli, çok detaylı ama öğrenmesi zor yeni bir raporlama sistemine geçiyor. İlk tepkiniz?',
       weightedOptions: [
-        { label: 'Değişim Direnci: "Eski usül kağıt kalem daha iyiydi, ne gerek var bu kadar teknolojiye?" diye direnç gösteririm.', weights: { developmentOpenness: -0.7, institutionalLoyalty: -0.3 }, analysisInsight: 'Değişim Direnci (Resistance to Change): Statükocu ve yeniliğe kapalı.' },
-        { label: 'Pasif Direniş: "Tamam" derim ama kullanmam, başkasına yaptırırım veya eksik yaparım.', weights: { workEthics: -0.6, developmentOpenness: -0.4 }, analysisInsight: 'Pasif Direniş: Sinsi uyumsuzluk.' },
-        { label: 'Gelişim Zihniyeti: Zor olsa da öğrenmek için ekstra mesai harcarım. Teknoloji mesleğimizin geleceğidir ve buna adapte olmalıyım.', weights: { developmentOpenness: 1.0, sustainability: 0.6 }, analysisInsight: 'Gelişim Zihniyeti (Growth Mindset): Yeniliğe adaptasyon ve öğrenme hevesi.' }
+        { label: 'Değişim Direnci: "Eski usül kağıt kalem daha iyiydi, ne gerek var bu kadar teknolojiye? Bizim işimiz çocukla, bilgisayarla değil." diye direnç gösteririm.', weights: { developmentOpenness: -0.7, institutionalLoyalty: -0.3 }, analysisInsight: 'Değişim Direnci (Resistance to Change): Statükocu ve yeniliğe kapalı.' },
+        { label: 'Pasif Direniş (Uyumsuzluk): "Tamam" derim ama kullanmam, başkasına yaptırırım veya eksik yaparım. Zamanla vazgeçerler.', weights: { workEthics: -0.6, developmentOpenness: -0.4 }, analysisInsight: 'Pasif Direniş: Sinsi uyumsuzluk ve sistem sabotajı.' },
+        { label: 'Gelişim Zihniyeti (Growth Mindset): Zor olsa da öğrenmek için ekstra mesai harcarım. Teknoloji mesleğimizin geleceğidir ve buna adapte olmalıyım.', weights: { developmentOpenness: 1.0, sustainability: 0.6 }, analysisInsight: 'Gelişim Zihniyeti: Yeniliğe adaptasyon ve öğrenme hevesi.' }
       ]
     },
-    // YENİ EKLENEN: KURUMSAL SADAKAT & GELİŞİME AÇIKLIK (10+10 = 20 SORU)
     {
       id: 'vis_new_1', category: 'institutionalLoyalty', type: 'radio',
       text: 'Rakip bir kurum size mevcut maaşınızın %20 fazlasını teklif etti. Tepkiniz ne olur?',
       weightedOptions: [
-        { label: 'Fırsatçı: Hemen kabul eder, istifa ederim. Profesyonellik paradır.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Fırsatçı (Mercenary) Profil.' },
-        { label: 'Pazarlıkçı: Teklifi mevcut kurumumla paylaşır, "Bakın bana ne veriyorlar" diye pazarlık yaparım.', weights: { institutionalLoyalty: -0.5, negotiation: 0.5 }, analysisInsight: 'Riskli Pazarlık.' },
-        { label: 'Derin Bağlılık: Mevcut kurumumdaki huzurum, ekibim ve manevi tatminim %20 farktan daha değerliyse reddederim. Sadakat sadece para değildir.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Derin Bağlılık.' }
-      ]
-    },
-    {
-      id: 'vis_new_2', category: 'developmentOpenness', type: 'radio',
-      text: 'Süpervizörünüz seansınızı izledi ve "Bu yöntem artık eskidi, şunu dene" dedi. Ama siz eski yönteme alışkınsınız.',
-      weightedOptions: [
-        { label: 'Tutuculuk: "Ben böyle alıştım, sonuç da alıyorum" der, değişmem.', weights: { developmentOpenness: -0.8 }, analysisInsight: 'Mesleki Tutuculuk.' },
-        { label: 'Gizli Direniş: "Tamam" derim ama o gidince bildiğimi okurum.', weights: { integrity: -0.5, developmentOpenness: -0.5 }, analysisInsight: 'Gizli Direniş.' },
-        { label: 'Öğrenme Çevikliği: Konfor alanımdan çıkmak zor olsa da yeni yöntemi denerim. Bilim sürekli güncelleniyor, ben de güncellenmeliyim.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Öğrenme Çevikliği (Learning Agility).' }
-      ]
-    },
-    {
-      id: 'vis_new_3', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumun sosyal medya hesabında paylaşılması için sizden bir blog yazısı veya video istendi (Ekstra ücret yok).',
-      weightedOptions: [
-        { label: 'Görev Odaklı: "Ekstra para almadan yapmam, görev tanımımda yok" derim.', weights: { institutionalLoyalty: -0.5 }, analysisInsight: 'Sadece Görev Odaklı (Jobsworth).' },
-        { label: 'Kazan-Kazan: Yaparım, bu hem kurumun hem de benim kişisel markamın tanınması için bir fırsattır.', weights: { institutionalLoyalty: 1.0, branding: 1.0 }, analysisInsight: 'Kazan-Kazan Vizyonu.' },
-        { label: 'Kalitesizlik: Baştan savma bir şey yaparım.', weights: { workEthics: -0.5 }, analysisInsight: 'Kalitesizlik.' }
-      ]
-    },
-    {
-      id: 'vis_new_4', category: 'developmentOpenness', type: 'radio',
-      text: 'Hafta sonu kendi alanınızla ilgili çok önemli bir seminer var ama katılım ücretli ve hafta sonunuz gidecek. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Düşük Hırs: Gitmem, hafta sonu benim dinlenme zamanım.', weights: { developmentOpenness: -0.2 }, analysisInsight: 'Düşük Kariyer Hırsı.' },
-        { label: 'Dışsal Motivasyon: Kurum öderse giderim, yoksa gitmem.', weights: { developmentOpenness: 0.2, passive: 0.5 }, analysisInsight: 'Dışsal Motivasyonlu.' },
-        { label: 'Kariyer Yatırımı: Kendi cebimden öder giderim. Bilgiye yapılan yatırım en büyük yatırımdır.', weights: { developmentOpenness: 1.0, ambition: 1.0 }, analysisInsight: 'İçsel Motivasyon ve Kariyer Yatırımı.' }
-      ]
-    },
-    {
-      id: 'vis_new_5', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumda işlerin kötü gittiğine dair dedikodular dönüyor. Tavrınız?',
-      weightedOptions: [
-        { label: 'Toksik Etki: Ben de dedikoduya katılır, "Burası batıyor" derim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Toksik Etki.' },
-        { label: 'Sessiz Terk: Sessizce CV\'mi güncellerim.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Sessiz Terk (Quiet Quitting).' },
-        { label: 'Krizde Sadakat: Dedikodulara kulak tıkar, işime odaklanırım. Kurumun bana ihtiyacı varken gemiyi terk etmem.', weights: { institutionalLoyalty: 1.0, resilience: 0.8 }, analysisInsight: 'Krizde Sadakat.' }
-      ]
-    },
-    {
-      id: 'vis_new_6', category: 'developmentOpenness', type: 'radio',
-      text: 'İngilizce makale okuma konusunda seviyeniz nedir? Bir literatür taraması yapmanız istendi.',
-      weightedOptions: [
-        { label: 'Öğrenilmiş Çaresizlik: İngilizcem yok, yapamam.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'Öğrenilmiş Çaresizlik.' },
-        { label: 'Kaynak Yaratıcılığı: Translate kullanarak da olsa o makaleyi çözerim. Dil bariyeri beni durduramaz.', weights: { developmentOpenness: 1.0, resourcefulness: 1.0 }, analysisInsight: 'Kaynak Yaratıcılığı.' },
-        { label: 'Hazırcılık: Başkasına yaptırırım.', weights: { workEthics: -0.2 }, analysisInsight: 'Hazırcılık.' }
-      ]
-    },
-    {
-      id: 'vis_new_7', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Eski çalıştığınız kurumdan bir veli sizi aradı ve "Sizin olduğunuz yere gelmek istiyoruz" dedi. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Etik Gri Alan: Hemen kabul ederim, öğrenci getirmiş olurum.', weights: { ethics: -0.2 }, analysisInsight: 'Etik Gri Alan (Eski kurumla sözleşmeye bağlı).' },
-        { label: 'Marka Değeri: Memnuniyetle yönlendiririm, bu benim değil kurumumun kalitesinin bir sonucudur.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Marka Değeri Transferi.' },
-        { label: 'Kötüleme: "Gelmeyin, burası da kötü" derim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Kurumu Kötüleme.' }
-      ]
-    },
-    {
-      id: 'vis_new_8', category: 'developmentOpenness', type: 'radio',
-      text: 'Kurum içi eğitimde sunum yapmanız istendi ama topluluk önünde konuşmaktan çekiniyorsunuz.',
-      weightedOptions: [
-        { label: 'Fırsat Tepme: Reddederim, yapamam.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'Fırsat Tepme.' },
-        { label: 'Kaçış: Hasta numarası yaparım.', weights: { integrity: -0.8 }, analysisInsight: 'Kaçış.' },
-        { label: 'Cesaret: Korksam da kabul ederim. Bu korkuyu yenmek için bir fırsattır.', weights: { developmentOpenness: 1.0, courage: 1.0 }, analysisInsight: 'Cesaret ve Gelişim.' }
-      ]
-    },
-    {
-      id: 'vis_new_9', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kuruma ait özel bir materyalin fotoğrafını çekip kendi sosyal medyanızda "Kendi materyalim" gibi paylaşır mısınız?',
-      weightedOptions: [
-        { label: 'Fikri Mülkiyet İhlali: Evet, reklam olur.', weights: { integrity: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Fikri Mülkiyet İhlali.' },
-        { label: 'Etik Sahiplenme: Hayır, bu kurumun malıdır. Paylaşırsam kurumu etiketleyerek paylaşırım.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'Etik Sahiplenme.' },
-        { label: 'Karakter Zafiyeti: Kimse anlamazsa paylaşırım.', weights: { integrity: -1.0 }, analysisInsight: 'Karakter Zafiyeti.' }
-      ]
-    },
-    {
-      id: 'vis_new_10', category: 'developmentOpenness', type: 'radio',
-      text: '5 yıl sonra kendinizi nerede görüyorsunuz?',
-      weightedOptions: [
-        { label: 'Girişimci: Kendi yerimi açmış olurum.', weights: { institutionalLoyalty: 0.2, ambition: 1.0 }, analysisInsight: 'Girişimci (Kurum için riskli olabilir ama vizyoner).' },
-        { label: 'İçeride Büyüme: Bu kurumda yönetici veya koordinatör olarak daha fazla sorumluluk almış halde.', weights: { institutionalLoyalty: 1.0, stability: 1.0 }, analysisInsight: 'İçeride Büyüme (Intrapreneur).' },
-        { label: 'Vizyonsuzluk: Bilmiyorum, akışına bıraktım.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'Vizyonsuzluk.' }
-      ]
-    },
-    {
-      id: 'vis_new_11', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumun logosunu veya renklerini beğenmiyorsunuz. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Marka Zararı: Her yerde kötülerim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Marka Zararı.' },
-        { label: 'Nötr: Umursamam, işime bakarım.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Nötr.' },
-        { label: 'Sahiplenme: Daha iyi bir öneriyle yönetime giderim, kurumsal kimliğe katkı sağlamaya çalışırım.', weights: { institutionalLoyalty: 1.0, creativity: 0.8 }, analysisInsight: 'Sahiplenme.' }
-      ]
-    },
-    {
-      id: 'vis_new_12', category: 'developmentOpenness', type: 'radio',
-      text: 'Alanınız dışı bir konuda (Örn: İlk Yardım) eğitim verilecek. Katılır mısınız?',
-      weightedOptions: [
-        { label: 'Dar Bakış: Hayır, benim alanım değil.', weights: { developmentOpenness: -0.3 }, analysisInsight: 'Dar Bakış Açısı.' },
-        { label: 'Çok Yönlülük: Katılırım, bir gün lazım olabilir. Bilgi bilgidir.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Çok Yönlülük.' },
-        { label: 'Zaman Kaybı: Zorunluysa gider uyurum.', weights: { workEthics: -0.5 }, analysisInsight: 'Zaman Kaybı.' }
-      ]
-    },
-    {
-      id: 'vis_new_13', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Mesai saatleri dışında kurumun bir etkinliği (Kermes, Piknik) var. Katılır mısınız?',
-      weightedOptions: [
-        { label: 'Memur Zihniyeti: Hayır, mesaim bitti.', weights: { institutionalLoyalty: -0.2 }, analysisInsight: 'Memur Zihniyeti.' },
-        { label: 'Kurumsal Vatandaşlık: Gönüllü olarak katılır ve destek olurum. Kurum kültürü mesai ile sınırlı değildir.', weights: { institutionalLoyalty: 1.0, team: 1.0 }, analysisInsight: 'Kurumsal Vatandaşlık.' },
-        { label: 'Parasal Odak: Ek mesai ücreti verirlerse gelirim.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Parasal Odak.' }
-      ]
-    },
-    {
-      id: 'vis_new_14', category: 'developmentOpenness', type: 'radio',
-      text: 'Kullandığınız bir materyalin daha iyisini bir stajyer önerdi. Tepkiniz?',
-      weightedOptions: [
-        { label: 'Egoist Kapalılık: "Sen daha dünküsün" diye bozarım.', weights: { developmentOpenness: -1.0, ego: -1.0 }, analysisInsight: 'Egoist Kapalılık.' },
-        { label: 'Alçakgönüllü Öğrenme: Önerisini denerim, iyiyse kullanır ve ona teşekkür ederim. Akıl yaşta değil baştadır.', weights: { developmentOpenness: 1.0, humility: 1.0 }, analysisInsight: 'Alçakgönüllü Öğrenme.' },
-        { label: 'İletişimsizlik: Dinlemem.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'İletişimsizlik.' }
-      ]
-    },
-    {
-      id: 'vis_new_15', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Bir veli kurumdan şikayetçi ve ayrılmak üzere. Onu ikna etmeye çalışır mısınız?',
-      weightedOptions: [
-        { label: 'İçeriden Yıkım: "Burası böyle maalesef" der yangına körükle giderim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'İçeriden Yıkım.' },
-        { label: 'Pasiflik: Beni ilgilendirmez, yönetim halletsin.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Pasiflik.' },
-        { label: 'Marka Elçiliği: Sorunu dinler, çözebileceğim bir şeyse çözer, değilse yönetime köprü olurum. Her öğrenci kaybı benim de kaybımdır.', weights: { institutionalLoyalty: 1.0, problemSolving: 1.0 }, analysisInsight: 'Marka Elçiliği.' }
-      ]
-    },
-    {
-      id: 'vis_new_16', category: 'developmentOpenness', type: 'radio',
-      text: 'Okuduğunuz son mesleki kitap ne zaman?',
-      weightedOptions: [
-        { label: 'Akademik Paslanma: Üniversitede okumuştum.', weights: { developmentOpenness: -0.8 }, analysisInsight: 'Akademik Paslanma.' },
-        { label: 'Aktif Gelişim: Geçen ay. Sürekli okurum.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Aktif Gelişim.' },
-        { label: 'Yüzeysel Bilgi: Kitap okumam, internetten bakarım.', weights: { developmentOpenness: 0.2 }, analysisInsight: 'Yüzeysel Bilgi.' }
-      ]
-    },
-    {
-      id: 'vis_new_17', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurumun temizlik personeli o gün gelmedi ve sınıf çok kirli. Ne yaparsınız?',
-      weightedOptions: [
-        { label: 'Katılık: Dersi yapmam, temizlenmesini beklerim.', weights: { flexibility: -0.5 }, analysisInsight: 'Katılık.' },
-        { label: 'Agresyon: Müdüre bağırırım.', weights: { fit: -0.8 }, analysisInsight: 'Agresyon.' },
-        { label: 'Egosuz Sahiplenme: Hemen bir süpürge alıp kabaca temizler dersime başlarım. Çocuğun eğitimi, benim "temizlik yapmamamdan" daha önemlidir.', weights: { institutionalLoyalty: 1.0, humility: 1.0 }, analysisInsight: 'Egosuz Sahiplenme.' }
-      ]
-    },
-    {
-      id: 'vis_new_18', category: 'developmentOpenness', type: 'radio',
-      text: 'Eleştirel düşünme beceriniz nasıldır?',
-      weightedOptions: [
-        { label: 'Saflık: Her şeye inanırım.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'Saflık.' },
-        { label: 'Bilimsel Şüphecilik: Duyduğum her bilgiyi sorgular, kaynağına bakarım.', weights: { developmentOpenness: 1.0, analytical: 1.0 }, analysisInsight: 'Bilimsel Şüphecilik.' },
-        { label: 'Bilişsel Kapalılık: Sadece kendi bildiğime inanırım.', weights: { developmentOpenness: -0.8 }, analysisInsight: 'Bilişsel Kapalılık.' }
-      ]
-    },
-    {
-      id: 'vis_new_19', category: 'institutionalLoyalty', type: 'radio',
-      text: 'Kurum sahibi size güvendiği için kasanın anahtarını teslim etmek istedi.',
-      weightedOptions: [
-        { label: 'Riskten Kaçınma: Kabul etmem, sorumluluk alamam.', weights: { institutionalLoyalty: 0.0 }, analysisInsight: 'Riskten Kaçınma.' },
-        { label: 'Yüksek Güvenilirlik: Kabul ederim, bu güvene layık olmaya çalışırım.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'Yüksek Güvenilirlik.' },
-        { label: 'Tehlike: Kabul ederim (aklımda başka şeyler var).', weights: { integrity: -1.0 }, analysisInsight: 'Tehlike.' }
-      ]
-    },
-    {
-      id: 'vis_new_20', category: 'developmentOpenness', type: 'radio',
-      text: 'Mesleğinizle ilgili bir belgesel izlerken uykunuz gelir mi?',
-      weightedOptions: [
-        { label: 'İlgisizlik: Evet, çok sıkıcı.', weights: { developmentOpenness: -0.5 }, analysisInsight: 'İlgisizlik.' },
-        { label: 'Tutku: Hayır, not alarak izlerim.', weights: { developmentOpenness: 1.0 }, analysisInsight: 'Tutku.' },
-        { label: 'Ortalama İlgi: Bazen.', weights: { developmentOpenness: 0.0 }, analysisInsight: 'Ortalama İlgi.' }
+        { label: 'Finansal Odak: Hemen kabul eder, istifa ederim. Profesyonellik paradır, kim çok verirse oraya giderim.', weights: { institutionalLoyalty: -1.0 }, analysisInsight: 'Fırsatçı (Mercenary) Profil: Sadece paraya odaklı.' },
+        { label: 'Şantaj/Pazarlık: Teklifi mevcut kurumumla paylaşır, "Bakın bana ne veriyorlar, siz de verin yoksa giderim" diye pazarlık yaparım.', weights: { institutionalLoyalty: -0.5, negotiation: 0.5 }, analysisInsight: 'Riskli Pazarlık: Sadakati silah olarak kullanma.' },
+        { label: 'Bütüncül Değerlendirme: Sadece paraya bakmam. Mevcut kurumumdaki huzurum, ekibim, aldığım eğitimler ve manevi tatminim %20 farktan daha değerliyse reddederim. Sadakat bir bütündür.', weights: { institutionalLoyalty: 1.0 }, analysisInsight: 'Derin Bağlılık: Kurum kültürünü ve manevi tatmini önemseme.' }
       ]
     }
   ]
