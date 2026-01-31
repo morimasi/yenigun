@@ -4,22 +4,12 @@ import { Question } from '../../types';
 export const visionQuestions: Question[] = [
   {
     id: 'vis_p1_5', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Dışarıdan bir kurum size %30 daha fazla maaş ama "daha düşük akademik kalite" teklif etti. Karar kriteriniz ne olur?',
+    text: 'Bir başka kurumdan %30 daha yüksek maaş teklifi aldınız ancak oradaki klinik kalite standartlarının düşük olduğunu biliyorsunuz. Karar sürecinizi ne yönetir?',
     weightedOptions: [
-      { label: 'Uzmanlık İtibarı ve Akademik Tatmin: Teklifi reddederim. Standart altı bir kurumda çalışmak mesleki kaslarımı köreltir; para yerine "Klinik Otorite" ve "Kurumsal Vizyon" birliğini seçerim.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'İlkesel Sadakat: Kariyer yolculuğunu maddi kazancın değil, uzmanlık derinliğinin üzerine inşa etme.' },
-      { label: 'Stratejik Etki Alanı Analizi: Eğer o kurumda "Sistem Kurucu" veya "Formatör" olarak gideceksem ve kaliteyi yükseltme inisiyatifi bana verilecekse değerlendiririm; aksi halde yerimde kalırım.', weights: { institutionalLoyalty: 0.6, leadership: 0.9 }, analysisInsight: 'Güç Odaklı Profil: Statü, maaş ve etki alanını bir paket olarak gören "Yönetici" adayı.' },
-      { label: 'Şeffaf Kurumsal Müzakere: Mevcut kurumumun bana kattığı değerin farkındayım. Bu teklifi yönetime açar; "Burada mutluyum ama ekonomik şartlarımı iyileştirirseniz kalmak istiyorum" diyerek dürüstlük sergilerim.', weights: { institutionalLoyalty: 0.8, fit: 0.7 }, analysisInsight: 'Şeffaf Pragmatist: Bağlılığını kurumun sunduğu gelişim ve refah dengesiyle rasyonelize eden profil.' },
-      { label: 'Ekonomik Gerçekçilik ve Mobilite: Teklifi kabul ederim. Profesyonel hayat bir emek-sermaye alışverişidir; bireysel refahım akademik tatminden daha sürdürülebilir bir motivasyon kaynağıdır.', weights: { institutionalLoyalty: -1.0, personality: 0.8 }, analysisInsight: 'Materyalist Realist: Kurumla olan bağını sadece finansal kontrata indirgeyen, düşük aidiyetli profil.' }
-    ]
-  },
-  {
-    id: 'vis_p1_8', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Yönetim kurulunda bir karar alınırken fikriniz soruldu. Çoğunluğun aksine radikal bir görüşünüz var. Tavrınız?',
-    weightedOptions: [
-      { label: 'Entelektüel Dürüstlük ve Veri Temelli Muhalefet: Olası riskleri ve literatür verilerini masaya koyarak aykırı fikrimi sonuna kadar savunurum; ancak karar netleştiğinde kurumsal hiyerarşiye sadık kalırım.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Yapıcı Muhalif: Kurumu hatadan döndürmeye çalışan ama disiplinden kopmayan sadık lider.' },
-      { label: 'Grup Dinamiği ve Uyum Önceliği: Kurumsal barışı ve ekip sinerjisini korumak adına çoğunluğun görüşüne katılırım; çatışma yaratarak kurum enerjisini aşağı çekmekten kaçınırım.', weights: { institutionalLoyalty: 0.8, fit: 0.9 }, analysisInsight: 'Uyumlu Takım Oyuncusu: Kurumsal huzuru bireysel haklılıktan üstün tutan profil.' },
-      { label: 'Stratejik Geri Çekilme ve Gözlem: Fikrimi sadece bir kez beyan ederim, destek görmezsem "Ben demiştim" deme hakkımı saklı tutarak kenara çekilir ve sürecin sonuçlarını izlerim.', weights: { institutionalLoyalty: 0.4, personality: -0.5 }, analysisInsight: 'Bireysel Haklılık Odağı: Kurumun başarısından ziyade kendi öngörüsünün doğrulanmasını bekleyen profil.' },
-      { label: 'Diplomatik İkna ve Lobicilik: Karar verici kilit isimlerle seans aralarında veya birebirde görüşerek fikrimi daha "yumuşak" bir dille aşılar ve değişimi içeriden tetiklemeye çalışırım.', weights: { institutionalLoyalty: 0.7, leadership: 0.9 }, analysisInsight: 'Siyasal Zeka: Kurum içi güç dengelerini yöneterek hedefe ulaşmaya çalışan "Politik" profil.' }
+      { label: 'Akademik İtibar ve Uzmanlık Gelişimi: Teklifi reddederim. Standart altı bir kurumda çalışmak klinik kaslarımı köreltir ve özgeçmişimdeki akademik imajımı zedeler. Uzun vadeli uzmanlık, kısa vadeli kazançtan değerlidir.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 0.8 }, analysisInsight: 'Vizyoner İdealist: Kariyerini "para" değil "kalite" üzerine inşa etme stratejisi.' },
+      { label: 'Sistemik Dönüşüm ve Liderlik Fırsatı: Eğer o kurumda "Klinik Direktör" veya "Sistem Kurucu" olarak gideceksem ve kaliteyi yükseltme yetkisi bana verilecekse değerlendiririm. Bu benim için bir meydan okumadır.', weights: { institutionalLoyalty: 0.5, leadershipPotential: 1.0 }, analysisInsight: 'Liderlik Odaklı: Maaşı değil, "etki gücünü" ve statüyü rasyonalize eden profil.' },
+      { label: 'Şeffaf Müzakere ve Mevcut Aidiyet: Mevcut kurumumun bana sağladığı huzurun farkındayım. Bu teklifi yönetime dürüstçe açar, "Ekonomik şartlarımın iyileştirilmesi durumunda burada kalıp büyümek istiyorum" diyerek bir orta yol ararım.', weights: { institutionalLoyalty: 0.8, fitScore: 0.9 }, analysisInsight: 'Şeffaf Sadakat: Bağlılığını kurumsal gelişim ve dürüstlükle dengeleyen pragmatist.' },
+      { label: 'Sürdürülebilirlik ve Finansal Gerçekçilik: Teklifi değerlendiririm. Profesyonel hayat bir emek-sermaye dengesidir; yaşam kalitemin artması, iş yerindeki klinik motivasyonumu da dolaylı olarak pozitif etkileyecektir.', weights: { institutionalLoyalty: -0.5, resilience: 0.8 }, analysisInsight: 'Rasyonel Realist: İşi duygusal bir aidiyetten ziyade profesyonel bir kontrat olarak gören mobil aday.' }
     ]
   }
 ];
