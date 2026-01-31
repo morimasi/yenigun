@@ -3,22 +3,23 @@ import { Question } from '../../types';
 
 export const visionQuestions: Question[] = [
   {
-    id: 'vis_shadow_1', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Kurum size pahalı bir eğitim olan "X Yöntemi"ni finanse edecek ama karşılığında 2 yıl kurumdan ayrılmama taahhüdü (sözleşme) istiyor. İmzalar mısınız?',
+    id: 'vis_p1_5', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Dışarıdan bir kurum size %30 daha fazla maaş ama "daha düşük akademik kalite" teklif etti. Karar kriteriniz ne olur?',
     weightedOptions: [
-      { label: 'Kariyer Ortaklığı: Memnuniyetle imzalarım. Kurumun bana yatırım yapması, bana değer verdiğini gösterir. 2 yıl zaten uzmanlaşmak için gereken süredir.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Kariyer Ortaklığı: Kurumla büyüme vizyonu ve karşılıklı güven.' },
-      { label: 'Özgürlükçü Yaklaşım: Asla imzalamam, özgürlüğüm kısıtlanamaz. Geleceğin ne getireceği belli olmaz, ben eğitimi kendim alırım.', weights: { institutionalLoyalty: -0.6, developmentOpenness: 0.2 }, analysisInsight: 'Bağlılık Sorunu: Yatırıma ve uzun vadeli işbirliğine kapalı profil.' },
-      { label: 'Stratejik/Fırsatçı Yaklaşım: İmzalarım ama daha iyi teklif gelirse tazminatı öder kaçarım. Önemli olan sertifikayı almaktır.', weights: { institutionalLoyalty: -0.8, workEthics: -0.6 }, analysisInsight: 'Etik Risk: Güvenilmez ve fırsatçı profil.' }
+      { label: 'Uzmanlık İtibarı ve Akademik Tatmin: Teklifi reddederim. Standart altı bir kurumda çalışmak mesleki kaslarımı köreltir; para yerine "Klinik Otorite" ve "Kurumsal Vizyon" birliğini seçerim.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'İlkesel Sadakat: Kariyer yolculuğunu maddi kazancın değil, uzmanlık derinliğinin üzerine inşa etme.' },
+      { label: 'Stratejik Etki Alanı Analizi: Eğer o kurumda "Sistem Kurucu" veya "Formatör" olarak gideceksem ve kaliteyi yükseltme inisiyatifi bana verilecekse değerlendiririm; aksi halde yerimde kalırım.', weights: { institutionalLoyalty: 0.6, leadership: 0.9 }, analysisInsight: 'Güç Odaklı Profil: Statü, maaş ve etki alanını bir paket olarak gören "Yönetici" adayı.' },
+      { label: 'Şeffaf Kurumsal Müzakere: Mevcut kurumumun bana kattığı değerin farkındayım. Bu teklifi yönetime açar; "Burada mutluyum ama ekonomik şartlarımı iyileştirirseniz kalmak istiyorum" diyerek dürüstlük sergilerim.', weights: { institutionalLoyalty: 0.8, fit: 0.7 }, analysisInsight: 'Şeffaf Pragmatist: Bağlılığını kurumun sunduğu gelişim ve refah dengesiyle rasyonelize eden profil.' },
+      { label: 'Ekonomik Gerçekçilik ve Mobilite: Teklifi kabul ederim. Profesyonel hayat bir emek-sermaye alışverişidir; bireysel refahım akademik tatminden daha sürdürülebilir bir motivasyon kaynağıdır.', weights: { institutionalLoyalty: -1.0, personality: 0.8 }, analysisInsight: 'Materyalist Realist: Kurumla olan bağını sadece finansal kontrata indirgeyen, düşük aidiyetli profil.' }
     ]
   },
   {
-    id: 'vis_new_add_4', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Kurumun geliştirdiği özgün bir eğitim materyalini (PDF, Kitapçık) ayrılırken yanınızda götürür müsünüz?',
+    id: 'vis_p1_8', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Yönetim kurulunda bir karar alınırken fikriniz soruldu. Çoğunluğun aksine radikal bir görüşünüz var. Tavrınız?',
     weightedOptions: [
-      { label: 'Fikri Mülkiyet: Hayır, o materyaller kurumun malıdır ve telif hakkı kuruma aittir. İzinsiz kopyalamak hırsızlıktır.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'Yüksek Etik Standart.' },
-      { label: 'Hak Görme: Götürürüm, sonuçta ben de kullandım, benim de hakkım.', weights: { integrity: -0.8 }, analysisInsight: 'Mülkiyet Bilinci Eksikliği.' },
-      { label: 'Gizlilik: Kopyalarım ama kimseye söylemem.', weights: { integrity: -1.0 }, analysisInsight: 'Hırsızlık.' },
-      { label: 'Takas: Başka arkadaşlarımla değiş tokuş yaparım.', weights: { integrity: -0.8 }, analysisInsight: 'Etik İhlal.' }
+      { label: 'Entelektüel Dürüstlük ve Veri Temelli Muhalefet: Olası riskleri ve literatür verilerini masaya koyarak aykırı fikrimi sonuna kadar savunurum; ancak karar netleştiğinde kurumsal hiyerarşiye sadık kalırım.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Yapıcı Muhalif: Kurumu hatadan döndürmeye çalışan ama disiplinden kopmayan sadık lider.' },
+      { label: 'Grup Dinamiği ve Uyum Önceliği: Kurumsal barışı ve ekip sinerjisini korumak adına çoğunluğun görüşüne katılırım; çatışma yaratarak kurum enerjisini aşağı çekmekten kaçınırım.', weights: { institutionalLoyalty: 0.8, fit: 0.9 }, analysisInsight: 'Uyumlu Takım Oyuncusu: Kurumsal huzuru bireysel haklılıktan üstün tutan profil.' },
+      { label: 'Stratejik Geri Çekilme ve Gözlem: Fikrimi sadece bir kez beyan ederim, destek görmezsem "Ben demiştim" deme hakkımı saklı tutarak kenara çekilir ve sürecin sonuçlarını izlerim.', weights: { institutionalLoyalty: 0.4, personality: -0.5 }, analysisInsight: 'Bireysel Haklılık Odağı: Kurumun başarısından ziyade kendi öngörüsünün doğrulanmasını bekleyen profil.' },
+      { label: 'Diplomatik İkna ve Lobicilik: Karar verici kilit isimlerle seans aralarında veya birebirde görüşerek fikrimi daha "yumuşak" bir dille aşılar ve değişimi içeriden tetiklemeye çalışırım.', weights: { institutionalLoyalty: 0.7, leadership: 0.9 }, analysisInsight: 'Siyasal Zeka: Kurum içi güç dengelerini yöneterek hedefe ulaşmaya çalışan "Politik" profil.' }
     ]
   }
 ];

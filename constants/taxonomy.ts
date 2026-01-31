@@ -1,4 +1,6 @@
 
+import { Branch } from '../types';
+
 export const CERTIFICATION_CATEGORIES = [
   { id: 'AUTISM_SPECTRUM', label: 'Otizm Spektrum Bozukluğu', icon: '🧩' },
   { id: 'LEARNING_DISABILITIES', label: 'Özel Öğrenme Güçlüğü', icon: '📖' },
@@ -8,6 +10,20 @@ export const CERTIFICATION_CATEGORIES = [
   { id: 'ACADEMIC_SKILLS', label: 'Okuma Yazma & Matematik', icon: '📐' },
   { id: 'PSYCHOLOGY_GUIDANCE', label: 'Rehberlik & Psikoloji', icon: '🤝' }
 ];
+
+/**
+ * Branş Bazlı Kategori Ağırlık Çarpanları
+ * Hangi branş için hangi analiz kategorisi daha 'kritik'?
+ * Standart = 1.0
+ */
+export const BRANCH_CATEGORY_MULTIPLIERS: Record<string, Record<string, number>> = {
+  [Branch.OzelEgitim]: { clinical: 1.2, empathy: 0.9, sustainability: 1.1, ethics: 1.0 },
+  [Branch.DilKonusma]: { clinical: 1.3, pedagogicalAnalysis: 1.2, ethics: 1.0 },
+  [Branch.Psikoloji]: { ethics: 1.5, empathy: 1.3, clinical: 0.8, sustainability: 1.2 },
+  [Branch.Ergoterapi]: { clinical: 1.1, sustainability: 1.3, pedagogicalAnalysis: 1.0 },
+  [Branch.Fizyoterapi]: { clinical: 1.0, sustainability: 1.4, ethics: 0.8 },
+  [Branch.SinifOgretmenligi]: { pedagogicalAnalysis: 1.4, institutionalLoyalty: 1.1, clinical: 0.7 }
+};
 
 export const TURKISH_UNIVERSITIES = [
   "Abdullah Gül Üniversitesi", "Acıbadem Mehmet Ali Aydınlar Üniversitesi", "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",

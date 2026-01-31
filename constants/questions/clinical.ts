@@ -1,25 +1,39 @@
 
-import { Question } from '../../types';
+import { Question, Branch } from '../../types';
 
 export const clinicalQuestions: Question[] = [
   {
-    id: 'clin_shadow_1', category: 'technicalExpertise', type: 'radio',
-    text: 'Yoğun bir "Kendine Zarar Verme" (SIB) krizinde, çocuğun burnunun aktığını ve salyasının aktığını fark ettiniz. Saniyelik "ABC" kararınız ne olur?',
+    id: 'clin_p1_1', category: 'technicalExpertise', type: 'radio',
+    text: 'Bir beceri öğretimi sırasında çocuk "Hatasız Öğretim" (Errorless) protokolüne rağmen ısrarla yanlış karta uzanıyor. "Prompt Fading" sürecindeki stratejik hatanız ne olabilir?',
     weightedOptions: [
-      { label: 'Klinik Disiplin ve Sönme (Extinction): Kafasını korumak için el yastığı yaparım (güvenlik) ancak göz teması kurmadan, nötr bir yüzle krizin sönmesini beklerim. Temizlik, kriz tamamen bitip çocuk regüle olduktan sonra yapılır.', weights: { clinical: 1.0, empathy: 0.2, sustainability: 0.8 }, analysisInsight: 'Klinik Disiplin: Güvenliği sağlarken davranışı beslememe (Extinction) becerisi.' },
-      { label: 'Bakım ve Şefkat Odaklı Müdahale: Öncelik çocuğun konforu ve hijyenidir. Davranışı durdurmaya çalışırken aynı zamanda cebimden peçete çıkarıp yüzünü silerim, böylece rahatlayıp sakinleşmesine yardımcı olurum.', weights: { clinical: -0.6, empathy: 1.0, sustainability: -0.2 }, analysisInsight: 'Şefkat Tuzağı: Davranış anında fiziksel temas ve bakım vererek, problem davranışın işlevini "ilgi" veya "rahatlama" ile farkında olmadan pekiştirme (Accidental Reinforcement) riski.' },
-      { label: 'Sözel Yönerge ve Kontrol: Çocuğun ellerini tutarak "Yapma, burnunu silelim" derim ve sakinleşmesi için sözel telkinlerde bulunurum.', weights: { clinical: -0.8, empathy: 0.2, sustainability: -0.5 }, analysisInsight: 'Veri Kirliliği: Kriz anında verilen sözel uyaranlar ve temas, davranışı besleyen "sosyal dikkat" hatasına dönüşebilir.' },
-      { label: 'Seans İptali ve Aileye Devir: Hijyen sorunu ve kendine zarar verme riski birleştiğinde ders işlenemez. Seansı sonlandırır, çocuğu temizlemesi ve sakinleştirmesi için veliye teslim ederim.', weights: { clinical: -1.0, empathy: -0.5, institutionalLoyalty: -0.5 }, analysisInsight: 'Mesleki Kaçınma: Terapistin kriz anında otoriteyi ve sorumluluğu terk etmesi.' }
+      { 
+        label: 'Latens (Bekleme Süresi) Kalibrasyon Hatası: İpucunu silikleştirirken uygulanan zaman gecikmesi (0 sn -> 4 sn), öğrencinin nöral işlemleme hızından daha agresif bir ivmeyle artırılmış olabilir.', 
+        weights: { clinical: 1.0, pedagogicalAnalysis: 0.8 },
+        branchOverrides: {
+          [Branch.DilKonusma]: { clinical: 1.2, pedagogicalAnalysis: 1.0 } // Dil terapisti için daha kritik bir hata
+        },
+        analysisInsight: 'Teknik Derinlik: Metodolojik ince ayarların senkronizasyonu.' 
+      },
+      { label: 'Pekiştirme Tarifesi Kararsızlığı: Yanlış tepki anında uygulanan nötr geri bildirim prosedürü, "Eşleşme Yasası" uyarınca rastgele deneme stratejisini pekiştirmiş olabilir.', weights: { clinical: 0.6, personality: -0.3 }, analysisInsight: 'Davranışçı Mühendislik: Olasılık hesabı.' },
+      { label: 'Motivasyonel Operasyon (MO) Deformasyonu: Çocuğun o andaki pekiştireç değeri bozulmuş olabilir; "Pairing" sürecini tazelemek gerekir.', weights: { clinical: 0.8, empathy: 0.9 }, analysisInsight: 'Holistik Yaklaşım: Biyolojik motivasyon.' },
+      { label: 'Diskriminatif Uyaran (Sd) Yerleşimi: Kartların mekansal dizilimi "Pozisyon Bağımlılığı" yaratmış olabilir; sunum matrisini randomize etmek önceliklidir.', weights: { clinical: 0.9, pedagogicalAnalysis: 0.6 }, analysisInsight: 'Operasyonel Dikkat.' }
     ]
   },
   {
-    id: 'clin_new_add_1', category: 'technicalExpertise', type: 'radio',
-    text: 'Çocuğa "Bardak" kavramını öğretirken sadece "kırmızı plastik bir bardak" kullanılarak öğretim yapılmış ve çocuk başka hiçbir bardağı tanımıyor. Bu durumun klinik adı nedir ve nasıl düzeltilir?',
+    id: 'clin_p1_2', category: 'technicalExpertise', type: 'radio',
+    text: 'Otizmli bir öğrencide "Stereotipik Sallanma" (Stimming) akademik görev sırasında artıyor. Bu durumu nasıl yorumlar ve müdahale edersiniz?',
     weightedOptions: [
-      { label: 'Hatalı Uyaran Kontrolü (Faulty Stimulus Control): Öğretim "Çoklu Örnekler" (Multiple Exemplars) ile yapılmadığı için çocuk kavramı (şekil) değil, ilgisiz bir özelliği (renk/materyal) öğrenmiştir. Hemen cam, kağıt, kulplu, farklı renklerde bardaklarla "Yeterli Örneklem" seti çalışılarak genelleme sağlanmalıdır.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Genelleme Hatası Tespiti: Kavram öğretiminin temel prensibi olan "Stimulus Generalization" hakimiyeti.' },
-      { label: 'Zeka Geriliği ve Soyutlama Eksikliği: Çocuk soyutlama yapamıyor, zeka seviyesi buna uygun değil. Daha basit (Somut) kavramlara dönülmeli ve görsel destek azaltılmalıdır.', weights: { clinical: -0.5 }, analysisInsight: 'Yanlış Etiketleme: Öğretim hatasını çocuğun kapasitesine bağlama (Fundamental Attribution Error).' },
-      { label: 'Seçici Dikkat (Selective Attention): Çocuk bardağın rengine odaklanmış, şekline değil. Kırmızı olan her şeye bardak diyebilir. Kırmızı rengi ortamdan tamamen kaldırarak çalışılmalıdır.', weights: { clinical: 0.2 }, analysisInsight: 'Kısmen Doğru ama Yetersiz: Sorun dikkat değil, öğretim tasarımıdır (Instructional Design).' },
-      { label: 'Sönme (Extinction): Çocuk öğrenmiş ama pekiştireç yetersizliğinden unutmuş. Tekrar edilmeli.', weights: { clinical: -0.2 }, analysisInsight: 'Hatalı Tespit: Yanlış öğrenme (Over-selectivity), unutma değildir.' }
+      { label: 'İşlevsel Hipotez Analizi: Sallanma davranışı, akademik talebin yarattığı bilişsel yükten "Kaçma" işlevine hizmet ediyor olabilir; talebi seyreltip stereotipiyi söndürme sürecine alırım.', weights: { clinical: 1.0, sustainability: 0.7 }, analysisInsight: 'Metodolojik Sadakat.' },
+      { 
+        label: 'Nöro-Duyusal Regülasyon İhtiyacı: Sallanma bir "Öz-Düzenleme" çabasıdır; akademik sürece "Duyusal Diyet" molası ekleyerek vestibüler girdi sağlarım.', 
+        weights: { clinical: 0.8, empathy: 1.0 },
+        branchOverrides: {
+          [Branch.Ergoterapi]: { clinical: 1.5, empathy: 1.2 } // Ergoterapist için bu cevabı vermek uzmanlık kanıtıdır
+        },
+        analysisInsight: 'Klinik Esneklik: Nörolojik bariyer önceliği.' 
+      },
+      { label: 'Tepki Kesintisi ve Yönlendirme (RIRD): Stereotipi başladığı an düşük yoğunluklu bir sözel uyaranla döngüyü kırar, dikkati alternatif uygun davranışa yönlendiririm.', weights: { clinical: 0.9, personality: 0.5 }, analysisInsight: 'Aktif Kontrol.' },
+      { label: 'Bilişsel İşlemleme Kapasite Analizi: Görevin kompleksitesi öğrencinin "Bilişsel Eşiğini" aşmış olabilir; ipucu hiyerarşisini en üst düzeye çekerek başarıyı garantilerim.', weights: { clinical: 0.7, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Pedagojik Hassasiyet.' }
     ]
   }
 ];
