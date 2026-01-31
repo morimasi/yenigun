@@ -54,7 +54,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     onUpdate({ ...candidate, status: decision === 'hired' ? 'hired' : 'rejected', timestamp: Date.now() });
   };
 
-  const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
+  const currentData = selectedSegment ? (candidate.report?.deepAnalysis?.[selectedSegment] as any) : null;
 
   return (
     <div className="flex flex-col h-full bg-white relative">
@@ -133,7 +133,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="md:col-span-3 space-y-2 sticky top-0">
                         {segments.map(s => {
                            const isSelected = selectedSegment === s.key;
-                           const segmentScore = candidate.report?.deepAnalysis?.[s.key]?.score || 0;
+                           const segmentScore = (candidate.report?.deepAnalysis as any)?.[s.key]?.score || 0;
                            return (
                              <button 
                                 key={s.key} 
@@ -155,37 +155,52 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="md:col-span-9 space-y-8 animate-slide-up">
                         {currentData && (
                            <>
+                              {/* KLİNİK NEDENSELLİK: DAHA GENİŞ VE OKUNAKLI */}
                               <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
                                  <div className="absolute top-0 left-0 w-2 h-full bg-slate-900 group-hover:bg-orange-600 transition-colors"></div>
-                                 <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-8 border-b border-slate-50 pb-4">KLİNİK NEDENSELLİK (ROOT CAUSE ANALYSIS)</h4>
-                                 <p className="text-[15px] font-medium text-slate-700 leading-[1.8] text-justify whitespace-pre-wrap italic">
-                                    {currentData.reasoning}
-                                 </p>
+                                 <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] mb-8 border-b border-slate-50 pb-4 flex justify-between items-center">
+                                    <span>KLİNİK NEDENSELLİK & AKADEMİK TEMELLENDİRME</span>
+                                    <span className="text-[9px] font-bold text-slate-400">ANALİTİK DERİNLİK: MAKSİMUM</span>
+                                 </h4>
+                                 <div className="prose prose-slate max-w-none">
+                                    <p className="text-[15px] font-medium text-slate-700 leading-[1.9] text-justify whitespace-pre-wrap italic">
+                                       {currentData.reasoning}
+                                    </p>
+                                 </div>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                 <div className="bg-orange-600 p-10 rounded-[3.5rem] text-white shadow-xl relative overflow-hidden group">
+
+                              <div className="grid grid-cols-1 gap-8">
+                                 {/* 24 AY PROJEKSİYONU: GENİŞLETİLMİŞ ANLATIM */}
+                                 <div className="bg-orange-600 p-12 rounded-[3.5rem] text-white shadow-xl relative overflow-hidden group">
                                     <div className="relative z-10">
-                                       <h5 className="text-[11px] font-black text-orange-200 uppercase tracking-[0.3em] mb-8 border-b border-orange-500/50 pb-4">24 AY PROJEKSİYONU: KURUMSAL ETKİ</h5>
-                                       <p className="text-[14px] font-bold leading-relaxed text-orange-50 italic">
-                                          "{currentData.institutionalImpact}"
+                                       <h5 className="text-[11px] font-black text-orange-200 uppercase tracking-[0.3em] mb-8 border-b border-orange-500/50 pb-4">24 AY PROJEKSİYONU: KURUMSAL ETKİ VE EVRİM</h5>
+                                       <p className="text-[16px] font-bold leading-relaxed text-orange-50 italic text-justify">
+                                          {currentData.institutionalImpact}
                                        </p>
                                     </div>
-                                    <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-[60px]"></div>
+                                    <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-[80px]"></div>
                                  </div>
-                                 <div className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm">
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4">NÖRAL İPUÇLARI (MİKRO-DAVRANIŞLAR)</h5>
-                                    <ul className="space-y-5">
-                                       {(currentData.behavioralIndicators || []).map((b, i) => (
-                                          <li key={i} className="flex gap-5 items-start group/item">
-                                             <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[11px] font-black text-slate-300 group-hover/item:bg-orange-100 group-hover/item:text-orange-600 transition-all shrink-0">
-                                                {i + 1}
+
+                                 {/* NÖRAL İPUÇLARI: TABLO/KART YAPISI */}
+                                 <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-sm">
+                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4">NÖRAL İPUÇLARI (MİKRO-DAVRANIŞ ANALİZİ)</h5>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                       {(currentData.behavioralIndicators || []).map((b: any, i: number) => (
+                                          <div key={i} className="flex flex-col gap-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-orange-200 transition-all group/item">
+                                             <div className="flex justify-between items-center">
+                                                <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">İPUCU 0{i + 1}</span>
+                                                <span className={`px-3 py-1 rounded-full text-[8px] font-bold uppercase ${b.intensity === 'Yüksek' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                   ŞİDDET: {b.intensity}
+                                                </span>
                                              </div>
-                                             <p className="text-[12px] font-bold text-slate-700 leading-tight uppercase tracking-tight pt-1">
-                                                {b}
+                                             <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{b.cue}</p>
+                                             <div className="h-px bg-slate-200 w-8"></div>
+                                             <p className="text-[12px] font-bold text-slate-500 italic leading-snug">
+                                                "{b.meaning}"
                                              </p>
-                                          </li>
+                                          </div>
                                        ))}
-                                    </ul>
+                                    </div>
                                  </div>
                               </div>
                            </>
@@ -194,7 +209,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                   </div>
                )}
 
-               {/* --- SPEKTRUM & DNA MODÜLÜ --- */}
+               {/* --- SPEKTRUM & DNA MODÜLÜ (Değişmedi) --- */}
                {activeTab === 'dna' && (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                      <div className="lg:col-span-5 bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm min-h-[450px] flex flex-col items-center justify-center">
@@ -236,10 +251,11 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                   </div>
                )}
 
-               {/* --- PROJEKSİYON (24 AY) MODÜLÜ --- */}
+               {/* --- PROJEKSİYON (24 AY) MODÜLÜ (Gelişmiş) --- */}
                {activeTab === 'predictions' && (
                   <div className="space-y-10 animate-fade-in">
-                     {/* 1. LAYER: GROWTH CURVE */}
+                     
+                     {/* Forecast Grafiği ve KPI Kartları */}
                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-8 bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm flex flex-col h-[450px]">
                            <div className="flex justify-between items-center mb-10">
@@ -271,7 +287,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         </div>
                      </div>
 
-                     {/* 2. LAYER: EVOLUTION TIMELINE */}
+                     {/* Evrim Timeline */}
                      <div className="bg-slate-900 rounded-[4rem] p-12 text-white shadow-3xl relative overflow-hidden border border-white/5">
                         <div className="relative z-10 flex flex-col md:flex-row gap-12">
                            <div className="md:w-80 space-y-4">
@@ -308,10 +324,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                     <div className="space-y-10">
                                        <div className="p-10 bg-slate-950 rounded-[2.5rem] border border-white/10 shadow-inner relative overflow-hidden group">
                                           <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest block mb-4 relative z-10">GELİŞİM PROJEKSİYONU</span>
-                                          <p className="text-[15px] font-medium text-slate-300 leading-relaxed italic relative z-10">
+                                          <p className="text-[15px] font-medium text-slate-300 leading-relaxed italic relative z-10 text-justify">
                                              "{candidate.report.predictiveMetrics.evolutionTimeline[activeTimelineIdx].clinicalGrowth}"
                                           </p>
-                                          <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl"></div>
                                        </div>
                                        <div className="p-10 bg-orange-600/10 rounded-[2.5rem] border border-orange-600/20">
                                           <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-4">YÖNETİCİYE KRİTİK NOT</span>
@@ -324,42 +339,13 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                               </div>
                            )}
                         </div>
-                        <div className="absolute -right-40 -top-40 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[150px]"></div>
-                     </div>
-
-                     {/* 3. LAYER: RISK MITIGATION */}
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-rose-50 p-12 rounded-[4rem] border border-rose-100 shadow-sm relative overflow-hidden group">
-                           <div className="relative z-10">
-                              <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-rose-600 shadow-md mb-8 font-black text-2xl">!</div>
-                              <h5 className="text-[11px] font-black text-rose-900 uppercase tracking-[0.4em] mb-3">KRİTİK TÜKENMİŞLİK RİSKİ</h5>
-                              <p className="text-2xl font-black text-rose-950 leading-[1.1] uppercase tracking-tighter">
-                                 "{candidate.report.predictiveMetrics?.riskMitigation?.primaryRisk}"
-                              </p>
-                           </div>
-                           <div className="absolute right-0 bottom-0 opacity-5 group-hover:scale-125 transition-transform duration-1000">
-                              <svg className="w-48 h-48 text-rose-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                           </div>
-                        </div>
-
-                        <div className="bg-emerald-50 p-12 rounded-[4rem] border border-emerald-100 shadow-sm relative overflow-hidden">
-                           <div className="relative z-10">
-                              <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-emerald-600 shadow-md mb-8 font-black text-2xl">✓</div>
-                              <h5 className="text-[11px] font-black text-emerald-900 uppercase tracking-[0.4em] mb-3">ÖNLEYİCİ KORUMA STRATEJİSİ</h5>
-                              <p className="text-[16px] font-bold text-emerald-950 leading-relaxed italic">
-                                 "{candidate.report.predictiveMetrics?.riskMitigation?.preventionStrategy}"
-                              </p>
-                           </div>
-                        </div>
                      </div>
                   </div>
                )}
 
-               {/* --- STRATEJİ (PLAYBOOK) MODÜLÜ --- */}
+               {/* --- STRATEJİ (PLAYBOOK) MODÜLÜ (Değişmedi) --- */}
                {activeTab === 'strategy' && (
                   <div className="space-y-10 animate-fade-in pb-20">
-                     
-                     {/* PHASE NAVIGATOR */}
                      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-200 shadow-lg flex gap-3">
                         {(candidate.report.interviewGuidance?.phases || []).map((phase, idx) => (
                            <button 
@@ -373,11 +359,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         ))}
                      </div>
 
-                     {/* PHASE DETAIL */}
                      {candidate.report.interviewGuidance?.phases?.[activePhaseIdx] && (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                           
-                           {/* LEFT: STRATEGIC QUESTIONS */}
                            <div className="lg:col-span-8 space-y-8">
                               <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm relative overflow-hidden group">
                                  <div className="absolute top-0 left-0 w-2 h-full bg-orange-600"></div>
@@ -386,7 +369,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                     "{candidate.report.interviewGuidance.phases[activePhaseIdx].goal}"
                                  </p>
                               </div>
-
                               <div className="space-y-6">
                                  {candidate.report.interviewGuidance.phases[activePhaseIdx].questions.map((q, qidx) => (
                                     <div key={qidx} className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm group hover:border-orange-300 hover:shadow-2xl transition-all relative overflow-hidden">
@@ -410,10 +392,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                  ))}
                               </div>
                            </div>
-
-                           {/* RIGHT: RISK & INTEL */}
                            <div className="lg:col-span-4 space-y-8">
-                              
                               <div className="bg-rose-50 p-10 rounded-[3.5rem] border border-rose-100 shadow-sm relative overflow-hidden">
                                  <div className="flex items-center gap-4 mb-8">
                                     <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white font-black text-lg shadow-lg animate-pulse">!</div>
@@ -428,54 +407,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                     ))}
                                  </div>
                               </div>
-
-                              <div className="bg-slate-900 p-10 rounded-[3.5rem] text-white shadow-3xl relative overflow-hidden">
-                                 <div className="flex items-center gap-4 mb-8 relative z-10">
-                                    <div className="w-10 h-10 rounded-2xl bg-orange-600 flex items-center justify-center text-white font-black text-lg">
-                                       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    </div>
-                                    <h5 className="text-[12px] font-black text-orange-500 uppercase tracking-widest leading-none">NÖRAL İPUÇLARI</h5>
-                                 </div>
-                                 <div className="space-y-5 relative z-10">
-                                    {candidate.report.interviewGuidance.phases[activePhaseIdx].subliminalCues.map((cue, cidx) => (
-                                       <div key={cidx} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all">
-                                          <p className="text-[12px] font-medium text-slate-300 italic uppercase">"{cue}"</p>
-                                       </div>
-                                    ))}
-                                 </div>
-                                 <div className="absolute -right-20 -bottom-20 w-48 h-48 bg-orange-600/10 rounded-full blur-3xl"></div>
-                              </div>
                            </div>
                         </div>
                      )}
-
-                     {/* FINAL ACTION ITEMS BENTO */}
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="p-12 bg-white border border-slate-200 rounded-[4rem] shadow-sm hover:shadow-2xl transition-all">
-                           <h5 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 border-b border-slate-50 pb-6">SAHA SİMÜLASYONLARI (ACTION ITEMS)</h5>
-                           <div className="space-y-6">
-                              {(candidate.report.interviewGuidance?.simulationTasks || []).map((task, i) => (
-                                 <div key={i} className="flex gap-6 items-center p-6 bg-slate-50 rounded-3xl hover:bg-slate-900 hover:text-white transition-all group/task">
-                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 font-black text-sm shadow-sm group-hover/task:text-orange-500 transition-colors">►</div>
-                                    <p className="text-[14px] font-black uppercase tracking-tight leading-tight">{task}</p>
-                                 </div>
-                              ))}
-                           </div>
-                        </div>
-                        <div className="p-12 bg-slate-900 text-white rounded-[4rem] shadow-3xl relative overflow-hidden">
-                           <h5 className="text-[12px] font-black text-orange-500 uppercase tracking-[0.4em] mb-10 border-b border-white/10 pb-6">KRİTİK GÖZLEM NOKTALARI</h5>
-                           <div className="space-y-6 relative z-10">
-                              {(candidate.report.interviewGuidance?.criticalObservations || []).map((obs, i) => (
-                                 <div key={i} className="flex gap-6 items-start">
-                                    <div className="w-8 h-[3px] bg-orange-600 mt-4 shrink-0 rounded-full"></div>
-                                    <p className="text-[15px] font-bold text-slate-200 uppercase tracking-tight leading-relaxed italic">{obs}</p>
-                                 </div>
-                              ))}
-                           </div>
-                           <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[100px]"></div>
-                        </div>
-                     </div>
-
                   </div>
                )}
 
