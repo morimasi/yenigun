@@ -14,150 +14,150 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'aba_1',
         text: 'Bir davranış müdahale planında "Sönme Patlaması" (Extinction Burst) esnasında veli odaya girip "Çocuğa eziyet ediyorsunuz, durun!" diye bağırırsa, personelin klinik refleksi ne olmalıdır?',
         options: [
-          { label: 'Güvenlik Protokolü: Seansı geçici olarak durdurup çocuğu sakinleştirmek ve veliye açıklama yapmak. (Etik Öncelik)', clinicalValue: 20, aiTag: 'protocol_breach_safety_bias' },
-          { label: 'Ko-Regülasyon: Veliyi sakince içeri davet edip, çocuğun sakinleşmesine destek olmasını sağlamak.', clinicalValue: 30, aiTag: 'reinforcement_error' },
-          { label: 'Klinik Sadakat: Göz temasını çocukta ve hedef davranışta tutarak, nötr bir sesle veliyi dışarı davet etmek ve sönme protokolünü bozmadan süreci tamamlamak.', clinicalValue: 100, aiTag: 'high_clinical_discipline' },
-          { label: 'Tarife Değişikliği: Çocuğun travmatize olmaması için pekiştirme tarifesini yoğunlaştırıp (FR1) krizi sonlandırmak.', clinicalValue: 10, aiTag: 'methodological_collapse' }
+          { label: 'Güvenlik Protokolü: "Haklısınız, çocuk çok stres oldu" diyerek seansı o an durdurur, pekiştireç vererek çocuğu regüle eder ve veliyi sakinleştiririm. (Önce Güvenlik)', clinicalValue: 20, aiTag: 'protocol_breach_safety_bias' },
+          { label: 'Terapötik İttifak: Veliyi içeri davet edip sürece dahil ederim; annenin varlığı çocuğun kortizol seviyesini düşüreceği için sönme daha hızlı gerçekleşir.', clinicalValue: 30, aiTag: 'reinforcement_error' },
+          { label: 'Klinik Sadakat: Göz temasını ve kontrolü asla çocuktan çekmeden, nötr bir ses tonuyla veliyi dışarı davet ederim. O an müdahaleyi kesmek, problem davranışı "veli kurtarması" ile pekiştirmek (Intermittent Reinforcement) anlamına gelir.', clinicalValue: 100, aiTag: 'high_clinical_discipline' },
+          { label: 'Tarife Manipülasyonu: Çocuğu susturmak için hızlıca "Sabit Oranlı" (FR1) pekiştirmeye geçer, kriz bittikten sonra durumu veliye izah ederim.', clinicalValue: 10, aiTag: 'methodological_collapse' }
         ]
       },
       {
         id: 'aba_2',
         text: 'Öğrenci "İpucu Bağımlılığı" (Prompt Dependency) geliştirmiş. "Most-to-Least" yerine "Least-to-Most" geçişi için hangi veri sinyali beklenmelidir?',
         options: [
-          { label: 'Öğrencinin derse istekli girdiği ve göz temasının arttığı ilk seans.', clinicalValue: 10, aiTag: 'subjective_observation' },
-          { label: 'Velinin "Evde ipucu olmadan yapıyor" beyanı.', clinicalValue: 0, aiTag: 'unverified_data' },
-          { label: 'Bağımsız denemelerde (Probe) ardışık 3 seansta %80 başarı ve yanıt bekleme süresinde (latency) anlamlı düşüş.', clinicalValue: 100, aiTag: 'data_driven_decision' },
-          { label: 'Materyal değişikliği sonrası çocuğun tepki hızının artması.', clinicalValue: 40, aiTag: 'generalization_confusion' }
+          { label: 'Subjektif Gözlem: Öğrencinin derse girmeden önceki genel uyarılmışlık halinin yüksek olması ve materyallere spontane ilgi göstermesi.', clinicalValue: 10, aiTag: 'subjective_observation' },
+          { label: 'Veli Beyanı: Evdeki çalışmalarda çocuğun ipucu almadan yönergeleri yaptığının video ile kanıtlanması.', clinicalValue: 0, aiTag: 'unverified_data' },
+          { label: 'Veri Trendi: Bağımsız denemelerde (Probe Data) ardışık 3 oturumda %80 üzeri başarı sağlanması ve tepki bekleme süresinin (Latency) 3 saniyenin altına düşmesi.', clinicalValue: 100, aiTag: 'data_driven_decision' },
+          { label: 'Genelleme Sinyali: Çocuğun aynı beceriyi farklı materyallerle, ipucu verildiğinde hatasız yapabilmesi.', clinicalValue: 40, aiTag: 'generalization_confusion' }
         ]
       },
       {
         id: 'aba_3',
         text: 'Bir beceri öğretiminde "Veri Kararlılığı" (Data Stability) sağlanamıyor ve grafik testere dişi (zig-zag) çiziyorsa, ilk şüphelenilmesi gereken değişken nedir?',
         options: [
-          { label: 'Uygulama Güvenirliği (Treatment Integrity): Farklı uygulayıcıların yönergeyi veya ipucunu sunma biçimindeki tutarsızlıklar.', clinicalValue: 100, aiTag: 'methodological_depth' },
-          { label: 'Çocuğun uyku ve beslenme düzenindeki biyolojik düzensizlikler.', clinicalValue: 40, aiTag: 'external_attribution_bias' },
-          { label: 'Pekiştireçlerin çocuk için artık cazip olmaması (Satiation).', clinicalValue: 50, aiTag: 'reinforcement_focus' },
-          { label: 'Öğretilen becerinin çocuğun gelişimsel yaşının üzerinde olması.', clinicalValue: 30, aiTag: 'developmental_mismatch' }
+          { label: 'Uygulama Güvenirliği (Treatment Integrity): Farklı uygulayıcıların yönergeyi, ipucunu veya pekiştireci sunma zamanlamasındaki milisaniyelik tutarsızlıklar.', clinicalValue: 100, aiTag: 'methodological_depth' },
+          { label: 'Biyolojik Değişkenler: Çocuğun uyku düzeni, beslenme saati veya ilaç kullanımındaki düzensizlikler.', clinicalValue: 40, aiTag: 'external_attribution_bias' },
+          { label: 'Pekiştireç Doygunluğu (Satiation): Kullanılan ödülün çocuk için artık motive edici özelliğini kaybetmiş olması.', clinicalValue: 50, aiTag: 'reinforcement_focus' },
+          { label: 'Gelişimsel Eşik: Öğretilen becerinin çocuğun proksimal gelişim alanının (ZPD) çok üzerinde olması.', clinicalValue: 30, aiTag: 'developmental_mismatch' }
         ]
       },
       {
         id: 'aba_4',
         text: 'İşlevsel Analiz sonucunda "Elde Etme" (Tangible) işlevi saptanan bir davranış için, çocuk ağladığında tablet verilmemesi kararı alınmıştır. Ancak çocuk kafasını vurmaya başlarsa ne yapılır?',
         options: [
-          { label: 'Kriz Yönetimi: Hemen tableti verip davranışı durdurmak, güvenlik her şeyden önemlidir.', clinicalValue: 10, aiTag: 'accidental_reinforcement' },
-          { label: 'Güvenlik & Sönme: Kask takar veya el yastığı yaparım; tableti ASLA vermem ama "İstiyorum" demesi (FCT) için fiziksel ipucu vererek iletişime zorlarım.', clinicalValue: 100, aiTag: 'expert_crisis_management' },
-          { label: 'Duygusal Destek: Çocuğa sarılarak sakinleşmesini sağlar, sonra tableti veririm.', clinicalValue: 20, aiTag: 'sensory_confused' },
-          { label: 'Ortamdan Uzaklaşma: Odayı terk ederek davranışı görmezden gelirim (Planned Ignoring).', clinicalValue: 0, aiTag: 'negligence_risk' }
+          { label: 'Kriz Yönetimi: Kendine zarar verme davranışı (SIB) başladığı an prosedür iptal edilir; tablet verilir çünkü fiziksel bütünlük her türlü öğretimden önceliklidir.', clinicalValue: 10, aiTag: 'accidental_reinforcement' },
+          { label: 'Güvenlik & Sönme: Kask/Yastık ile fiziksel koruma sağlanır ancak tablet ASLA verilmez. Çocuk sakinleşip alternatif bir iletişim (FCT) kurana kadar talep nötr şekilde askıda tutulur.', clinicalValue: 100, aiTag: 'expert_crisis_management' },
+          { label: 'Duygusal Regülasyon: Tablet verilmez ama çocuğa sıkıca sarılarak (Deep Pressure) sakinleşmesi sağlanır, sonra derse dönülür.', clinicalValue: 20, aiTag: 'sensory_confused' },
+          { label: 'Planlı Görmezden Gelme: Odayı terk ederek çocuğun davranışının işlevsiz olduğunu görmesi sağlanır (Planned Ignoring).', clinicalValue: 0, aiTag: 'negligence_risk' }
         ]
       },
       {
         id: 'aba_5',
         text: '"Pekiştirme İnceliği" (Ratio Strain) yaşandığında (çocuk ödül almak zorlaştığı için vazgeçtiğinde) doğru klinik manevra nedir?',
         options: [
-          { label: 'Beklenti Yönetimi: Çocuğa "Sen artık büyüdün, ödülsüz yapmalısın" diyerek içsel motivasyonu teşvik etmek.', clinicalValue: 0, aiTag: 'developmental_error' },
-          { label: 'Pekiştireç Değişimi: Çocuğun ilgisini çekecek daha büyük ve yeni bir ödül sunmak.', clinicalValue: 40, aiTag: 'bribing_risk' },
-          { label: 'Geri Adım (Backstep): Geçici olarak "Yoğun Pekiştirme" (Dense Schedule) evresine geri dönüp davranış momentumunu (Behavioral Momentum) yeniden kazanmak.', clinicalValue: 100, aiTag: 'precision_clinician' },
-          { label: 'Sözel Destek: Görevi basitleştirmeden sözel ipuçlarını artırmak.', clinicalValue: 20, aiTag: 'ineffective_support' }
+          { label: 'Bilişsel İkna: Çocuğa "Sen artık abisin/ablasın, ödülsüz de yapabilirsin" diyerek içsel motivasyonu tetiklemek.', clinicalValue: 0, aiTag: 'developmental_error' },
+          { label: 'Değer Yükseltme: Pekiştirecin miktarını veya niteliğini artırarak (Magnitude Change) çocuğun ilgisini yeniden çekmek.', clinicalValue: 40, aiTag: 'bribing_risk' },
+          { label: 'Geri Adım (Backstep): Geçici olarak "Yoğun Pekiştirme" (Dense Schedule / FR1) evresine geri dönüp "Davranış Momentumunu" tekrar inşa etmek.', clinicalValue: 100, aiTag: 'precision_clinician' },
+          { label: 'İpucu Desteği: Ödül tarifesini değiştirmeden, fiziksel ve sözel ipuçlarını artırarak hatasız öğretim yapmak.', clinicalValue: 20, aiTag: 'ineffective_support' }
         ]
       },
       {
         id: 'aba_6',
         text: 'ABC kaydında "Consequence" (Sonuç) kısmına "Çocuğu uyardım" yazan bir personelin temel hatası nedir?',
         options: [
-          { label: 'Eksik Tanım: Uyarının ses tonunu ve içeriğini belirtmemiştir.', clinicalValue: 40, aiTag: 'descriptive_error' },
-          { label: 'Fonksiyonel Belirsizlik: Uyarının çocuğun davranışı üzerindeki anlık etkisini (arttırdı/azalttı) belirtmemiştir. Uyarı pekiştireç işlevi görmüş olabilir.', clinicalValue: 100, aiTag: 'functional_insight' },
-          { label: 'Format Hatası: ABC kaydına müdahale değil, sadece çocuğun tepkisi yazılmalıdır.', clinicalValue: 20, aiTag: 'theoretical_gap' },
-          { label: 'Hiçbiri: Bu ifade yeterli ve doğrudur.', clinicalValue: 0, aiTag: 'irrelevant' }
+          { label: 'Betimsel Eksiklik: Uyarının ses tonunu (sert/yumuşak) ve tam cümlesini yazmamıştır.', clinicalValue: 40, aiTag: 'descriptive_error' },
+          { label: 'Fonksiyonel Belirsizlik: "Uyarı"nın davranışı artırıp artırmadığını (Pekiştireç etkisi) belirtmemiştir. Davranışçı dilde uyarı bir sonuç değil, potansiyel bir ilgidir.', clinicalValue: 100, aiTag: 'functional_insight' },
+          { label: 'Format Hatası: ABC kaydına personelin davranışı değil, sadece çocuğun tepkisi yazılmalıdır.', clinicalValue: 20, aiTag: 'theoretical_gap' },
+          { label: 'Yetersiz Veri: Uyarının süresini belirtmemiştir.', clinicalValue: 0, aiTag: 'irrelevant' }
         ]
       },
       {
         id: 'aba_7',
         text: 'Genelleme (Generalization) çalışmasında "Loose Training" (Gevşek Öğretim) tekniği neyi ifade eder?',
         options: [
-          { label: 'Esneklik: Kuralların katı uygulanmaması ve çocuğa inisiyatif verilmesi.', clinicalValue: 10, aiTag: 'permissive_bias' },
-          { label: 'Doğal Akış: Çocuğun liderliğinde plansız öğretim yapılması.', clinicalValue: 0, aiTag: 'unstructured_risk' },
-          { label: 'Uyaran Çeşitliliği: Öğretim dışı değişkenlerin (oda sıcaklığı, kıyafet, gürültü, öğretmen, materyal) sistematik olarak çeşitlendirilmesi.', clinicalValue: 100, aiTag: 'generalization_mastery' },
-          { label: 'Zaman Yönetimi: Ders sürelerinin kısa tutulması.', clinicalValue: 20, aiTag: 'time_management_error' }
+          { label: 'Esnek Disiplin: Kuralların katı uygulanmaması, çocuğun derste daha özgür bırakılması.', clinicalValue: 10, aiTag: 'permissive_bias' },
+          { label: 'Doğal Akış: Çocuğun liderliğinde, plansız ve yapılandırılmamış oyun öğretimi.', clinicalValue: 0, aiTag: 'unstructured_risk' },
+          { label: 'Uyaran Çeşitliliği: Öğretim dışı değişkenlerin (oda ısısı, gürültü, kıyafet, farklı yönergeler) sistematik olarak değiştirilerek, becerinin tek bir uyarana bağımlı kalmasının önlenmesi.', clinicalValue: 100, aiTag: 'generalization_mastery' },
+          { label: 'Zaman Yönetimi: Ders sürelerinin kısa tutularak dikkatin dağılmasının önlenmesi.', clinicalValue: 20, aiTag: 'time_management_error' }
         ]
       },
       {
         id: 'aba_8',
         text: 'Token Economy (Sembol Pekiştirme) sisteminde çocuk kazandığı sembolleri harcamak istemiyor, sadece biriktiriyorsa sorun nerededir?',
         options: [
-          { label: 'Karakter: Çocuk biriktirme/istifleme obsesyonuna sahiptir.', clinicalValue: 10, aiTag: 'diagnostic_overshadowing' },
-          { label: 'Sistem Hatası: Sembollerin (Conditioned Reinforcer) yedek pekiştireçlerle (Back-up Reinforcer) takas değeri veya zamanlaması çocuğun motivasyonuna uygun ayarlanmamıştır.', clinicalValue: 100, aiTag: 'system_design_flaw' },
-          { label: 'Bilişsel Seviye: Sistem çocuğa çok karmaşık gelmiştir.', clinicalValue: 30, aiTag: 'premature_giveup' },
-          { label: 'Pekiştireç: Semboller (yıldız, sticker) çocuğun ilgisini çekmemiştir.', clinicalValue: 40, aiTag: 'surface_level_analysis' }
+          { label: 'Karakterolojik: Çocuk obsesif-kompulsif (OKB) eğilimler veya istifçilik özelliği gösteriyordur.', clinicalValue: 10, aiTag: 'diagnostic_overshadowing' },
+          { label: 'Sistem Tasarımı: "Koşullu Pekiştireç" (Token) ile "Yedek Pekiştireç" (Back-up) arasındaki takas değeri veya zamanlaması, çocuğun "yoksunluk" (deprivation) seviyesine uygun kurgulanmamıştır.', clinicalValue: 100, aiTag: 'system_design_flaw' },
+          { label: 'Bilişsel Seviye: Sembol sistemi çocuğa çok soyut gelmiştir, somut ödüllere dönülmelidir.', clinicalValue: 30, aiTag: 'premature_giveup' },
+          { label: 'Ödül Seçimi: Semboller (yıldız, sticker) çocuğun görsel ilgisini çekmemiştir.', clinicalValue: 40, aiTag: 'surface_level_analysis' }
         ]
       },
       {
         id: 'aba_9',
         text: 'Ayrımlı Pekiştirme (DRO - Diğer Davranışları Pekiştirme) uygularken yapılan en kritik "Teknik Hata" nedir?',
         options: [
-          { label: 'Yetersiz Ödül: Çocuğun ödülü beğenmemesi.', clinicalValue: 30, aiTag: 'general_error' },
-          { label: 'Sonuç Odaklılık: Hedef davranışın azalmaması durumunda hemen cezaya geçilmesi.', clinicalValue: 20, aiTag: 'outcome_focus' },
-          { label: 'Ölü Adam Testi İhlali: Çocuğun o an ne yaptığına bakmaksızın (başka bir problem davranış sergilese bile) sadece hedef davranış yok diye pekiştireç vermek.', clinicalValue: 100, aiTag: 'dro_blind_spot' },
-          { label: 'Zamanlama: Süreyi çok kısa tutarak çocuğu sıkmak.', clinicalValue: 40, aiTag: 'timing_error' }
+          { label: 'Yetersiz Motivasyon: Seçilen ödülün çocuğun ilgisini çekmemesi.', clinicalValue: 30, aiTag: 'general_error' },
+          { label: 'Sonuç Odaklılık: Hedef davranışın hemen azalmaması durumunda personelin pes edip cezaya başvurması.', clinicalValue: 20, aiTag: 'outcome_focus' },
+          { label: 'Ölü Adam Testi İhlali: Çocuğun o an "uygun" bir davranış sergilemesine bakmaksızın, sadece "problem davranış yok" diye (çocuk boş dursa bile) pekiştireç verilmesi.', clinicalValue: 100, aiTag: 'dro_blind_spot' },
+          { label: 'Zamanlama Hatası: DRO süresinin (Interval) çok uzun tutulması.', clinicalValue: 40, aiTag: 'timing_error' }
         ]
       },
       {
         id: 'aba_10',
         text: '"Pairing" (Eşleşme) aşamasında çocuk öğretmenden kaçıyorsa, öğretmen neyi yanlış yapıyordur?',
         options: [
-          { label: 'Duygusal Bağ: Çocuğa yeterince sevgi ve sıcaklık göstermiyordur.', clinicalValue: 10, aiTag: 'emotional_bias' },
-          { label: 'Mikro Talepler: Henüz "Talep" (Demand) göndermemeliyken, adını söyleme, bakma veya gelme gibi küçük yönergelerle ilişkiyi bozuyordur.', clinicalValue: 100, aiTag: 'pairing_demand_conflict' },
-          { label: 'Ortam: Oda çok kalabalık veya uyarıcı doludur.', clinicalValue: 0, aiTag: 'environmental_excuse' },
-          { label: 'Kontrol: Pekiştireçleri çocuğa vermeyip elinde tutarak güç savaşına giriyordur.', clinicalValue: 40, aiTag: 'control_bias' }
+          { label: 'Duygusal Bağ: Çocuğa yeterince sevgi diliyle yaklaşmıyor, çok mesafeli duruyordur.', clinicalValue: 10, aiTag: 'emotional_bias' },
+          { label: 'Talep Kirliliği: Henüz "Talep" (Demand) göndermemeliyken; "gel", "bak", "otur" gibi mikro yönergelerle ilişkiyi "iş/görev" bağlamına sokuyordur.', clinicalValue: 100, aiTag: 'pairing_demand_conflict' },
+          { label: 'Ortam Analizi: Oda çok sıcak, gürültülü veya çocuk için duyusal olarak rahatsız edicidir.', clinicalValue: 0, aiTag: 'environmental_excuse' },
+          { label: 'Materyal Kontrolü: Pekiştireçleri serbest bırakmıştır, oysa kontrolü elinde tutmalıdır.', clinicalValue: 40, aiTag: 'control_bias' }
         ]
       },
       {
         id: 'aba_11',
         text: 'Shaping (Biçimlendirme) sürecinde bir basamakta çocuk takıldı ve ilerlemiyor. Ne yaparsınız?',
         options: [
-          { label: 'Atlama: O basamağı pas geçip bir sonraki basamağa denerim.', clinicalValue: 0, aiTag: 'methodological_breach' },
-          { label: 'Analiz & Revize: Bir önceki başarılan basamağa döner, pekiştireci yoğunlaştırır ve ara bir basamak (mikro-step) ekleyerek kriteri düşürürüm.', clinicalValue: 100, aiTag: 'shaping_refinement' },
-          { label: 'Fiziksel Yardım: Çocuğa fiziksel yardımla yaptırarak kas hafızası oluştururum.', clinicalValue: 30, aiTag: 'prompt_dependency_risk' },
-          { label: 'Uygunluk: Beceri çocuğun seviyesine uygun değil diyerek hedefi değiştiririm.', clinicalValue: 20, aiTag: 'potential_denial' }
+          { label: 'Atlama Stratejisi: O basamağı pas geçip, bir sonraki basamağın ipucuyla yaptırılması.', clinicalValue: 0, aiTag: 'methodological_breach' },
+          { label: 'Analiz & Revize: Bir önceki başarılan basamağa dönerim, pekiştireci yoğunlaştırırım ve tıkandığı basamak ile önceki arasına bir "ara basamak" (micro-step) eklerim.', clinicalValue: 100, aiTag: 'shaping_refinement' },
+          { label: 'Fiziksel Manipülasyon: Çocuğa fiziksel yardımla (Full Physical) yaptırarak kas hafızası oluştururum, sonra silikleştiririm.', clinicalValue: 30, aiTag: 'prompt_dependency_risk' },
+          { label: 'Hedef Değişimi: Bu beceri çocuğun kapasitesine uygun değil diyerek programdan çıkarırım.', clinicalValue: 20, aiTag: 'potential_denial' }
         ]
       },
       {
         id: 'aba_12',
         text: 'Otizmli bir çocukta "Ekolali" (Tekrar) var. Bunu söndürmeli miyiz?',
         options: [
-          { label: 'Evet, anlamsız konuşmadır ve iletişimi engeller, hemen susturulmalı.', clinicalValue: 10, aiTag: 'old_school_error' },
-          { label: 'Hayır, ekolali çoğu zaman iletişimsel bir işleve (Talep, Onay, Regülasyon) sahiptir; işlevi bulunup şekillendirilmelidir.', clinicalValue: 100, aiTag: 'modern_aba_insight' },
-          { label: 'Görmezden gelinmelidir, ilgi görmezse söner.', clinicalValue: 40, aiTag: 'blanket_approach' },
-          { label: 'Hayır, bu çocuğun kendi kendine konuşmasıdır, karışılmamalı.', clinicalValue: 0, aiTag: 'passive_observation' }
+          { label: 'Söndürme: Evet, anlamsız konuşmadır ve fonksiyonel iletişimi bloke eder; hemen susturulmalı veya mola verilmelidir.', clinicalValue: 10, aiTag: 'old_school_error' },
+          { label: 'Fonksiyonel Dönüşüm: Hayır; ekolali çoğu zaman iletişimsel bir işleve (Talep, Onay, Regülasyon) sahiptir. Söndürmek yerine işlevini bulup "amaca uygun dile" şekillendiririm.', clinicalValue: 100, aiTag: 'modern_aba_insight' },
+          { label: 'Görmezden Gelme: İlgi göstermezsem kendiliğinden söner.', clinicalValue: 40, aiTag: 'blanket_approach' },
+          { label: 'Serbest Bırakma: Çocuğun kendini ifade etme biçimidir, karışılmamalıdır.', clinicalValue: 0, aiTag: 'passive_observation' }
         ]
       },
       {
         id: 'aba_13',
         text: 'Bir becerinin "Kalıcılık" (Maintenance) aşamasında pekiştireç nasıl verilmelidir?',
         options: [
-          { label: 'Sürekli (FR1): Davranışın unutulmaması için her doğru tepkide ödül devam etmelidir.', clinicalValue: 20, aiTag: 'satiation_risk' },
-          { label: 'Kesme: Pekiştireç tamamen kesilmeli, içsel motivasyon beklenmelidir.', clinicalValue: 30, aiTag: 'extinction_risk' },
-          { label: 'Doğal Transfer: Yapay ödüller çekilmeli, doğal ortam pekiştireçlerine (Aferin, gülümseme, işin bitmesi) ve aralıklı tarifeye geçilmelidir.', clinicalValue: 100, aiTag: 'natural_environment_training' },
-          { label: 'Maddi: Sadece somut ödüller (yiyecek vb.) verilmelidir.', clinicalValue: 10, aiTag: 'materialism' }
+          { label: 'Sürekli (FR1): Davranışın unutulmaması için her doğru tepkide ödül verilmeye devam edilmelidir.', clinicalValue: 20, aiTag: 'satiation_risk' },
+          { label: 'Yoksunlaştırma: Pekiştireç tamamen kesilmeli, çocuğun içsel motivasyonla yapması beklenmelidir.', clinicalValue: 30, aiTag: 'extinction_risk' },
+          { label: 'Doğal Transfer: Yapay ödüller (çikolata, jeton) sistematik olarak çekilmeli; doğal ortam pekiştireçlerine (Aferin, gülümseme, işin bitmesi) ve "Değişken Oranlı" tarifeye geçilmelidir.', clinicalValue: 100, aiTag: 'natural_environment_training' },
+          { label: 'Maddi Ödül: Sadece somut ödüller verilmeli, sözel ödüller (Aferin) kesilmelidir.', clinicalValue: 10, aiTag: 'materialism' }
         ]
       },
       {
         id: 'aba_14',
         text: 'Premack İlkesi (Büyükanne Kuralı) kriz anında nasıl uygulanır?',
         options: [
-          { label: 'Rüşvet: "Ağlamayı kesersen tablet veririm" diyerek.', clinicalValue: 20, aiTag: 'bribing_confusion' },
-          { label: 'İlk-Sonra: "Önce şu yap-bozu bitir (Düşük olasılıklı davranış), Sonra bahçeye çık (Yüksek olasılıklı davranış)" diyerek davranışı yönetmek.', clinicalValue: 100, aiTag: 'premack_application' },
-          { label: 'Sosyal Kıyas: "Bak herkes ne güzel oturuyor, sen de oturursan şeker var" diyerek.', clinicalValue: 10, aiTag: 'social_comparison' },
-          { label: 'Tehdit: "Bunu yapmazsan oyun yok" diyerek.', clinicalValue: 0, aiTag: 'threat_based' }
+          { label: 'Rüşvet Teklifi: "Eğer şimdi ağlamayı kesersen sana tablet veririm" diyerek pazarlık yapmak.', clinicalValue: 20, aiTag: 'bribing_confusion' },
+          { label: 'İlk-Sonra Prensibi: "Önce şu yap-bozu bitir (Düşük olasılıklı davranış), SONRA bahçeye çık (Yüksek olasılıklı davranış)" diyerek davranışı yönetmek.', clinicalValue: 100, aiTag: 'premack_application' },
+          { label: 'Sosyal Kıyaslama: "Bak arkadaşın ne güzel oturuyor, sen de oturursan sana da şeker var" demek.', clinicalValue: 10, aiTag: 'social_comparison' },
+          { label: 'Mahrumiyet Tehdidi: "Bunu yapmazsan oyun saati iptal" demek.', clinicalValue: 0, aiTag: 'threat_based' }
         ]
       },
       {
         id: 'aba_15',
         text: '"Çoklu Örnekle Öğretim" (Multiple Exemplar Training) neden kritiktir?',
         options: [
-          { label: 'Canlılık: Çocuk sıkılmasın ve materyal zenginliği olsun diye.', clinicalValue: 20, aiTag: 'shallow_reasoning' },
-          { label: 'Kavram Kontrolü: Uyaran kontrolünün tek bir özellik (örn: sadece kırmızı elma) üzerine kurulmasını önleyip kavramın (ELMA) genellenmesini sağlamak için.', clinicalValue: 100, aiTag: 'concept_formation' },
-          { label: 'Veli Memnuniyeti: Veliye kurumun zenginliğini göstermek için.', clinicalValue: 0, aiTag: 'showmanship' },
-          { label: 'Ezber: Çocuğun daha çok kelime ezberlemesi için.', clinicalValue: 10, aiTag: 'rote_memory_focus' }
+          { label: 'Eğlence ve Çeşitlilik: Çocuğun sıkılmasını önlemek ve materyal zenginliği sağlamak için.', clinicalValue: 20, aiTag: 'shallow_reasoning' },
+          { label: 'Kavramsal Genelleme: Uyaran kontrolünün tek bir özellik (örn: sadece kırmızı elma) üzerine kurulmasını önleyip, kavramın (ELMA) tüm varyasyonlarıyla öğrenilmesini sağlamak için.', clinicalValue: 100, aiTag: 'concept_formation' },
+          { label: 'Veli Algısı: Veliye kurumun materyal açısından zengin olduğunu göstermek için.', clinicalValue: 0, aiTag: 'showmanship' },
+          { label: 'Ezber Kapasitesi: Çocuğun daha çok kelime ezberleyerek zeka puanını artırmak için.', clinicalValue: 10, aiTag: 'rote_memory_focus' }
         ]
       }
     ]
@@ -175,60 +175,60 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'acad_1',
         text: 'Ses Temelli Cümle Yöntemi ile okuma öğretirken, "Hece Birleştirme" aşamasında takılan (örn: "K-A" diyor ama "KA" diyemiyor) bir çocuk için hangi teknik uygulanır?',
         options: [
-          { label: 'Tekrar: Ezberleyene kadar defalarca okutmak ve ev ödevi vermek.', clinicalValue: 0, aiTag: 'rote_learning_trap' },
-          { label: 'Continuous Blending: Sessiz harfi uzatarak (singing) sesli harfe bağlama tekniğini uygulamak.', clinicalValue: 100, aiTag: 'phonological_mastery' },
-          { label: 'Bütünsel: Görsel kartlarla kelimeyi bütün olarak (Global) öğretmek.', clinicalValue: 40, aiTag: 'global_method_confusion' },
-          { label: 'Dinleme: Okumaya ara verip sadece dinleme çalışmaları yapmak.', clinicalValue: 20, aiTag: 'passive_avoidance' }
+          { label: 'Yoğun Tekrar: Ezberleyene kadar defalarca okutmak ve ev ödevi ile pekiştirmek.', clinicalValue: 0, aiTag: 'rote_learning_trap' },
+          { label: 'Sürekli Kaynaştırma (Continuous Blending): Sessiz harfi uzatarak (singing/stretching) sesli harfe bağlama tekniğini uygulamak (mmmmaaaa -> ma).', clinicalValue: 100, aiTag: 'phonological_mastery' },
+          { label: 'Bütünsel Yöntem: Harfleri bırakıp, görsel kartlarla kelimeyi bütün olarak (Global) öğretmek.', clinicalValue: 40, aiTag: 'global_method_confusion' },
+          { label: 'Pasif Maruziyet: Okumaya ara verip sadece dinleme çalışmaları yaptırmak.', clinicalValue: 20, aiTag: 'passive_avoidance' }
         ]
       },
       {
         id: 'acad_2',
         text: 'Matematikte "Eldeli Toplama" yapamayan bir çocukta CRA (Somut-Temsili-Soyut) hiyerarşisine göre ilk adım ne olmalıdır?',
         options: [
-          { label: 'Somutlaştırma: Onluk bozma ve gruplama için fiziksel bloklarla (Base-ten blocks) manipülasyon yapmak.', clinicalValue: 100, aiTag: 'cra_hierarchy_expert' },
-          { label: 'Görselleştirme: Deftere basamak tablosu çizdirmek ve boyatmak.', clinicalValue: 40, aiTag: 'representational_premature' },
-          { label: 'Pratik: Daha çok işlem çözdürerek otomatiğe bağlamak.', clinicalValue: 10, aiTag: 'drill_and_kill' },
-          { label: 'Strateji: "Büyük sayıyı aklında tut" stratejisini öğretmek.', clinicalValue: 0, aiTag: 'cognitive_overload' }
+          { label: 'Manipülatif Müdahale: Onluk bozma ve gruplama mantığını fiziksel bloklarla (Base-ten blocks) somutlaştırarak öğretmek.', clinicalValue: 100, aiTag: 'cra_hierarchy_expert' },
+          { label: 'Görselleştirme: Deftere basamak tablosu çizdirmek ve boyatmak (Temsili Aşama).', clinicalValue: 40, aiTag: 'representational_premature' },
+          { label: 'Drill & Practice: Daha çok işlem çözdürerek prosedürü otomatiğe bağlamak.', clinicalValue: 10, aiTag: 'drill_and_kill' },
+          { label: 'Strateji Öğretimi: "Büyük sayıyı aklında tut, küçüğü üzerine say" stratejisini vermek.', clinicalValue: 0, aiTag: 'cognitive_overload' }
         ]
       },
       {
         id: 'acad_3',
         text: 'Okurken satır atlayan ve kelime sonlarını uyduran bir öğrencide "Hızlı İsimlendirme" (RAN) zayıflığı tespit ettiniz. Müdahale planı ne olmalıdır?',
         options: [
-          { label: 'Hız Kesme: Daha yavaş ve dikkatli okumasını telkin etmek.', clinicalValue: 20, aiTag: 'ineffective_instruction' },
-          { label: 'Medikal: Göz doktoruna yönlendirmek (Oftalmolojik muayene).', clinicalValue: 30, aiTag: 'medical_referral_only' },
-          { label: 'Akıcılık: Otomatikleşme çalışmaları (Sık kullanılan kelimeler, renk/nesne isimlendirme drilleri) ve "Okuma Penceresi" materyali kullanımı.', clinicalValue: 100, aiTag: 'fluency_intervention' },
-          { label: 'Uyarlama: Metin puntolarını büyütmek.', clinicalValue: 40, aiTag: 'accommodation_only' }
+          { label: 'Hız Kesme: Çocuğa "Daha yavaş ve dikkatli oku" telkininde bulunmak.', clinicalValue: 20, aiTag: 'ineffective_instruction' },
+          { label: 'Tıbbi Yönlendirme: Göz doktoruna yönlendirmek, göz kaslarında sorun olabilir.', clinicalValue: 30, aiTag: 'medical_referral_only' },
+          { label: 'Akıcılık Çalışması: Otomatikleşme çalışmaları (Sık kullanılan kelimeler, renk/nesne isimlendirme drilleri) ve "Okuma Penceresi" materyali ile görsel taramayı desteklemek.', clinicalValue: 100, aiTag: 'fluency_intervention' },
+          { label: 'Uyarlama: Metin puntolarını büyütmek ve satır aralarını açmak.', clinicalValue: 40, aiTag: 'accommodation_only' }
         ]
       },
       {
         id: 'acad_4',
         text: 'Yazılı anlatımda fikir üretmekte zorlanan (Bilişsel kilitlenme) bir öğrenciye "Grafik Düzenleyiciler" (Graphic Organizers) kullandırmanın nöropsikolojik amacı nedir?',
         options: [
-          { label: 'Motivasyon: Sayfanın dolu ve renkli görünmesini sağlamak.', clinicalValue: 10, aiTag: 'visual_filler' },
-          { label: 'Oyalama: Çocuğun resim yaparak derste sıkılmasını önlemek.', clinicalValue: 0, aiTag: 'time_filling' },
-          { label: 'Yürütücü İşlevler: Organizasyon yükünü kağıda aktararak çalışma belleğini (Working Memory) serbest bırakmak ve planlamayı somutlaştırmak.', clinicalValue: 100, aiTag: 'executive_function_support' },
-          { label: 'İnce Motor: Yazı yazmadan önce el kaslarını ısıtmak.', clinicalValue: 20, aiTag: 'wrong_domain' }
+          { label: 'Motivasyon Artırma: Sayfanın dolu ve renkli görünmesini sağlayarak yazma isteğini artırmak.', clinicalValue: 10, aiTag: 'visual_filler' },
+          { label: 'Oyalama Taktiği: Çocuğun resim yaparak derste sıkılmasını önlemek.', clinicalValue: 0, aiTag: 'time_filling' },
+          { label: 'Yürütücü İşlev Desteği: Organizasyon yükünü kağıda aktararak Çalışma Belleğini (Working Memory) serbest bırakmak ve planlamayı somutlaştırmak.', clinicalValue: 100, aiTag: 'executive_function_support' },
+          { label: 'Motor Hazırlık: Yazı yazmadan önce el kaslarını ısıtmak.', clinicalValue: 20, aiTag: 'wrong_domain' }
         ]
       },
       {
         id: 'acad_5',
         text: 'Diskalkuli şüphesi olan bir çocuk "5 tane elma" dendiğinde parmakla saymadan 5 olduğunu bilemiyor (Subitizing eksikliği). Ne çalışılmalı?',
         options: [
-          { label: 'Ezber: Çarpım tablosunu ezberleterek sayı hafızasını güçlendirmek.', clinicalValue: 0, aiTag: 'advanced_error' },
-          { label: 'Sayı Hissi: Nokta kartları (Dot cards), zar oyunları ve domino ile şipşak sayı algılama çalışmaları.', clinicalValue: 100, aiTag: 'number_sense_building' },
-          { label: 'Sayma: 100\'e kadar ritmik sayma çalışmaları.', clinicalValue: 40, aiTag: 'rote_counting_confusion' },
-          { label: 'Yazma: Rakam yazma çalışmaları ile sembolleri pekiştirmek.', clinicalValue: 20, aiTag: 'motor_focus' }
+          { label: 'Hafıza Güçlendirme: Çarpım tablosunu ezberleterek sayı hafızasını geliştirmek.', clinicalValue: 0, aiTag: 'advanced_error' },
+          { label: 'Sayı Hissi (Number Sense): Nokta kartları (Dot cards), zar oyunları ve domino ile şipşak sayı algılama çalışmaları yapmak.', clinicalValue: 100, aiTag: 'number_sense_building' },
+          { label: 'Ritmik Sayma: 100\'e kadar ritmik sayma çalışmaları ile sıralamayı öğretmek.', clinicalValue: 40, aiTag: 'rote_counting_confusion' },
+          { label: 'Sembolik Yazım: Rakam yazma çalışmaları ile sembolleri pekiştirmek.', clinicalValue: 20, aiTag: 'motor_focus' }
         ]
       },
       {
         id: 'acad_6',
         text: 'Okuduğunu anlama sorunu yaşayan bir çocuk, metni "Kodlama" (Decoding) yapabiliyor ama "Anlamlandırma" yapamıyor. Sorun nerede olabilir?',
         options: [
-          { label: 'Göz Tembelliği: Göz kasları satır takibinde yoruluyordur.', clinicalValue: 10, aiTag: 'medical_bias' },
-          { label: 'Zeka: Çocuğun genel zeka seviyesi düşüktür.', clinicalValue: 20, aiTag: 'labeling_bias' },
-          { label: 'Dil & Bellek: Sözcük dağarcığı (Vocabulary) kısıtlılığı veya çalışma belleği (cümlenin başını unutma) yetersizliği.', clinicalValue: 100, aiTag: 'comprehension_components' },
-          { label: 'İsteksizlik: Çocuk metni sıkıcı buluyordur.', clinicalValue: 0, aiTag: 'motivation_blame' }
+          { label: 'Görsel İşlemleme: Göz kasları satır takibinde yoruluyor olabilir.', clinicalValue: 10, aiTag: 'medical_bias' },
+          { label: 'Genel Zeka: Çocuğun IQ seviyesi düşüktür, soyut düşünemiyordur.', clinicalValue: 20, aiTag: 'labeling_bias' },
+          { label: 'Dil & Bellek: Sözcük dağarcığı (Vocabulary) kısıtlılığı veya çalışma belleği (cümlenin sonuna gelince başını unutma) yetersizliği.', clinicalValue: 100, aiTag: 'comprehension_components' },
+          { label: 'Motivasyon: Çocuk metni sıkıcı bulduğu için odaklanmıyordur.', clinicalValue: 0, aiTag: 'motivation_blame' }
         ]
       },
       {
@@ -236,89 +236,89 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: '"b" ve "d" harflerini karıştıran (Reversal) 3. sınıf öğrencisine "Görsel hafızan zayıf" demek neden yetersiz bir tanımdır?',
         options: [
           { label: 'Ayırıcı Tanı: Sorun sadece hafıza değil; fonolojik farkındalık, görsel-uzamsal yönelim (Orientation) veya lateralizasyon eksikliği olabilir.', clinicalValue: 100, aiTag: 'differential_diagnosis' },
-          { label: 'Duygusal: Bu ifade çocuğu etiketler ve özgüvenini kırar.', clinicalValue: 10, aiTag: 'emotional_focus' },
-          { label: 'Doğruluk: Bu tanım doğrudur, görsel hafıza güçlendirilmelidir.', clinicalValue: 0, aiTag: 'clinical_ignorance' },
-          { label: 'Dikkat: Bu durum tipik bir dikkat eksikliği belirtisidir.', clinicalValue: 30, aiTag: 'attention_bias' }
+          { label: 'Psikolojik Etki: Bu ifade çocuğu etiketler ve akademik özgüvenini kırar.', clinicalValue: 10, aiTag: 'emotional_focus' },
+          { label: 'Doğruluk Payı: Bu tanım aslında doğrudur, görsel hafıza egzersizleri verilmelidir.', clinicalValue: 0, aiTag: 'clinical_ignorance' },
+          { label: 'Dikkat Eksikliği: Bu durum tipik bir DEHB belirtisidir, ilaçla düzelir.', clinicalValue: 30, aiTag: 'attention_bias' }
         ]
       },
       {
         id: 'acad_8',
         text: 'Problem çözme becerisinde "Anahtar Kelime Stratejisi" (Örn: Toplam kelimesini görünce topla) neden tehlikelidir?',
         options: [
-          { label: 'Faydalıdır: Tehlikeli değildir, çocuğa hız kazandırır.', clinicalValue: 0, aiTag: 'traditional_error' },
-          { label: 'Pratiklik: Çocuk okuma bilmiyorsa işe yaramaz.', clinicalValue: 20, aiTag: 'practical_issue' },
-          { label: 'Yüzeysellik: Çocuğu problemi anlamaktan alıkoyar ve şaşırtmacalı sorularda (Örn: "Toplam kaç eksiği var?") hataya sürükler. Şema temelli yaklaşım (Schema-based) tercih edilmelidir.', clinicalValue: 100, aiTag: 'metacognitive_awareness' },
-          { label: 'Zaman: Öğretimi çok zaman alır.', clinicalValue: 10, aiTag: 'efficiency_bias' }
+          { label: 'Faydalıdır: Tehlikeli değildir, çocuğa hız kazandırır ve sınav başarısını artırır.', clinicalValue: 0, aiTag: 'traditional_error' },
+          { label: 'Sınırlılık: Çocuk okuma bilmiyorsa bu strateji işe yaramaz.', clinicalValue: 20, aiTag: 'practical_issue' },
+          { label: 'Yüzeysellik Tuzağı: Çocuğu problemi anlamaktan alıkoyar ve şaşırtmacalı sorularda (Örn: "Toplam kaç eksiği var?") hataya sürükler. Şema temelli yaklaşım (Schema-based) tercih edilmelidir.', clinicalValue: 100, aiTag: 'metacognitive_awareness' },
+          { label: 'Zaman Kaybı: Bu stratejinin öğretimi çok zaman alır.', clinicalValue: 10, aiTag: 'efficiency_bias' }
         ]
       },
       {
         id: 'acad_9',
         text: 'Yazısı okunaksız (Disgrafi) olan bir öğrenciye sürekli "Güzel yaz" uyarısı yapmak neden işe yaramaz?',
         options: [
-          { label: 'Davranışsal: Çocuk inatçıdır ve bilerek kötü yazıyordur.', clinicalValue: 0, aiTag: 'behavioral_attribution' },
-          { label: 'Motor & Duyusal: Sorun motivasyon değil; ince motor beceri, el-göz koordinasyonu veya propriyoseptif duyum (kalemi ne kadar sıkacağını bilememe) eksikliğidir. Ergonomik müdahale gerekir.', clinicalValue: 100, aiTag: 'occupational_insight' },
-          { label: 'Materyal: Kalemi veya silgisi kalitesizdir.', clinicalValue: 10, aiTag: 'material_blame' },
-          { label: 'Antrenman: Daha çok ödev verilerek kaslar güçlendirilmelidir.', clinicalValue: 20, aiTag: 'repetition_fallacy' }
+          { label: 'İnatçılık: Çocuk bilerek kötü yazıyordur, davranışsal müdahale gerekir.', clinicalValue: 0, aiTag: 'behavioral_attribution' },
+          { label: 'Motor & Duyusal Temel: Sorun motivasyon değil; ince motor beceri, el-göz koordinasyonu veya propriyoseptif duyum (kalemi ne kadar sıkacağını bilememe) eksikliğidir. Ergonomik müdahale gerekir.', clinicalValue: 100, aiTag: 'occupational_insight' },
+          { label: 'Araç Hatası: Kalemi veya silgisi kalitesizdir, değiştirmek gerekir.', clinicalValue: 10, aiTag: 'material_blame' },
+          { label: 'Yetersiz Pratik: Daha çok ev ödevi verilerek el kasları güçlendirilmelidir.', clinicalValue: 20, aiTag: 'repetition_fallacy' }
         ]
       },
       {
         id: 'acad_10',
         text: '"Çalışma Belleği" (Working Memory) düşük bir öğrenciye çok basamaklı bir yönerge verirseniz ne olur?',
         options: [
-          { label: 'Yavaşlama: Yapar ama çok yavaş yapar.', clinicalValue: 30, aiTag: 'optimistic_bias' },
+          { label: 'İşlem Yavaşlığı: Yapar ama çok yavaş yapar, sabırlı olmak gerekir.', clinicalValue: 30, aiTag: 'optimistic_bias' },
           { label: 'Veri Kaybı: Sadece ilk veya son basamağı hatırlar (Primacy/Recency Effect), aradaki bilgiler kaybolur ve görevi tamamlayamaz.', clinicalValue: 100, aiTag: 'cognitive_load_theory' },
-          { label: 'Duygusal: Sinirlenir ve ağlar.', clinicalValue: 20, aiTag: 'emotional_outcome' },
-          { label: 'Tamamlama: Hepsini yapar, bellek kapasitesi yönergeyle artar.', clinicalValue: 0, aiTag: 'ignorance' }
+          { label: 'Duygusal Tepki: Sinirlenir, ağlar ve dersten soğur.', clinicalValue: 20, aiTag: 'emotional_outcome' },
+          { label: 'Gelişim: Zorlandıkça bellek kapasitesi artar, bu iyi bir egzersizdir.', clinicalValue: 0, aiTag: 'ignorance' }
         ]
       },
       {
         id: 'acad_11',
         text: 'Metakognisyon (Üstbiliş) eğitimi akademik başarıyı nasıl artırır?',
         options: [
-          { label: 'Zeka: Çocuğun IQ puanını artırarak.', clinicalValue: 10, aiTag: 'iq_myth' },
-          { label: 'Öğrenmeyi Öğrenme: Öğrencinin "Nasıl öğrendiğini", nerede hata yaptığını ve hangi stratejiyi kullanması gerektiğini fark etmesini sağlayarak.', clinicalValue: 100, aiTag: 'metacognitive_mastery' },
-          { label: 'Pratik: Daha çok test çözdürerek hızı artırır.', clinicalValue: 20, aiTag: 'quantitative_focus' },
-          { label: 'Bağımlılık: Öğretmene olan ihtiyacı artırarak.', clinicalValue: 0, aiTag: 'dependency_error' }
+          { label: 'Zeka Artışı: Çocuğun IQ puanını doğrudan yükselterek.', clinicalValue: 10, aiTag: 'iq_myth' },
+          { label: 'Öğrenmeyi Öğrenme: Öğrencinin "Nasıl öğrendiğini", nerede hata yaptığını ve hangi stratejiyi kullanması gerektiğini fark etmesini (Self-Monitoring) sağlayarak.', clinicalValue: 100, aiTag: 'metacognitive_mastery' },
+          { label: 'Test Pratiği: Daha çok test çözdürerek soru kalıplarını ezberletir.', clinicalValue: 20, aiTag: 'quantitative_focus' },
+          { label: 'Öğretmen Bağımlılığı: Öğretmene olan ihtiyacı artırarak hatasız öğrenmeyi sağlar.', clinicalValue: 0, aiTag: 'dependency_error' }
         ]
       },
       {
         id: 'acad_12',
         text: 'Bir öğrenci okurken sürekli parmakla takip ediyorsa ne yapılmalı?',
         options: [
-          { label: 'Engelleme: Hemen engellenmeli, gözle okumaya zorlanmalıdır.', clinicalValue: 30, aiTag: 'speed_reading_myth' },
+          { label: 'Hemen Engelleme: Gözle okumaya zorlanmalı, parmak kullanımı okuma hızını düşürür.', clinicalValue: 30, aiTag: 'speed_reading_myth' },
           { label: 'İskele (Scaffolding): Okuma hızı ve doğruluğu yerleşene kadar desteklenmeli, çünkü bu bir "dikkat çapası" görevi görür. Hazır olduğunda kademeli silikleştirilmelidir.', clinicalValue: 100, aiTag: 'scaffolding_approach' },
-          { label: 'Araç: Eline cetvel verilmeli.', clinicalValue: 40, aiTag: 'tool_substitution' },
-          { label: 'Pasif: Görmezden gelinmeli, zamanla geçer.', clinicalValue: 20, aiTag: 'passive_observation' }
+          { label: 'Araç Değişimi: Parmak yerine cetvel kullandırılmalı.', clinicalValue: 40, aiTag: 'tool_substitution' },
+          { label: 'Görmezden Gelme: Zamanla kendiliğinden geçer, müdahale edilmemeli.', clinicalValue: 20, aiTag: 'passive_observation' }
         ]
       },
       {
         id: 'acad_13',
         text: 'Matematik kaygısı (Math Anxiety) yaşayan bir öğrenci işlem sırasında donup kalıyorsa (Freezing) öncelikli yaklaşım ne olmalıdır?',
         options: [
-          { label: 'Motivasyon: "Yapabilirsin, basit bir işlem" diyerek cesaretlendirmek.', clinicalValue: 10, aiTag: 'toxic_positivity' },
-          { label: 'Hızlandırma: Süreyi başlatıp "Hadi" diyerek odaklanmasını sağlamak.', clinicalValue: 0, aiTag: 'anxiety_trigger' },
-          { label: 'Regülasyon: İşlemi basitleştirmek, süresiz çalışma ortamı sağlamak ve başarı hissini (Dopamin) küçük adımlarla geri kazandırarak amigdalayı sakinleştirmek.', clinicalValue: 100, aiTag: 'anxiety_regulation' },
-          { label: 'Kaçınma: Matematiği bırakıp resim yapmak.', clinicalValue: 20, aiTag: 'avoidance' }
+          { label: 'Sözel Motivasyon: "Yapabilirsin, çok basit bir işlem" diyerek cesaretlendirmek.', clinicalValue: 10, aiTag: 'toxic_positivity' },
+          { label: 'Zaman Baskısı: Süreyi başlatıp "Hadi" diyerek odaklanmasını sağlamak.', clinicalValue: 0, aiTag: 'anxiety_trigger' },
+          { label: 'Duygusal Regülasyon: İşlemi basitleştirmek, süresiz çalışma ortamı sağlamak ve başarı hissini (Dopamin) küçük adımlarla geri kazandırarak amigdalayı sakinleştirmek.', clinicalValue: 100, aiTag: 'anxiety_regulation' },
+          { label: 'Kaçınma: Matematiği bırakıp, sevdiği bir dersle (örn: resim) devam etmek.', clinicalValue: 20, aiTag: 'avoidance' }
         ]
       },
       {
         id: 'acad_14',
         text: 'Akıcı okuma (Fluency) çalışmasında "Koro Halinde Okuma" (Choral Reading) tekniği neye yarar?',
         options: [
-          { label: 'Disiplin: Sınıfın sessizliğini ve düzenini sağlar.', clinicalValue: 10, aiTag: 'discipline_focus' },
-          { label: 'Modelleme: Modelin (öğretmenin) prozodisini ve hızını taklit ederek, çocuğun "tek başına okuma stresi" olmadan akıcılık pratiği yapmasını sağlar.', clinicalValue: 100, aiTag: 'modeling_strategy' },
-          { label: 'Hafıza: Metni ezberlemeyi kolaylaştırır.', clinicalValue: 30, aiTag: 'rote_memory' },
-          { label: 'Gizleme: Hataları öğretmenden gizler.', clinicalValue: 20, aiTag: 'negative_view' }
+          { label: 'Sınıf Yönetimi: Sınıfın sessizliğini ve düzenini sağlar.', clinicalValue: 10, aiTag: 'discipline_focus' },
+          { label: 'Prozodi Modellemesi: Modelin (öğretmenin) vurgu ve hızını taklit ederek, çocuğun "tek başına okuma stresi" olmadan akıcılık pratiği yapmasını sağlar.', clinicalValue: 100, aiTag: 'modeling_strategy' },
+          { label: 'Hafıza Desteği: Metni ezberlemeyi kolaylaştırır.', clinicalValue: 30, aiTag: 'rote_memory' },
+          { label: 'Hata Gizleme: Çocuğun hatalarının öğretmen tarafından duyulmasını engeller.', clinicalValue: 20, aiTag: 'negative_view' }
         ]
       },
       {
         id: 'acad_15',
         text: 'Özel Öğrenme Güçlüğü olan bir çocuğa sınavda "Ek Süre" verilmesi bir "Ayrıcalık" mıdır?',
         options: [
-          { label: 'Evet: Diğer çocuklara haksızlıktır.', clinicalValue: 0, aiTag: 'fairness_fallacy' },
-          { label: 'Eşitleme (Equity): Hayır, bu bir "Uyarlama"dır (Accommodation). Çocuğun işlemleme hızı dezavantajını eşitleyerek bilgisini adil ölçmeyi sağlar.', clinicalValue: 100, aiTag: 'equity_understanding' },
-          { label: 'Belirsiz: Duruma göre değişir.', clinicalValue: 30, aiTag: 'uncertainty' },
-          { label: 'Bürokrasi: Sadece raporu varsa verilir, yoksa verilmez.', clinicalValue: 40, aiTag: 'bureaucratic_truth' }
+          { label: 'Haksız Rekabet: Evet, diğer çocuklara haksızlıktır.', clinicalValue: 0, aiTag: 'fairness_fallacy' },
+          { label: 'Adil Uyarlama (Accommodation): Hayır. Çocuğun işlemleme hızı dezavantajını eşitleyerek, bilgisini adil ölçmeyi sağlayan bir haktır.', clinicalValue: 100, aiTag: 'equity_understanding' },
+          { label: 'Durumsal: Bazen ayrıcalıktır, bazen haktır.', clinicalValue: 30, aiTag: 'uncertainty' },
+          { label: 'Bürokratik: Sadece raporu varsa verilir, yoksa verilmez.', clinicalValue: 40, aiTag: 'bureaucratic_truth' }
         ]
       }
     ]
@@ -336,10 +336,10 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'nr_1',
         text: 'Çocuğun odadaki ışıkları sürekli açıp kapattığı bir "Duyusal Kapanma" (Shutdown) anında Floortime önceliği nedir?',
         options: [
-          { label: 'Katılım (Join-in): Işık açıp kapama eylemine duygusal bir anlam katarak (örn: "Işık uyuyor-uyanıyor" diyerek) oyunun içine sızmak.', clinicalValue: 100, aiTag: 'relational_flow' },
-          { label: 'Sınır Koyma: Işığı söndürüp akademik görevi hatırlatmak.', clinicalValue: 0, aiTag: 'authoritarian_rigidity' },
-          { label: 'Bekleme: Görmezden gelip çocuğun sıkılmasını beklemek.', clinicalValue: 20, aiTag: 'passive_avoidance' },
-          { label: 'Fiziksel Müdahale: Elini tutup "Hayır" demek.', clinicalValue: 10, aiTag: 'behavioral_blocking' }
+          { label: 'Oyuna Dahil Olma (Join-in): Işık açıp kapama eylemine duygusal bir anlam katarak (örn: "Işık uyuyor-uyanıyor" diyerek) çocuğun dünyasına sızmak.', clinicalValue: 100, aiTag: 'relational_flow' },
+          { label: 'Sınır Koyma: Işığı söndürüp, akademik görevi hatırlatmak ve derse döndürmek.', clinicalValue: 0, aiTag: 'authoritarian_rigidity' },
+          { label: 'Pasif Bekleme: Görmezden gelip çocuğun sıkılmasını beklemek.', clinicalValue: 20, aiTag: 'passive_avoidance' },
+          { label: 'Fiziksel Engelleme: Elini tutup "Hayır" diyerek davranışı durdurmak.', clinicalValue: 10, aiTag: 'behavioral_blocking' }
         ]
       },
       {
@@ -347,46 +347,46 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: 'Düşük Eşikli (Hyper-reactive) bir çocukta ani yüksek sesli bir gülüşe verilen ağlama tepkisi neyi ifade eder?',
         options: [
           { label: 'Duyusal Savunmacılık: İşitsel hassasiyet ve sinir sistemi aşırı uyarımı (Fight/Flight tepkisi).', clinicalValue: 100, aiTag: 'neuro_sensory_literacy' },
-          { label: 'Davranışsal: Şımarıklık ve ilgi çekme isteği.', clinicalValue: 0, aiTag: 'behavioral_misinterpretation' },
-          { label: 'Dikkat: Sese odaklanamama.', clinicalValue: 10, aiTag: 'shallow_analysis' },
-          { label: 'Karakter: Çocuğun ürkek yapısı.', clinicalValue: 20, aiTag: 'labeling' }
+          { label: 'Davranışsal Manipülasyon: Şımarıklık ve ilgi çekme isteği.', clinicalValue: 0, aiTag: 'behavioral_misinterpretation' },
+          { label: 'Dikkat Dağınıklığı: Çocuğun sese odaklanamama sorunu.', clinicalValue: 10, aiTag: 'shallow_analysis' },
+          { label: 'Mizaç: Çocuğun doğuştan gelen korkak yapısı.', clinicalValue: 20, aiTag: 'labeling' }
         ]
       },
       {
         id: 'nr_3',
         text: 'FEDL 3 (İki Yönlü İletişim) basamağında "Sürekli Etkileşim Döngüsü" (Continuous Circles) kurmanın temel amacı nedir?',
         options: [
-          { label: 'Dil Gelişimi: Konuşmayı öğretmek.', clinicalValue: 30, aiTag: 'linguistic_bias' },
-          { label: 'Karşılıklılık (Reciprocity): Duygusal rezonansı sürdürüp "ben yaparım, sen tepki verirsin" bilincini sinir sistemine mühürlemek.', clinicalValue: 100, aiTag: 'advanced_neuro_relational' },
-          { label: 'İtaat: Çocuğun yerinde durmasını sağlamak.', clinicalValue: 10, aiTag: 'compliance_focus' },
-          { label: 'Eğlence: Oyun oynamak.', clinicalValue: 20, aiTag: 'simplification' }
+          { label: 'Dil Öğretimi: Çocuğa yeni kelimeler öğretmek.', clinicalValue: 30, aiTag: 'linguistic_bias' },
+          { label: 'Nöral Bağlantı: Duygusal rezonansı sürdürüp, "ben yaparım, sen tepki verirsin" bilincini (karşılıklılık/reciprocity) sinir sistemine mühürlemek.', clinicalValue: 100, aiTag: 'advanced_neuro_relational' },
+          { label: 'Uyum: Çocuğun yerinde durmasını sağlamak.', clinicalValue: 10, aiTag: 'compliance_focus' },
+          { label: 'Eğlence: Sadece oyun oynamak.', clinicalValue: 20, aiTag: 'simplification' }
         ]
       },
       {
         id: 'nr_4',
         text: 'Bir seansın "Klinik Rezonans" kalitesini en iyi hangi metrik ölçer?',
         options: [
-          { label: 'Sayısal: Çıkan kelime sayısı.', clinicalValue: 10, aiTag: 'quantitative_bias' },
-          { label: 'Akış: Açılan ve kapanan "İletişim Döngülerinin" (Circles of Communication) sayısı ve akıcılığı.', clinicalValue: 100, aiTag: 'qualitative_mastery' },
-          { label: 'Başarı: Çocuğun hiç hata yapmaması.', clinicalValue: 0, aiTag: 'rigid_success_bias' },
-          { label: 'Memnuniyet: Velinin gülümsemesi.', clinicalValue: 20, aiTag: 'external_validation' }
+          { label: 'Kelime Sayısı: Çocuğun seansta kaç kelime konuştuğu.', clinicalValue: 10, aiTag: 'quantitative_bias' },
+          { label: 'İletişim Döngüleri: Açılan ve kapanan "İletişim Döngülerinin" (Circles of Communication) sayısı ve akıcılığı.', clinicalValue: 100, aiTag: 'qualitative_mastery' },
+          { label: 'Hatasızlık: Çocuğun hiç hata yapmaması.', clinicalValue: 0, aiTag: 'rigid_success_bias' },
+          { label: 'Veli Memnuniyeti: Velinin seanstan mutlu ayrılması.', clinicalValue: 20, aiTag: 'external_validation' }
         ]
       },
       {
         id: 'nr_5',
         text: 'Regülasyon (Self-Regulation) bozukluğu olan bir çocukta "Ko-Regülasyon" (Co-Regulation) neden önce gelir?',
         options: [
-          { label: 'Ödünç Alma (Borrowing): Çocuk henüz kendi sistemini düzenleyemez; yetişkinin sakin sinir sistemini modelleyerek regüle olur.', clinicalValue: 100, aiTag: 'polyvagal_theory' },
-          { label: 'Bilişsel: Çocuk kuralları bilmediği için.', clinicalValue: 10, aiTag: 'cognitive_error' },
+          { label: 'Sinir Sistemi Modellemesi: Çocuk henüz kendi sistemini düzenleyemez; yetişkinin sakin sinir sistemini "ödünç alarak" (borrowing) regüle olur.', clinicalValue: 100, aiTag: 'polyvagal_theory' },
+          { label: 'Bilişsel Eksiklik: Çocuk kuralları bilmediği için.', clinicalValue: 10, aiTag: 'cognitive_error' },
           { label: 'Otorite: Yetişkin lider olduğu için.', clinicalValue: 20, aiTag: 'hierarchy_bias' },
-          { label: 'Kolaylık: Çocuğu sakinleştirmek daha kolay olduğu için.', clinicalValue: 0, aiTag: 'laziness' }
+          { label: 'Pratiklik: Çocuğu sakinleştirmek daha kolay olduğu için.', clinicalValue: 0, aiTag: 'laziness' }
         ]
       },
       {
         id: 'nr_6',
         text: '"Affect" (Duygu/Coşku) kullanımı DIR Floortime ekolünde neden bir "Motor" görevi görür?',
         options: [
-          { label: 'Nörobiyoloji: Limbik sistemi aktive ederek dopaminerjik öğrenme yollarını ve dikkati tetiklediği için.', clinicalValue: 100, aiTag: 'neuro_pedagogical_depth' },
+          { label: 'Nörobiyolojik Aktivasyon: Limbik sistemi aktive ederek dopaminerjik öğrenme yollarını ve dikkati tetiklediği için.', clinicalValue: 100, aiTag: 'neuro_pedagogical_depth' },
           { label: 'Eğlence: Sadece çocuğu derste tutmak için.', clinicalValue: 10, aiTag: 'shallow_affect' },
           { label: 'Performans: Öğretmenin enerjisini göstermek için.', clinicalValue: 20, aiTag: 'performative_bias' },
           { label: 'Güvenlik: Çocuğu korkutmamak için.', clinicalValue: 0, aiTag: 'irrelevant' }
@@ -396,39 +396,39 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'nr_7',
         text: 'Praksis (Motor Planlama) bozukluğu olan bir çocukta "İdeasyon" (Ideation) eksikliği ne anlama gelir?',
         options: [
-          { label: 'Kas Gücü: Hareketi yapacak fiziksel gücü yoktur.', clinicalValue: 10, aiTag: 'anatomical_error' },
+          { label: 'Fiziksel Yetersizlik: Hareketi yapacak kas gücünün olmaması.', clinicalValue: 10, aiTag: 'anatomical_error' },
           { label: 'Fikir Üretimi: Nesneyle ne yapacağına dair bir plan veya oyun fikri üretememe hali.', clinicalValue: 100, aiTag: 'praxis_analysis' },
-          { label: 'Denge: Yürürken düşmesidir.', clinicalValue: 30, aiTag: 'ataxia_confused' },
-          { label: 'İstek: Oynamak istememesidir.', clinicalValue: 20, aiTag: 'motivation_error' }
+          { label: 'Denge Sorunu: Yürürken düşmesi.', clinicalValue: 30, aiTag: 'ataxia_confused' },
+          { label: 'Motivasyon: Oynamak istememesi.', clinicalValue: 20, aiTag: 'motivation_error' }
         ]
       },
       {
         id: 'nr_8',
         text: 'Propriyoseptif Girdi (Derin Bası) ihtiyacı olan bir çocuk seans sırasında ne yapar?',
         options: [
-          { label: 'Arayış: Minderlerin arasına girmeye, sertçe zıplamaya, kendini yere atmaya veya sıkıştırılmaya çalışır.', clinicalValue: 100, aiTag: 'sensory_profile_expert' },
-          { label: 'Kaçınma: Sürekli kulaklarını kapatır.', clinicalValue: 0, aiTag: 'auditory_mismatch' },
-          { label: 'Görsel: Işıklara bakar.', clinicalValue: 10, aiTag: 'visual_bias' },
-          { label: 'Oral: Yemek yemeyi reddeder.', clinicalValue: 20, aiTag: 'oral_motor_confused' }
+          { label: 'Duyusal Arayış: Minderlerin arasına girmeye, sertçe zıplamaya, kendini yere atmaya veya sıkıştırılmaya çalışır.', clinicalValue: 100, aiTag: 'sensory_profile_expert' },
+          { label: 'İşitsel Kaçınma: Sürekli kulaklarını kapatır.', clinicalValue: 0, aiTag: 'auditory_mismatch' },
+          { label: 'Görsel İlgi: Işıklara bakar.', clinicalValue: 10, aiTag: 'visual_bias' },
+          { label: 'Oral Hassasiyet: Yemek yemeyi reddeder.', clinicalValue: 20, aiTag: 'oral_motor_confused' }
         ]
       },
       {
         id: 'nr_9',
         text: 'FEDL 4 (Karmaşık Problem Çözme) basamağında personelin "Sessizlik Eşiği" (Waiting time) neden artmalıdır?',
         options: [
-          { label: 'İşlemleme: Çocuğun kendi stratejisini üretmesi ve nöral işlemleme (processing) süresi tanıması için.', clinicalValue: 100, aiTag: 'strategic_patience' },
+          { label: 'İşlemleme Süresi: Çocuğun kendi stratejisini üretmesi ve nöral işlemleme (processing) süresi tanıması için.', clinicalValue: 100, aiTag: 'strategic_patience' },
           { label: 'Dinlenme: Öğretmenin yorulmaması için.', clinicalValue: 0, aiTag: 'poor_ethics' },
-          { label: 'Kanıt: Veliye "bakın kendi yapıyor" demek için.', clinicalValue: 30, aiTag: 'social_masking' },
-          { label: 'Sınav: Çocuğu test etmek için.', clinicalValue: 20, aiTag: 'testing_bias' }
+          { label: 'Veli Gösterisi: Veliye "bakın kendi yapıyor" demek için.', clinicalValue: 30, aiTag: 'social_masking' },
+          { label: 'Test Etme: Çocuğun bilgisini ölçmek için.', clinicalValue: 20, aiTag: 'testing_bias' }
         ]
       },
       {
         id: 'nr_10',
         text: '"Follow the Lead" (Lideri Takip Et) prensibini "Çocuk ne istiyorsa sadece onu yapalım" şeklinde yorumlayan birine ne dersiniz?',
         options: [
-          { label: 'Yanlış: Çocuğun ilgisine ortak olup ona "Klinik Meydan Okuma" (Challenge) ekleyerek gelişimsel itki sağlamalıyız (Expand the interaction).', clinicalValue: 100, aiTag: 'expert_interactor' },
+          { label: 'Yanlış: Çocuğun ilgisine ortak olup, ona "Klinik Meydan Okuma" (Challenge) ekleyerek gelişimsel itki sağlamalıyız (Expand the interaction).', clinicalValue: 100, aiTag: 'expert_interactor' },
           { label: 'Doğru: Çocuğun mutluluğu esastır, özgür olmalı.', clinicalValue: 10, aiTag: 'permissive_trap' },
-          { label: 'Kısmen: Bazen öyle, bazen değil.', clinicalValue: 30, aiTag: 'vague_professionalism' },
+          { label: 'Kısmen Doğru: Bazen öyle, bazen değil.', clinicalValue: 30, aiTag: 'vague_professionalism' },
           { label: 'Red: O zaman terapi olmaz, oyun ablalığı olur.', clinicalValue: 50, aiTag: 'dismissive_truth' }
         ]
       },
@@ -436,10 +436,10 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'nr_11',
         text: 'Vestibüler sistemi hassas (Gravitational Insecurity) olan bir çocuğu salıncakta sertçe sallamak neye yol açar?',
         options: [
-          { label: 'Duyarsızlaştırma: Çocuğun alışmasını sağlar.', clinicalValue: 0, aiTag: 'trauma_risk' },
-          { label: 'Kapanma: Kortizol (Stres) seviyesini artırarak çocuğu "Savaş/Kaç/Don" moduna sokar ve öğrenmeyi kapatır.', clinicalValue: 100, aiTag: 'neuro_safety_first' },
-          { label: 'Eğlence: Çocuğu heyecanlandırır.', clinicalValue: 10, aiTag: 'misobservation' },
-          { label: 'Denge: Vestibüler sistemi güçlendirir.', clinicalValue: 20, aiTag: 'mechanical_view' }
+          { label: 'Travma Riski: Duyarsızlaştırma sağlamaz; aksine çocuğu korkutur.', clinicalValue: 0, aiTag: 'trauma_risk' },
+          { label: 'Savaş/Kaç/Don: Kortizol (Stres) seviyesini artırarak çocuğu ilkel beyin moduna sokar ve öğrenmeyi kapatır.', clinicalValue: 100, aiTag: 'neuro_safety_first' },
+          { label: 'Eğlence: Çocuğu heyecanlandırır, iyi gelir.', clinicalValue: 10, aiTag: 'misobservation' },
+          { label: 'Denge Gelişimi: Vestibüler sistemi güçlendirir.', clinicalValue: 20, aiTag: 'mechanical_view' }
         ]
       },
       {
@@ -447,8 +447,8 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: 'Sembolik Oyun (Pretend Play) aşamasına geçemeyen bir çocukta eksik olan temel nedir?',
         options: [
           { label: 'Hayal Gücü: Yaratıcılık yeteneği.', clinicalValue: 20, aiTag: 'abstract_answer' },
-          { label: 'Temsil (Representation): Nesneleri işlevsel kullanma ve bir nesnenin başka bir şeyi temsil edebileceği (Muz = Telefon) bilişsel esnekliği.', clinicalValue: 100, aiTag: 'cognitive_milestone' },
-          { label: 'Materyal: Yeterince oyuncak olmaması.', clinicalValue: 0, aiTag: 'material_blame' },
+          { label: 'Temsil Yeteneği (Representation): Bir nesnenin başka bir şeyi temsil edebileceği (Muz = Telefon) bilişsel esnekliği.', clinicalValue: 100, aiTag: 'cognitive_milestone' },
+          { label: 'Oyuncak: Yeterince çeşitli oyuncak olmaması.', clinicalValue: 0, aiTag: 'material_blame' },
           { label: 'Dil: Konuşma becerisi.', clinicalValue: 30, aiTag: 'language_dependency' }
         ]
       },
@@ -458,7 +458,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         options: [
           { label: 'Normalizasyon: Evet, hemen durdurulmalı, toplum içinde garip görünür.', clinicalValue: 10, aiTag: 'normalization_bias' },
           { label: 'Regülasyon & İlişki: Hayır, bu bir regülasyon arayışıdır. Güvenliyse, eşlik ederek (Join-in) ilişkiye dönüştürülmeli ve yavaşça modüle edilmelidir.', clinicalValue: 100, aiTag: 'stimming_management' },
-          { label: 'İhmal: Görmezden gelinmelidir.', clinicalValue: 30, aiTag: 'passive_error' },
+          { label: 'İhmal: Görmezden gelinmelidir, kendi kendine bırakılmalıdır.', clinicalValue: 30, aiTag: 'passive_error' },
           { label: 'Ceza: Ceza verilerek söndürülmelidir.', clinicalValue: 0, aiTag: 'abusive' }
         ]
       },
@@ -466,9 +466,9 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'nr_14',
         text: '"Duygusal Sinyalleri Okuma" (Social Referencing) eksikliği olan bir çocuk ne yapar?',
         options: [
-          { label: 'Güvenlik Kontrolü: Düştüğünde veya korktuğunda ebeveyninin yüzüne bakıp "Güvende miyim?" teyidi almaz.', clinicalValue: 100, aiTag: 'social_referencing_sign' },
+          { label: 'Güvenlik Referansı: Düştüğünde veya korktuğunda ebeveyninin yüzüne bakıp "Güvende miyim?" teyidi almaz.', clinicalValue: 100, aiTag: 'social_referencing_sign' },
           { label: 'Okuma: Harfleri tanıyamaz.', clinicalValue: 0, aiTag: 'term_confusion' },
-          { label: 'Bakış: Göz teması kurmaz (Genel).', clinicalValue: 40, aiTag: 'partial_truth' },
+          { label: 'Göz Teması: Genel olarak göz teması kurmaz.', clinicalValue: 40, aiTag: 'partial_truth' },
           { label: 'Konuşma: İletişim başlatmaz.', clinicalValue: 20, aiTag: 'speech_bias' }
         ]
       },
@@ -476,10 +476,10 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'nr_15',
         text: 'Bir terapistin "Terapötik Benlik" (Therapeutic Self) kullanımı ne demektir?',
         options: [
-          { label: 'Kullanım Ustalığı: Kendi ses tonunu, jestlerini, enerjisini ve duygulanımını çocuğun sinir sistemine göre anlık enstrüman gibi ayarlayabilmesi.', clinicalValue: 100, aiTag: 'self_use_mastery' },
+          { label: 'Enstrümantal Benlik: Kendi ses tonunu, jestlerini, enerjisini ve duygulanımını çocuğun sinir sistemine göre anlık bir enstrüman gibi ayarlayabilmesi.', clinicalValue: 100, aiTag: 'self_use_mastery' },
           { label: 'Tanıtım: Kendini çocuğa tanıtması.', clinicalValue: 0, aiTag: 'literal_interpretation' },
-          { label: 'Otorite: Sınıfta lider olması.', clinicalValue: 10, aiTag: 'authority_bias' },
-          { label: 'Bilgi: Teorik bilgisini göstermesi.', clinicalValue: 20, aiTag: 'knowledge_bias' }
+          { label: 'Liderlik: Sınıfta otorite figürü olması.', clinicalValue: 10, aiTag: 'authority_bias' },
+          { label: 'Bilgi Aktarımı: Teorik bilgisini göstermesi.', clinicalValue: 20, aiTag: 'knowledge_bias' }
         ]
       }
     ]
@@ -497,10 +497,10 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'pb_1',
         text: 'Veli, seansın 20. dakikasında kapıyı çalıp ağlayarak "Hocam eşimle kavga ettik, seansı erken bitirip dertleşebilir miyiz?" dediğinde kurumsal cevabınız ne olur?',
         options: [
-          { label: 'Kurtarıcı: İnsani bir krizdir, kabul eder ve dinlerim.', clinicalValue: 10, aiTag: 'boundary_dissolution' },
-          { label: 'Red: Kapıyı kapatır, cevap vermem.', clinicalValue: 20, aiTag: 'aggressive_avoidance' },
+          { label: 'Kurtarıcı Rolü: İnsani bir krizdir, kabul eder ve dinlerim.', clinicalValue: 10, aiTag: 'boundary_dissolution' },
+          { label: 'Kaçınma: Kapıyı kapatır, cevap vermem.', clinicalValue: 20, aiTag: 'aggressive_avoidance' },
           { label: 'Sınır & Empati: Üzüntüsünü paylaştığımı belirtirim ancak seans süresinin çocuğun hakkı olduğunu vurgulayıp, seans sonrasında 5 dakika ayırabileceğimi veya psikoloğa yönlendireceğimi söylerim.', clinicalValue: 100, aiTag: 'immaculate_boundary' },
-          { label: 'Şikayet: Müdüre şikayet ederim.', clinicalValue: 30, aiTag: 'escalation_bias' }
+          { label: 'Bürokrasi: Müdüre şikayet ederim.', clinicalValue: 30, aiTag: 'escalation_bias' }
         ]
       },
       {
@@ -519,8 +519,8 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         options: [
           { label: 'Savunma: O öğretmenin yetkinliğini sorgulayan sert bir cevap veririm.', clinicalValue: 0, aiTag: 'unprofessional_rivalry' },
           { label: 'Geçiştirme: "Her yiğidin bir yoğurt yiyişi vardır" derim.', clinicalValue: 30, aiTag: 'shallow_professionalism' },
-          { label: 'Kanıt: Kendi klinik verilerimi, ilerleme grafiklerimi ve video kayıtlarımı masaya koyarak odağı polemikten alıp çocuğun somut başarısına kilitlerim.', clinicalValue: 100, aiTag: 'clinical_confidence' },
-          { label: 'Duygusal: Veliye küserim.', clinicalValue: 10, aiTag: 'emotional_immaturity' }
+          { label: 'Kanıt Odaklılık: Kendi klinik verilerimi, ilerleme grafiklerimi ve video kayıtlarımı masaya koyarak odağı polemikten alıp çocuğun somut başarısına kilitlerim.', clinicalValue: 100, aiTag: 'clinical_confidence' },
+          { label: 'Duygusal Tepki: Veliye küserim.', clinicalValue: 10, aiTag: 'emotional_immaturity' }
         ]
       },
       {
@@ -528,8 +528,8 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: 'Veli size pahalı bir hediye (Örn: Altın kolye) getirdiğinde profesyonel tutumunuz?',
         options: [
           { label: 'Kabul: Geri çevirmek hakaret olur, alırım.', clinicalValue: 0, aiTag: 'ethical_blindness' },
-          { label: 'Hak: Maaşımın bir kısmı olarak görürüm.', clinicalValue: -50, aiTag: 'moral_failure' },
-          { label: 'İlke: Kurum politikası ve mesleki etik gereği maddi değeri olan hediyeleri kabul edemeyeceğimi nazikçe açıklar, manevi desteği (teşekkür kartı vb.) için minnettar olduğumu belirtirim.', clinicalValue: 100, aiTag: 'professional_distance' },
+          { label: 'Hak Görme: Maaşımın bir kısmı olarak görürüm.', clinicalValue: -50, aiTag: 'moral_failure' },
+          { label: 'Etik İlke: Kurum politikası ve mesleki etik gereği maddi değeri olan hediyeleri kabul edemeyeceğimi nazikçe açıklar, manevi desteği (teşekkür kartı vb.) için minnettar olduğumu belirtirim.', clinicalValue: 100, aiTag: 'professional_distance' },
           { label: 'Transfer: Alıp başkasına veririm.', clinicalValue: 20, aiTag: 'covert_acceptance' }
         ]
       },
@@ -550,14 +550,14 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
           { label: 'Şoklama: Doğrudur, şok etkisi yaratmak gerekir.', clinicalValue: 10, aiTag: 'empathy_failure' },
           { label: 'Kapsayıcılık: Yanlıştır; duygularını valide eder (Active Listening), etiket kullanmadan somut gelişim hedeflerine odaklanarak onları sürece yavaşça dahil ederim.', clinicalValue: 100, aiTag: 'psych_diplomacy' },
           { label: 'Yalan: "Zamanla geçer" diyerek yalan söylerim.', clinicalValue: -50, aiTag: 'false_hope_ethics' },
-          { label: 'Pasif: Konuyu hiç açmam.', clinicalValue: 20, aiTag: 'passive_avoidance' }
+          { label: 'Pasiflik: Konuyu hiç açmam.', clinicalValue: 20, aiTag: 'passive_avoidance' }
         ]
       },
       {
         id: 'pb_7',
         text: 'Veli seans sırasında sürekli camdan müdahale ediyor ve "Öyle yapma, böyle yap" diye bağırıyorsa?',
         options: [
-          { label: 'Kontrol: Veliye izleme protokolünü hatırlatır, müdahalenin çocuğun dikkatini dağıttığını açıklar ve gerekirse perdeyi kapatırım.', clinicalValue: 100, aiTag: 'environmental_control' },
+          { label: 'Çevresel Kontrol: Veliye izleme protokolünü hatırlatır, müdahalenin çocuğun dikkatini dağıttığını açıklar ve gerekirse perdeyi kapatırım.', clinicalValue: 100, aiTag: 'environmental_control' },
           { label: 'Pasif Şikayet: Müdüre şikayet ederim.', clinicalValue: 40, aiTag: 'low_initiative' },
           { label: 'İtaat: Velinin dediğini yaparım.', clinicalValue: 0, aiTag: 'authority_surrender' },
           { label: 'Sınırsızlık: Veliyi içeri alırım.', clinicalValue: 20, aiTag: 'boundary_collapse' }
@@ -567,8 +567,8 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'pb_8',
         text: 'Boşanmış bir ailenin ebeveynleri birbirini kötülüyor ve sizden taraf olmanızı istiyor. Tavrınız?',
         options: [
-          { label: 'Taraf: Anneyi haklı bulurum, çünkü çocuk onda kalıyor.', clinicalValue: 10, aiTag: 'bias_error' },
-          { label: 'Pasif: İkisini de dinlerim ama yorum yapmam.', clinicalValue: 40, aiTag: 'passive_listener' },
+          { label: 'Taraf Tutma: Anneyi haklı bulurum, çünkü çocuk onda kalıyor.', clinicalValue: 10, aiTag: 'bias_error' },
+          { label: 'Pasif Dinleyici: İkisini de dinlerim ama yorum yapmam.', clinicalValue: 40, aiTag: 'passive_listener' },
           { label: 'Çocuk Odaklılık: "Ben çocuğun tarafındayım" diyerek odağı sadece çocuğun eğitimine ve iyilik haline çeker, ailevi konulara girmeyi kesin bir dille reddederim.', clinicalValue: 100, aiTag: 'child_centric_neutrality' },
           { label: 'Rol Karmaşası: Mahkemede şahitlik yaparım.', clinicalValue: 0, aiTag: 'role_confusion' }
         ]
@@ -578,7 +578,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: 'Veli "Çocuğumun videosunu Instagram\'da paylaşabilir miyim?" diye soruyor. Videoda siz de varsınız.',
         options: [
           { label: 'Ego: Tabii, reklamım olur.', clinicalValue: 10, aiTag: 'narcissistic_tendency' },
-          { label: 'Gizlilik: Kurumsal KVKK politikası ve kişisel gizlilik hakkım gereği, seans videolarının sosyal medyada paylaşılmasına izin veremem.', clinicalValue: 100, aiTag: 'privacy_adherence' },
+          { label: 'Gizlilik İlkesi: Kurumsal KVKK politikası ve kişisel gizlilik hakkım gereği, seans videolarının sosyal medyada paylaşılmasına izin veremem.', clinicalValue: 100, aiTag: 'privacy_adherence' },
           { label: 'Taviz: Yüzümü kapatırsanız olur.', clinicalValue: 40, aiTag: 'compromise_risk' },
           { label: 'Umursamazlık: Farketmez.', clinicalValue: 20, aiTag: 'low_awareness' }
         ]
