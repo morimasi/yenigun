@@ -148,20 +148,36 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
     setIsSaving(true);
 
     try {
+      // 1. BENZERSİZ KİMLİK OLUŞTURMA (Primary Key Constraint Çözümü)
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const uniqueId = `PRES-${timestamp}-${randomSuffix}`;
+      
+      // 2. SENTETİK E-POSTA OLUŞTURMA (Unique Constraint Çözümü)
+      // candidates tablosunda email unique olduğu için, her sunum için benzersiz bir "sistem maili" uyduruyoruz.
+      const syntheticEmail = `lib.${uniqueId}@system.yenigun.local`;
+
       const archivePayload = {
-        name: config.topic || 'İsimsiz Sunum',
-        branch: 'Akademik Sunum',
-        email: 'system@yenigun.com', // Placeholder for system entries
-        phone: '',
+        id: uniqueId, // DB'nin Primary Key beklediği alan
+        name: config.topic || 'İsimsiz Akademik Sunum',
+        branch: 'AKADEMİK MATERYAL',
+        email: syntheticEmail, 
+        phone: '0000000000',
         status: 'archived',
-        archiveCategory: 'PRESENTATION_LIBRARY', // NEW CATEGORY
-        archiveNote: `Hedef Kitle: ${config.targetAudience} | Ton: ${config.tone}`,
+        archiveCategory: 'PRESENTATION_LIBRARY',
+        archiveNote: `TÜR: ${config.targetAudience.toUpperCase()} | TON: ${config.tone.toUpperCase()} | TARİH: ${new Date().toLocaleDateString('tr-TR')}`,
+        // Rapor objesini DB'nin beklediği formata uygun hale getiriyoruz
         report: {
-          score: 100, // Dummy score
+          score: 100, 
           integrityIndex: 100,
           presentationSlides: slides,
           presentationConfig: config,
-          summary: `Nöral Stüdyo tarafından üretilen ${slides.length} slaytlık akademik materyal.`
+          summary: `Nöral Stüdyo tarafından üretilen ${slides.length} slaytlık akademik materyal.`,
+          // Frontend'in hata vermemesi için boş şemalar
+          deepAnalysis: {},
+          predictiveMetrics: {},
+          swot: {},
+          interviewGuidance: {}
         }
       };
 
@@ -171,10 +187,16 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose }) => {
         body: JSON.stringify(archivePayload)
       });
 
-      if (!res.ok) throw new Error("Sunucu hatası");
-      alert("Sunum başarıyla Akademik Kütüphane'ye mühürlendi.");
-    } catch (e) {
-      alert("Kayıt sırasında hata oluştu.");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.details || data.message || "Sunucu hatası");
+      }
+      
+      alert("Sunum başarıyla Akademik Kütüphane'ye mühürlendi. Arşiv modülünden erişebilirsiniz.");
+    } catch (e: any) {
+      console.error("Archive Error:", e);
+      alert(`Kayıt Başarısız: ${e.message}`);
     } finally {
       setIsSaving(false);
     }
