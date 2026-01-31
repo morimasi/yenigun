@@ -29,11 +29,11 @@ export const CERTIFICATIONS: Certification[] = [
     verificationQuestions: [
       {
         id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir problem davranışın işlevi "Kaçma/Kaçınma" (Escape) olarak belirlendi. Ancak çocuk o gün hasta görünüyor. "Talep Gönderme" (Demanding) konusunda stratejiniz ne olur?',
+        text: 'Bir problem davranışın işlevi "Kaçma/Kaçınma" (Escape) olarak belirlendi. Ancak çocuk o gün hasta görünüyor (Grip). "Talep Gönderme" (Demanding) konusunda stratejiniz ne olur?',
         weightedOptions: [
-          { label: 'Klinik Esneklik: Fizyolojik bariyer (hastalık) bir değişkendir; kaçınmayı pekiştirmemek için talebi düşürür (Demand Fading) ancak tamamen kaldırmadan süreci yönetirim.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Usta Klinisyen: Prosedürü bozmadan insani uyarlama yapabilme.' },
+          { label: 'Klinik Esneklik (Demand Fading): Fizyolojik bariyer (hastalık) kritiktir; kaçınmayı pekiştirmemek için talebi tamamen kaldırmam, ancak zorluk derecesini %80 düşürerek "başarı momentumunu" korurum.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Usta Klinisyen: Prosedürü bozmadan insani uyarlama yapabilme.' },
           { label: 'Şefkat Önceliği: Çocuk hasta olduğu için tüm akademik talepleri kaldırır, günü serbest oyun ve eşleşme (Pairing) ile geçirerek konforunu sağlarım.', weights: { clinical: -0.5, empathy: 1.0 }, analysisInsight: 'Şefkat Tuzağı: Hastalığı, kaçınma davranışı için meşru bir araç haline getirme riski.' },
-          { label: 'Prosedürel Sadakat: Hastalık davranışı etkilemez; tutarlılık adına belirlenen programı aynen uygularım.', weights: { clinical: 0.2, empathy: -1.0 }, analysisInsight: 'Mekanik Uygulama: Fizyolojik durumu ihmal eden katı yaklaşım.' },
+          { label: 'Prosedürel Sadakat: Hastalık davranışı etkilemez; tutarlılık adına belirlenen programı aynen uygularım, taviz verirsem davranış artar.', weights: { clinical: 0.2, empathy: -1.0 }, analysisInsight: 'Mekanik Uygulama: Fizyolojik durumu ihmal eden katı yaklaşım.' },
           { label: 'Sorumluluk Devri: Sağlık durumu nedeniyle riske girmemek adına seansı iptal eder veya ebeveyne devrederim.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Sorumluluktan Kaçış.' }
         ]
       }
@@ -204,8 +204,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_shadow_1', category: 'technicalExpertise', type: 'radio',
       text: 'Yoğun bir "Problem Davranış" (Örn: Kafasını masaya vurma) anında, çocuğun burnunun aktığını ve salyasının aktığını fark ettiniz. Bu durum çocuğun dikkatini de dağıtıyor. Saniyelik kararınız?',
       weightedOptions: [
-        { label: 'Hijyen ve Şefkat: Hijyen ve konfor önceliklidir; hemen müdahale eder, çocuğun yüzünü temizler ve sakinleşince derse dönerim.', weights: { clinical: -0.6, empathy: 1.0, sustainability: -0.2 }, analysisInsight: 'Şefkat Tuzağı: Davranış anında fiziksel temas ve ilgi (temizlik) sağlayarak problem davranışı yanlışlıkla pekiştirme (Accidental Reinforcement) riski.' },
-        { label: 'Klinik Sadakat: Kafasını korumak için el yastığı yaparım ama göz teması kurmadan, nötr bir yüzle krizin sönmesini bekler, temizliği kriz tamamen bitince yaparım.', weights: { clinical: 1.0, empathy: 0.2, sustainability: 0.8 }, analysisInsight: 'Klinik Sadakat: Güvenliği sağlarken "İlgi Çekme" veya "Kaçış" işlevini beslememe disiplini. (Planned Ignoring + Safety).' },
+        { label: 'Hijyen ve Şefkat (Temas): Hijyen ve konfor önceliklidir; hemen müdahale eder, çocuğun yüzünü temizler ve sakinleşince derse dönerim.', weights: { clinical: -0.6, empathy: 1.0, sustainability: -0.2 }, analysisInsight: 'Şefkat Tuzağı: Davranış anında fiziksel temas ve ilgi (temizlik) sağlayarak problem davranışı yanlışlıkla pekiştirme (Accidental Reinforcement) riski.' },
+        { label: 'Klinik Sadakat (Planned Ignoring): Kafasını korumak için el yastığı yaparım ama göz teması kurmadan, nötr bir yüzle krizin sönmesini bekler, temizliği kriz tamamen bitince yaparım.', weights: { clinical: 1.0, empathy: 0.2, sustainability: 0.8 }, analysisInsight: 'Klinik Sadakat: Güvenliği sağlarken "İlgi Çekme" veya "Kaçış" işlevini beslememe disiplini. (Planned Ignoring + Safety).' },
         { label: 'Sözel Uyarı: "Yapma oğlum" diyerek çocuğu tutarım ve sakinleştirmeye çalışırım.', weights: { clinical: -0.8, empathy: 0.2, sustainability: -0.5 }, analysisInsight: 'Veri Kirliliği: Sözel uyaran vererek davranışı besleme (Social Attention) hatası.' },
         { label: 'Seans İptali: Dersi o an sonlandırır, veliye çocuğu temizlemesi için teslim ederim.', weights: { clinical: -1.0, empathy: -0.5, institutionalLoyalty: -0.5 }, analysisInsight: 'Kaçınma Davranışı: Terapistin kriz anında otoriteyi ve sorumluluğu terk etmesi.' }
       ]
@@ -214,8 +214,8 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       id: 'clin_shadow_2', category: 'technicalExpertise', type: 'radio',
       text: 'Çocuk aylar sonra ilk kez hedeflediğiniz kelimeyi (örn: "Su") söyledi ancak o sırada sandalyede tehlikeli bir şekilde, tek ayak üzerinde dengede duruyor. Pekiştireci (Çikolata) nasıl sunarsınız?',
       weightedOptions: [
-        { label: 'Önce Güvenlik: Güvenlik her şeyden önemlidir. Önce "Otur" derim, düzgün oturunca "Aferin" der ve ödülü veririm.', weights: { clinical: -0.4, pedagogicalAnalysis: -0.5, sustainability: 0.5 }, analysisInsight: 'Zamanlama Hatası: Hedef davranış (Konuşma) ile pekiştireç arasına "Oturma" talebi sokarak öğrenmeyi bozma (Blocking Effect).' },
-        { label: 'Fırsat Yakalama: Hiç beklemeden coşkuyla ödülü veririm; o an düşme riskini göze alırım çünkü "Su" demesi benim için altın değerindedir.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0, formality: -0.3 }, analysisInsight: 'Öncelik Yönetimi: Kritik beceriyi yakalamak için ikincil riskleri (kontrollü şekilde) yönetme zekası. (Catching the moment).' },
+        { label: 'Önce Güvenlik: Güvenlik her şeyden önemlidir. Önce "Otur" derim, düzgün oturunca "Aferin" der ve ödülü veririm.', weights: { clinical: -0.4, pedagogicalAnalysis: -0.5, sustainability: 0.5 }, analysisInsight: 'Zamanlama Hatası (Blocking): Hedef davranış (Konuşma) ile pekiştireç arasına "Oturma" talebi sokarak öğrenmeyi bozma.' },
+        { label: 'Fırsat Yakalama (Catching the Moment): Hiç beklemeden coşkuyla ödülü veririm; o an düşme riskini göze alırım çünkü "Su" demesi benim için altın değerindedir.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0, formality: -0.3 }, analysisInsight: 'Öncelik Yönetimi: Kritik beceriyi yakalamak için ikincil riskleri (kontrollü şekilde) yönetme zekası.' },
         { label: 'Mükemmeliyetçilik: Görmezden gelirim, her şey mükemmel olmadan (hem oturuş hem konuşma) ödül verilirse yanlış davranış pekişir.', weights: { clinical: -0.7, empathy: -0.5, pedagogicalAnalysis: -0.8 }, analysisInsight: 'Mükemmeliyetçilik Tuzağı: Fırsat öğretimini kaçırma ve sönmeye sebep olma.' }
       ]
     },
@@ -225,7 +225,7 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       weightedOptions: [
         { label: 'Esneklik: Akışı bozmam, 5-10 dakika uzatırım. Eğitimdeki bu an, dışarıdaki velinin beklemesinden daha değerlidir.', weights: { clinical: 0.6, ethics: -0.4, institutionalLoyalty: -0.5 }, analysisInsight: 'Sınır İhlali (Time Boundary): İyi niyetli ama kurumsal zaman yönetimini ve diğer ailenin hakkını ihlal eden eylem.' },
         { label: 'Katı Kuralcılık: Tam dakikasında keserim. Kurallar kuraldır, diğer öğrencinin hakkına giremem.', weights: { clinical: -0.3, formality: 1.0, empathy: -0.2 }, analysisInsight: 'Mekanik Uygulama: Pedagojik kazancı prosedüre kurban etme.' },
-        { label: 'Pedagojik Final: Mevcut akışı "en yüksek noktada" (Peak) sonlandırıp, çocuğun "başarma hissiyle" ve tadı damağında kalarak çıkmasını sağlarım.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.8, institutionalLoyalty: 0.8 }, analysisInsight: 'Pedagojik Ustalık: Kısıtlılığı avantaja çevirme (Leave them wanting more) ve kurumsal düzene uyum.' }
+        { label: 'Pedagojik Final (Peak-End): Mevcut akışı "en yüksek noktada" (Peak) sonlandırıp, çocuğun "başarma hissiyle" ve tadı damağında kalarak çıkmasını sağlarım.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.8, institutionalLoyalty: 0.8 }, analysisInsight: 'Pedagojik Ustalık: Kısıtlılığı avantaja çevirme (Leave them wanting more) ve kurumsal düzene uyum.' }
       ]
     },
     {
@@ -233,7 +233,7 @@ export const BRANCH_QUESTIONS: Record<string, Question[]> = {
       text: 'Çocuğun sevdiği oyuncağı kullanarak çalışıyorsunuz. Çocuk oyuncağı elinizden hışımla çekip aldı ve vermiyor. Güç mücadelesine girmeden kontrolü nasıl geri alırsınız?',
       weightedOptions: [
         { label: 'Otorite: "Ver onu bana, yoksa ders biter!" diye net bir sınır koyarım.', weights: { pedagogicalAnalysis: -0.4, empathy: -0.6, clinical: -0.2 }, analysisInsight: 'Güç Savaşı (Power Struggle): Çocuğu savunmaya iten ve ilişkiyi zedeleyen eski ekol yaklaşımı.' },
-        { label: 'Motivasyonel Kontrol: Elindeki oyuncağın "eksik parçasını" (örn: arabanın yolu, bebeğin biberonu) elimde tutup, oyunu devam ettirmek için bana muhtaç olmasını (Motivasyonel Operasyon) sağlarım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9, empathy: 0.5 }, analysisInsight: 'Ortam Kontrolü (Environmental Control): Fiziksel güç yerine motivasyonel kontrol ve zeka kullanımı.' },
+        { label: 'Motivasyonel Kontrol (Environmental Control): Elindeki oyuncağın "eksik parçasını" (örn: arabanın yolu, bebeğin biberonu) elimde tutup, oyunu devam ettirmek için bana muhtaç olmasını (Motivasyonel Operasyon) sağlarım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9, empathy: 0.5 }, analysisInsight: 'Ortam Kontrolü: Fiziksel güç yerine motivasyonel kontrol ve zeka kullanımı.' },
         { label: 'Teslimiyet: Bırakırım oynasın, yeter ki ağlamasın, sonra ikna ederim.', weights: { clinical: -0.6, sustainability: -0.4, workEthics: -0.3 }, analysisInsight: 'Liderlik Kaybı: Terapötik liderliğin kaybı ve çocuğa kontrolü verme.' }
       ]
     },
