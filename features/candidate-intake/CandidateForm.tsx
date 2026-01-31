@@ -86,8 +86,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Dosya boyutu 5MB'dan küçük olmalıdır.");
+      // GÜVENLİK GÜNCELLEMESİ: Limit 3MB'a çekildi (Serverless function limitlerini aşmamak için)
+      if (file.size > 3 * 1024 * 1024) {
+        alert("Sistem güvenliği gereği dosya boyutu 3MB'dan küçük olmalıdır.");
         return;
       }
       const reader = new FileReader();
@@ -200,7 +201,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
                         {formData.cvData ? 'Belge Mühürlendi' : 'CV / Portfolyo Yükle'}
                       </p>
                       <p className="text-[9px] font-semibold opacity-70 uppercase">
-                        {formData.cvData ? formData.cvData.fileName : 'PDF / JPG Formatında'}
+                        {formData.cvData ? formData.cvData.fileName : 'PDF / JPG (Max 3MB)'}
                       </p>
                    </div>
                 </div>

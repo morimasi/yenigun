@@ -5,21 +5,49 @@ export const config = {
   runtime: 'edge',
 };
 
-// Şema Tahkimatı: Tüm olası eksik sütunları tek bir atomik işlemde mühürle
+// Yardımcı: Undefined değerleri null'a çevirir
+const sanitize = (val: any) => (val === undefined ? null : val);
+
+// Şema Tahkimatı: Tablo yoksa tam şema ile oluştur, varsa eksikleri tamamla.
 async function ensureSchema() {
   try {
+    // 1. Ana Tabloyu (Eğer yoksa) TAM SÜTUNLARLA oluştur.
+    // Bu, "ALTER" komutlarına olan bağımlılığı azaltır ve ilk kurulumu sağlamlaştırır.
+    await sql.query(`
+      CREATE TABLE IF NOT EXISTS candidates (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT,
+        age INTEGER,
+        gender TEXT,
+        marital_status TEXT,
+        branch TEXT,
+        university TEXT,
+        department TEXT,
+        experience_years INTEGER DEFAULT 0,
+        previous_institutions TEXT,
+        all_trainings JSONB DEFAULT '[]'::jsonb,
+        answers JSONB DEFAULT '{}'::jsonb,
+        status TEXT DEFAULT 'pending',
+        report JSONB,
+        algo_report JSONB,
+        cv_data JSONB,
+        archive_category TEXT,
+        archive_note TEXT,
+        admin_notes TEXT,
+        reminder_note TEXT,
+        interview_schedule JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 2. Mevcut tablolar için "Schema Migration" (Eksik sütunları ekle)
+    // Bu blok, tablo önceden varsa ve yeni sütunlar eklenmişse çalışır.
     await sql.query(`
       DO $$ 
       BEGIN
-        -- Ana tablo
-        CREATE TABLE IF NOT EXISTS candidates (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-
-        -- Eksik Sütunların Enjeksiyonu
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS age INTEGER;
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS gender TEXT;
@@ -45,6 +73,7 @@ async function ensureSchema() {
     `);
   } catch (e) {
     console.error("Schema Sync Error:", e);
+    throw new Error("Veritabanı şema senkronizasyonu başarısız oldu.");
   }
 }
 
@@ -64,7 +93,9 @@ export default async function handler(request: Request) {
 
   try {
     if (method === 'GET') {
+      // Okuma işleminden önce şemayı garantiye al
       await ensureSchema();
+      
       const { rows } = await sql`
         SELECT 
           id, name, email, phone, age, gender, marital_status as "maritalStatus",
@@ -82,10 +113,38 @@ export default async function handler(request: Request) {
 
     if (method === 'POST') {
       const body = await request.json();
+      const now = new Date().toISOString();
+
+      // Veri Sanitizasyonu: Undefined hatalarını önle
+      const id = sanitize(body.id);
+      const name = sanitize(body.name);
+      const email = sanitize(body.email);
+      const phone = sanitize(body.phone);
+      const age = sanitize(body.age);
+      const gender = sanitize(body.gender || 'Belirtilmemiş');
+      const maritalStatus = sanitize(body.maritalStatus || 'Bekar');
+      const branch = sanitize(body.branch || 'Belirtilmemiş');
+      const university = sanitize(body.university);
+      const department = sanitize(body.department);
+      const experienceYears = typeof body.experienceYears === 'number' ? body.experienceYears : 0;
+      const previousInstitutions = sanitize(body.previousInstitutions);
       
-      // Kayıt fonksiyonu: İçsel hata toleransı için encapsulate edildi
+      // JSON Alanları: Stringify edilmeli
+      const allTrainings = JSON.stringify(body.allTrainings || []);
+      const answers = JSON.stringify(body.answers || {});
+      const status = sanitize(body.status || 'pending');
+      const report = body.report ? JSON.stringify(body.report) : null;
+      const algoReport = body.algoReport ? JSON.stringify(body.algoReport) : null;
+      const cvData = body.cvData ? JSON.stringify(body.cvData) : null;
+      const interviewSchedule = body.interviewSchedule ? JSON.stringify(body.interviewSchedule) : null;
+      
+      const archiveCategory = sanitize(body.archiveCategory);
+      const archiveNote = sanitize(body.archiveNote);
+      const adminNotes = sanitize(body.adminNotes);
+      const reminderNote = sanitize(body.reminderNote);
+
+      // Kayıt fonksiyonu
       const performUpsert = async () => {
-        const now = new Date().toISOString();
         return await sql`
           INSERT INTO candidates (
             id, name, email, phone, age, gender, marital_status, branch, university, department,
@@ -93,16 +152,11 @@ export default async function handler(request: Request) {
             status, report, algo_report, cv_data, archive_category, archive_note, 
             admin_notes, reminder_note, interview_schedule, updated_at
           ) VALUES (
-            ${body.id}, ${body.name}, ${body.email}, ${body.phone || null}, 
-            ${body.age || null}, ${body.gender || 'Belirtilmemiş'}, ${body.maritalStatus || 'Bekar'},
-            ${body.branch || 'Belirtilmemiş'}, ${body.university || null}, ${body.department || null}, 
-            ${body.experienceYears || 0}, ${body.previousInstitutions || null}, 
-            ${JSON.stringify(body.allTrainings || [])}, ${JSON.stringify(body.answers || {})},
-            ${body.status || 'pending'}, ${JSON.stringify(body.report || null)}, 
-            ${JSON.stringify(body.algoReport || null)}, ${JSON.stringify(body.cvData || null)}, 
-            ${body.archiveCategory || null}, ${body.archiveNote || null},
-            ${body.adminNotes || null}, ${body.reminderNote || null},
-            ${JSON.stringify(body.interviewSchedule || null)}, ${now}
+            ${id}, ${name}, ${email}, ${phone}, ${age}, ${gender}, ${maritalStatus},
+            ${branch}, ${university}, ${department}, ${experienceYears}, ${previousInstitutions}, 
+            ${allTrainings}, ${answers}, ${status}, ${report}, ${algoReport}, ${cvData}, 
+            ${archiveCategory}, ${archiveNote}, ${adminNotes}, ${reminderNote},
+            ${interviewSchedule}, ${now}
           ) 
           ON CONFLICT (email) DO UPDATE SET 
             name = EXCLUDED.name,
@@ -133,10 +187,10 @@ export default async function handler(request: Request) {
       try {
         await performUpsert();
       } catch (firstError) {
-        // İLK HATA: Muhtemelen şema eksik. Onar ve sessizce tekrar dene.
-        console.warn("First attempt failed, fixing schema and retrying...");
+        console.warn("İlk kayıt denemesi başarısız, şema onarımı başlatılıyor...", firstError);
+        // Hata durumunda şemayı onarmayı dene ve tekrar et
         await ensureSchema();
-        await performUpsert(); // Eğer bu da hata verirse global catch bloğuna düşecek
+        await performUpsert();
       }
 
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
@@ -144,15 +198,17 @@ export default async function handler(request: Request) {
 
     if (method === 'DELETE') {
       const id = searchParams.get('id');
+      if (!id) throw new Error("ID parameter missing");
       await sql`DELETE FROM candidates WHERE id = ${id}`;
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
   } catch (error: any) {
-    console.error("Critical API 500 Failure:", error);
+    console.error("Critical API Failure:", error);
+    // Hata detayını istemciye daha açık döndür
     return new Response(JSON.stringify({ 
-      error: 'DATABASE_FATAL_ERROR', 
-      message: 'Sistem bir veri uyuşmazlığı saptadı ve otomatik onarım gerçekleştirdi. Lütfen son işleminizi kontrol ediniz.',
+      error: 'DATABASE_ERROR', 
+      message: 'Veritabanı işlemi başarısız oldu.',
       details: error.message 
     }), { status: 500, headers });
   }

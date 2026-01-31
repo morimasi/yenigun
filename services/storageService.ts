@@ -80,19 +80,18 @@ export const storageService = {
         body: JSON.stringify(candidate)
       });
       
+      const data = await res.json();
+
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Veritabanı kayıt hatası");
+        // Sunucudan dönen özel hata mesajını yakala
+        const serverError = data.details || data.message || "Sunucu tarafında bilinmeyen hata";
+        throw new Error(serverError);
       }
       
-      // Kayıt başarılıysa, yerel listeyi hemen invalidate etmemiz gerekmez, 
-      // bir sonraki getCandidates çağrısı güncel veriyi çekecektir.
       return { success: true };
     } catch (e: any) {
       console.error("Kayıt Hatası:", e);
-      // DİKKAT: Artık sessizce LocalStorage'a kaydetmiyoruz. 
-      // Veritabanına gitmeyen veri "Kaydedildi" sayılmaz.
-      return { success: false, error: "Sunucuya bağlanılamadı. Kayıt MERKEZİ SİSTEME iletilemedi." };
+      return { success: false, error: e.message || "Sunucuya bağlanılamadı. Kayıt MERKEZİ SİSTEME iletilemedi." };
     }
   },
 
