@@ -57,6 +57,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
 
+  // Derive flattened questions list from phases
+  const strategicQuestions = candidate.report?.interviewGuidance?.phases?.flatMap(p => p.questions.map(q => q.text)) || [];
+
   return (
     <div className="flex flex-col h-full bg-white relative text-xs">
       
@@ -311,7 +314,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
                         <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-4 border-l-2 border-orange-600 pl-3">STRATEJİK SORGULAMA KILAVUZU</h4>
                         <div className="space-y-3">
-                           {candidate.report.interviewGuidance?.strategicQuestions?.map((q, i) => (
+                           {strategicQuestions.map((q, i) => (
                               <div key={i} className="flex gap-4 items-start group p-2 hover:bg-slate-50 rounded">
                                  <span className="w-6 h-6 bg-slate-900 text-white rounded flex items-center justify-center text-[9px] font-black shrink-0 shadow-sm">{i+1}</span>
                                  <div className="space-y-1">
@@ -322,7 +325,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                  </div>
                               </div>
                            ))}
-                           {(!candidate.report.interviewGuidance?.strategicQuestions || candidate.report.interviewGuidance.strategicQuestions.length === 0) && (
+                           {(!strategicQuestions || strategicQuestions.length === 0) && (
                              <div className="text-center py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Soru seti oluşturulamadı.</div>
                            )}
                         </div>

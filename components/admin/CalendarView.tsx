@@ -128,6 +128,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
                     const isConflict = conflicts.includes(c.id);
                     const meritColor = c.report ? (c.report.score > 75 ? 'border-emerald-500 bg-emerald-50/30' : c.report.score > 40 ? 'border-orange-500 bg-orange-50/30' : 'border-rose-500 bg-rose-50/30') : 'border-slate-200 bg-white';
                     
+                    const previewQuestions = c.report?.interviewGuidance?.phases?.flatMap(p => p.questions.map(q => q.text)) || [];
+
                     return (
                       <div 
                         key={c.id}
@@ -150,7 +152,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
                           <div className="absolute top-0 left-full ml-4 z-50 w-64 bg-white p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 animate-scale-in">
                              <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-4">Mülakat Önizleme</p>
                              <div className="space-y-4">
-                                {c.report?.interviewGuidance?.strategicQuestions?.slice(0, 2).map((q, idx) => (
+                                {previewQuestions.slice(0, 2).map((q, idx) => (
                                   <div key={idx} className="p-3 bg-slate-50 rounded-xl">
                                     <p className="text-[10px] font-bold text-slate-700 leading-relaxed italic">"{q}"</p>
                                   </div>
@@ -215,7 +217,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
                     <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] border-l-4 border-orange-600 pl-4">STRATEJİK MÜLAKAT REHBERİ</h4>
                     {selectedCandidate.report?.interviewGuidance ? (
                        <div className="space-y-4">
-                          {selectedCandidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
+                          {(selectedCandidate.report.interviewGuidance.phases?.flatMap(p => p.questions.map(q => q.text)) || []).map((q, i) => (
                              <div key={i} className="p-8 bg-slate-50 rounded-[2.5rem] border border-transparent hover:border-orange-500 transition-all group">
                                 <div className="flex gap-5">
                                    <span className="w-10 h-10 rounded-2xl bg-white text-orange-600 flex items-center justify-center font-black text-xs shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-all">{i+1}</span>
