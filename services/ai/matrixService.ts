@@ -26,16 +26,24 @@ const DEEP_SEGMENT_SCHEMA = {
     status: { type: Type.STRING },
     reasoning: { 
       type: Type.STRING, 
-      description: "MİNİMUM 250 KELİME. Adayın cevaplarındaki klinik mantığı, literatürle (ABA, DIR, CBT vb.) bağdaştırarak derinlemesine açıkla." 
+      description: "MİNİMUM 400 KELİME. Adayın cevaplarındaki klinik mantığı, literatürle (ABA'nın Skinnerian temelleri, DIR Floortime'ın nöro-gelişimsel hiyerarşisi, CBT teknikleri vb.) bağdaştırarak derinlemesine açıkla. Adayın hangi soruda hangi kelimeyi seçtiği üzerinden nöro-psikolojik çıkarımlar yap." 
     },
     behavioralIndicators: { 
       type: Type.ARRAY, 
-      items: { type: Type.STRING },
-      description: "Adayın mülakat esnasında sergilemesi beklenen 5 spesifik mikro-davranış."
+      items: { 
+        type: Type.OBJECT,
+        properties: {
+          cue: { type: Type.STRING, description: "Gözlemlenecek mikro-davranış veya eylem (Örn: Göz temasını kaçırma)." },
+          meaning: { type: Type.STRING, description: "Bu davranışın ardındaki klinik/psikolojik alt metin (Örn: Sosyal anksiyete veya yalan söyleme belirtisi)." },
+          intensity: { type: Type.STRING, description: "Düşük, Orta, Yüksek." }
+        },
+        required: ["cue", "meaning", "intensity"]
+      },
+      description: "Adayın mülakat esnasında sergilemesi beklenen 5 spesifik mikro-davranış ve bunların analitik anlamı."
     },
     institutionalImpact: { 
       type: Type.STRING,
-      description: "Adayın kurumun kalitesine ve ekip uyumuna 24 aylık süreçteki net projeksiyonu."
+      description: "Adayın kurumun kalitesine, etik standartlarına ve ekip uyumuna 24 aylık süreçteki net projeksiyonu. İlk 12 ay ve ikinci 12 ay olarak iki ayrı paragrafta çok detaylı anlat."
     },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
     cons: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -47,13 +55,13 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Analisti ve Stratejik İK Direktörü.
-    GÖREV: Adayın kurumsal liyakatini hiper-derinlikli bir analizle mühürle.
+    GÖREV: Adayın kurumsal liyakatini hiper-derinlikli bır analızle mühürle.
     
-    DERİN PROJEKSİYON KURALLARI (KRİTİK):
-    1. Adayın 24 aylık kurumsal evrimini 3 spesifik fazda (Oryantasyon, Stabilizasyon, Otorite) simüle et.
-    2. Her faz için beklenen klinik davranışları ve yöneticiye verilmesi gereken stratejik tavsiyeyi açıkla.
-    3. 0, 3, 6, 12, 18 ve 24. aylar için adayın liyakat puanı tahminini (Growth Forecast) üret.
-    4. Adayın birincil tükenmişlik riskini tespit et ve bunu önleyecek kurumsal stratejiyi belirle.
+    DERİN ANALİZ KURALLARI (KRİTİK):
+    1. KLİNİK NEDENSELLİK: Sadece puan verme. Her puanın ARKASINDAKİ klinik nedenselliği, adayın cevaplarından süzülen somut verilerle ve akademik literatürle (ABA, DIR, CBT, Vygotsky vb.) destekleyerek uzun ve betimleyici bir metne dönüştür.
+    2. NÖRAL İPUÇLARI: Mülakatçının 'gözden kaçırabileceği' ince mikro-refleksleri ve bunların psikolojik anlamlarını bir rehber niteliğinde açıkla.
+    3. 24 AY PROJEKSİYONU: Bu adayın kurumun klinik kalitesini 2 yıl içinde nasıl 'evrilteceğini' veya hangi 'risk alanlarını' tetikleyeceğini somut senaryolarla anlat.
+    4. DİL: Analitik, akademik, açıklayıcı ve son derece profesyonel.
     
     ÇIKTI: Saf JSON.
   `;
@@ -67,7 +75,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 20000 }, 
+        thinkingConfig: { thinkingBudget: 24000 }, 
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -75,7 +83,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
             integrityIndex: { type: Type.NUMBER },
             socialMaskingScore: { type: Type.NUMBER },
             summary: { type: Type.STRING },
-            detailedAnalysisNarrative: { type: Type.STRING },
+            detailedAnalysisNarrative: { type: Type.STRING, description: "Adayın akademik ve klinik portresinin 300 kelimelik kapsayıcı analizi." },
             recommendation: { type: Type.STRING },
             predictiveMetrics: {
               type: Type.OBJECT,
@@ -84,7 +92,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 burnoutRisk: { type: Type.NUMBER },
                 learningVelocity: { type: Type.NUMBER },
                 leadershipPotential: { type: Type.NUMBER },
-                evolutionPath: { type: Type.STRING },
+                evolutionPath: { type: Type.STRING, description: "Adayın 24 aylık profesyonel gelişim yörüngesinin çok detaylı tasviri." },
                 evolutionTimeline: {
                   type: Type.ARRAY,
                   items: {
@@ -93,8 +101,8 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                       phase: { type: Type.STRING },
                       timeframe: { type: Type.STRING },
                       expectedBehaviors: { type: Type.ARRAY, items: { type: Type.STRING } },
-                      clinicalGrowth: { type: Type.STRING, description: "Klinik yetkinlikteki somut artışın betimlemesi." },
-                      managementAdvice: { type: Type.STRING, description: "Bu dönemde yönetici adaya nasıl davranmalı?" }
+                      clinicalGrowth: { type: Type.STRING },
+                      managementAdvice: { type: Type.STRING }
                     },
                     required: ["phase", "timeframe", "expectedBehaviors", "clinicalGrowth", "managementAdvice"]
                   }
@@ -103,10 +111,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                   type: Type.ARRAY,
                   items: {
                     type: Type.OBJECT,
-                    properties: {
-                      month: { type: Type.NUMBER },
-                      score: { type: Type.NUMBER }
-                    },
+                    properties: { month: { type: Type.NUMBER }, score: { type: Type.NUMBER } },
                     required: ["month", "score"]
                   }
                 },
