@@ -4,21 +4,22 @@ import { languageSpeechQuestions } from './languageSpeech';
 import { occupationalTherapyQuestions } from './occupationalTherapy';
 import { pedagogyQuestions } from './pedagogy';
 import { academicSkillsQuestions } from './academicSkills';
+import { technoPedagogyQuestions } from './technoPedagogy'; // Yeni import
 import { ethicsQuestions } from './ethics';
 import { resilienceQuestions } from './resilience';
 import { visionQuestions } from './vision';
 import { Question } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | AKADEMİK SORU BANKASI v15.5
+ * YENİ GÜN AKADEMİ | AKADEMİK SORU BANKASI v15.6
  * Branş bazlı modüler mimari ile optimize edilmiştir.
- * Temel Akademik Beceriler (Türkçe & Matematik) modülü eklendi.
  */
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
   // ANA AKADEMİK ETAPLAR (Clinical Logic altında toplanır)
   clinical_logic: [
     ...pedagogyQuestions,
-    ...academicSkillsQuestions, // Türkçe & Matematik ekleme noktası
+    ...academicSkillsQuestions,
+    ...technoPedagogyQuestions, // Tekno-Pedagoji ekleme noktası
     ...specialEducationQuestions,
     ...languageSpeechQuestions,
     ...occupationalTherapyQuestions
@@ -35,5 +36,6 @@ export {
   languageSpeechQuestions,
   occupationalTherapyQuestions,
   pedagogyQuestions,
-  academicSkillsQuestions
+  academicSkillsQuestions,
+  technoPedagogyQuestions
 };
