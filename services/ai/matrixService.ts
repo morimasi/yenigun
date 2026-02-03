@@ -33,18 +33,18 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
-    GÖREV: Adayın liyakat matrisini, sertifikasyon derinliğini ve AKADEMİK PEDAGOJİ (Türkçe/Matematik) müdahale yeteneğini analiz et.
+    GÖREV: Adayın liyakat matrisini, sertifikasyon derinliğini ve AKADEMİK PEDAGOJİ müdahale yeteneğini analiz et.
     
-    KRİTİK ANALİZ PARAMETRELERİ (REASONING MODE):
-    1. AKADEMİK MUHAKEME: Adayın Türkçe ve Matematik sorularındaki "aksaklık çözme" yaklaşımını analiz et. Telafi edici stratejileri mi yoksa temel onarımı mı (Remediation) seçiyor?
-    2. AKREDİTASYON TUTARLILIĞI: Adayın seçtiği sertifikalar (Örn: BCBA, CAS, PROMPT) ile akademik müdahale sorularına verdiği yanıtlar arasındaki teknik uyumu ölç.
-    3. METODOLOJİK SPEKTRUM: ABA (Davranışçı) ve DIR (İlişki Temelli) gibi zıt felsefeleri akademik müdahaleye nasıl yansıtıyor?
-    4. EBP (KANITA DAYALI UYGULAMA): Adayın cevaplarında bilimsel literatüre (Örn: PASS Teorisi, Fonolojik Farkındalık, Subitizing) ne kadar sadık kaldığını analiz et.
+    ÖZEL TALİMAT (REASONING MODE):
+    Eğer veri setinde "assessmentHistory" varsa, bu personelin zaman içindeki gelişimini (Learning Curve) analiz et. 
+    1. Personel plato mu çiziyor yoksa ivme mi kazanıyor?
+    2. Geçmişteki zayıf yönler (threats) kapandı mı yoksa kronikleşti mi?
+    3. Gelecek projeksiyonunu bu tarihsel ivmeye göre optimize et.
   `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `ADAY VERİLERİ: ${JSON.stringify(candidate)}` }], 
+    contents: [{ text: `ADAY/PERSONEL VERİLERİ: ${JSON.stringify(candidate)}` }], 
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -93,7 +93,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               sustainability: DEEP_SEGMENT_SCHEMA,
               institutionalLoyalty: DEEP_SEGMENT_SCHEMA,
               developmentOpenness: DEEP_SEGMENT_SCHEMA,
-              academicPedagogy: DEEP_SEGMENT_SCHEMA // Yeni Analiz Modülü
+              academicPedagogy: DEEP_SEGMENT_SCHEMA
             },
             required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness", "academicPedagogy"]
           },
