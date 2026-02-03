@@ -2,8 +2,8 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v7.0)
- * Toplam 6 Kategori x 10 Soru = 60 Kritik İkilem.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v8.0)
+ * Güncelleme: Etik ve Sınır modülü "Çok Boyutlu Karar Mekanizması" formatına geçirilmiştir.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
   // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
@@ -88,7 +88,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
       },
       {
         id: 'stf_aba_9',
-        text: 'Öğrencinin serbest zaman oyununda, seans hedeflerinden birini kendiliğinden sergilediğini gördünüz. Ne yaparsınız?',
+        text: 'Öğrencinin serbest zaman oyununda, seans hedeflerinden birini kendiligün sergilediğini gördünüz. Ne yaparsınız?',
         options: [
           { label: 'Hemen bir kağıda not alıp daha sonra "Fırsat Öğretimi" (NET) verisi olarak sisteme mühürlerim.', clinicalValue: 100, aiTag: 'clinical_vigilance' },
           { label: 'Müdahale etmem, sadece izlerim; yapılandırılmış seans dışındaki veriler güvenilir değildir.', clinicalValue: 30, aiTag: 'bureaucratic_rigidity' },
@@ -107,7 +107,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE ---
+  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE (YENİLENMİŞ - TEK DOĞRUSU OLMAYAN MODEL) ---
   {
     id: 'ethics_and_boundaries',
     title: 'Etik Tahkim ve Profesyonel Mesafe',
@@ -117,92 +117,92 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     questions: [
       {
         id: 'stf_eth_1',
-        text: 'Veli, özel bir akşam yemeğine davet etti ve "Bize bir hoca gibi değil, bir aile dostu gibi gelin" dedi. Tavrınız?',
+        text: 'Veli, size özel bir akşam yemeği daveti gönderdi ve bu daveti "aile içi bir dayanışma yemeği" olarak tanımladı. Uzman kimliğinizle bu sınıra yaklaşımınız ne olur?',
         options: [
-          { label: 'Nazikçe teşekkür eder, kurum politikası ve terapötik sürecin selameti gereği ailelerle sosyal ilişki kuramadığımı net bir dille açıklarım.', clinicalValue: 100, aiTag: 'immaculate_boundaries' },
-          { label: 'Terapötik bağı güçlendirmek ve aileyi yakından tanımak için bir kez giderim.', clinicalValue: 20, aiTag: 'dual_relationship_risk' },
-          { label: 'Giderim ama işle ilgili konuşmayacağımı peşinen belirtirim.', clinicalValue: 40, aiTag: 'boundary_erosion' }
+          { label: 'Kurum politikası ve klinik etik kuralları gereği, vaka sahipleriyle profesyonel saatler dışında sosyal ilişki kurmamın, gelecekteki klinik kararlarımın tarafsızlığını zedeleyebileceğini nazikçe açıklar ve daveti kesinlikle reddederim.', clinicalValue: 100, aiTag: 'formal_purist' },
+          { label: 'Terapötik ittifakı (therapeutic alliance) güçlendirmek ve vakanın ev içindeki doğal dinamiklerini gözlemlemek adına, bir kereliğine ve sadece sınırlı bir süre için katılırım; ancak bu durumun bir alışkanlığa dönüşmemesi için sonraki süreçte net sınırlar koyarım.', clinicalValue: 85, aiTag: 'relational_empathetic' },
+          { label: 'Daveti nezaketen kabul etmem ancak aileyi kırmadan, kurumun düzenlediği genel veli toplantıları veya piknikler gibi "yarı-sosyal" ama kontrollü ortamlarda daha fazla vakit geçirmeyi teklif ederek ilişkiyi profesyonel bir zeminde tutmaya çalışırım.', clinicalValue: 90, aiTag: 'strategic_mediator' }
         ]
       },
       {
         id: 'stf_eth_2',
-        text: 'Veli, çocuğuna özel ders vermeniz için size kurumun verdiği maaşın 3 katını teklif etti. Kararınız?',
+        text: 'Çok güvendiğiniz bir veli, kurumun maaş politikasından şikayet ederek çocuğuna gizlice evde özel ders vermeniz için size oldukça yüksek bir meblağ teklif etti. Karar mekanizmanız nasıl işler?',
         options: [
-          { label: 'Teklifi reddederim; aynı vakaya hem kurumda hem özelde bakmanın etik bir çıkar çatışması (Conflict of Interest) olduğunu açıklarım.', clinicalValue: 100, aiTag: 'ethical_integrity' },
-          { label: 'Kuruma durumu bildirir, istifa ederek vaka ile dışarıda devam ederim.', clinicalValue: 30, aiTag: 'mercenary_mindset' },
-          { label: 'Ücreti kurum üzerinden geçirmeyi veya kurumun bu hizmeti ek paket olarak sunmasını öneririm.', clinicalValue: 70, aiTag: 'procedural_integrity' }
+          { label: 'Bu teklifi doğrudan reddederim; aynı vaka üzerinde hem kurumsal hem de bireysel çıkar ilişkisi kurmanın (Dual Relationship), klinik öncelikleri ve etik sadakati bozacağını, bunun meslek onurumla bağdaşmayacağını aileye net bir dille belirtirim.', clinicalValue: 100, aiTag: 'uncompromising_ethics' },
+          { label: 'Durumu derhal kurum yönetimine bildiririm; eğer kurumun bu konuda bir esnekliği varsa veya bu hizmet kurum çatısı altında "ek seans" olarak verilebiliyorsa, süreci tamamen şeffaf ve kurumsal bir denetim mekanizması dahilinde yürütmeyi şart koşarım.', clinicalValue: 95, aiTag: 'transparent_institutionalist' },
+          { label: 'Teklifi kurumun bilgisi dışında değerlendirmem ancak vakanın yoğunlaştırılmış eğitime ihtiyacı olduğu kanısındaysam, yönetime vaka için ek seanslar veya farklı bir uzman desteği önererek ailenin talebini yasal ve akademik bir çözüme yönlendiririm.', clinicalValue: 80, aiTag: 'pragmatic_clinical_advocate' }
         ]
       },
       {
         id: 'stf_eth_3',
-        text: 'Seans esnasında vakanın vücudunda şüpheli morluklar gördünüz ve veli "yataktan düştü" dedi ama şüpheniz var. İlk adım?',
+        text: 'Seans esnasında vakanın vücudunda fiziksel bir travma emaresi gördünüz; veli "ev kazası" olduğunu söylüyor ancak klinik sezgileriniz sizi şüphelendiriyor. Adımınız ne olur?',
         options: [
-          { label: 'Morlukların fotoğrafını çeker ve durumu derhal "Çocuk Koruma Protokolü" kapsamında yönetime ve sosyal hizmetlere bildiririm.', clinicalValue: 100, aiTag: 'supreme_responsibility' },
-          { label: 'Velinin beyanına güvenirim, aile içi meselelere karışmamayı tercih ederim.', clinicalValue: 0, aiTag: 'neglect_of_duty' },
-          { label: 'Bir sonraki seansı bekleyip morlukların geçip geçmediğini takip ederim.', clinicalValue: 20, aiTag: 'unjustified_delay' }
+          { label: 'Şüphemi bir kenara bırakmadan, çocuk koruma kanunları ve etik sorumluluğum gereği durumu derhal klinik direktöre ve ilgili yasal birimlere raporlarım; vaka güvenliğini korumanın, aileyle olan güven ilişkisinden daha kutsal olduğunu savunurum.', clinicalValue: 100, aiTag: 'legal_watchdog' },
+          { label: 'Öncelikle aileyi sakin bir odaya alır ve empatik bir sorgulama ile olayın detaylarını öğrenmeye çalışırım; eğer ailenin desteğe ihtiyacı olduğunu veya bir kaza olduğunu hissedersem, durumu kurumsal bir "sosyal hizmet takibi" dosyasına alarak aileye rehberlik ederim.', clinicalValue: 85, aiTag: 'supportive_counselor' },
+          { label: 'Bulguları objektif bir şekilde fotoğraflayıp vaka dosyasına mühürlü not olarak geçerim ve sonraki 3 seans boyunca vakanın fiziksel ve duygusal durumunu yakından izleyerek "kanıt toplama" sürecine girerim; aceleci bir suçlama yerine emin olmayı beklerim.', clinicalValue: 90, aiTag: 'methodical_observer' }
         ]
       },
       {
         id: 'stf_eth_4',
-        text: 'Sosyal medyada vakanın fotoğrafını (ailesi izin vermiş olsa bile) kendi kişisel hesabınızda paylaşmak istiyorsunuz. Etik duruşunuz?',
+        text: 'Kişisel sosyal medya hesabınızda, vakanın başarısını ve size olan sevgisini gösteren bir fotoğrafı (ailenin sözlü onayıyla) paylaşma konusundaki duruşunuz nedir?',
         options: [
-          { label: 'Vakanın gelecekteki mahremiyetini ve onurunu düşünerek, izin olsa dahi kişisel hesapta paylaşımı reddederim.', clinicalValue: 100, aiTag: 'privacy_first' },
-          { label: 'Ailesi izin verdiyse profesyonel gelişimim için paylaşırım.', clinicalValue: 30, aiTag: 'legal_but_unethical' },
-          { label: 'Yüzünü kapatarak veya arkadan paylaşırım.', clinicalValue: 60, aiTag: 'grey_zone_ethics' }
+          { label: 'Paylaşım yapmayı meslek etiğine aykırı bulurum; çocuğun dijital ayak izini ve gelecekteki mahremiyetini korumak, ailenin o anki duygusal onayından daha önemlidir; profesyonel kimliğim ile dijital kimliğimin arasına kesin bir duvar örerim.', clinicalValue: 100, aiTag: 'privacy_purist' },
+          { label: 'Eğitimin etkisini ve özel eğitimin toplumsal farkındalığını artırmak amacıyla, vakanın yüzünü net göstermeden ve ailenin yazılı onayıyla paylaşabilirim; ancak bu paylaşımı kendimi öne çıkarmak için değil, akademik bir başarı hikayesi olarak kurgularım.', clinicalValue: 85, aiTag: 'awareness_advocate' },
+          { label: 'Ailenin rızası varsa ve bu paylaşım ailenin kuruma olan aidiyetini artırıyorsa, kurumun resmi sosyal medya birimine bu içeriği gönderir ve sadece kurumsal hesap üzerinden, profesyonel bir editoryal süreçle paylaşılmasını desteklerim.', clinicalValue: 95, aiTag: 'corporate_safety_expert' }
         ]
       },
       {
         id: 'stf_eth_5',
-        text: 'Kurumda bir arkadaşınızın seanslara sürekli geç girdiğini ama raporları tam süreli girdiğini gördünüz. Aksiyonunuz?',
+        text: 'Çok yakın bir meslektaşınızın seanslara sürekli 5-10 dakika geç girdiğini ancak raporlarda süreyi tam gösterdiğini fark ettiniz. Bu durumu nasıl yönetirsiniz?',
         options: [
-          { label: 'Önce kendisini uyarırım, düzelmezse akademik direktöre mühürlü bir rapor sunarım; çocukların hak kaybı kabul edilemez.', clinicalValue: 100, aiTag: 'whistleblowing_integrity' },
-          { label: 'Onu korumak için susarım, ekip içi dayanışma her şeyden önemlidir.', clinicalValue: 0, aiTag: 'toxic_loyalty' },
-          { label: 'Ben de seanslarımı esnetmeye başlarım.', clinicalValue: -50, aiTag: 'moral_disengagement' }
+          { label: 'Durumu bir ekip toplantısında isim vermeden genel bir "etik ihlal uyarısı" olarak gündeme getiririm ve kurumsal raporlama sadakatinin, çocukların hak kaybı olduğunu vurgulayarak sistemin oto-kontrol mekanizmasını tetiklerim.', clinicalValue: 90, aiTag: 'systemic_regulator' },
+          { label: 'Arkadaşımla birebirde ve dostane bir dille konuşarak, bu durumun hem kendi profesyonelliğine hem de çocukların gelişimine zarar verdiğini söylerim; eğer davranış devam ederse kurumun etik kuruluna veya direktörüne durumu yazılı raporlarım.', clinicalValue: 100, aiTag: 'peer_supervisor' },
+          { label: 'Arkadaşımın yaşadığı olası tükenmişliği veya özel hayatındaki sorunları analiz ederim; ona iş yükünü yönetmesi için destek teklif ederken, seans sürelerini kompanse etmesi için akademik bir program revizyonu yapması konusunda rehberlik ederim.', clinicalValue: 85, aiTag: 'empathetic_leader' }
         ]
       },
       {
         id: 'stf_eth_6',
-        text: 'Vaka hakkında kurum dışı bir uzmanla telefonda konuşurken yanınızda başka bir velinin olduğunu fark ettiniz. Ne yaparsınız?',
+        text: 'Veli, başka bir merkezde çalışan bir meslektaşınız hakkında olumsuz ve etik olmayan iddialarda bulunuyor. Tavrınız?',
         options: [
-          { label: 'Konuşmayı hemen sonlandırır, gizli bilgilerin duyulmadığından emin olur ve güvenli bir alana geçerim.', clinicalValue: 100, aiTag: 'privacy_mastery' },
-          { label: 'İsim vermediğim sürece konuşmaya devam ederim.', clinicalValue: 40, aiTag: 'risky_confidentiality' },
-          { label: 'Kısık sesle konuşarak devam ederim.', clinicalValue: 20, aiTag: 'negligent_boundary' }
+          { label: 'Meslek etiği gereği, meslektaşlarım hakkında veli önünde asla olumlu ya da olumsuz bir yorum yapmam; veliye sadece bizim merkezimizdeki klinik süreçlere odaklanmamız gerektiğini söyleyerek konuyu profesyonelce kapatırım.', clinicalValue: 100, aiTag: 'ethical_neutralist' },
+          { label: 'İddialar vahimse (örn: istismar), meslek örgütlerini korumak adına iddiaları dikkatle dinler ancak yorum yapmaz, veliyi ilgili meslek kuruluşuna şikayet etmesi için yönlendiririm; etik bir duruşun sadece kendi kurumumu değil, tüm mesleği korumak olduğuna inanırım.', clinicalValue: 95, aiTag: 'professional_guild_protector' },
+          { label: 'Velinin bu şikayetini, o meslektaşla yaşadığı "iletişim kazası" üzerinden analiz eder ve bizdeki süreçte benzer bir sorun yaşamamak için neye ihtiyaç duyduğunu sorgularım; şikayeti vaka yönetim stratejim için bir veri olarak kullanırım.', clinicalValue: 85, aiTag: 'analytical_clinical_manager' }
         ]
       },
       {
         id: 'stf_eth_7',
-        text: 'Eski bir iş arkadaşınız, kurumun vaka listesini kendi yeni merkezi için istedi. Tavrınız?',
+        text: 'Eski bir iş arkadaşınız, mevcut kurumunuzdaki kritik vaka verilerini ve metodolojisini, yeni açacağı merkezi için sizden rica etti. Kararınız?',
         options: [
-          { label: 'Durumu anında bilişim güvenliği birimine ve yönetime raporlarım; veri mahremiyeti kurumsal namustur.', clinicalValue: 100, aiTag: 'institutional_guardian' },
-          { label: 'Dostluk hatırına en azından iletişim bilgilerini gizlice veririm.', clinicalValue: -100, aiTag: 'data_theft_complicity' },
-          { label: 'Vermem ama durumu kimseye de söylemem.', clinicalValue: 50, aiTag: 'passive_protection' }
+          { label: 'Bu talebi bir "endüstriyel casusluk" ve kurumsal sadakatsizlik olarak görür ve kesinlikle reddederim; kurumun fikri mülkiyetini korumanın mesleki ahlakın temel bir parçası olduğunu bilir ve gerekirse bu durumu yönetime raporlarım.', clinicalValue: 100, aiTag: 'institutional_loyalist' },
+          { label: 'Paylaşılan verinin çocuklara faydalı olacağını düşünsem dahi, yasal ve sözleşmesel engelleri hatırlatarak arkadaşımı kurumsal bir işbirliği protokolüne yönlendiririm; bilginin paylaşımını ancak yasal ve şeffaf bir zeminde kabul ederim.', clinicalValue: 90, aiTag: 'procedural_integrity' },
+          { label: 'Kişisel olarak geliştirdiğim ve kurumun malı olmayan genel metodolojik bilgileri paylaşmakta sakınca görmem ancak kuruma ait vaka listesi veya gizli veri setlerini asla paylaşmam; kişisel bilgi ile kurumsal veriyi birbirinden keskin hatlarla ayırırım.', clinicalValue: 80, aiTag: 'balanced_individualist' }
         ]
       },
       {
         id: 'stf_eth_8',
-        text: 'Vakanın ilerlemediğini biliyorsunuz ancak yönetim veliyi tutmak için raporda "harika gidiyor" yazmanızı istiyor. Ne yaparsınız?',
+        text: 'Vakanın gelişimi durma noktasına geldiği halde, yönetimin size "veliyi kurumda tutmak için raporu daha pozitif gösterin" dediği bir senaryoda tavrınız?',
         options: [
-          { label: 'Gerçek verileri yazar ve gerekçelendiririm; akademik yalanın klinik bir suç olduğunu savunurum.', clinicalValue: 100, aiTag: 'academic_honesty' },
-          { label: 'Yönetime uyarım, kurumun geliri vakanın devamına bağlıdır.', clinicalValue: 0, aiTag: 'corporate_servitude' },
-          { label: 'Sadece nesnel rakamları yazar, yorum yapmaktan kaçınırım.', clinicalValue: 70, aiTag: 'neutral_avoidance' }
+          { label: 'Akademik raporun bir "bilimsel döküman" olduğunu ve gerçeğe aykırı her beyanın vakaya zaman kaybettirdiğini savunarak bu talebi reddederim; liyakatimin kurumun ticari çıkarlarından daha üstün olduğunu açıkça ifade ederim.', clinicalValue: 100, aiTag: 'academic_realist' },
+          { label: 'Mevcut durumu (plato dönemini) tüm çıplaklığıyla yazarım ancak rapora bu durumun aşılması için gereken yeni bir "müdahale ve yatırım planı" ekleyerek yönetimin ticari kaygısını, klinik bir gelişim fırsatına dönüştürmeye çalışırım.', clinicalValue: 95, aiTag: 'innovative_strategist' },
+          { label: 'Raporu teknik verilerle mühürlerim ancak veliye yapılacak sözlü sunumda "umut vadeden" kısımları öne çıkararak velinin motivasyonunu ve kurumda kalma isteğini korurum; yazılı veride dürüst, sözlü iletişimde politik bir yol izlerim.', clinicalValue: 85, aiTag: 'pragmatic_communicator' }
         ]
       },
       {
         id: 'stf_eth_9',
-        text: 'Bir uzman arkadaşınızın seans sırasında telefonla oynadığını gördünüz. Tepkiniz?',
+        text: 'Bir uzman arkadaşınızın seans esnasında gizlice telefon kullandığını fark ettiniz. Müdahale metodunuz?',
         options: [
-          { label: 'Uygun bir dille seans kalitesinin düştüğünü ve bu durumun çocuk için hak kaybı olduğunu kendisine söylerim.', clinicalValue: 100, aiTag: 'peer_supervision' },
-          { label: 'Görmezden gelirim, yorulmuş olabilir.', clinicalValue: 10, aiTag: 'low_standard_acceptance' },
-          { label: 'Veliye bu durumu hissettiririm.', clinicalValue: -20, aiTag: 'unprofessional_escalation' }
+          { label: 'Hemen seans sonrası kendisini odaya çeker ve bu durumun çocuk için hak kaybı olduğu kadar kurumun klinik imajını da zedelediğini, bir daha görürsem rapor etmek zorunda kalacağımı net bir dille söylerim.', clinicalValue: 100, aiTag: 'clinical_policeman' },
+          { label: 'Durumu doğrudan görmezden gelmem; arkadaşımın seanstaki kurgusunda bir hata yapıp yapmadığını gözlemler, hata yapıyorsa "bak şurayı kaçırdın galiba" diyerek teknik bir bahane ile telefonun dikkat dağıttığını dolaylı yoldan hissettiririm.', clinicalValue: 85, aiTag: 'indirect_supervision' },
+          { label: 'Kurumda seans güvenliği ve odaklanma üzerine genel bir eğitim/toplantı düzenlenmesini talep eder, sorunu kişiselleştirmeden kurumsal bir standart (kırmızı çizgi) haline getirilmesini sağlarım.', clinicalValue: 90, aiTag: 'standard_setter' }
         ]
       },
       {
         id: 'stf_eth_10',
-        text: 'Kurum dışından bir doktor, vakanıza bilimsel olmayan bir diyet veya ilaç önerdiğini veliden duydunuz. Ne yaparsınız?',
+        text: 'Kurum dışından bir alternatif tıp uygulayıcısı, vakanıza bilimsel temeli olmayan bir yöntem önerdi ve veli buna inanmış durumda. Nasıl bir bariyer kurarsınız?',
         options: [
-          { label: 'Veliye kendi branşım dahilindeki bilimsel kanıtları sunar, doktorla iletişime geçip multidisipliner bir görüş talep ederim.', clinicalValue: 100, aiTag: 'active_advocacy' },
-          { label: 'Tıbbi bir konu olduğu için asla karışmam.', clinicalValue: 30, aiTag: 'excessive_caution' },
-          { label: '"Doktor yanılıyor" diyerek veliyi sertçe yönlendiririm.', clinicalValue: 40, aiTag: 'boundary_overstep' }
+          { label: 'Veliye metodun bilimsel (Kanıta Dayalı Uygulamalar - EBP) karşılığının olmadığını gösteren literatür özetleri sunar ve bizim kurumumuzda sadece bilimin referans alındığını belirterek bu yöntemin eğitimimize entegre edilmesini kesinlikle reddederim.', clinicalValue: 100, aiTag: 'scientific_gatekeeper' },
+          { label: 'Velinin umut arayışına saygı duyarım ancak bu yöntemin vakanın mevcut nöral gelişim seyrini bozabileceğini, odak kaybı yaratacağını anlatarak, veliyi önce bir çocuk nöroloğundan bilimsel görüş almaya ikna etmeye odaklanırım.', clinicalValue: 90, aiTag: 'empathetic_rationalist' },
+          { label: 'Eğer yöntem çocuğa fiziksel zarar vermiyorsa, veliyi tamamen karşımıza almak yerine "bizim programımızla çakışmadığı sürece" yapabileceklerini ama bizim sorumluluğumuz dışında kalacağını belirten bir etik taahhütname imzalatırım.', clinicalValue: 80, aiTag: 'risk_minimizer' }
         ]
       }
     ]
