@@ -320,7 +320,8 @@ const MethodologyInventoryView: React.FC = () => {
                           <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-xl border border-slate-200 shadow-sm group">
                              <span className="text-[10px] font-bold text-slate-600 truncate flex-1 pr-4">"{opt.label}"</span>
                              <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-slate-900">%{draftTarget === 'CANDIDATE' ? (Object.values(opt.weights)[0] as number * 100) : opt.clinicalValue}</span>
+                                {/* @fix Line 213: Convert the expression to string to resolve "Type 'unknown' is not assignable to type 'ReactNode'" error when using Object.values on dynamic property */}
+                                <span className="text-[10px] font-black text-slate-900">%{String(draftTarget === 'CANDIDATE' ? (Object.values(opt.weights || {})[0] as number * 100) : opt.clinicalValue)}</span>
                                 <button 
                                   onClick={() => {
                                     if(draftTarget === 'CANDIDATE') setDraftCandQ({...draftCandQ, weightedOptions: draftCandQ.weightedOptions?.filter((_, i) => i !== idx)});
