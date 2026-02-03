@@ -2,7 +2,7 @@
 import { Question } from '../../types';
 
 export const ethicsQuestions: Question[] = [
-  // --- İŞ ETİĞİ & SINIR ---
+  // --- MEVCUT SORULAR (1-5) ---
   {
     id: 'eth_new_1', category: 'workEthics', type: 'radio',
     text: 'Veli, size kurum müdürü hakkında gizli bir şikayette bulunuyor ve "aramızda kalsın" diyor. Tavrınız?',
@@ -44,7 +44,89 @@ export const ethicsQuestions: Question[] = [
     ]
   },
 
-  // --- KURUMSAL SADAKAT ---
+  // --- YENİ EKLENEN ETİK VE PROFESYONEL MESAFE SORULARI (6-15) ---
+  {
+    id: 'eth_new_6', category: 'workEthics', type: 'radio',
+    text: 'Veli, çocuğun seansları dışında size sosyal medyadan (Instagram/Facebook) arkadaşlık isteği gönderdi ve DM üzerinden özel hayatınızla ilgili sorular sordu. Kararınız?',
+    weightedOptions: [
+      { label: 'İsteği kabul etmem, bir sonraki seansta veliye profesyonel sınırlarımı ve sosyal medya politikamı nazikçe açıklarım; kişisel alanımı korumanın seans verimi için şart olduğunu belirtirim.', weights: { workEthics: 1.0, formal_distance: 1.0 }, analysisInsight: 'Sağlıklı Profesyonel Sınır Bilinci.' },
+      { label: 'Güven bağını bozmamak için kabul ederim ancak paylaşımlarımı kısıtlarım; veliyle "arkadaş" olmanın ev programlarına katılımı artırabileceğini düşünürüm.', weights: { workEthics: 0.3, empathy: 0.7 }, analysisInsight: 'Sınır Karmaşası ve Rol Çatışması Riski.' }
+    ]
+  },
+  {
+    id: 'eth_new_7', category: 'workEthics', type: 'radio',
+    text: 'Ekonomik durumu çok iyi olan bir veli, size çok pahalı bir hediye (örn: marka bir saat veya telefon) getirdi ve "emekleriniz için bir teşekkür" dedi. Reaksiyonunuz?',
+    weightedOptions: [
+      { label: 'Hediyeyi kesinlikle kabul etmem. Kurum politikası ve mesleki etik gereği maddi değeri olan hediyelerin "terapötik tarafsızlığı" bozabileceğini veliye profesyonel bir dille açıklarım.', weights: { workEthics: 1.0, integrity: 1.0 }, analysisInsight: 'Yüksek Etik Tahkim.' },
+      { label: 'Veliyi kırmamak ve emeğimin değerini bildiğini göstermek için bu seferlik kabul ederim; ancak bunu kimseye söylememesini rica ederek durumu kişisel bir jest seviyesinde tutarım.', weights: { workEthics: 0.1, institutionalLoyalty: 0.2 }, analysisInsight: 'Maddi Manipülasyona Açık Profil.' }
+    ]
+  },
+  {
+    id: 'eth_new_8', category: 'workEthics', type: 'radio',
+    text: 'Veli, kurum dışındaki "özel seans" (ev dersi) talebiyle size geldi ve kurumdan çok daha yüksek bir ücret teklif etti. Ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Talebi derhal reddederim ve durumu etik gereği kurum yönetimine raporlarım. Kurumda kayıtlı olan bir vakaya dışarıda hizmet vermenin hem hukuki hem de ahlaki bir sadakatsizlik olduğunu savunurum.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Kurumsal Sadakat ve Sözleşme Etiği.' },
+      { label: 'Kurumun haberi olmadan, mesai saatlerim dışında olduğu için değerlendirebileceğimi düşünürüm. Personel maaşlarının yetersizliği durumunda bunun bir "ek gelir hakkı" olduğuna inanırım.', weights: { workEthics: -1.0, integrity: 0.3 }, analysisInsight: 'Gizli Ajanda ve Güven İhlali.' }
+    ]
+  },
+  {
+    id: 'eth_new_9', category: 'workEthics', type: 'radio',
+    text: 'Seans sırasında çocuğun vücudunda "şüpheli bir morluk" fark ettiniz. Veli "oyun oynarken düştü" diyor ama sezgileriniz istismardan şüpheleniyor. Yol haritanız?',
+    weightedOptions: [
+      { label: 'Hiç tereddüt etmeden kurumun "Çocuk Koruma" protokolünü işletirim. Gerekli tüm tıbbi ve adli bildirimlerin yapılması için yönetimi zorlar ve vakanın güvenliğini profesyonel önceliğim yaparım.', weights: { workEthics: 1.0, clinical: 1.0 }, analysisInsight: 'Klinik Cesaret ve Hukuki Bilinç.' },
+      { label: 'Veli ile aramdaki bağı korumak için onun beyanına güvenirim. Eğer bildirim yaparsam velinin çocuğu kurumdan alacağını ve eğitimin aksayacağını düşünerek sessiz kalıp durumu izlemeyi seçerim.', weights: { workEthics: 0.2, empathy: 0.5 }, analysisInsight: 'Risk İhmali ve Yanlış Önceliklendirme.' }
+    ]
+  },
+  {
+    id: 'eth_new_10', category: 'workEthics', type: 'radio',
+    text: 'Bir vakanızın gelişimi durdu ama yönetim "veliyi kaybetmemek için" raporda sanki büyük bir ilerleme varmış gibi (sahte veri) yazmanızı istiyor. Tavrınız?',
+    weightedOptions: [
+      { label: 'Asla kabul etmem. Bilimsel veriyi manipüle etmenin mesleki bir intihar olduğunu savunur, gerekirse bu baskı nedeniyle istifa etmeyi bile göze alırım; akademik dürüstlük pazarlık konusu değildir.', weights: { workEthics: 1.0, integrity: 1.0 }, analysisInsight: 'Sarsılmaz Akademik Kimlik.' },
+      { label: 'Kurumun ticari geleceğini ve personelin maaşlarını düşünerek bu "beyaz yalanı" kabul ederim. Veli mutlu olursa eğitim için daha çok bütçe ayıracağını, bunun çocuğun lehine olabileceğini varsayarım.', weights: { workEthics: 0.2, institutionalLoyalty: 0.6 }, analysisInsight: 'Faydacı ama Etik Dışı Yaklaşım.' }
+    ]
+  },
+  {
+    id: 'eth_new_11', category: 'workEthics', type: 'radio',
+    text: 'İş arkadaşınızın vaka başında uyuduğunu veya sürekli telefonla oynadığını (seans süresini gasp ettiğini) gördünüz. Kararınız?',
+    weightedOptions: [
+      { label: 'Önce arkadaşımı uyarırım, davranış devam ederse kurumun kalite standartlarını ve öğrencilerin hakkını korumak adına durumu üst yönetime "Akademik Denetim" kapsamında bildiririm.', weights: { workEthics: 1.0, clinical: 0.8 }, analysisInsight: 'Kalite Odaklı Denetim Bilinci.' },
+      { label: 'Arkadaşımı zor durumda bırakmam; hepimiz yorulabiliyoruz diyerek durumu görmezden gelirim. "İspiyoncu" damgası yemenin çalışma barışını daha çok bozacağını düşünürüm.', weights: { workEthics: 0.4, team_player: 0.6 }, analysisInsight: 'Klinik İhmali Tolere Etme Eğilimi.' }
+    ]
+  },
+  {
+    id: 'eth_new_12', category: 'workEthics', type: 'radio',
+    text: 'Bir seansın sonunda veli sizi arabasıyla eve bırakmayı teklif etti. Ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Nazikçe reddederim. Profesyonel mesafenin korunması gerektiğini, veli ile kurulan "samimiyetin" ileride klinik kararlarımı etkileyebileceğini (duygusal borçluluk) bilirim.', weights: { workEthics: 1.0, formal_distance: 1.0 }, analysisInsight: 'Rol Karmaşasını Önleme Yetisi.' },
+      { label: 'Yolumuzun üzeri ise kabul ederim; bu tarz küçük iyiliklerin veli ile olan işbirliğini ısıtacağını ve insani bir bağ kuracağını düşünürüm.', weights: { workEthics: 0.5, empathy: 0.8 }, analysisInsight: 'Sınır Belirsizliği.' }
+    ]
+  },
+  {
+    id: 'eth_new_13', category: 'workEthics', type: 'radio',
+    text: 'Kurumun tuvaletinde veya kantininde, diğer personellerle bir öğrencinin "komik ama mahrem" bir durumunu konuşup gülüyorsunuz. Bu durumun etik boyutu nedir?',
+    weightedOptions: [
+      { label: 'Bu durumun "Gizlilik Sözleşmesi" ve vaka onuru ihlali olduğunu saptarım. Çocuğun mahremiyetinin kurumun her köşesinde (koridor dahil) korunması gerektiğini hatırlatır, konuşmayı sonlandırırım.', weights: { workEthics: 1.0, clinical: 0.9 }, analysisInsight: 'Vaka Onuruna Saygı.' },
+      { label: 'Sadece stres atmak için yapılan masum bir konuşma olarak görürüm. İsim verilmediği sürece personelin kendi arasında vakalarla ilgili şakalaşmasının normal ve insani olduğunu savunurum.', weights: { workEthics: 0.3, sustainability: 0.5 }, analysisInsight: 'Düşük Mesleki Olgunluk.' }
+    ]
+  },
+  {
+    id: 'eth_new_14', category: 'workEthics', type: 'radio',
+    text: 'Başka bir uzmanın (örn: Psikolog) vakanız için önerdiği bir ilacı veya takviyeyi, sizin branşınız dışı olmasına rağmen veliye "kullanmayın, zararlı" diye yorumladınız. Tavrınızın analizi?',
+    weightedOptions: [
+      { label: 'Bunu büyük bir yetki aşımı ve etik ihlal olarak görürüm. Uzmanlık alanım dışındaki konularda (tıp/eczacılık vb.) görüş bildirmemin vaka güvenliğini riske atacağını bilirim ve sorumluluğu uzmana bırakırım.', weights: { workEthics: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Sınır ve Yetki Bilinci.' },
+      { label: 'Aileyi korumak için kendi tecrübemden yola çıkarak uyardığımı savunurum. Gördüğüm yanlış bir şeye sessiz kalmanın daha büyük bir etik hata olduğunu düşünürüm.', weights: { workEthics: 0.4, personality: 0.7 }, analysisInsight: 'Mesleki Narsisizm Riski.' }
+    ]
+  },
+  {
+    id: 'eth_new_15', category: 'workEthics', type: 'radio',
+    text: 'Kurumdan ayrılmaya karar verdiniz. Mevcut vakalarınızın dosyalarını ve veli numaralarını, yeni gideceğiniz kurumda kullanmak için gizlice kopyaladınız. Bu reaksiyonun liyakat karşılığı nedir?',
+    weightedOptions: [
+      { label: 'Bu bir "Veri Hırsızlığı" ve "Mesleki İhanet"tir. Kuruma ait her türlü bilginin kurumsal mülkiyet olduğunu, vakaların kişisel mal varlığı gibi taşınamayacağını kabul ederim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek Hukuki ve Ahlaki Bilinç.' },
+      { label: 'Vakalar bana güvendiği için geldiler, dolayısıyla onları takip etme hakkım var. Kurumun emeğimi sömürdüğünü düşünerek bu durumu bir tür "hak arama" olarak görürüm.', weights: { workEthics: -1.0, integrity: 0.2 }, analysisInsight: 'Patolojik Haklılık ve Güvenilmez Profil.' }
+    ]
+  },
+
+  // --- KURUMSAL SADAKAT (Loyalty) ---
   {
     id: 'loy_new_1', category: 'institutionalLoyalty', type: 'radio',
     text: 'Kurumda çok sevdiğiniz bir iş arkadaşınız haksız yere işten çıkarıldı. Kuruma tepkiniz ne olur?',

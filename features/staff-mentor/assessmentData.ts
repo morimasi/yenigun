@@ -2,8 +2,9 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v17.0)
- * Güncelleme: Matematik ve Türkçe (Akademik Beceriler) modülü uygulayıcı diliyle eklenmiştir.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v18.5)
+ * Güncelleme: Akademik Beceriler modülü 15 soruya çıkarıldı.
+ * Derin Muhakeme ve Bilimsel Müdahale (EBP) odaklı seçenekler eklendi.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
   // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
@@ -25,7 +26,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
       },
       {
         id: 'stf_aba_2',
-        text: 'Grafik analizinde verilerin çok inişli çıkışlı olduğunu gördünüz. Bu durumda ilk olarak neyden şüphelenirsiniz?',
+        text: 'Grafik analizinde verilerin çok inişli çıkışli olduğunu gördünüz. Bu durumda ilk olarak neyden şüphelenirsiniz?',
         options: [
           { label: 'Her öğretmenin çocuğu farklı değerlendirdiğini, puanlama kriterlerimizde bir standart olmadığını ve bu yüzden verilerin yanıltıcı olduğunu düşünürüm.', clinicalValue: 100, aiTag: 'ioa_audit_focus' },
           { label: 'Çocuğun o günkü uykusuzluğu, hastalığı veya ruhsal durumu gibi biyolojik nedenlerin veriyi doğrudan bozduğunu varsayarım.', clinicalValue: 50, aiTag: 'biological_attribution' },
@@ -86,6 +87,96 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
           { label: 'Bilginin hayatla birleşmediğini (genellenemediğini) anlarım. Bundan sonraki tüm matematik derslerini kağıt üzerinde değil, gerçek nesnelerle ve hayat senaryolarıyla işlemeye karar veririm.', clinicalValue: 100, aiTag: 'functional_generalization' },
           { label: 'Çocuğun market ortamında dikkatinin dağıldığını düşünürüm. Okulda kağıt üzerinde daha çok pratik yaptırarak işlem hızını artırmaya odaklanırım.', clinicalValue: 60, aiTag: 'environmental_misattribution' },
           { label: 'Çocuğun sözel yönergeleri anlamakta güçlük çektiğini varsayarım. Soruyu kağıda yazıp markette önüne koyarsam yapabileceğini düşünürüm.', clinicalValue: 50, aiTag: 'rigid_pedagogy' }
+        ]
+      },
+      {
+        id: 'stf_acad_6',
+        text: 'Okuduğunu anlama çalışmasında çocuk metni hatasız okuyor ama "Nerede geçti?" sorusuna cevap veremiyor. Müdahaleniz ne olur?',
+        options: [
+          { label: 'Çocuğun mekanik okuduğunu, yani anlamı kaçırdığını saptarım. Metni okumadan önce görsel ipuçları sunar ve okuma sırasında metindeki yer bildiren ifadelerin altını çizmesini sağlayarak görselleştiririm.', clinicalValue: 100, aiTag: 'meaning_focused_reading' },
+          { label: 'Metni tekrar okuturum. "Daha dikkatli oku" diyerek uyarıda bulunur ve her cümleden sonra ne anladığını sorarak bir nevi sorgulama yaparım.', clinicalValue: 60, aiTag: 'repetition_logic' },
+          { label: 'Soruyu çocuğa değil, ben söylerim. "Bak burada ağaç altında diyor" diyerek cevabı gösterir, onun da bu cevabı bir yere yazmasını sağlayarak pekiştiririm.', clinicalValue: 30, aiTag: 'passive_learning' }
+        ]
+      },
+      {
+        id: 'stf_acad_7',
+        text: 'İki basamaklı sayılarda toplama yaparken çocuk sürekli birler basamağından başlamak yerine onlar basamağından başlıyor. Nasıl bir yöntem izlersiniz?',
+        options: [
+          { label: 'Basamak tablosu ve onluk-birlik blokları kullanırım. Toplama işleminin neden en küçük birimden başlaması gerektiğini (elde durumu) somut olarak hissettiren "Basamak Evi" oyununu kurarım.', clinicalValue: 100, aiTag: 'concrete_operational_logic' },
+          { label: 'Kuralı ezberletirim. Kağıdın üzerine büyük bir ok çizerek "Buradan başla" derim. Yanlış başladığı her an işlemi durdurup başa döndürürüm.', clinicalValue: 70, aiTag: 'visual_cueing' },
+          { label: 'Eğer sonuç doğru çıkıyorsa müdahale etmem. İşlem sırasının çocuğun kendi bilişsel tarzı olduğunu düşünür, zamanla kendisinin keşfedeceğine inanırım.', clinicalValue: 40, aiTag: 'error_negligence' }
+        ]
+      },
+      {
+        id: 'stf_acad_8',
+        text: 'Fonolojik farkındalık çalışmasında çocuk "K-A-P-I" diye kodladığınız kelimeyi "KAPI" olarak birleştiremiyor. Neyi eksik bırakmış olabilirsiniz?',
+        options: [
+          { label: 'Harf seslerinin süresini çok uzun tutmuş veya sesleri kopuk vermiş olabilirim. Sesleri birbirine "lehimler" gibi (kkkaaaapppiii) akıcı bir şekilde söylemeyi modeller ve tempoyu ayarlarım.', clinicalValue: 100, aiTag: 'fluid_blending_mastery' },
+          { label: 'Çocuğun harf-ses bilgisinin tam olmadığını varsayarım. Birleştirme çalışmasını durdurur, harf kartlarını çıkarıp tek tek sesleri tekrar çalıştırırım.', clinicalValue: 60, aiTag: 'component_regression' },
+          { label: 'Çocuğun işitsel hafızasının zayıf olduğunu düşünür, bu hedefi bir süreliğine beklemeye alır ve görsel eşleme çalışmalarına ağırlık veririm.', clinicalValue: 40, aiTag: 'avoidant_strategy' }
+        ]
+      },
+      {
+        id: 'stf_acad_9',
+        text: 'Bir metni sıralama (önce-sonra-en son) çalışmasında öğrenci olayları sürekli birbirine karıştırıyor. İlk hamleniz nedir?',
+        options: [
+          { label: 'Görsel bir akış şeması (Story Map) oluştururum. Olayları temsil eden resimleri masaya koyar ve önce fiziksel olarak yerlerini değiştirmesini, sonra anlatmasını sağlarım; somutlaştırma önceliklidir.', clinicalValue: 100, aiTag: 'visual_sequencing_support' },
+          { label: 'Metni tekrar yüksek sesle okurum. Her olaydan sonra "Şimdi ne oldu?" diye sorarak hafızasını zorlamaya çalışırım.', clinicalValue: 70, aiTag: 'auditory_memory_loading' },
+          { label: 'Olayların altına "1, 2, 3" yazdırırım. Numaralandırma yaparak ezberlemesini sağlarım.', clinicalValue: 50, aiTag: 'numeric_memorization' }
+        ]
+      },
+      {
+        id: 'stf_acad_10',
+        text: 'Çıkarma işleminde (örn: 42-15) "komşudan onluk almayı" çocuk bir türlü içselleştiremiyor. Sadece "2\'den 5 çıkmaz 12 olur" diyor ama nedenini bilmiyor. Ne yaparsınız?',
+        options: [
+          { label: 'Abaküs veya gerçek para (10 TL ve 1 TL\'ler) kullanırım. 10 TL\'yi bozup 10 tane 1 TL yapmanın (unbundling) mantığını yaşatarak anlatırım; matematiği "bozdurma" eylemiyle somutlaştırırım.', clinicalValue: 100, aiTag: 'unbundling_concept_expert' },
+          { label: 'Kuralı şarkı haline getiririm. "Küçükten büyük çıkmazsa komşuya git kapıyı çal" tekerlemesini ezberletirim ve işlem adımlarını şablon olarak sunarım.', clinicalValue: 70, aiTag: 'mnemonic_pedagogy' },
+          { label: 'Basit çıkarma işlemlerine geri dönerim. (örn: 9-5) Onluk bozma gerektirmeyen işlemlerde hızlanmasını sağlar, büyüyünce anlayacağını varsayarım.', clinicalValue: 30, aiTag: 'regression_error' }
+        ]
+      },
+      {
+        id: 'stf_acad_11',
+        text: 'Disleksi olan bir öğrencide kelime okuma hızı (fluency) çok düşükse, akıcılığı artırmak için hangi tekniği önceliklendirirsiniz?',
+        options: [
+          { label: 'Tekrarlı Okuma (Repeated Reading) ve Eşli Okuma yaparım. Aynı kısa metni farklı amaçlarla (örn: duygu katarak, yarışarak) okutarak kelime tanıma hızını (sight word recognition) artırırım.', clinicalValue: 100, aiTag: 'evidence_based_fluency' },
+          { label: 'Metni hecelere böldürürüm. Her kelimeyi "da-kı-ka" diye heceleterek hatasız okumasını sağlarım; yavaş ama hatasız okumayı hedeflerim.', clinicalValue: 60, aiTag: 'syllabic_fixation' },
+          { label: 'Göz egzersizleri yaptırırım. Göz kaslarını güçlendirmenin okuma hızını doğrudan artıracağına inanarak dersin bir kısmını buna ayırırım.', clinicalValue: 20, aiTag: 'pseudo_scientific_approach' }
+        ]
+      },
+      {
+        id: 'stf_acad_12',
+        text: 'Öğrenci ritmik saymayı biliyor ama "Aradan sayma" (Örn: 4\'ten başla) dendiğinde donup kalıyor. Bu durum hangi eksikliğe işaret eder?',
+        options: [
+          { label: 'Sayılar arasındaki ilişkinin (Numerical Order) mantığını kavramadığını, saymayı sadece bir tekerleme gibi ezberlediğini anlarım. Sayı doğrusu üzerinde ileri-geri atlamalar yaparak sayıların konumunu çalışırım.', clinicalValue: 100, aiTag: 'number_line_logic' },
+          { label: 'Dikkat eksikliği olduğunu düşünürüm. Odaklanamadığı için nerede kaldığını unuttuğunu varsayar ve dikkati artırıcı ilaç veya takviye önerisi için yönlendirme yaparım.', clinicalValue: 40, aiTag: 'over_diagnosis_bias' },
+          { label: 'Çocuğun yorgun olduğunu düşünür, çalışmaya ara veririm. Moralini bozmamak için başarabileceği bir görev olan "1\'den başlayarak sayma"ya geri dönerim.', clinicalValue: 20, aiTag: 'instructional_avoidance' }
+        ]
+      },
+      {
+        id: 'stf_acad_13',
+        text: 'Yazılı anlatımda (kompozisyon) öğrenci sadece tek kelimelik cevaplar veriyor. Cümle kurmasını nasıl teşvik edersiniz?',
+        options: [
+          { label: '"Genişletilmiş Soru" tekniğini kullanırım. Verdiği kelimeye "kim, ne zaman, nasıl?" ekleri getirerek cümle iskeletini birlikte kurar ve "Scaffolding" (Yapı iskelesi) yöntemiyle yavaşça desteğimi çekerim.', clinicalValue: 100, aiTag: 'scaffolding_technique' },
+          { label: 'Yazacağı cümleleri ben önceden tahtaya yazarım. O cümleleri defterine 5\'er kez yazarak cümle yapısına elinin ve gözünün alışmasını sağlarım.', clinicalValue: 50, aiTag: 'copy_paste_pedagogy' },
+          { label: 'Doğru cümleyi kurana kadar yeni soru sormam. "Cümle kurmazsan ödül yok" diyerek motivasyonunu zorlarım.', clinicalValue: 30, aiTag: 'aversive_conditioning' }
+        ]
+      },
+      {
+        id: 'stf_acad_14',
+        text: 'Problemi okuyan ama "Hangi işlemi yapacağımı bilmiyorum (Toplama mı Çıkarma mı?)" diyen bir öğrencide eksik olan nedir?',
+        options: [
+          { label: 'Matematiksel dildeki "Anahtar Kelimeler"i (örn: arttı, eksildi, toplamda, geriye) ve problemin senaryosunu zihninde canlandıramadığını anlarım. Problemi resmetmesini (Visual Representation) isteyerek somut bir strateji geliştiririm.', clinicalValue: 100, aiTag: 'mathematical_schema_training' },
+          { label: 'Çocuğun işlem becerisinin zayıf olduğunu varsayarım. Bol bol alt alta toplama-çıkarma sayfası vererek otomatikleşmesini beklerim.', clinicalValue: 50, aiTag: 'procedural_reductionism' },
+          { label: 'Okuma-yazma seviyesine geri dönerim. Kelimeleri anlayamadığı için işlemi seçemediğini düşünür, okuma çalışmaları yaparım.', clinicalValue: 40, aiTag: 'misaligned_intervention' }
+        ]
+      },
+      {
+        id: 'stf_acad_15',
+        text: 'Öğrenci okul ödevlerini yaparken çok yavaş ve sürekli silgi kullanıyor. Mükemmeliyetçi bir kaygısı olduğunu fark ettiniz. Tavrınız?',
+        options: [
+          { label: 'Hata yapmanın öğrenmenin bir parçası olduğunu vurgulamak için kasıtlı olarak ben de hatalar yaparım. Silgiyi masadan kaldırıp "Renkli Hatalar" günü yaparız ve sürecin sonuca odaklı değil çabaya odaklı olmasını sağlarım.', clinicalValue: 100, aiTag: 'perfectionism_desensitization' },
+          { label: 'Daha düzgün yazması için teşvik ederim. "Güzel yazarsan yıldız alırsın" diyerek dışsal motivasyonu artırırım ve her hatasında nazikçe uyarırım.', clinicalValue: 60, aiTag: 'reinforcing_anxiety' },
+          { label: 'Ödevleri azaltırım. Çocuğun zorlandığını gördüğüm için ödev yapmamasını, sadece okuma yapmasının yeterli olacağını aileye bildiririm.', clinicalValue: 30, aiTag: 'standard_lowering' }
         ]
       }
     ]
