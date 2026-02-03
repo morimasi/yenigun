@@ -11,9 +11,6 @@ const extractPureJSON = (text: string): any => {
     const lastBrace = cleanText.lastIndexOf('}');
     if (firstBrace === -1) return null;
     let jsonStr = lastBrace > firstBrace ? cleanText.substring(firstBrace, lastBrace + 1) : cleanText.substring(firstBrace);
-    let openCount = (jsonStr.match(/\{/g) || []).length;
-    let closeCount = (jsonStr.match(/\}/g) || []).length;
-    while (openCount > closeCount) { jsonStr += "}"; closeCount++; }
     return JSON.parse(jsonStr);
   } catch (e) { return null; }
 };
@@ -38,10 +35,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
     GÖREV: Adayın liyakat matrisini ve 24 aylık kariyer projeksiyonunu simüle et.
     
-    FAZ 5 ÖNCELİĞİ: 
-    - Adayın mülakat verilerinden (0, 3, 6, 12, 18, 24. aylardaki) 'Liyakat Puanı' ve 'Tükenmişlik Riski' verilerini çıkar.
-    - Özellikle branşına (örn: Özel Eğitim) has zorlukları bu eğriye dahil et.
-    - Liyakat eğrisi ile Burnout eğrisinin kesiştiği noktayı (The Churn Point) tespit et.
+    KRİTİK ANALİZ PARAMETRELERİ:
+    1. SERTİFİKA DERİNLİĞİ: Adayın seçtiği sertifikalar (Örn: BCBA, DIR201) ile mülakat yanıtlarındaki teknik derinlik uyuşuyor mu?
+    2. METODOLOJİK ÇELİŞKİ: ABA ve DIR gibi zıt felsefeleri aynı anda savunan adaylarda "Bilişsel Esneklik" mi yoksa "Kavram Karışıklığı" mı var?
+    3. KARİYER YÖRÜNGESİ: Branş spesifik çarpanları (Multipliers) kullanarak 24 aylık burnout vs yetkinlik eğrisini hesapla.
   `;
 
   const response = await ai.models.generateContent({
@@ -76,7 +73,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                     month: { type: Type.NUMBER },
                     meritScore: { type: Type.NUMBER },
                     burnoutRisk: { type: Type.NUMBER },
-                    competencyLevel: { type: Type.STRING },
+                    competencyLevel: { type: Type.STRING, enum: ['Oryantasyon', 'Stabilizasyon', 'Uzmanlık', 'Otorite', 'Riskli Bölge'] },
                     strategicAdvice: { type: Type.STRING }
                   },
                   required: ["month", "meritScore", "burnoutRisk", "competencyLevel", "strategicAdvice"]

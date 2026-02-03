@@ -2,76 +2,154 @@
 import { Certification } from '../types';
 
 export const CERTIFICATIONS: Certification[] = [
+  // 🧩 OTİZM SPEKTRUM BOZUKLUĞU
   {
-    id: 'aba_intl',
-    label: 'ABA (Applied Behavior Analysis) - BCBA/RBT',
-    description: 'Uluslararası Uygulamalı Davranış Analizi Akreditasyonu.',
+    id: 'aba_bcba',
+    label: 'Applied Behavior Analysis (ABA) - BCBA/UKBA',
+    description: 'Uluslararası Davranış Analisti Akreditasyonu.',
     category: 'AUTISM_SPECTRUM',
     verificationQuestions: [
       {
-        id: 'vq_aba_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Bir problem davranışın işlevi "Kaçma/Kaçınma" (Escape) olarak belirlendi ve sönme prosedürü uygulanıyor. Ancak çocuk o gün fizyolojik olarak hasta görünüyor (Grip belirtileri). "Talep Gönderme" (Demanding) konusunda o günkü stratejiniz ne olur?',
+        id: 'vq_aba_intl', category: 'clinical', type: 'radio',
+        text: 'Bir vaka analizinde "Aralıklı Pekiştirme" (Intermittent Reinforcement) tuzağına düşen bir veliyi nasıl yönetirsiniz?',
         weightedOptions: [
-          { label: 'Demand Fading (Talebin Silikleştirilmesi): Fizyolojik bariyer (Motivating Operation - MO) performansı düşürür; kaçınma davranışını pekiştirmemek için talebi tamamen kaldırmam (çünkü çocuk hastalığı kaçış için kullanmayı şartlayabilir), ancak "Errorless Learning" uygulayarak zorluk derecesini %80 düşürür ve "Behavioral Momentum"u korurum.', weights: { clinical: 1.0, empathy: 0.8 }, analysisInsight: 'Usta Klinisyen: Prosedürü bozmadan insani ve teknik uyarlama yapabilme.' },
-          { label: 'Non-Contingent Reinforcement (NCR): Çocuk hasta olduğu için aversif uyaran (ders) ortamdan çekilmelidir. Tüm akademik talepleri o gün için kaldırır, günü tamamen serbest oyun ve eşleşme (Pairing) ile geçirerek çocuğun kuruma olan güvenini (Rapport) tazelerim.', weights: { clinical: -0.5, empathy: 1.0 }, analysisInsight: 'Şefkat Tuzağı: Hastalığı, kaçınma davranışı için meşru bir araç haline getirme riski (İyi niyetli ama teknik hata).' },
-          { label: 'Prosedürel Sadakat (Strict Adherence): Hastalık bir değişkendir ancak davranış planı tutarlılık gerektirir. Eğer çocuk okula geldiyse, belirlenen "Ayrımlı Pekiştirme" (DRA) programını aynen uygularım; aksi takdirde "hastayım" taklidi yapmayı (malingering) öğrenebilir.', weights: { clinical: 0.2, empathy: -1.0 }, analysisInsight: 'Mekanik Uygulama: Fizyolojik durumu ihmal eden, ilişkiyi zedeleyebilecek katı yaklaşım.' },
-          { label: 'Risk Yönetimi ve Devir: Çocuğun sağlık durumu bulaş riski veya kriz tetikleyicisi olabileceğinden, riske girmemek adına seansı iptal eder veya çocuğu dinlenmesi için ailesine teslim ederim.', weights: { clinical: -0.8, institutionalLoyalty: -0.5 }, analysisInsight: 'Sorumluluktan Kaçış: Kurumsal süreci yönetmek yerine pasifize olma.' }
+          { label: 'Veri Temelli Yüzleşme: Velinin "bazen" verdiği tavizlerin davranışı nasıl ölümsüzleştirdiğini grafiklerle gösterir, protokol sadakati için etik sözleşmeyi hatırlatırım.', weights: { clinical: 1.0, workEthics: 0.9 }, analysisInsight: 'Teknik Otorite: Veriyi ikna aracı olarak kullanan profil.' },
+          { label: 'Davranışsal Koçluk: Veliyi suçlamadan, bu durumun insani bir "duygusal sızıntı" olduğunu kabul eder ve sönme prosedürünü velinin uygulayabileceği mikro adımlara bölerim.', weights: { clinical: 0.8, empathy: 1.0 }, analysisInsight: 'Sistemik Esneklik: Aileyi sürece dahil eden pragmatist.' }
         ]
       }
     ]
   },
   {
-    id: 'dir_floortime_intl',
-    label: 'DIR Floortime (ICDL 201/202)',
-    description: 'İlişki temelli nöro-gelişimsel müdahale sertifikası.',
+    id: 'dir_floortime_prof',
+    label: 'DIR Floortime (201/202/Expert)',
+    description: 'İlişki Temelli Nörogelişimsel Müdahale (ICDL).',
     category: 'AUTISM_SPECTRUM',
     verificationQuestions: [
       {
-        id: 'vq_dir_1', category: 'technicalExpertise', type: 'radio',
-        text: 'Çocuk "Shared Attention" (Ortak Dikkat) kuramıyor ve sürekli kendi etrafında dönüyor (Vestibüler Arayış). Floortime yaklaşımına göre ilk hamle ne olmalıdır?',
+        id: 'vq_dir_adv', category: 'clinical', type: 'radio',
+        text: 'Çocuk FEDL 4 (Karmaşık Problem Çözme) aşamasında ama duyusal olarak "Aşırı Uyarılmış" (Hyper-aroused). Müdahaleniz ne olur?',
         weightedOptions: [
-          { label: 'Regülasyon ve Yönlendirme: Dönmesini fiziksel olarak durdurup, yüzünü bana çevirmesini sağlayarak dikkatini regüle ederim ve sakinleşene kadar "Deep Pressure" (Derin Bası) uygularım. Önce regülasyon, sonra iletişim.', weights: { clinical: -0.5, pedagogicalAnalysis: -0.3 }, analysisInsight: 'Model Karmaşası: İlişki temelli modele davranışçı/duyusal bütünleme müdahalesi karıştırma.' },
-          { label: 'Aynalama ve Katılım (Join-in): Onunla birlikte, aynı yöne ve aynı hızda dönerek onun dünyasına girer (Entering the World), vestibüler girdiyi paylaşarak ilişki kapısını aralarım ve sonrasında oyunu çeşitlendiririm (Expand the Circle of Communication).', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Klinik Rezonans: Çocuğun ilgisi üzerinden ilişki başlatma ustalığı.' },
-          { label: 'Pasif Gözlem ve Bekleme: Müdahale etmeden dönmesinin bitmesini bekler, bitince ilgisini çekecek yüksek affektli (High Affect) oyuncaklar sunarak "Kendiliğinden Başlatma" (Initiation) yapmasını umarım.', weights: { clinical: 0.2 }, analysisInsight: 'Pasif Terapist: Çocuğun dünyasına girmek yerine dışarıda bekleyen yaklaşım.' },
-          { label: 'Güvenlik Odaklı Masa Başı: Başının dönüp düşmemesi için onu sandalyeye oturtur ve masa başı etkinliğe geçirerek dikkatini daha yapılandırılmış (Structured) bir alana çekerim.', weights: { clinical: -0.2, empathy: 0.5 }, analysisInsight: 'Koruyucu Refleks (Aşırı Kontrol): Gelişimsel fırsatı güvenlik kaygısıyla kaçırma.' }
+          { label: 'Aşağıdan Yukarıya (Bottom-up): Önce duyusal regülasyonu (ko-regülasyon) sağlar, çocuk sakinleşene kadar etkileşimi en düşük bilişsel yükte tutarım.', weights: { clinical: 1.0, sustainability: 0.9 }, analysisInsight: 'Biyolojik Öncelik: Sinir sistemi hiyerarşisini bilen klinisyen.' },
+          { label: 'Duygusal Genişletme: Bu uyarılmışlığı oyunun bir parçası yaparak (Örn: Heyecanlı bir kovalamaca) etkileşim döngülerini (Circles) sürdürmeye çalışırım.', weights: { clinical: 0.7, developmentOpenness: 1.0 }, analysisInsight: 'Yaratıcı Terapist: Krizi fırsata çeviren ilişkisel profil.' }
         ]
       }
     ]
   },
+  { id: 'etekom_autism', label: 'ETEÇOM (Etkileşim Temelli Erken Çocuklukta Müdahale)', description: '0-6 yaş etkileşimsel stratejiler.', category: 'AUTISM_SPECTRUM', verificationQuestions: [] },
+  { id: 'pecs_intl', label: 'PECS (Picture Exchange Communication System)', description: 'Resim Değişiş Yoluyla İletişim.', category: 'AUTISM_SPECTRUM', verificationQuestions: [] },
+  { id: 'gobdo_2', label: 'GOBDÖ-2-TV (Gilliam Otizm Derecelendirme Ölçeği)', description: 'Otizm tanı ve şiddet belirleme standardı.', category: 'AUTISM_SPECTRUM', verificationQuestions: [] },
+
+  // 📖 ÖZEL ÖĞRENME GÜÇLÜĞÜ
   {
-    id: 'cas_intl',
-    label: 'CAS (Cognitive Assessment System) Uygulayıcı',
-    description: 'PASS Teorisi temelli bilişsel değerlendirme uzmanlığı.',
+    id: 'dmp_disleksi',
+    label: 'Disleksi Müdahale Programı (DMP)',
+    description: 'Ses temelli fonolojik farkındalık uzmanlığı.',
     category: 'LEARNING_DISABILITIES',
     verificationQuestions: [
       {
-        id: 'vq_cas_1', category: 'technicalExpertise', type: 'radio',
-        text: 'PASS teorisine göre "Eşzamanlı İşlemleme" (Simultaneous Processing) zayıflığı olan bir öğrenciye okuma-yazma öğretirken hangi yöntem en yüksek riski taşır?',
+        id: 'vq_dmp_1', category: 'clinical', type: 'radio',
+        text: 'Okuma akıcılığı zayıf olan öğrencide "Tahmin Ederek Okuma" (Visual Guessing) hatasını nasıl kırarsınız?',
         weightedOptions: [
-          { label: 'Bütüncül (Global) Yöntemler: Kelimeyi bir bütün resim gibi algılamayı gerektiren, parçalar arası ilişkiyi ve gestalt algısını aynı anda görmeyi zorunlu kılan karmaşık görsel matrisler.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Eşleştirme Doğruluğu: Zayıf alanın üzerine yüklenen yanlış yöntem tespiti.' },
-          { label: 'Ses Temelli Cümle Yöntemi: Harfleri tek tek (Ardıl) birleştirerek hece ve kelimeye ulaşan, sıralı işlemleme (Successive Processing) becerisini kullanan yöntemler.', weights: { clinical: 0.3 }, analysisInsight: 'Nötr Tercih: Genellikle ardıl işlemlemeyi kullanır, eşzamanlı zayıflıkta işe yarayabilir.' },
-          { label: 'Ardıl İşlemleme Oyunları: Birbirini takip eden olayları sıralama, hafızada tutma ve yönerge takip etme çalışmaları ile ardıl alanı desteklemek.', weights: { clinical: -0.5 }, analysisInsight: 'Kavram Karmaşası: Bu yöntem çocuğun güçlü yanına hitap edebilir, riskli değildir.' },
-          { label: 'Çoktan Seçmeli Testler: Görsel tarama gerektirse de okuma öğretim yöntemi değildir, sadece değerlendirme aracıdır.', weights: { clinical: 0.0 }, analysisInsight: 'İlişkisiz Cevap.' }
+          { label: 'Fonolojik Tahkimat: Kelimeyi parçalarına ayırarak (Decodable Text) ve her sesin karşılığını parmakla takip ederek "ortografik haritalama" yaparım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Metodolojik Sadakat: Kanıta dayalı yöntemden sapmayan profil.' },
+          { label: 'Bilişsel Strateji: Cümlenin bağlamından yola çıkarak "anlamsal ipuçları" kullanmasını öğretir, hızı artırmak için hata payını kabul ederim.', weights: { clinical: 0.5, empathy: 0.8 }, analysisInsight: 'Sonuç Odaklı: Akademik kaygıyı önceliklendiren profil.' }
         ]
       }
     ]
   },
+  { id: 'ivek_disleksi', label: 'İVEK (İşitsel-Görsel Eğitim Kompleksi)', description: 'Çok duyulu öğrenme yaklaşımı.', category: 'LEARNING_DISABILITIES', verificationQuestions: [] },
+  { id: 'tobi_okuma', label: 'TÖBİ (Temel Okuma Becerileri Envanteri)', description: 'Performans analizi ve BEP hazırlama.', category: 'LEARNING_DISABILITIES', verificationQuestions: [] },
+  { id: 'prep_pass', label: 'PREP (PASS Reading Enhancement Program)', description: 'Ardıl ve eşzamanlı işlemleme temelli okuma.', category: 'LEARNING_DISABILITIES', verificationQuestions: [] },
+
+  // 🧠 ZİHİN & BİLİŞSEL
   {
-    id: 'wisc_v_intl',
-    label: 'WISC-V Uygulayıcı Sertifikası',
-    description: 'Wechsler Çocuklar İçin Zeka Ölçeği - 5. Sürüm.',
+    id: 'cas_cog',
+    label: 'Cognitive Assessment System (CAS)',
+    description: 'PASS Teorisi Bilişsel Değerlendirme Uzmanlığı.',
     category: 'INTELLECTUAL_COGNITIVE',
     verificationQuestions: [
       {
-        id: 'vq_wisc_1', category: 'technicalExpertise', type: 'radio',
-        text: 'WISC-V profilinde "Çalışma Belleği" (Working Memory) indeksi düşük, buna karşın "Sözel Kavrama"sı (VCI) çok yüksek çıkan bir öğrenciye akademik yönerge verirken nasıl bir strateji izlenmelidir?',
+        id: 'vq_cas_1', category: 'clinical', type: 'radio',
+        text: 'Öğrencinin "Ardıl İşlemleme" (Successive) skoru çok düşükse, yönerge verirken stratejiniz ne olur?',
         weightedOptions: [
-          { label: 'Sözel Kapasiteyi Kullanma: Sözel zekası güçlü olduğu için, detaylı, zengin ve bağlamsal açıklamalar yaparak konuyu derinlemesine anlatır ve dil becerisini aktif kullanmasını sağlarım.', weights: { clinical: -0.8 }, analysisInsight: 'Klinik Hata: Bellek darboğazını (bottleneck) görmezden gelip güçlü alana aşırı yüklenme.' },
-          { label: 'Bilişsel İskele (Scaffolding): Yönergeleri parçalara böler (Chunking), her adımı görsel ipuçlarıyla destekler ve sözel açıklamayı minimumda tutarak bellek yükünü (Cognitive Load) azaltırım.', weights: { clinical: 1.0 }, analysisInsight: 'Bilişsel Profil Adaptasyonu: Zayıf alanı protezleyerek güçlü alanı devreye sokma.' },
-          { label: 'Kayıt ve Tekrar Stratejisi: Çocuğa her söylediğimi not aldırır veya ses kaydı yapmasına izin veririm, böylece unuttuğunda tekrar dinleyebilir (Kompansasyon).', weights: { clinical: 0.4 }, analysisInsight: 'Kısmen Doğru: Telafi edici bir stratejidir ancak öğretim anındaki işlemleme sorununu çözmez.' },
-          { label: 'Çevresel Düzenleme: Dikkatini toplaması için onu sınıfın en ön sırasına, öğretmenin tam karşısına oturtur ve göz teması kurarak dikkati canlı tutarım.', weights: { clinical: 0.2 }, analysisInsight: 'Klasik Yöntem: Dikkat eksikliği için geçerlidir ancak bellek kapasitesi sorununu doğrudan çözmez.' }
+          { label: 'Görselleştirme ve Eşzamanlılık: Sözel yönergeyi tekli komutlara böler ve mutlaka görsel bir şema veya akış kartıyla desteklerim.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Bilişsel Mimari: Profil zayıflığını telafi stratejisiyle çözen profil.' },
+          { label: 'Hafıza Egzersizi: Yönergeyi bilerek uzun tutar ve tekrar etmesini isteyerek ardıl işlemleme kaslarını seansta zorlarım.', weights: { clinical: 0.6, sustainability: 0.7 }, analysisInsight: 'Zorlayıcı Eğitmen: Kapasite artırımına odaklı profil.' }
         ]
       }
     ]
-  }
+  },
+  { id: 'wisc_4_intl', label: 'WISC-IV (Wechsler Çocuklar İçin Zeka Ölçeği)', description: 'Uluslararası zeka değerlendirme standardı.', category: 'INTELLECTUAL_COGNITIVE', verificationQuestions: [] },
+  { id: 'attentioner_program', label: 'Attentioner (Dikkatimi Topluyorum)', description: '7-18 yaş nöropsikolojik tabanlı dikkat eğitimi.', category: 'INTELLECTUAL_COGNITIVE', verificationQuestions: [] },
+  { id: 'moxo_test', label: 'MOXO Dikkat Testi Uygulayıcısı', description: 'Objektif DEHB ve dikkat ölçümü.', category: 'INTELLECTUAL_COGNITIVE', verificationQuestions: [] },
+  { id: 'cogmed_training', label: 'Cogmed Çalışma Belleği Eğitimi', description: 'Working Memory güçlendirme akreditasyonu.', category: 'INTELLECTUAL_COGNITIVE', verificationQuestions: [] },
+
+  // 🗣️ DİL VE KONUŞMA TERAPİSİ
+  {
+    id: 'prompt_speech',
+    label: 'PROMPT (Restructuring Oral Muscular Phonetic Targets)',
+    description: 'Dokunsal-Kinestetik konuşma terapisi.',
+    category: 'LANGUAGE_SPEECH',
+    verificationQuestions: [
+      {
+        id: 'vq_prompt_1', category: 'clinical', type: 'radio',
+        text: 'Çocukta şiddetli "Konuşma Apraksisi" var. İlk aşamada dokunsal ipucu (input) derinliğiniz ne olmalıdır?',
+        weightedOptions: [
+          { label: 'Parametre Kontrolü: Çene stabilizasyonuna ve yüz kaslarının tonusuna odaklanan temel seviye dokunuşlarla motor planlamayı başlatırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Uzman Klinisyen: Temel motor kontrolü önceliklendirme.' },
+          { label: 'Yüzeyel Uyarım: Sadece ses çıkışını tetiklemek için dudak çevresi hızlı uyarıcılar veririm.', weights: { clinical: 0.6, personality: 0.8 }, analysisInsight: 'Hız Odaklı: Sonuç almak için yüzeyel kalan profil.' }
+        ]
+      }
+    ]
+  },
+  { id: 'lidcombe_stuttering', label: 'Lidcombe Kekemelik Programı', description: 'Okul öncesi kekemelik müdahalesi.', category: 'LANGUAGE_SPEECH', verificationQuestions: [] },
+  { id: 'hanen_intl', label: 'Hanen (It Takes Two to Talk)', description: 'Aile odaklı dil geliştirme programı.', category: 'LANGUAGE_SPEECH', verificationQuestions: [] },
+  { id: 'tedil_test', label: 'TEDİL (Türkçe Erken Dil Gelişimi Testi)', description: 'TEMA-3 standardı yerel adaptasyon.', category: 'LANGUAGE_SPEECH', verificationQuestions: [] },
+  { id: 'sos_feeding', label: 'SOS Approach to Feeding', description: 'Seçici yeme ve beslenme bozuklukları terapisi.', category: 'LANGUAGE_SPEECH', verificationQuestions: [] },
+
+  // 🏃 ERGOTERAPİ & FİZYOTERAPİ
+  {
+    id: 'ayres_si',
+    label: 'Ayres Sensory Integration (ASI)',
+    description: 'Uluslararası Duyu Bütünleme Akreditasyonu (CLASI/SIE).',
+    category: 'OCCUPATIONAL_PHYSIO',
+    verificationQuestions: [
+      {
+        id: 'vq_si_1', category: 'clinical', type: 'radio',
+        text: 'Vesitbüler arayışı olan bir çocuk seansın ortasında "Kusma" belirtisi (Nausea) gösterirse aksiyonunuz ne olur?',
+        weightedOptions: [
+          { label: 'Otonom Güvenlik: Aktiviteyi derhal keser, çocuğu dik pozisyonda sabitler ve propriyoseptif (derin bası) girdi vererek parasempatik sistemi aktive ederim.', weights: { clinical: 1.0, sustainability: 1.0 }, analysisInsight: 'Klinik Refleks: Nörolojik tehlike sinyalini doğru okuma.' },
+          { label: 'Duyarsızlaştırma: Belirtinin psikolojik olduğunu varsayar, yavaşlayarak ama aktiviteyi bitirmeden devam ederim.', weights: { clinical: 0.3, workEthics: 0.5 }, analysisInsight: 'Riskli Yaklaşım: Fizyolojik sınırı ihlal etme eğilimi.' }
+        ]
+      }
+    ]
+  },
+  { id: 'bobath_ndt', label: 'Bobath (NDT) Sertifikalı Terapist', description: 'Nörogelişimsel Tedavi yaklaşımı.', category: 'OCCUPATIONAL_PHYSIO', verificationQuestions: [] },
+  { id: 'schroth_scoliosis', label: 'Schroth Metodu (Skolyoz)', description: '3 boyutlu skolyoz egzersizleri uzmanlığı.', category: 'OCCUPATIONAL_PHYSIO', verificationQuestions: [] },
+  { id: 'therasuit_method', label: 'Therasuit Method', description: 'Yoğun fizyoterapi ve uzay terapi sistemi.', category: 'OCCUPATIONAL_PHYSIO', verificationQuestions: [] },
+  { id: 'co_op_approach', label: 'CO-OP (Cognitive Orientation to Occupational Performance)', description: 'Bilişsel yönelimli motor beceri eğitimi.', category: 'OCCUPATIONAL_PHYSIO', verificationQuestions: [] },
+
+  // 📐 OKUMA YAZMA & MATEMATİK
+  { id: 'dis_math', label: 'DIS-MATH (Diskalkuli Müdahale Seti)', description: 'Matematik öğrenme güçlüğü uzmanlığı.', category: 'ACADEMIC_SKILLS', verificationQuestions: [] },
+  { id: 'pass_math_prep', label: 'PASS Matematik Stratejileri', description: 'Bilişsel fonksiyonlar temelli matematik.', category: 'ACADEMIC_SKILLS', verificationQuestions: [] },
+  { id: 'akil_oyunlari', label: 'Zeka ve Akıl Oyunları Eğitmenliği', description: 'Strateji ve mantık yürütme geliştirme.', category: 'ACADEMIC_SKILLS', verificationQuestions: [] },
+
+  // 🤝 REHBERLİK & PSİKOLOJİ
+  {
+    id: 'emdr_intl',
+    label: 'EMDR (1. ve 2. Düzey) Uygulayıcısı',
+    description: 'Göz Hareketleriyle Duyarsızlaştırma ve Yeniden İşleme.',
+    category: 'PSYCHOLOGY_GUIDANCE',
+    verificationQuestions: [
+      {
+        id: 'vq_emdr_1', category: 'clinical', type: 'radio',
+        text: 'İşleme (Processing) sırasında danışan "Disosiye" (Kopma) olursa ne yaparsınız?',
+        weightedOptions: [
+          { label: 'Topraklama (Grounding): Çift yönlü uyarımı durdurur, "Burada ve Şimdi" egzersizlerine geçer ve pencereyi daraltırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Klinik Güvenlik: Danışanı regüle etme ustalığı.' },
+          { label: 'İşlemeye Devam: Travmanın boşalması için güvenli alanda kalarak uyarımı hızlandırırım.', weights: { clinical: 0.4, personality: 0.6 }, analysisInsight: 'Agresif Terapist: Risk yönetimi zayıf profil.' }
+        ]
+      }
+    ]
+  },
+  { id: 'bdt_cbt_intl', label: 'Bilişsel Davranışçı Terapi (BDT) - Academy of CT', description: 'Kanıta dayalı psikoterapi akreditasyonu.', category: 'PSYCHOLOGY_GUIDANCE', verificationQuestions: [] },
+  { id: 'play_therapy_adler', label: 'Adlerian / Çocuk Merkezli Oyun Terapisi', description: 'İlişki odaklı oyun terapisi uzmanlığı.', category: 'PSYCHOLOGY_GUIDANCE', verificationQuestions: [] },
+  { id: 'filial_therapy', label: 'Filial Terapi Eğitmenliği', description: 'Ebeveyn-çocuk ilişkisi güçlendirme.', category: 'PSYCHOLOGY_GUIDANCE', verificationQuestions: [] },
+  { id: 'gottman_method', label: 'Gottman Çift Terapisi (Düzey 1-2)', description: 'Bilimsel temelli aile danışmanlığı.', category: 'PSYCHOLOGY_GUIDANCE', verificationQuestions: [] }
 ];
