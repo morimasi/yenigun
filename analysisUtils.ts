@@ -8,7 +8,8 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
   const scores: Record<string, number[]> = {
-    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: []
+    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: [],
+    academicSkills: [] // Yeni Klinik Parametre
   };
   
   let reliabilityPoints = 100;
@@ -17,10 +18,11 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
 
   const weights: any = config?.advancedAnalytics?.weights || {
     clinicalDepth: 25,
-    ethicalIntegrity: 30,
-    emotionalResilience: 20,
+    ethicalIntegrity: 25,
+    emotionalResilience: 15,
     institutionalLoyalty: 10,
-    learningAgility: 15
+    learningAgility: 10,
+    academicPedagogy: 15 // Yeni Ağırlık Katmanı
   };
 
   const penalties: any = config?.advancedAnalytics?.penalties || {
@@ -42,7 +44,15 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
         Object.entries(activeWeights).forEach(([cat, weight]) => {
           const numericWeight = Number(weight);
           const multiplier = multipliers[cat] || 1.0;
-          if (scores[cat]) scores[cat].push(numericWeight * 100 * multiplier);
+          
+          // Kategori mapping
+          let targetCat = cat;
+          if (cat === 'pedagogicalAnalysis') targetCat = 'pedagogy';
+          if (cat === 'workEthics') targetCat = 'ethics';
+          if (cat === 'technicalExpertise') targetCat = 'clinical';
+          
+          if (scores[targetCat]) scores[targetCat].push(numericWeight * 100 * multiplier);
+          else if (cat === 'academicSkills') scores.academicSkills.push(numericWeight * 100 * multiplier);
         });
 
         if (activeWeights.ethics && Number(activeWeights.ethics) < 0.4) {
@@ -61,6 +71,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
   const agilityScore = getAvg(scores.developmentOpenness);
+  const academicScore = getAvg(scores.academicSkills); // Yeni Skor
 
   const exp = candidate.experienceYears || 0;
   const experienceWeight = Math.min(exp * 10, 100);
@@ -79,11 +90,12 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const totalWeight = Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number || 100;
 
   let rawScore = (
-    (ethicsScore * (weights.ethicalIntegrity as number)) + 
-    (clinicalScore * (weights.clinicalDepth as number)) + 
-    (resilienceScore * (weights.emotionalResilience as number)) + 
-    (fitScore * (weights.institutionalLoyalty as number)) +
-    (agilityScore * (weights.learningAgility as number))
+    (ethicsScore * (weights.ethicalIntegrity || 25)) + 
+    (clinicalScore * (weights.clinicalDepth || 25)) + 
+    (resilienceScore * (weights.emotionalResilience || 15)) + 
+    (fitScore * (weights.institutionalLoyalty || 10)) +
+    (agilityScore * (weights.learningAgility || 10)) +
+    (academicScore * (weights.academicPedagogy || 15))
   ) / totalWeight;
 
   rawScore = rawScore * (expMultiplier as number);
@@ -103,6 +115,6 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     burnoutResistance,
     fitScore,
     riskFlags,
-    branchComplianceScore: Math.round((clinicalScore + ethicsScore) / 2)
+    branchComplianceScore: Math.round((clinicalScore + ethicsScore + academicScore) / 3)
   };
 };

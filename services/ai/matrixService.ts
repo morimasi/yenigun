@@ -33,13 +33,13 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
-    GÖREV: Adayın liyakat matrisini ve sertifikasyon derinliğini analiz et.
+    GÖREV: Adayın liyakat matrisini, sertifikasyon derinliğini ve AKADEMİK PEDAGOJİ (Türkçe/Matematik) müdahale yeteneğini analiz et.
     
     KRİTİK ANALİZ PARAMETRELERİ (REASONING MODE):
-    1. AKREDİTASYON TUTARLILIĞI: Adayın seçtiği sertifikalar (Örn: BCBA, CAS, PROMPT, Ayres SI) ile doğrulama sorularına verdiği yanıtlar arasındaki teknik uyumu ölç. Sertifika var ama soru cevabı sığ ise 'Sosyal Maskeleme' puanını yükselt.
-    2. METODOLOJİK SPEKTRUM: ABA (Davranışçı) ve DIR (İlişki Temelli) gibi zıt felsefeleri aynı anda savunan adaylarda 'Bilişsel Esneklik' mi yoksa 'Metodolojik Karmaşa' mı olduğunu tespit et.
-    3. EBP (KANITA DAYALI UYGULAMA): Adayın cevaplarında bilimsel literatüre (Örn: PASS Teorisi, Polivagal Teori, Motor Öğrenme İlkeleri) ne kadar atıf yaptığını analiz et.
-    4. YEREL VS GLOBAL: MEB onaylı programlar ile uluslararası akreditasyonlar arasındaki yetkinlik hiyerarşisini değerlendir.
+    1. AKADEMİK MUHAKEME: Adayın Türkçe ve Matematik sorularındaki "aksaklık çözme" yaklaşımını analiz et. Telafi edici stratejileri mi yoksa temel onarımı mı (Remediation) seçiyor?
+    2. AKREDİTASYON TUTARLILIĞI: Adayın seçtiği sertifikalar (Örn: BCBA, CAS, PROMPT) ile akademik müdahale sorularına verdiği yanıtlar arasındaki teknik uyumu ölç.
+    3. METODOLOJİK SPEKTRUM: ABA (Davranışçı) ve DIR (İlişki Temelli) gibi zıt felsefeleri akademik müdahaleye nasıl yansıtıyor?
+    4. EBP (KANITA DAYALI UYGULAMA): Adayın cevaplarında bilimsel literatüre (Örn: PASS Teorisi, Fonolojik Farkındalık, Subitizing) ne kadar sadık kaldığını analiz et.
   `;
 
   const response = await ai.models.generateContent({
@@ -92,9 +92,10 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               parentStudentRelations: DEEP_SEGMENT_SCHEMA,
               sustainability: DEEP_SEGMENT_SCHEMA,
               institutionalLoyalty: DEEP_SEGMENT_SCHEMA,
-              developmentOpenness: DEEP_SEGMENT_SCHEMA
+              developmentOpenness: DEEP_SEGMENT_SCHEMA,
+              academicPedagogy: DEEP_SEGMENT_SCHEMA // Yeni Analiz Modülü
             },
-            required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness"]
+            required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness", "academicPedagogy"]
           },
           swot: {
             type: Type.OBJECT,
