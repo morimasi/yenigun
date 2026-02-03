@@ -1,16 +1,24 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { StaffMember, IDP, TrainingSlide, PresentationConfig } from "../../types";
+import { StaffMember, IDP, TrainingSlide, PresentationConfig, AIReport, Candidate } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
-  async generateIDP(staff: any): Promise<IDP> {
+  /**
+   * Personelin klinik profili ve test sonuçları temelinde 90 günlük IDP üretir.
+   * @fix: Made assessmentHistory optional and updated staff type to support Candidate evaluation during hiring.
+   */
+  async generateIDP(staff: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `PERSONEL DATA: ${JSON.stringify(staff)}`,
+      contents: `STAFF: ${JSON.stringify(staff)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Baş Mentor. Personelin klinik gelişim planını 'Think' katmanında analiz ederek en zayıf halkaya odaklanan bir roadmap oluştur. JSON formatında yanıt ver.",
+        systemInstruction: `
+          ROL: Yeni Gün Akademi Baş Klinik Mentor. 
+          GÖREV: Personelin test geçmişindeki metodolojik sapmaları analiz et ve 90 günlük, somut, bilimsel (EBP) bir gelişim planı oluştur.
+          ÇIKTI: Saf JSON formatında roadmap ve milestones içermeli.
+        `,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 20000 },
         responseSchema: {
@@ -27,41 +35,55 @@ export const armsService = {
               },
               required: ["shortTerm", "midTerm", "longTerm"]
             },
-            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } }
+            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } },
+            milestones: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  dueDate: { type: Type.STRING }
+                },
+                required: ["title", "dueDate"]
+              }
+            }
           },
-          required: ["focusArea", "identifiedGaps", "roadmap", "recommendedTrainings"]
+          required: ["focusArea", "identifiedGaps", "roadmap", "recommendedTrainings", "milestones"]
         }
       }
     });
 
     const data = JSON.parse(response.text || '{}');
     return {
-      id: Math.random().toString(36).substr(2, 9),
+      id: `IDP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       staffId: staff.id,
       createdAt: Date.now(),
-      ...data
+      ...data,
+      milestones: data.milestones.map((m: any) => ({ ...m, isCompleted: false }))
     };
   },
 
   /**
-   * @fix Added missing generateTrainingSlides method to resolve property access error in StaffProfileView.tsx.
-   * This method generates specialized training slides based on a staff member's Individual Development Plan (IDP).
+   * Personelin IDP'sine özel eğitim slaytları tasarlar.
    */
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `GELİŞİM PLANI: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
+      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Akademik Tasarımcı. Personelin bireysel gelişim planı (IDP) temelinde, eksik olduğu klinik alanları kapatmaya yönelik eğitim slaytları tasarla. JSON Array formatında yanıt ver.",
+        systemInstruction: `
+          ROL: Akademik Müfredat Tasarımcısı. 
+          GÖREV: Personelin gelişim planındaki zayıf noktaları kapatacak, vaka temelli interaktif bir eğitim seti tasarla.
+        `,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: 24000 },
         responseSchema: {
           type: Type.ARRAY,
           items: {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
+              type: { type: Type.STRING },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -85,21 +107,27 @@ export const armsService = {
     return JSON.parse(response.text || '[]');
   },
 
-  async generateCustomPresentation(config: PresentationConfig, contextData?: any): Promise<TrainingSlide[]> {
+  /**
+   * @fix: Added missing 'generateCustomPresentation' method to armsService.
+   */
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)} | BAĞLAM: ${JSON.stringify(contextData)}`,
+      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Akademik Tasarımcı. Klinik derinliği olan eğitim slaytları tasarla. Her slayt bir vaka veya interaktif tartışma içermeli. JSON Array formatında yanıt ver.",
+        systemInstruction: `
+          ROL: Kıdemli Akademik Müfredat Tasarımcısı. 
+          GÖREV: Verilen konfigürasyona uygun, akademik derinliği olan bir eğitim sunumu tasarla.
+        `,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: 20000 },
         responseSchema: {
           type: Type.ARRAY,
           items: {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING, enum: ['title', 'content', 'case', 'interaction'] },
+              type: { type: Type.STRING },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },

@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StaffMember, IDP, AIReport } from '../../types';
+import { StaffMember, IDP, AIReport, UniversalExportData } from '../../types';
 import ExportStudio from '../../components/shared/ExportStudio';
 import { armsService } from '../../services/ai/armsService';
 import { generateCandidateAnalysis } from '../../geminiService';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
+const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = ({ staffId, onUpdate }) => {
   const [data, setData] = useState<{ profile: StaffMember; assessments: any[]; activeIDP: IDP | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isGeneratingIDP, setIsGeneratingIDP] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'idp' | 'analytics'>('overview');
 
   const fetchDetails = useCallback(async () => {
     setIsLoading(true);
@@ -32,30 +33,17 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
     fetchDetails();
   }, [fetchDetails]);
 
-  /**
-   * DERİN ANALİZ VE OTOMATİK VERİTABANI KAYDI
-   * Bu fonksiyon bir kez çalıştırıldığında sonuç veritabanına mühürlenir.
-   */
-  const handleDeepAnalysis = async (force = false) => {
+  const handleDeepAnalysis = async () => {
     if (!data) return;
-    
-    // Eğer kayıtlı bir rapor zaten varsa ve "Zorla (force)" denmemişse işlemi durdur.
-    if ((data.profile as any).report && !force) {
-        return;
-    }
-
     setIsAnalysing(true);
     try {
-      // 1. ADIM: Personel verilerini analiz motoru için hazırla
       const staffSnapshot = {
         ...data.profile,
         answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {})
       };
       
-      // 2. ADIM: Nöral Motoru (Gemini) Çalıştır
       const aiReport = await generateCandidateAnalysis(staffSnapshot as any, {} as any);
       
-      // 3. ADIM: Sonucu Veritabanına "Otomatik" Mühürle (Persistence)
       const saveRes = await fetch('/api/staff?action=save_analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,15 +51,12 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
       });
 
       if (saveRes.ok) {
-        // 4. ADIM: Başarılıysa UI verisini tazele (Artık report veritabanından gelecek)
         await fetchDetails();
-        alert("Klinik analiz başarıyla tamamlandı ve veritabanına mühürlendi.");
-      } else {
-        throw new Error("DB_SAVE_FAIL");
+        if (onUpdate) onUpdate();
+        alert("Nöral Dosya Başarıyla Mühürlendi.");
       }
     } catch (e) {
-      console.error("Deep Analysis Fail:", e);
-      alert("Analiz Hatası: Nöral motor veya veritabanı yanıt vermedi.");
+      alert("Hata: Analiz Motoru Bağlantısı Kesildi.");
     } finally {
       setIsAnalysing(false);
     }
@@ -81,7 +66,7 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
     if (!data) return;
     setIsGeneratingIDP(true);
     try {
-      const newIDP = await armsService.generateIDP(data.profile);
+      const newIDP = await armsService.generateIDP(data.profile, data.assessments);
       const res = await fetch('/api/staff?action=save_idp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,165 +80,203 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
     }
   };
 
+  const handleDeleteStaff = async () => {
+    if (!confirm("KRİTİK İŞLEM: Bu personelin kaydı silinecek ve tüm veriler 'Akademik Arşiv'e taşınacaktır. Onaylıyor musunuz?")) return;
+    try {
+      const res = await fetch(`/api/staff?action=archive&staffId=${staffId}`, { method: 'POST' });
+      if (res.ok) {
+        alert("Personel dosyası arşive mühürlendi.");
+        if (onUpdate) onUpdate();
+      }
+    } catch (e) { alert("Silme hatası."); }
+  };
+
   const radarData = useMemo(() => {
-    const report = (data?.profile as any)?.report as AIReport;
+    const report = data?.profile?.report;
     if (!report?.deepAnalysis) return [];
-    
-    return [
-      { subject: 'ETİK', value: report.deepAnalysis.workEthics?.score || 0 },
-      { subject: 'KLİNİK', value: report.deepAnalysis.technicalExpertise?.score || 0 },
-      { subject: 'PEDAGOJİ', value: report.deepAnalysis.pedagogicalAnalysis?.score || 0 },
-      { subject: 'AKADEMİK', value: report.deepAnalysis.academicPedagogy?.score || 0 }, // Yeni Kategori
-      { subject: 'SADAKAT', value: report.deepAnalysis.institutionalLoyalty?.score || 0 },
-      { subject: 'DİRENÇ', value: report.deepAnalysis.sustainability?.score || 0 }
-    ];
+    return Object.entries(report.deepAnalysis).map(([k, v]) => ({
+      subject: k.replace(/([A-Z])/g, ' $1').toUpperCase(),
+      value: v.score
+    }));
   }, [data]);
 
-  if (isLoading) return <div className="p-20 text-center animate-pulse font-black text-slate-300 uppercase tracking-widest">Klinik Veriler Çözümleniyor...</div>;
-  if (!data) return <div className="p-20 text-center text-slate-400 font-black uppercase">Personel Kaydı Bulunamadı</div>;
+  const growthData = useMemo(() => {
+     if (!data?.assessments) return [];
+     return data.assessments.map(a => ({
+        date: new Date(a.timestamp).toLocaleDateString(),
+        score: a.score
+     }));
+  }, [data]);
 
-  const staffReport = (data.profile as any).report as AIReport;
+  if (isLoading) return <div className="p-20 text-center animate-pulse font-black text-slate-300 uppercase tracking-widest">Nöral Veriler Çözümleniyor...</div>;
+  if (!data) return <div className="p-20 text-center text-slate-400 font-black uppercase">Dosya Bulunamadı</div>;
 
   return (
-    <div className="space-y-6 animate-scale-in pb-20">
-      {isExportOpen && data && staffReport && (
+    <div className="flex flex-col gap-6 animate-fade-in pb-20">
+      
+      {/* EXPORT STÜDYO ENTEGRASYONU */}
+      {isExportOpen && (
         <ExportStudio
           onClose={() => setIsExportOpen(false)}
           data={{
-            type: 'STAFF_IDP',
+            type: 'STAFF_PERFORMANCE_DOSSIER',
             entityName: data.profile.name,
             referenceId: staffId,
             payload: data
           }}
         >
-           <div className="space-y-12">
-              <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200">
-                 <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase">Akademik Durum Özeti</h3>
-                 <p className="text-sm font-medium text-slate-600 leading-relaxed italic">"{staffReport.summary}"</p>
-              </div>
-              <div className="grid grid-cols-2 gap-10">
-                 <div className="p-8 bg-white border-2 border-orange-100 rounded-3xl">
-                    <h5 className="text-[10px] font-black text-orange-600 uppercase mb-4">Liyakat Skoru</h5>
-                    <p className="text-6xl font-black text-slate-900">%{staffReport.score}</p>
-                 </div>
-                 <div className="p-8 bg-slate-900 text-white rounded-3xl">
-                    <h5 className="text-[10px] font-black text-orange-500 uppercase mb-4">Dürüstlük Endeksi</h5>
-                    <p className="text-6xl font-black text-white">%{staffReport.integrityIndex}</p>
-                 </div>
+           <div className="p-10 space-y-12 bg-white">
+              <div className="bg-slate-900 p-12 rounded-[4rem] text-white">
+                 <h2 className="text-4xl font-black uppercase mb-6">{data.profile.name}</h2>
+                 <p className="text-xl italic opacity-80">"{data.profile.report?.summary}"</p>
               </div>
            </div>
         </ExportStudio>
       )}
 
-      {/* HEADER SECTION */}
-      <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm flex justify-between items-center">
-         <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-slate-900 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-xl">
-               {data.profile.name.charAt(0)}
+      {/* TOP HEADER COMMAND BAR */}
+      <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+         <div className="flex items-center gap-8">
+            <div className="w-24 h-24 bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-white text-4xl font-black shadow-2xl relative overflow-hidden group">
+               <span className="relative z-10">{data.profile.name.charAt(0)}</span>
+               <div className="absolute inset-0 bg-orange-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500 opacity-20"></div>
             </div>
             <div>
-               <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{data.profile.name}</h2>
-               <div className="flex items-center gap-3 mt-3">
-                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-[10px] font-black uppercase tracking-widest">{data.profile.branch}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID: {staffId}</span>
-                  {staffReport && <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-widest">ANALİZ MÜHÜRLENDİ</span>}
+               <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{data.profile.name}</h2>
+               <div className="flex items-center gap-4 mt-4">
+                  <span className="px-4 py-1.5 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">{data.profile.branch}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">KIDEM: {data.profile.experience_years} YIL</span>
+                  <div className="flex bg-slate-100 p-1 rounded-xl">
+                     {['overview', 'idp', 'analytics'].map(tab => (
+                        <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>
+                     ))}
+                  </div>
                </div>
             </div>
          </div>
-         <div className="flex gap-3">
-            <button 
-                onClick={() => handleDeepAnalysis(true)} 
-                disabled={isAnalysing}
-                className="px-6 py-3 bg-white border-2 border-slate-900 text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-            >
-               {isAnalysing ? 'İŞLENİYOR...' : staffReport ? 'ANALİZİ YENİLE' : 'DERİN ANALİZ BAŞLAT'}
+         <div className="flex gap-3 shrink-0">
+            <button onClick={handleDeepAnalysis} disabled={isAnalysing} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl active:scale-95 disabled:opacity-50">
+               {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZİ MÜHÜRLE'}
             </button>
-            <button onClick={() => setIsExportOpen(true)} disabled={!staffReport} className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all disabled:opacity-30">YAYINLA</button>
-            <button onClick={handleGenerateIDP} disabled={isGeneratingIDP} className="px-6 py-3 bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-md active:scale-95 disabled:opacity-50">
-               {isGeneratingIDP ? 'ÜRETİLİYOR...' : 'IDP GÜNCELLE'}
+            <button onClick={() => setIsExportOpen(true)} className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">DOSYALARI İNDİR</button>
+            <button onClick={handleDeleteStaff} className="p-4 bg-rose-50 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
          </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-         {/* SOL: RADAR VE KPI */}
-         <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col h-full">
-               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">YETKİNLİK SPEKTRUMU</h4>
-               {staffReport ? (
-                   <div className="flex-1 min-h-[350px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart data={radarData}>
-                                <PolarGrid stroke="#f1f5f9" />
-                                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }} />
-                                <Radar dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.15} strokeWidth={3} />
-                                <Tooltip contentStyle={{ borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }} />
-                            </RadarChart>
-                        </ResponsiveContainer>
-                   </div>
-               ) : (
-                   <div className="flex-1 flex flex-col items-center justify-center text-center p-10 opacity-30 grayscale">
-                       <svg className="w-16 h-16 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                       <p className="text-[11px] font-black uppercase tracking-widest">Veri Görselleştirme İçin Derin Analiz Gerekli</p>
-                   </div>
-               )}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+         
+         {/* LEFT PANEL: PERFORMANCE AND CHARTS */}
+         <div className="xl:col-span-4 space-y-8 h-full">
+            <div className="bg-slate-950 p-10 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden h-[450px] flex flex-col">
+               <h4 className="text-[11px] font-black text-orange-500 uppercase tracking-[0.4em] mb-8 relative z-10">Bilişsel Yetkinlik Matrisi</h4>
+               <div className="flex-1 relative z-10">
+                  {radarData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                       <RadarChart data={radarData}>
+                          <PolarGrid stroke="#ffffff20" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fill: '#64748b', fontWeight: 900 }} />
+                          <Radar dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.4} strokeWidth={4} />
+                       </RadarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-500 text-[10px] font-black uppercase tracking-widest text-center">Analiz Verisi Bekleniyor</div>
+                  )}
+               </div>
+               <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px]"></div>
+            </div>
+
+            <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-xl space-y-8">
+               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kritik Gelişim Parametreleri</h4>
+               <div className="space-y-6">
+                  {[
+                    { label: 'ÖĞRENME HIZI', v: data.profile.report?.predictiveMetrics.learningVelocity || 0, c: 'text-emerald-500' },
+                    { label: 'TÜKENMİŞLİK RİSKİ', v: data.profile.report?.predictiveMetrics.burnoutRisk || 0, c: 'text-rose-500' },
+                    { label: 'LİDERLİK POTANSİYELİ', v: data.profile.report?.predictiveMetrics.leadershipPotential || 0, c: 'text-orange-500' }
+                  ].map(m => (
+                    <div key={m.label} className="space-y-3">
+                       <div className="flex justify-between items-end">
+                          <span className="text-[9px] font-black text-slate-900 uppercase">{m.label}</span>
+                          <span className={`text-2xl font-black ${m.c}`}>%{m.v}</span>
+                       </div>
+                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full transition-all duration-1000 ${m.c.replace('text-', 'bg-')}`} style={{ width: `${m.v}%` }}></div>
+                       </div>
+                    </div>
+                  ))}
+               </div>
             </div>
          </div>
 
-         {/* SAĞ: DETAYLI RAPOR VE GEÇMİŞ */}
-         <div className="lg:col-span-7 space-y-6">
-            {staffReport && (
-                <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl animate-fade-in">
-                    <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">AKADEMİK OTOPSİ ÖZETİ</h4>
-                    <p className="text-[13px] font-medium leading-relaxed text-slate-300 italic">"{staffReport.summary}"</p>
-                    <div className="grid grid-cols-2 gap-4 mt-8">
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <span className="text-[8px] font-black text-slate-500 uppercase block mb-1">GELİŞİM ÇEVİKLİĞİ</span>
-                            <p className="text-xl font-black">%{staffReport.predictiveMetrics?.learningVelocity}</p>
+         {/* RIGHT PANEL: IDP AND TIMELINE */}
+         <div className="xl:col-span-8 space-y-8">
+            {activeTab === 'idp' && (
+               <div className="animate-scale-in space-y-8">
+                  <div className="bg-orange-600 p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden">
+                     <div className="relative z-10 flex justify-between items-start">
+                        <div className="space-y-6 max-w-xl">
+                           <h3 className="text-4xl font-black tracking-tighter uppercase leading-none">Bireysel Gelişim Planı (IDP)</h3>
+                           <p className="text-lg font-bold text-orange-100 italic leading-relaxed opacity-90">"{data.activeIDP?.focusArea || 'Yeni bir gelişim rotası oluşturun.'}"</p>
                         </div>
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <span className="text-[8px] font-black text-slate-500 uppercase block mb-1">BURN-OUT RİSKİ</span>
-                            <p className="text-xl font-black text-rose-400">%{staffReport.predictiveMetrics?.burnoutRisk}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        <button onClick={handleGenerateIDP} disabled={isGeneratingIDP} className="px-8 py-4 bg-white text-orange-600 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-900 hover:text-white transition-all">
+                           {isGeneratingIDP ? 'ÜRETİLİYOR...' : 'YENİ PLAN ÜRET'}
+                        </button>
+                     </div>
+                     <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-black/10 rounded-full blur-[100px]"></div>
+                  </div>
 
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-               <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-8 border-l-4 border-orange-600 pl-4">MODÜLER TEST GEÇMİŞİ</h4>
-               <div className="space-y-3">
-                  {data.assessments.length === 0 ? (
-                     <div className="py-20 text-center text-slate-300 uppercase font-black text-[10px]">Henüz test çözülmedi.</div>
-                  ) : (
-                     data.assessments.map((ass, i) => (
-                        <div key={i} className="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 group hover:border-orange-200 transition-all">
-                           <div>
-                              <p className="text-[11px] font-black text-slate-900 uppercase">{ass.battery_id.replace(/_/g, ' ')}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(ass.timestamp).toLocaleDateString('tr-TR')}</p>
+                  {data.activeIDP && (
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                          { t: '30 GÜN: ADAPTASYON', c: data.activeIDP.roadmap.shortTerm },
+                          { t: '60 GÜN: UZMANLAŞMA', c: data.activeIDP.roadmap.midTerm },
+                          { t: '90 GÜN: LİDERLİK', c: data.activeIDP.roadmap.longTerm }
+                        ].map((r, i) => (
+                           <div key={i} className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm group hover:border-orange-500 transition-all">
+                              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 group-hover:text-orange-600">{r.t}</h5>
+                              <p className="text-[13px] font-bold text-slate-700 leading-relaxed italic">"{r.c}"</p>
                            </div>
-                           <div className="flex items-center gap-4">
-                                <span className={`text-xl font-black ${ass.score > 75 ? 'text-emerald-600' : 'text-orange-600'}`}>%{ass.score}</span>
-                                <div className="w-1 h-8 bg-slate-200 rounded-full group-hover:bg-orange-600 transition-colors"></div>
-                           </div>
-                        </div>
-                     ))
+                        ))}
+                     </div>
                   )}
                </div>
-            </div>
-            
-            {data.activeIDP && (
-                <div className="bg-orange-50 p-8 rounded-[2.5rem] border border-orange-100">
-                    <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-4">AKTİF GELİŞİM ROTASI</h4>
-                    <p className="text-[12px] font-bold text-orange-900 leading-relaxed italic">"{(data.activeIDP as any).focusArea}"</p>
-                    <ul className="mt-4 space-y-2">
-                        {(data.activeIDP as any).identifiedGaps?.map((gap: string, i: number) => (
-                            <li key={i} className="flex gap-3 items-center text-[11px] font-medium text-orange-800">
-                                <div className="w-1 h-1 bg-orange-600 rounded-full"></div>
-                                {gap}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+            )}
+
+            {activeTab === 'overview' && (
+               <div className="animate-fade-in space-y-8">
+                  <div className="bg-white p-10 rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden">
+                     <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-6 border-l-4 border-orange-600 pl-6">Nöral Profil Analizi</h4>
+                     <p className="text-xl font-bold text-slate-700 leading-relaxed italic text-justify">
+                        "{data.profile.report?.detailedAnalysisNarrative || 'Derin analiz henüz tamamlanmadı.'}"
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="bg-emerald-50 p-10 rounded-[3.5rem] border border-emerald-100">
+                        <h5 className="text-[11px] font-black text-emerald-700 uppercase tracking-widest mb-6">KLİNİK GÜÇLÜ YÖNLER</h5>
+                        <ul className="space-y-4">
+                           {data.profile.report?.swot.strengths.map((s, i) => (
+                              <li key={i} className="flex gap-4 items-start text-sm font-bold text-emerald-800">
+                                 <span className="w-6 h-6 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-black text-[12px] shrink-0 shadow-lg">✓</span>
+                                 {s}
+                              </li>
+                           ))}
+                        </ul>
+                     </div>
+                     <div className="bg-rose-50 p-10 rounded-[3.5rem] border border-rose-100">
+                        <h5 className="text-[11px] font-black text-rose-700 uppercase tracking-widest mb-6">MİZAÇ RİSKLERİ</h5>
+                        <ul className="space-y-4">
+                           {data.profile.report?.swot.threats.map((t, i) => (
+                              <li key={i} className="flex gap-4 items-start text-sm font-bold text-rose-800">
+                                 <span className="w-6 h-6 bg-rose-600 text-white rounded-lg flex items-center justify-center font-black text-[12px] shrink-0 shadow-lg">!</span>
+                                 {t}
+                              </li>
+                           ))}
+                        </ul>
+                     </div>
+                  </div>
+               </div>
             )}
          </div>
       </div>

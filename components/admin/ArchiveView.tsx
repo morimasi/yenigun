@@ -8,13 +8,15 @@ interface ArchiveViewProps {
   onDeleteCandidate: (id: string) => void;
 }
 
+// @fix: Added missing 'STAFF_HISTORY' to CATEGORY_MAP for complete ArchiveCategory coverage.
 const CATEGORY_MAP: Record<ArchiveCategory, { label: string, color: string, indicator: string }> = {
   TALENT_POOL: { label: 'YETENEK HAVUZU', color: 'text-emerald-600', indicator: 'bg-emerald-500' },
   FUTURE_REFERENCE: { label: 'GELECEK BAŞVURU', color: 'text-blue-600', indicator: 'bg-blue-500' },
   DISQUALIFIED: { label: 'DİSKALİFİYE', color: 'text-slate-500', indicator: 'bg-slate-400' },
   BLACK_LIST: { label: 'KARA LİSTE', color: 'text-rose-600', indicator: 'bg-rose-600' },
   HIRED_CONTRACTED: { label: 'KADROLU PERSONEL', color: 'text-slate-900', indicator: 'bg-slate-900' },
-  PRESENTATION_LIBRARY: { label: 'SUNUM KÜTÜPHANESİ', color: 'text-orange-600', indicator: 'bg-orange-500' }
+  PRESENTATION_LIBRARY: { label: 'SUNUM KÜTÜPHANESİ', color: 'text-orange-600', indicator: 'bg-orange-500' },
+  STAFF_HISTORY: { label: 'PERSONEL GEÇMİŞİ', color: 'text-slate-400', indicator: 'bg-slate-300' }
 };
 
 const ArchiveView: React.FC<ArchiveViewProps> = ({ candidates, onUpdateCandidate, onDeleteCandidate }) => {
@@ -120,7 +122,7 @@ const ArchiveView: React.FC<ArchiveViewProps> = ({ candidates, onUpdateCandidate
                          {slide.interactiveElement && (
                             <div className="bg-gradient-to-br from-orange-600 to-red-600 p-10 rounded-[3rem] shadow-[0_0_100px_rgba(234,88,12,0.4)] relative overflow-hidden group">
                                <span className="text-[10px] font-black text-white/80 uppercase tracking-widest block mb-4 relative z-10">TARTIŞMA</span>
-                               <p className="text-2xl font-black uppercase leading-tight italic relative z-10 text-white">"{slide.interactiveElement.question}"</p>
+                               <p className="text-2xl font-black uppercase italic relative z-10 text-white">"{slide.interactiveElement.question}"</p>
                             </div>
                          )}
                          <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 backdrop-blur-sm relative overflow-hidden">

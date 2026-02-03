@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { GlobalConfig, AdvancedAnalyticsConfig } from '../../types';
 
@@ -34,7 +35,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
   // Ağırlıkların toplamını kontrol et
   const totalWeight = useMemo(() => {
     const w = draftConfig.advancedAnalytics?.weights || DEFAULT_ADVANCED.weights;
-    return Object.values(w).reduce((a: number, b: number) => a + b, 0);
+    // @fix: Explicitly cast values to number to fix arithmetic operation type error during weight accumulation.
+    return Object.values(w).reduce((a, b) => (a as number) + (b as number), 0) as number;
   }, [draftConfig]);
 
   const handleAdvancedChange = (section: keyof AdvancedAnalyticsConfig, key: string, value: number) => {
@@ -77,7 +79,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
              <label className="text-[11px] font-black text-slate-900 uppercase tracking-widest block">{label}</label>
              {description && <p className="text-[9px] font-bold text-slate-400 mt-1 leading-tight max-w-[200px]">{description}</p>}
           </div>
-          <span className={`text-2xl font-black ${colorClass.replace('accent-', 'text-')}`}>{typeof value === 'number' ? value.toFixed(step < 1 ? 2 : 0) : value}{suffix}</span>
+          {/* @fix: Added explicit check and casting for value to fix unknown to ReactNode error. Used a fallback String() conversion. */}
+          <span className={`text-2xl font-black ${colorClass.replace('accent-', 'text-')}`}>{typeof value === 'number' ? value.toFixed((step as number) < 1 ? 2 : 0) : String(value)}{suffix}</span>
        </div>
        <input 
          type="range" min={min} max={max} step={step}
@@ -171,7 +174,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
                   colorClass="accent-slate-900 text-slate-900"
                />
                <SliderControl 
-                  label="Öğrenme Çevikliği (Agility)" 
+                  label="ÖĞRENME ÇEVİKLİĞİ (AGILITY)" 
                   description="Yeni yöntemlere adaptasyon ve eleştiriye açıklık."
                   value={draftConfig.advancedAnalytics?.weights.learningAgility}
                   onChange={(v: number) => handleAdvancedChange('weights', 'learningAgility', v)}
