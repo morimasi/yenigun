@@ -5,33 +5,41 @@ import { occupationalTherapyQuestions } from './occupationalTherapy';
 import { pedagogyQuestions } from './pedagogy';
 import { academicSkillsQuestions } from './academicSkills';
 import { technoPedagogyQuestions } from './technoPedagogy';
-import { teamMentorshipQuestions } from './teamMentorship'; // Yeni import
+import { teamMentorshipQuestions } from './teamMentorship';
 import { ethicsQuestions } from './ethics';
 import { resilienceQuestions } from './resilience';
 import { visionQuestions } from './vision';
 import { Question } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | AKADEMİK SORU BANKASI v15.7
- * Branş bazlı modüler mimari ile optimize edilmiştir.
+ * YENİ GÜN AKADEMİ | MERKEZİ AKADEMİK SORU BANKASI v16.0
+ * MIA (Modular Intelligence Architecture) tam uyumlu dizilim.
  */
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
-  // ANA AKADEMİK ETAPLAR (Clinical Logic altında toplanır)
+  // 01. KLİNİK MUHAKEME ETABI (Clinical Logic)
+  // Bu etapta adayların teknik derinliği ve akademik yetkinliği ölçülür.
   clinical_logic: [
-    ...pedagogyQuestions,
-    ...academicSkillsQuestions,
-    ...technoPedagogyQuestions,
+    ...pedagogyQuestions,       // Metodolojik Muhakeme
+    ...academicSkillsQuestions, // Türkçe/Matematik Altyapısı
+    ...technoPedagogyQuestions, // Dijital Adaptasyon (AAC, VR, AI)
     ...specialEducationQuestions,
     ...languageSpeechQuestions,
     ...occupationalTherapyQuestions
   ],
   
-  // KURUMSAL VE ETİK ETAPLAR
+  // 02. ETİK VE VELİ DİPLOMASİSİ ETABI (Ethics Parent)
+  // Profesyonel mesafe ve kurumsal bütünlük testi.
   ethics_parent: ethicsQuestions,
+  
+  // 03. PSİKOLOJİK DAYANIKLILIK VE EKİP ETABI (Resilience Team)
+  // Stres yönetimi ve Multidisipliner liderlik yetisi.
   resilience_team: [
-    ...resilienceQuestions,
-    ...teamMentorshipQuestions // Takım ve Mentorluk ekleme noktası
+    ...resilienceQuestions,     // Duygusal Direnç
+    ...teamMentorshipQuestions   // Takım Çalışması ve Mentorluk
   ],
+  
+  // 04. VİZYON VE KURUMSAL SADAKAT ETABI (Vision Loyalty)
+  // Uzun vadeli projeksiyon ve kariyer uyumu.
   vision_loyalty: visionQuestions
 };
 

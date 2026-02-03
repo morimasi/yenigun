@@ -8,8 +8,8 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
   const scores: Record<string, number[]> = {
-    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: [],
-    academicSkills: [] // Yeni Klinik Parametre
+    ethics: [], pedagogy: [], clinical: [], resilience: [], fit: [], loyalty: [], 
+    agility: [], team: [], academicSkills: []
   };
   
   let reliabilityPoints = 100;
@@ -17,12 +17,13 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const answers = candidate.answers || {};
 
   const weights: any = config?.advancedAnalytics?.weights || {
-    clinicalDepth: 25,
-    ethicalIntegrity: 25,
+    clinicalDepth: 20,
+    ethicalIntegrity: 20,
     emotionalResilience: 15,
     institutionalLoyalty: 10,
-    learningAgility: 10,
-    academicPedagogy: 15 // Yeni Ağırlık Katmanı
+    learningAgility: 15,
+    academicPedagogy: 10,
+    teamLeadership: 10 // Yeni ağırlık katmanı
   };
 
   const penalties: any = config?.advancedAnalytics?.penalties || {
@@ -31,8 +32,10 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     lowExperienceDiscount: 0.9
   };
 
-  // Cevapların Analizi
-  Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
+  // Tüm Branş Sorularını Tara
+  const allQs = Object.values(BRANCH_QUESTIONS).flat();
+  
+  allQs.forEach(q => {
     const answer = answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
@@ -45,18 +48,24 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
           const numericWeight = Number(weight);
           const multiplier = multipliers[cat] || 1.0;
           
-          // Kategori mapping
-          let targetCat = cat;
-          if (cat === 'pedagogicalAnalysis') targetCat = 'pedagogy';
-          if (cat === 'workEthics') targetCat = 'ethics';
-          if (cat === 'technicalExpertise') targetCat = 'clinical';
-          
-          if (scores[targetCat]) scores[targetCat].push(numericWeight * 100 * multiplier);
-          else if (cat === 'academicSkills') scores.academicSkills.push(numericWeight * 100 * multiplier);
+          // Kategori Normalizasyonu (MIA Mapping)
+          let target = cat;
+          if (cat === 'workEthics') target = 'ethics';
+          if (cat === 'technicalExpertise') target = 'clinical';
+          if (cat === 'pedagogicalAnalysis') target = 'pedagogy';
+          if (cat === 'sustainability') target = 'resilience';
+          if (cat === 'developmentOpenness') target = 'agility';
+          if (cat === 'team_player' || cat === 'leadership') target = 'team';
+          if (cat === 'institutionalLoyalty') target = 'loyalty';
+
+          if (scores[target]) {
+            scores[target].push(numericWeight * 100 * multiplier);
+          }
         });
 
-        if (activeWeights.ethics && Number(activeWeights.ethics) < 0.4) {
-          riskFlags.push(`Branş Etiği İhlal Riski: ${q.id}`);
+        // Kritik Etik İhlal Kontrolü
+        if (activeWeights.workEthics && Number(activeWeights.workEthics) < 0.2) {
+          riskFlags.push(`Kritik Etik Sapma: ${q.id}`);
           reliabilityPoints -= penalties.criticalEthicalViolation;
         }
       }
@@ -70,44 +79,39 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const resilienceScore = getAvg(scores.resilience);
   const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
-  const agilityScore = getAvg(scores.developmentOpenness);
-  const academicScore = getAvg(scores.academicSkills); // Yeni Skor
+  const agilityScore = getAvg(scores.agility);
+  const teamScore = getAvg(scores.team);
+  const academicScore = getAvg(scores.academicSkills);
 
   const exp = candidate.experienceYears || 0;
   const experienceWeight = Math.min(exp * 10, 100);
   
-  const retentionScore = Math.round((loyaltyScore * 0.7) + (fitScore * 0.3));
-  const burnoutResistance = Math.round((resilienceScore * 0.8) + (clinicalScore * 0.2));
+  // Kompozit Skorlar
+  const retentionScore = Math.round((loyaltyScore * 0.6) + (fitScore * 0.4));
+  const burnoutResistance = Math.round((resilienceScore * 0.7) + (clinicalScore * 0.3));
 
-  if (exp > 5 && clinicalScore < 50) {
-    reliabilityPoints -= penalties.inconsistentAnswers;
-    riskFlags.push("Branş Deneyimi/Yetkinlik Uyumsuzluğu");
-  }
-
-  let expMultiplier = 1;
-  if (exp < 2) expMultiplier = penalties.lowExperienceDiscount;
+  let expMultiplier = exp < 2 ? penalties.lowExperienceDiscount : 1;
 
   const totalWeight = Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number || 100;
 
   let rawScore = (
-    (ethicsScore * (weights.ethicalIntegrity || 25)) + 
-    (clinicalScore * (weights.clinicalDepth || 25)) + 
+    (ethicsScore * (weights.ethicalIntegrity || 20)) + 
+    (clinicalScore * (weights.clinicalDepth || 20)) + 
     (resilienceScore * (weights.emotionalResilience || 15)) + 
-    (fitScore * (weights.institutionalLoyalty || 10)) +
-    (agilityScore * (weights.learningAgility || 10)) +
-    (academicScore * (weights.academicPedagogy || 15))
+    (agilityScore * (weights.learningAgility || 15)) +
+    (teamScore * (weights.teamLeadership || 10)) +
+    (loyaltyScore * (weights.institutionalLoyalty || 10)) +
+    (academicScore * (weights.academicPedagogy || 10))
   ) / totalWeight;
 
-  rawScore = rawScore * (expMultiplier as number);
+  rawScore = rawScore * expMultiplier;
 
-  if ((reliabilityPoints as number) < 80) {
-      rawScore = rawScore * ((reliabilityPoints as number) / 100);
+  if (reliabilityPoints < 80) {
+      rawScore = rawScore * (reliabilityPoints / 100);
   }
 
-  const overallScore = Math.min(100, Math.max(0, Math.round(rawScore)));
-
   return {
-    overallScore,
+    overallScore: Math.min(100, Math.max(0, Math.round(rawScore))),
     reliabilityIndex: Math.max(0, reliabilityPoints),
     ethicsScore,
     experienceWeight,
@@ -115,6 +119,6 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     burnoutResistance,
     fitScore,
     riskFlags,
-    branchComplianceScore: Math.round((clinicalScore + ethicsScore + academicScore) / 3)
+    branchComplianceScore: Math.round((clinicalScore + ethicsScore + academicScore + agilityScore) / 4)
   };
 };
