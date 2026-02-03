@@ -2,11 +2,11 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v8.0)
- * Güncelleme: Etik ve Sınır modülü "Çok Boyutlu Karar Mekanizması" formatına geçirilmiştir.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v9.0)
+ * Güncelleme: Tekno-Pedagojik Adaptasyon modülü "Arketipsel Tercih Analizi" formatına geçirilmiştir.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
-  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
+  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI (Önceki Turn'de güncellendi) ---
   {
     id: 'aba_advanced_mastery',
     title: 'İleri ABA ve Klinik Karar Mekanizmaları',
@@ -107,7 +107,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE (YENİLENMİŞ - TEK DOĞRUSU OLMAYAN MODEL) ---
+  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE (Önceki Turn'de güncellendi) ---
   {
     id: 'ethics_and_boundaries',
     title: 'Etik Tahkim ve Profesyonel Mesafe',
@@ -137,7 +137,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'stf_eth_3',
         text: 'Seans esnasında vakanın vücudunda fiziksel bir travma emaresi gördünüz; veli "ev kazası" olduğunu söylüyor ancak klinik sezgileriniz sizi şüphelendiriyor. Adımınız ne olur?',
         options: [
-          { label: 'Şüphemi bir kenara bırakmadan, çocuk koruma kanunları ve etik sorumluluğum gereği durumu derhal klinik direktöre ve ilgili yasal birimlere raporlarım; vaka güvenliğini korumanın, aileyle olan güven ilişkisinden daha kutsal olduğunu savunurum.', clinicalValue: 100, aiTag: 'legal_watchdog' },
+          { label: 'Şüphemi bir kenara bırakmadan, child koruma kanunları ve etik sorumluluğum gereği durumu derhal klinik direktöre ve ilgili yasal birimlere raporlarım; vaka güvenliğini korumanın, aileyle olan güven ilişkisinden daha kutsal olduğunu savunurum.', clinicalValue: 100, aiTag: 'legal_watchdog' },
           { label: 'Öncelikle aileyi sakin bir odaya alır ve empatik bir sorgulama ile olayın detaylarını öğrenmeye çalışırım; eğer ailenin desteğe ihtiyacı olduğunu veya bir kaza olduğunu hissedersem, durumu kurumsal bir "sosyal hizmet takibi" dosyasına alarak aileye rehberlik ederim.', clinicalValue: 85, aiTag: 'supportive_counselor' },
           { label: 'Bulguları objektif bir şekilde fotoğraflayıp vaka dosyasına mühürlü not olarak geçerim ve sonraki 3 seans boyunca vakanın fiziksel ve duygusal durumunu yakından izleyerek "kanıt toplama" sürecine girerim; aceleci bir suçlama yerine emin olmayı beklerim.', clinicalValue: 90, aiTag: 'methodical_observer' }
         ]
@@ -208,108 +208,108 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON ---
+  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON (YENİLENMİŞ - ÇOK BOYUTLU MODEL) ---
   {
     id: 'academic_innovation',
     title: 'Tekno-Pedagojik Adaptasyon',
-    description: 'Yapay zeka kullanımı, dijital veri takibi ve modern literatür entegrasyonu.',
+    description: 'Yapay zeka, dijital veri analitiği ve modern klinik araçların hibrit kullanımı.',
     icon: '🚀',
     category: 'clinical',
     questions: [
       {
         id: 'stf_inn_1',
-        text: 'AI tarafından hazırlanan bir BEP taslağında sizin düşünmediğiniz bir yöntem önerildiğini gördünüz. Yaklaşımınız?',
+        text: 'Yapay zeka (MIA) tarafından hazırlanan bir BEP taslağında, sizin "geleneksel" bulduğunuz bir yönteme alternatif, modern ama riskli bir teknik önerildiğini gördünüz. Refleksiniz?',
         options: [
-          { label: 'Yöntemin bilimsel dayanağını (EBP) araştırır, vaka profiliyle eşleşiyorsa deneme oturumları başlatırım.', clinicalValue: 100, aiTag: 'innovative_expert' },
-          { label: 'Makineler insan tecrübesinin yerini tutamaz, doğrudan silerim.', clinicalValue: 20, aiTag: 'cognitive_rigidity' },
-          { label: 'Sorgulamadan plana dahil ederim, teknoloji her zaman haklıdır.', clinicalValue: 40, aiTag: 'loss_of_agency' }
+          { label: 'Yapay zekanın milyonlarca vaka verisinden süzülen bu önerisini akademik bir fırsat olarak görür, yöntemin bilimsel dayanaklarını (EBP) hızla tarar ve vakanın güvenliğini riske atmadan kontrollü bir "A/B Testi" süreci başlatırım.', clinicalValue: 100, aiTag: 'innovative_synthesizer' },
+          { label: 'Makinelerin sunduğu algoritmik mantığı sadece bir "taslak" olarak tutar, önerilen modern tekniği kendi klinik süzgecimden geçiririm; eğer insani sezgilerim ve vaka geçmişim bu yöntemi onaylamıyorsa, sistemi tamamen devre dışı bırakarak bildiğim yoldan devam ederim.', clinicalValue: 85, aiTag: 'pedagogical_guardian' },
+          { label: 'Teknolojinin sunduğu bu "yeni nesil" bakış açısını kurum içi bir vaka toplantısına taşırım; multidisipliner bir kurul onayı almadan ne eski alışkanlıklarımdan vazgeçerim ne de yeni yöntemi sorgusuz kabul ederim.', clinicalValue: 95, aiTag: 'collaborative_technologist' }
         ]
       },
       {
         id: 'stf_inn_2',
-        text: 'Dijital veri takip sisteminin (tablet) seans hızınızı kestiğini düşünüyorsunuz. Tavrınız?',
+        text: 'Dijital veri takip sistemi (tablet kullanımı) seans sırasındaki "göz teması ve duygusal akışınızı" kestiğini hissediyorsunuz. Çözüm stratejiniz?',
         options: [
-          { label: 'Dijitalleşmenin anlık analiz için şart olduğunu kabul eder, sistemin geliştirilmesi için teknik birime geri bildirim veririm.', clinicalValue: 100, aiTag: 'proactive_tech_user' },
-          { label: 'Eski usul kağıda devam eder, akşam sisteme toplu girerim.', clinicalValue: 50, aiTag: 'resistance_to_tech' },
-          { label: 'Hiç veri tutmam, seansı zaten zihnimde tutuyorum.', clinicalValue: -50, aiTag: 'clinical_arrogance' }
+          { label: 'Seansın "Digital-Free" (teknolojisiz) geçmesini sağlar, göz kontağını ve insani bağı en yüksek seviyede tutarım; verileri seans bittikten sonra "geriye dönük nöral hatırlama" yöntemiyle sisteme hatasız bir şekilde mühürlemeyi tercih ederim.', clinicalValue: 90, aiTag: 'human_centric_purist' },
+          { label: 'Tableti seansın içine bir "eğitim aracı" olarak entegre ederim; veriyi kaydederken bunu çocukla bir "başarı grafiği" paylaşımı gibi kurgulayarak, teknolojiyi bağ kurmanın bir parçası haline getiren hibrit bir model geliştiririm.', clinicalValue: 100, aiTag: 'adaptive_digital_coach' },
+          { label: 'Veri hızı ve anlık analizin hata payını minimize ettiğini bildiğim için teknolojiye uyum sağlarım; duygusal akışın bu küçük kesintiden zarar görmeyeceği kadar ustalaşana dek dijital giriş pratiğimi artırırım.', clinicalValue: 80, aiTag: 'efficiency_focused_expert' }
         ]
       },
       {
         id: 'stf_inn_3',
-        text: 'Veli, evde çocuk için "eğitici bir mobil oyun" kullanmak istediklerini sordu. Öneriniz?',
+        text: 'Veli, evde çocukla "eğitici" olduğu iddia edilen bir mobil oyun oynamak istediklerini sordu. Bu dijital müdahaleye bakış açınız nedir?',
         options: [
-          { label: 'Sadece "Ortak Dikkat" odaklı olanları, kısıtlı sürede ve veli eşliğinde kullanmalarını öneririm.', clinicalValue: 100, aiTag: 'balanced_pedagogy' },
-          { label: 'Ekran her zaman zararlıdır, kesinlikle yasaklarım.', clinicalValue: 40, aiTag: 'traditional_bias' },
-          { label: 'İstediğiniz kadar kullanabilir, çocuk en azından sessiz kalıyor.', clinicalValue: 0, aiTag: 'parent_appeasement' }
+          { label: 'Ekranın nöro-plastisite üzerindeki potansiyel risklerini anlatarak, özellikle erken çocuklukta tamamen "ekransız" bir ev programı öneririm; dijital dünyanın suni pekiştireçlerinin gerçek hayat motivasyonunu öldürdüğünü savunurum.', clinicalValue: 85, aiTag: 'sensory_protective_purist' },
+          { label: 'Sadece "Ortak Dikkat" ve "Karşılıklı Etkileşim" (Joint Attention) odaklı olanları, veliyle beraber oynanması ve günde 15 dakikayı geçmemesi şartıyla bir "geçiş materyali" olarak kabul eder, gelişim verilerini takip ederim.', clinicalValue: 100, aiTag: 'balanced_pedagogue' },
+          { label: 'Eğer oyun çocuğun seanstaki bir hedefini (örn: eşleme) hızlandırıyorsa, teknolojiyi bir "hızlandırıcı" olarak görür ve desteklerim; dijital dünyanın yasaklanmak yerine doğru kanalla yönetilmesi gerektiğine inanırım.', clinicalValue: 75, aiTag: 'pragmatic_utilitarian' }
         ]
       },
       {
         id: 'stf_inn_4',
-        text: 'Yeni bir bilimsel makalede yıllardır doğru bildiğiniz bir tekniğin "yanlış" olduğu açıklandı. Refleksiniz?',
+        text: 'Yeni bir bilimsel makale, yıllardır başarıyla uyguladığınız bir metodun "bazı nöral profillerde ters tepki" verdiğini açıkladı. Bu bilgi karşısındaki duruşunuz?',
         options: [
-          { label: 'Makaleyi detaylıca analiz eder, literatürdeki diğer kanıtlarla kıyaslar ve gerekirse tekniğimi derhal güncellerim.', clinicalValue: 100, aiTag: 'high_learning_agility' },
-          { label: 'Saha tecrübem akademik makaleden üstündür, bildiğimden şaşmam.', clinicalValue: 10, aiTag: 'expert_rigidity' },
-          { label: 'Üzülürüm ama değişmem mümkün değil.', clinicalValue: 20, aiTag: 'emotional_fixation' }
+          { label: 'Makaleyi eleştirel bir süzgeçten geçirir, kendi vaka setlerimle karşılaştırır ve eğer bir korelasyon sezersem metodumu derhal "Dinamik Revizyon"a sokarak daha güvenli bir protokol inşa ederim; akademik dürüstlüğü konforumdan üstün tutarım.', clinicalValue: 100, aiTag: 'academic_agility_expert' },
+          { label: 'Yılların saha tecrübesine ve vaka sonuçlarıma güvenirim; kağıt üzerindeki bir araştırmanın benim "dokunuşumla" aldığım sonuçları yansıtamayacağını düşünür, yöntemi uygulamaya ancak daha dikkatli gözlem yaparak devam ederim.', clinicalValue: 70, aiTag: 'traditional_expert_rigidity' },
+          { label: 'Bu araştırmayı kurumun akademik kuruluna sunar ve bu makale doğrultusunda kurum içi yeni bir "standart uygulama rehberi" oluşturulması için liderlik yaparım; bireysel değişim yerine sistemik dönüşümü hedeflerim.', clinicalValue: 95, aiTag: 'institutional_standard_setter' }
         ]
       },
       {
         id: 'stf_inn_5',
-        text: 'Seans sırasında internet kesildi ve dijital materyallere ulaşamıyorsunuz. Ne yaparsınız?',
+        text: 'Seans sırasında internet/tablet sistemi tamamen çöktü ve tüm materyalleriniz dijitalde kilitli kaldı. O anki kriz refleksiniz?',
         options: [
-          { label: 'Hemen çevredeki somut nesneleri (kaşık, kalem, minder) kullanarak hedefleri oyunlaştırıp seansı sürdürürüm.', clinicalValue: 100, aiTag: 'resourceful_creativity' },
-          { label: 'Seansı bitirir, telafi yazarım.', clinicalValue: 10, aiTag: 'tech_dependency' },
-          { label: 'İnternetin gelmesini beklerken serbest zaman veririm.', clinicalValue: 30, aiTag: 'time_waste' }
+          { label: 'Hemen çevredeki somut nesneleri (kaşık, bardak, minder) kullanarak hedefleri anında "Duyusal-Motor" bir kurguya çeviririm; klinik hedeflerimin teknolojiye değil, benim pedagojik yaratıcılığıma bağlı olduğunu kanıtlarım.', clinicalValue: 100, aiTag: 'resilient_innovator' },
+          { label: 'Sistemin gelmesini beklerken bu süreyi "Vaka Gözlemi ve Serbest Etkileşim" olarak kullanırım; planlı ders akışının bozulmasının yarattığı stresi çocuğa yansıtmadan, doğal akışta bağ kurmaya odaklanırım.', clinicalValue: 85, aiTag: 'flexible_stabilizer' },
+          { label: 'Kriz anını yönetime bildirir ve telafi seansı planlanmasını isterim; yanlış veya eksik materyalle yapılacak bir seansın klinik verimliliğinin düşük olacağını, metodolojik kusur işlemektense durmayı tercih ederim.', clinicalValue: 60, aiTag: 'procedural_integrity_focused' }
         ]
       },
       {
         id: 'stf_inn_6',
-        text: 'Kurumda kullanılan "Digital Twin" analiz modelinin sonuçlarına ne kadar güveniyorsunuz?',
+        text: 'Kurumda kullanılan "Digital Twin" (Dijital İkiz) analiz modeli, vakanızın ilerlemesini durdurduğunuzu ve başarısız olduğunuzu projekte ediyor. Bu analize cevabınız?',
         options: [
-          { label: 'Bir veri seti olarak kabul eder, kendi klinik gözlemimle sentezleyerek kullanırım.', clinicalValue: 100, aiTag: 'critical_thinking' },
-          { label: '%100 güvenirim, teknoloji hata yapmaz.', clinicalValue: 50, aiTag: 'over_reliance' },
-          { label: 'Hiç güvenmem, tamamen gereksiz.', clinicalValue: 10, aiTag: 'luddite_tendency' }
+          { label: 'Verilerdeki sapmaları kabul eder ve yapay zekanın göremediği "niteliksel" (duygusal, ailesel) değişkenleri rapora ekleyerek sistemle bir "diyaloğa" girerim; veriyi reddetmek yerine onu daha derin bir klinik yorumla zenginleştiririm.', clinicalValue: 100, aiTag: 'data_informed_clinician' },
+          { label: 'Algoritmaların vakanın o günkü "ruh halini" veya "insani sıçramalarını" ölçemeyeceğini savunur, projeksiyonu reddederim; başarının excel tablolarıyla değil, çocuğun gözündeki parıltıyla ölçüleceğine olan inancımı korurum.', clinicalValue: 80, aiTag: 'intuitive_humanist' },
+          { label: 'Sistemin uyarılarını bir "Acil Durum" olarak görür, hemen süpervizörle bir "Klinik Otopsi" toplantısı planlarım; veri bir hata sinyali veriyorsa, orada mutlaka profesyonel bir kör nokta olduğunu düşünürüm.', clinicalValue: 95, aiTag: 'systemic_optimizer' }
         ]
       },
       {
         id: 'stf_inn_7',
-        text: 'Karmaşık bir davranışın fonksiyonunu analiz etmek için AI destekli bir yazılım kullanırken yazılımın bariz bir hatasını fark ettiniz. Ne yaparsınız?',
+        text: 'Karmaşık bir davranışın fonksiyonunu analiz etmek için AI destekli bir yazılım kullanırken yazılımın "hata yaptığını" sezerseniz hamleniz ne olur?',
         options: [
-          { label: 'Hatayı rapor eder ve manuel analizime sadık kalarak seansı yönetirim.', clinicalValue: 100, aiTag: 'clinical_sovereignty' },
-          { label: 'Yazılımı takip ederim, o benden akıllıdır.', clinicalValue: 20, aiTag: 'loss_of_agency' },
-          { label: 'Analiz yapmaktan tamamen vazgeçerim.', clinicalValue: 0, aiTag: 'frustration_intolerance' }
+          { label: 'AI analizini bir kenara iter, manuel ABC kayıtlarıma ve klinik sezgilerime sadık kalarak seansı yönetirim; yazılıma bu hatayı geri bildirim olarak girer ve "İnsan Kontrolü" mekanizmasını asla terk etmem.', clinicalValue: 100, aiTag: 'clinical_sovereignty_master' },
+          { label: 'Yazılımın benden çok daha fazla veri işlediğini varsayarak kendi sezgilerimi sorgularım; eğer teknoloji bir desen görüyorsa, benim göremediğim gizli bir değişken olabileceğini düşünerek sistemi takip etmeye devam ederim.', clinicalValue: 60, aiTag: 'technology_dependent_follower' },
+          { label: 'Sistem hatasını bir "vaka tartışması" konusu yaparak meslektaşlarımla paylaşırım; teknolojinin yanılma payını ekipçe analiz ederek, "Hibrit Karar Mekanizması"nı nasıl daha sağlam kurabileceğimizi tartışırım.', clinicalValue: 90, aiTag: 'collaborative_analytical' }
         ]
       },
       {
         id: 'stf_inn_8',
-        text: 'Uzaktan eğitim (Tele-health) seansı yaparken ekran başındaki vaka agresifleşti. İlk hamleniz?',
+        text: 'Uzaktan eğitim (Tele-health) seansı yaparken vaka ekran başında regüle olamıyor ve veli panik halinde. İlk stratejik hamleniz?',
         options: [
-          { label: 'Anında veliye koçluk yaparak fiziksel güvenliği sağlaması için net yönerge veririm.', clinicalValue: 100, aiTag: 'crisis_telehealth_mastery' },
-          { label: 'Ekranda pekiştireç göstererek sakinleştirmeye çalışırım.', clinicalValue: 50, aiTag: 'distraction_logic' },
-          { label: 'Kamerasını kapatmalarını söyler, seansı bitiririm.', clinicalValue: 10, aiTag: 'panic_response' }
+          { label: 'Anında kamerayı kendime değil veliye odaklatırım; seansı o an "Veli Koçluğu" (Parent Coaching) seansına çevirir, velinin fiziksel müdahale ve ses tonunu regüle ederek çocuğu yerinde sakinleştirmesi için ona uzaktan rehberlik ederim.', clinicalValue: 100, aiTag: 'master_telehealth_coach' },
+          { label: 'Ekranda çocuğun çok sevdiği bir dijital pekiştireci (video, müzik) açarak dikkatini dağıtmaya ve sakinleştirmeye çalışırım; teknolojiyi anlık bir "duygusal susturucu" olarak kullanarak krizi kontrol altına alırım.', clinicalValue: 70, aiTag: 'distraction_technologist' },
+          { label: 'Veliden seansı sonlandırmasını ve çocuğu güvenli bir alana almasını isterim; ekran başındaki bir krizin travmatikleşme riski olduğunu, regülasyonun dijital ortamda yapılamayacak kadar "dokunsal" bir süreç olduğunu savunurum.', clinicalValue: 85, aiTag: 'clinical_safety_purist' }
         ]
       },
       {
         id: 'stf_inn_9',
-        text: 'Vakanın gelişimi için "Göz Takip" (Eye tracking) cihazı gerektiğini düşünüyorsunuz ama kurumda yok. Çözümünüz?',
+        text: 'Vakanın gelişimi için "Göz Takip" (Eye tracking) cihazı gerektiğini düşünüyorsunuz ama kurumun bu yatırımı yapma bütçesi yok. Çözümünüz?',
         options: [
-          { label: 'Düşük maliyetli muadil bir manuel yöntem geliştirip verileri o şekilde toplamaya başlarım.', clinicalValue: 100, aiTag: 'pragmatic_innovation' },
-          { label: 'Olsaydı yapardım der, vazgeçerim.', clinicalValue: 20, aiTag: 'passive_resignation' },
-          { label: 'Kuruma zorla aldırmaya çalışırım.', clinicalValue: 40, aiTag: 'aggressive_advocacy' }
+          { label: 'Düşük maliyetli muadil yöntemler geliştiririm; örneğin ayna çalışmaları veya video kayıtlarını kare kare manuel analiz ederek aynı veriyi "emek yoğun" bir süreçle toplarım; teknolojinin yokluğunu klinik adanmışlıkla kapatırım.', clinicalValue: 100, aiTag: 'resourceful_pragmatist' },
+          { label: 'Bu cihazın eksikliğinin vakaya zaman kaybettirdiğini belirten "Klinik Risk Raporu" hazırlarım; teknolojik yatırımın bir lüks değil, akademik bir hak olduğunu savunarak yönetimi ikna etme sürecine liderlik ederim.', clinicalValue: 90, aiTag: 'advocacy_leader' },
+          { label: 'Bu teknoloji olmadan vakanın gerçek potansiyelini ölçemeyeceğimize inanır, veliyi bu cihazın olduğu üniversite hastanelerine veya dış birimlere yönlendirerek seanslarımızı o veriler gelene kadar dondururum.', clinicalValue: 50, aiTag: 'procedural_perfectionist' }
         ]
       },
       {
         id: 'stf_inn_10',
-        text: 'BEP hazırlarken kopyala-yapıştır yerine AI ile "Vakaya Özel" içerik üretmek size ne hissettiriyor?',
+        text: 'BEP hazırlarken kopyala-yapıştır yerine AI (Gemini) ile "Vakaya Özel Nöral İçerik" üretmek size ne hissettiriyor?',
         options: [
-          { label: 'Her vakanın tekil bir nöral profil olduğunu kanıtlama fırsatı olarak görürüm.', clinicalValue: 100, aiTag: 'high_individualization' },
-          { label: 'Zaman kaybı, eski taslaklar yeterliydi.', clinicalValue: 10, aiTag: 'low_professional_effort' },
-          { label: 'Teknolojiye ayak uydurma zorunluluğu.', clinicalValue: 50, aiTag: 'duty_compliance' }
+          { label: 'Her vakanın tekil ve eşsiz bir "nöral parmak izi" olduğunu kanıtlama fırsatı; teknolojinin sunduğu bu kişiselleştirme gücünü mesleki bir devrim olarak görüyor ve tüm gücümle kullanıyorum.', clinicalValue: 100, aiTag: 'high_individualization_expert' },
+          { label: 'İşimdeki "yazı işleri" yükünü azaltan bir konfor alanı; akademik derinlikten ziyade zaman kazandırmasını önemsiyor, bu sayede çocukla geçirdiğim fiziksel vaktin artmasından memnuniyet duyuyorum.', clinicalValue: 80, aiTag: 'efficiency_utilizer' },
+          { label: 'Kendi kalemimle yazmadığım bir planın "ruhu" olmadığını düşünüyorum; teknolojinin sunduğu taslağı sadece bir referans olarak alıp, her cümleyi kendi klinik gözlemimle yeniden inşa etmeden asla mühürlemiyorum.', clinicalValue: 95, aiTag: 'pedagogical_artisan' }
         ]
       }
     ]
   },
 
-  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK ---
+  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK (Eskisiyle devam eder...) ---
   {
     id: 'team_and_mentorship',
     title: 'Multidisipliner Takım ve Mentorluk',
@@ -410,7 +410,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ ---
+  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ (Eskisiyle devam eder...) ---
   {
     id: 'crisis_leadership',
     title: 'Kriz Liderliği ve Veli Diplomasisi',
@@ -511,7 +511,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 6. AKADEMİK MÜDAHALE VE NÖRO-PEDAGOJİK ÇÖZÜMLER (TÜRKÇE & MATEMATİK) ---
+  // --- 6. AKADEMİK MÜDAHALE VE NÖRO-PEDAGOJİK ÇÖZÜMLER (Eskisiyle devam eder...) ---
   {
     id: 'academic_neuro_pedagogy',
     title: 'Akademik Müdahale ve Nöro-Pedagojik Çözümler',
