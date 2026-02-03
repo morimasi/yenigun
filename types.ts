@@ -32,7 +32,15 @@ export interface Question {
   }>;
 }
 
-// @fix: Added 'cvData' and 'interviewSchedule' properties to Candidate interface.
+// @fix: Added missing Certification interface to resolve export errors in multiple components.
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestions: Question[];
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -55,7 +63,6 @@ export interface Candidate {
   interviewSchedule?: { date: string; time: string };
 }
 
-// @fix: Added missing 'AlgorithmicReport' interface.
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -104,7 +111,6 @@ export interface AIReport {
     opportunities: string[];
     threats: string[];
   };
-  // @fix: Added 'phases' to interviewGuidance to support strategy rendering.
   interviewGuidance: {
     strategicQuestions: string[];
     criticalObservations: string[];
@@ -128,9 +134,13 @@ export interface StaffMember {
   onboarding_complete: boolean;
   report?: AIReport;
   created_at: string;
+  updated_at: string;
   university?: string;
   department?: string;
   all_trainings?: string[];
+  phone?: string;
+  status: 'active' | 'archived' | 'on_leave';
+  assessment_count?: number;
 }
 
 export enum StaffRole {
@@ -181,29 +191,22 @@ export interface PresentationConfig {
   slideCount: number;
 }
 
-export type ArchiveCategory = 'TALENT_POOL' | 'FUTURE_REFERENCE' | 'DISQUALIFIED' | 'BLACK_LIST' | 'HIRED_CONTRACTED' | 'PRESENTATION_LIBRARY' | 'STAFF_HISTORY';
+export type ArchiveCategory = 'TALENT_POOL' | 'FUTURE_REFERENCE' | 'DISQUALIFIED' | 'BLACK_LIST' | 'HIRED_CONTRACTED' | 'PRESENTATION_LIBRARY' | 'STAFF_HISTORY' | 'PERFORMANCE_SNAPSHOT';
 
-export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER';
-
-export interface ExportConfig {
-  title: string;
-  showWatermark: boolean;
-  sections: Array<{ id: string; label: string; active: boolean }>;
-  theme: 'corporate' | 'modern' | 'minimal';
-  includeCharts: boolean;
-  includeAiNarrative: boolean;
-  signatureRequired: boolean;
+export interface GlobalConfig {
+  institutionName: string;
+  primaryColor: string;
+  accentColor: string;
+  aiTone: string;
+  aiPersona: { skepticism: number; empathy: number; formality: number };
+  aiWeights: { ethics: number; clinical: number; experience: number; fit: number };
+  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean };
+  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string };
+  notificationEmail: string;
+  lastUpdated: number;
+  advancedAnalytics?: AdvancedAnalyticsConfig;
 }
 
-export interface UniversalExportData {
-  type: ExportType;
-  entityName: string;
-  referenceId: string;
-  payload: any;
-  config?: Partial<ExportConfig>;
-}
-
-// @fix: Added missing 'AdvancedAnalyticsConfig' interface.
 export interface AdvancedAnalyticsConfig {
   weights: {
     clinicalDepth: number;
@@ -229,31 +232,71 @@ export interface AdvancedAnalyticsConfig {
   };
 }
 
-// @fix: Added missing 'GlobalConfig' interface.
-export interface GlobalConfig {
-  institutionName: string;
-  primaryColor: string;
-  accentColor: string;
-  aiTone: string;
-  aiPersona: { skepticism: number; empathy: number; formality: number };
-  aiWeights: { ethics: number; clinical: number; experience: number; fit: number };
-  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean };
-  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string };
-  notificationEmail: string;
-  lastUpdated: number;
-  advancedAnalytics?: AdvancedAnalyticsConfig;
+export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'MENTOR_REPORT';
+
+export interface ExportConfig {
+  title: string;
+  showWatermark: boolean;
+  sections: Array<{ id: string; label: string; active: boolean }>;
+  theme: 'corporate' | 'modern' | 'minimal';
+  includeCharts: boolean;
+  includeAiNarrative: boolean;
+  signatureRequired: boolean;
 }
 
-// @fix: Added missing 'Certification' interface.
-export interface Certification {
+export interface UniversalExportData {
+  type: ExportType;
+  entityName: string;
+  referenceId: string;
+  payload: any;
+  config?: Partial<ExportConfig>;
+}
+
+export interface AssessmentBattery {
   id: string;
-  label: string;
+  title: string;
   description: string;
+  icon: string;
   category: string;
-  verificationQuestions: Question[];
+  questions: AssessmentQuestion[];
 }
 
-// @fix: Added missing 'SimulationResult' interface.
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+  options: Array<{
+    label: string;
+    clinicalValue: number;
+    aiTag: string;
+  }>;
+}
+
+export type CommChannel = 'email' | 'whatsapp' | 'sms';
+
+export interface CommTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  body: string;
+  channels: CommChannel[];
+}
+
+export interface NotificationLog {
+  id: string;
+  targetId: string;
+  targetName: string;
+  channel: CommChannel;
+  status: 'sent' | 'failed';
+  timestamp: number;
+  errorMessage?: string;
+}
+
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export interface SimulationResult {
   scenario: string;
   parentPersona: string;
@@ -278,54 +321,4 @@ export interface SimulationResult {
       silenceTolerance: string;
     };
   };
-}
-
-// @fix: Added missing 'AssessmentQuestion' interface.
-export interface AssessmentQuestion {
-  id: string;
-  text: string;
-  options: Array<{
-    label: string;
-    clinicalValue: number;
-    aiTag: string;
-  }>;
-}
-
-// @fix: Added missing 'AssessmentBattery' interface.
-export interface AssessmentBattery {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  category: string;
-  questions: AssessmentQuestion[];
-}
-
-// @fix: Added missing 'CommChannel' and 'CommTemplate' types.
-export type CommChannel = 'email' | 'whatsapp' | 'sms';
-
-export interface CommTemplate {
-  id: string;
-  name: string;
-  subject?: string;
-  body: string;
-  channels: CommChannel[];
-}
-
-// @fix: Added missing 'NotificationLog' interface.
-export interface NotificationLog {
-  id: string;
-  targetId: string;
-  targetName: string;
-  channel: CommChannel;
-  status: 'sent' | 'failed';
-  timestamp: number;
-  errorMessage?: string;
-}
-
-// @fix: Added missing 'FormStep' interface.
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
 }

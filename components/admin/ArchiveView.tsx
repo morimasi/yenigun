@@ -8,7 +8,7 @@ interface ArchiveViewProps {
   onDeleteCandidate: (id: string) => void;
 }
 
-// @fix: Added missing 'STAFF_HISTORY' to CATEGORY_MAP for complete ArchiveCategory coverage.
+// @fix: Added missing 'STAFF_HISTORY' and 'PERFORMANCE_SNAPSHOT' to CATEGORY_MAP for complete ArchiveCategory coverage.
 const CATEGORY_MAP: Record<ArchiveCategory, { label: string, color: string, indicator: string }> = {
   TALENT_POOL: { label: 'YETENEK HAVUZU', color: 'text-emerald-600', indicator: 'bg-emerald-500' },
   FUTURE_REFERENCE: { label: 'GELECEK BAŞVURU', color: 'text-blue-600', indicator: 'bg-blue-500' },
@@ -16,7 +16,8 @@ const CATEGORY_MAP: Record<ArchiveCategory, { label: string, color: string, indi
   BLACK_LIST: { label: 'KARA LİSTE', color: 'text-rose-600', indicator: 'bg-rose-600' },
   HIRED_CONTRACTED: { label: 'KADROLU PERSONEL', color: 'text-slate-900', indicator: 'bg-slate-900' },
   PRESENTATION_LIBRARY: { label: 'SUNUM KÜTÜPHANESİ', color: 'text-orange-600', indicator: 'bg-orange-500' },
-  STAFF_HISTORY: { label: 'PERSONEL GEÇMİŞİ', color: 'text-slate-400', indicator: 'bg-slate-300' }
+  STAFF_HISTORY: { label: 'PERSONEL GEÇMİŞİ', color: 'text-slate-400', indicator: 'bg-slate-300' },
+  PERFORMANCE_SNAPSHOT: { label: 'PERFORMANS ÖZETİ', color: 'text-indigo-600', indicator: 'bg-indigo-500' }
 };
 
 const ArchiveView: React.FC<ArchiveViewProps> = ({ candidates, onUpdateCandidate, onDeleteCandidate }) => {
