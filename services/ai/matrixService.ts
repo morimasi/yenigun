@@ -32,19 +32,21 @@ const DEEP_SEGMENT_SCHEMA = {
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
-    GÖREV: Adayın liyakat matrisini, sertifikasyon derinliğini ve AKADEMİK PEDAGOJİ (Türkçe/Matematik) müdahale yeteneğini analiz et.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Strateji Uzmanı.
+    MOD: Nöral Rekonstrüksiyon (Deep Historical Synthesis).
     
-    KRİTİK ANALİZ PARAMETRELERİ (REASONING MODE):
-    1. AKADEMİK MUHAKEME: Adayın Türkçe ve Matematik sorularındaki "aksaklık çözme" yaklaşımını analiz et. Telafi edici stratejileri mi yoksa temel onarımı mı (Remediation) seçiyor?
-    2. AKREDİTASYON TUTARLILIĞI: Adayın seçtiği sertifikalar (Örn: BCBA, CAS, PROMPT) ile akademik müdahale sorularına verdiği yanıtlar arasındaki teknik uyumu ölç.
-    3. METODOLOJİK SPEKTRUM: ABA (Davranışçı) ve DIR (İlişki Temelli) gibi zıt felsefeleri akademik müdahaleye nasıl yansıtıyor?
-    4. EBP (KANITA DAYALI UYGULAMA): Adayın cevaplarında bilimsel literatüre (Örn: PASS Teorisi, Fonolojik Farkındalık, Subitizing) ne kadar sadık kaldığını analiz et.
+    GÖREV: Personelin/Adayın tüm verilerini (Geçmiş testler, cevaplar, metodolojik seçimler) birleştirerek 360 derece akademik liyakat raporu üret.
+    
+    KRİTİK TALİMATLAR:
+    1. TARİHSEL IVME (LEARNING CURVE): Eğer "assessmentHistory" varsa, personelin gelişim ivmesini analiz et. Puanları artıyor mu, plato mu çiziyor, yoksa bir 'Bilişsel Yorgunluk' emaresi mi var?
+    2. METODOLOJİK SAPMA: İlk mülakat cevapları ile son test cevapları arasındaki 'Etik ve Teknik Tutarlılığı' ölç. Zamanla esneme mi var yoksa derinleşme mi?
+    3. DERİN MUHAKEME: Cevapların arkasındaki 'Nöro-Pedagojik' mantığı açıkla. Sadece sonuç verme, 'Neden bu puanı aldı?' sorusuna vaka temelli kanıt sun.
+    4. STRATEJİK TAVSİYE: Yönetime, bu personel için 90 günlük 'Müdahale veya Ödüllendirme' rotası öner.
   `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `ADAY VERİLERİ: ${JSON.stringify(candidate)}` }], 
+    contents: [{ text: `VERİ SETİ (SNAP-SHOT): ${JSON.stringify(candidate)}` }], 
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -93,7 +95,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               sustainability: DEEP_SEGMENT_SCHEMA,
               institutionalLoyalty: DEEP_SEGMENT_SCHEMA,
               developmentOpenness: DEEP_SEGMENT_SCHEMA,
-              academicPedagogy: DEEP_SEGMENT_SCHEMA // Yeni Analiz Modülü
+              academicPedagogy: DEEP_SEGMENT_SCHEMA
             },
             required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness", "academicPedagogy"]
           },

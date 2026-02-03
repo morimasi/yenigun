@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StaffMember, IDP, AIReport, UniversalExportData, Branch } from '../../types';
+import { StaffMember, IDP, AIReport, UniversalExportData, Branch, Candidate } from '../../types';
 import ExportStudio from '../../components/shared/ExportStudio';
 import { armsService } from '../../services/ai/armsService';
 import { generateCandidateAnalysis } from '../../geminiService';
@@ -10,6 +10,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   const [data, setData] = useState<{ profile: StaffMember; assessments: any[]; activeIDP: IDP | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analysisPhase, setAnalysisPhase] = useState<string>('');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isGeneratingIDP, setIsGeneratingIDP] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'idp' | 'analytics' | 'history'>('overview');
@@ -28,23 +29,75 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
 
   useEffect(() => { fetchDetails(); }, [fetchDetails]);
 
-  const handleDeepAnalysis = async () => {
+  /**
+   * REFRESH ANALYTICS ENGINE
+   * Personelin mülakat anından bugüne kadarki tüm verilerini (assessmentHistory) AI'ya gönderir.
+   */
+  const handleRefreshAnalysis = async () => {
     if (!data) return;
+    
+    if (!confirm("KRİTİK İŞLEM: Personelin tüm geçmiş test verileri ve liyakat ivmesi yeniden sentezlenecek. Mevcut rapor güncellenecektir. Onaylıyor musunuz?")) return;
+
     setIsAnalysing(true);
+    
+    const phases = [
+      "Geçmiş Test Verileri Okunuyor...",
+      "Bilişsel Çelişki Katsayıları Sentezleniyor...",
+      "Gelişim İvmesi Modelleniyor (Trajectory)...",
+      "Akademik Portre Yeniden Kurgulanıyor...",
+      "Liyakat Mühürü Güncelleniyor..."
+    ];
+
+    let phaseIdx = 0;
+    const phaseInterval = setInterval(() => {
+      setAnalysisPhase(phases[phaseIdx % phases.length]);
+      phaseIdx++;
+    }, 2500);
+
     try {
-      const staffSnapshot = {
-        ...data.profile,
-        answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {})
+      // 360 Derece Tarihsel Veri Paketi Oluştur
+      const deepSnapshot: Partial<Candidate> = {
+        id: data.profile.id,
+        name: data.profile.name,
+        branch: data.profile.branch,
+        experienceYears: data.profile.experience_years,
+        university: data.profile.university,
+        department: data.profile.department,
+        // Tüm cevapları tek bir akıllı havuza dök
+        answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {}),
+        // AI'ya tarihsel ivmeyi besle
+        timestamp: Date.now(),
+        status: 'hired'
       };
-      const aiReport = await generateCandidateAnalysis(staffSnapshot as any, {} as any);
+
+      // @ts-ignore - analyzeCandidate beklediği objeye assessmentHistory bilgisini gizlice enjekte ediyoruz
+      deepSnapshot.assessmentHistory = data.assessments.map(a => ({
+        score: a.score,
+        timestamp: a.timestamp,
+        battery: a.battery_id,
+        tags: a.ai_tags
+      }));
+      
+      const aiReport = await generateCandidateAnalysis(deepSnapshot as any, {} as any);
+      
       const saveRes = await fetch('/api/staff?action=save_analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ staffId, report: aiReport })
       });
-      if (saveRes.ok) { fetchDetails(); onUpdate?.(); alert("Analiz mühürlendi."); }
-    } catch (e) { alert("Bağlantı hatası."); } 
-    finally { setIsAnalysing(false); }
+
+      if (saveRes.ok) { 
+        await fetchDetails(); 
+        onUpdate?.(); 
+        alert("Nöral Analiz Başarıyla Yenilendi. Yeni gelişim rotası mühürlendi."); 
+      }
+    } catch (e) { 
+      alert("Analiz Motoru Bağlantı Hatası: Sistem yoğun olabilir, lütfen tekrar deneyiniz."); 
+    } finally { 
+      clearInterval(phaseInterval);
+      setAnalysisPhase('');
+      setIsAnalysing(false); 
+    }
   };
 
   const handleGenerateIDP = async () => {
@@ -65,24 +118,51 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   const radarData = useMemo(() => {
     const da = data?.profile?.report?.deepAnalysis;
     if (!da) return [];
-    return Object.entries(da).map(([k, v]) => ({ subject: k.replace(/([A-Z])/g, ' $1').toUpperCase(), value: v.score }));
+    return Object.entries(da).map(([k, v]) => ({ 
+      subject: k.replace(/([A-Z])/g, ' $1').toUpperCase(), 
+      value: (v as any).score 
+    }));
   }, [data]);
 
   const learningCurve = useMemo(() => {
      if (!data?.assessments) return [];
      return data.assessments.map((a, i) => ({ 
-        name: `Test ${i+1}`, 
+        name: `T${i+1}`, 
         score: a.score, 
         date: new Date(a.timestamp).toLocaleDateString('tr-TR') 
      })).reverse();
   }, [data]);
 
-  if (isLoading) return <div className="p-20 text-center animate-pulse font-black text-slate-300 uppercase tracking-widest">Uzman Dosyası Çözümleniyor...</div>;
+  if (isLoading) return (
+    <div className="flex flex-col items-center justify-center p-32 space-y-8 animate-fade-in">
+       <div className="w-24 h-24 border-8 border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
+       <p className="font-black text-slate-300 uppercase tracking-[0.4em]">Uzman Verileri Çözümleniyor...</p>
+    </div>
+  );
+
   if (!data) return <div className="p-20 text-center text-slate-400 font-black uppercase">Dosya Bulunamadı</div>;
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in pb-20">
+    <div className="flex flex-col gap-8 animate-fade-in pb-20 relative">
       
+      {/* ANALİZ YÜKLENİYOR OVERLAY */}
+      {isAnalysing && (
+        <div className="fixed inset-0 z-[2000] bg-slate-900/90 backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center">
+           <div className="relative mb-12">
+              <div className="w-56 h-56 border-[12px] border-white/5 border-t-orange-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-28 h-28 bg-slate-900 rounded-[3.5rem] shadow-2xl flex items-center justify-center border border-white/10">
+                    <svg className="w-12 h-12 text-orange-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                 </div>
+              </div>
+           </div>
+           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 animate-fade-in">Nöral Rekonstrüksiyon</h3>
+           <p className="text-orange-500 font-black text-xl uppercase tracking-[0.5em] h-8 transition-all duration-500">{analysisPhase}</p>
+        </div>
+      )}
+
       {/* EXPORT OVERLAY */}
       {isExportOpen && (
         <ExportStudio
@@ -97,7 +177,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
            <div className="p-10 bg-white min-h-screen space-y-12">
               <div className="bg-slate-900 p-16 rounded-[4rem] text-white">
                  <h1 className="text-6xl font-black uppercase tracking-tighter mb-4">{data.profile.name}</h1>
-                 <p className="text-xl font-bold text-orange-500 uppercase tracking-widest">Resmi Klinik Yetkinlik Raporu</p>
+                 <p className="text-xl font-bold text-orange-500 uppercase tracking-widest">Resmi Klinik Liyakat Dosyası</p>
               </div>
            </div>
         </ExportStudio>
@@ -127,8 +207,19 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
             </div>
          </div>
          <div className="flex gap-4 shrink-0">
-            <button onClick={handleDeepAnalysis} disabled={isAnalysing} className="px-10 py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-2xl active:scale-95 disabled:opacity-50">
-               {isAnalysing ? 'MUHAKEME DEVREDE...' : 'DOSYAYI MÜHÜRLE'}
+            {/* ANALİZİ YENİLE BUTONU */}
+            <button 
+               onClick={handleRefreshAnalysis} 
+               disabled={isAnalysing} 
+               className="group relative px-10 py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-2xl active:scale-95 disabled:opacity-50 overflow-hidden"
+               title="Tüm geçmiş testleri ve ivmeyi sentezleyerek raporu tazeler"
+            >
+               <span className="relative z-10 flex items-center gap-3">
+                  <svg className={`w-4 h-4 ${isAnalysing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-700'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
+                  </svg>
+                  {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZİ YENİLE'}
+               </span>
             </button>
             <button onClick={() => setIsExportOpen(true)} className="p-5 bg-white border-2 border-slate-200 text-slate-900 rounded-[2rem] hover:bg-slate-50 transition-all shadow-sm">
                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -152,7 +243,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                        </RadarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-slate-700 text-[11px] font-black uppercase tracking-widest text-center border-2 border-dashed border-white/5 rounded-3xl">Analiz Verisi Mühürlenmemiş</div>
+                    <div className="h-full flex items-center justify-center text-slate-700 text-[11px] font-black uppercase tracking-widest text-center border-2 border-dashed border-white/5 rounded-3xl">Analiz Verisi Bulunmuyor</div>
                   )}
                </div>
                <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[120px]"></div>
