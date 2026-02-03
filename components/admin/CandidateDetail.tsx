@@ -2,7 +2,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, GlobalConfig, ArchiveCategory } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
-import { calculateAlgorithmicAnalysis, verifyCandidateIntegrity } from '../../analysisUtils';
+// Removed non-existent export verifyCandidateIntegrity from the import below
+import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import { exportService } from '../../services/exportService';
 import { PredictBar } from '../../shared/ui/PredictBar';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';

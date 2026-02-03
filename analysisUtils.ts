@@ -1,24 +1,18 @@
 
-import { Candidate, AlgorithmicReport, AIReport, GlobalConfig, Branch } from './types';
+import { Candidate, AlgorithmicReport, GlobalConfig, Branch } from './types';
 import { BRANCH_QUESTIONS } from './constants';
 import { BRANCH_CATEGORY_MULTIPLIERS } from './constants/taxonomy';
 
-/**
- * Gelişmiş Algoritmik Hesaplama Motoru v10.0
- * Faz 3: Branş spesifik ağırlıklandırma ve dinamik multiplier sistemi entegre edildi.
- */
 export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: GlobalConfig): AlgorithmicReport => {
   const branch = candidate.branch as Branch;
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
-  // @fix Added developmentOpenness to the initial scores map to ensure valid access during calculation
   const scores: Record<string, number[]> = {
     ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: []
   };
   
   let reliabilityPoints = 100;
   const riskFlags: string[] = [];
-
   const answers = candidate.answers || {};
 
   const weights: any = config?.advancedAnalytics?.weights || {
@@ -41,19 +35,16 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
-        // Branş bazlı override var mı kontrol et?
         const activeWeights = (selectedOption.branchOverrides && selectedOption.branchOverrides[branch]) 
           ? selectedOption.branchOverrides[branch] 
           : selectedOption.weights;
 
         Object.entries(activeWeights).forEach(([cat, weight]) => {
           const numericWeight = Number(weight);
-          // Multiplier'ı burada uygula
           const multiplier = multipliers[cat] || 1.0;
           if (scores[cat]) scores[cat].push(numericWeight * 100 * multiplier);
         });
 
-        // Kritik Etik İhlal Kontrolü
         if (activeWeights.ethics && Number(activeWeights.ethics) < 0.4) {
           riskFlags.push(`Branş Etiği İhlal Riski: ${q.id}`);
           reliabilityPoints -= penalties.criticalEthicalViolation;
@@ -69,7 +60,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const resilienceScore = getAvg(scores.resilience);
   const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
-  const agilityScore = getAvg(scores.developmentOpenness || []);
+  const agilityScore = getAvg(scores.developmentOpenness);
 
   const exp = candidate.experienceYears || 0;
   const experienceWeight = Math.min(exp * 10, 100);
@@ -85,10 +76,8 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   let expMultiplier = 1;
   if (exp < 2) expMultiplier = penalties.lowExperienceDiscount;
 
-  // @fix Ensured numeric casting for weights summation to fix unknown operator errors
-  const totalWeight = (Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number) || 100;
+  const totalWeight = Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number || 100;
 
-  // @fix Applied explicit numeric casting to weights properties to resolve arithmetic operation errors on unknown types
   let rawScore = (
     (ethicsScore * (weights.ethicalIntegrity as number)) + 
     (clinicalScore * (weights.clinicalDepth as number)) + 
@@ -114,38 +103,6 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     burnoutResistance,
     fitScore,
     riskFlags,
-    branchComplianceScore: Math.round((clinicalScore + ethicsScore) / 2) // Branş Uyum Skoru
+    branchComplianceScore: Math.round((clinicalScore + ethicsScore) / 2)
   };
-};
-
-/**
- * Aday verilerinin ve AI raporunun birbirleriyle tutarlılığını denetleyen 
- * "Data Integrity Shield"
- */
-export const verifyCandidateIntegrity = (candidate: Candidate): { score: number, issues: string[], status: 'valid' | 'compromised' | 'warning' } => {
-  const issues: string[] = [];
-  let integrityScore = 100;
-
-  if (!candidate || !candidate.report || !candidate.algoReport) {
-    return { score: 0, issues: ["Analiz henüz tamamlanmadı."], status: 'warning' };
-  }
-
-  const ai = candidate.report;
-  const algo = candidate.algoReport;
-
-  if (!ai.deepAnalysis) {
-     return { score: 10, issues: ["Nöral matris verisi eksik."], status: 'compromised' };
-  }
-
-  const scoreDiff = Math.abs((ai.score || 0) - (algo.overallScore || 0));
-  if (scoreDiff > 25) {
-    integrityScore -= 30;
-    issues.push(`AI Görüşü ile Algoritmik Skor arasında Branş Sapması (%${scoreDiff.toFixed(1)}).`);
-  }
-
-  let status: 'valid' | 'compromised' | 'warning' = 'valid';
-  if (integrityScore < 50) status = 'compromised';
-  else if (integrityScore < 80) status = 'warning';
-
-  return { score: integrityScore, issues, status };
 };

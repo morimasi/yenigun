@@ -33,12 +33,13 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
-    GÖREV: Adayın liyakat matrisini ve 24 aylık kariyer projeksiyonunu simüle et.
+    GÖREV: Adayın liyakat matrisini ve sertifikasyon derinliğini analiz et.
     
-    KRİTİK ANALİZ PARAMETRELERİ:
-    1. SERTİFİKA DERİNLİĞİ: Adayın seçtiği sertifikalar (Örn: BCBA, DIR201) ile mülakat yanıtlarındaki teknik derinlik uyuşuyor mu?
-    2. METODOLOJİK ÇELİŞKİ: ABA ve DIR gibi zıt felsefeleri aynı anda savunan adaylarda "Bilişsel Esneklik" mi yoksa "Kavram Karışıklığı" mı var?
-    3. KARİYER YÖRÜNGESİ: Branş spesifik çarpanları (Multipliers) kullanarak 24 aylık burnout vs yetkinlik eğrisini hesapla.
+    KRİTİK ANALİZ PARAMETRELERİ (REASONING MODE):
+    1. AKREDİTASYON TUTARLILIĞI: Adayın seçtiği sertifikalar (Örn: BCBA, CAS, PROMPT, Ayres SI) ile doğrulama sorularına verdiği yanıtlar arasındaki teknik uyumu ölç. Sertifika var ama soru cevabı sığ ise 'Sosyal Maskeleme' puanını yükselt.
+    2. METODOLOJİK SPEKTRUM: ABA (Davranışçı) ve DIR (İlişki Temelli) gibi zıt felsefeleri aynı anda savunan adaylarda 'Bilişsel Esneklik' mi yoksa 'Metodolojik Karmaşa' mı olduğunu tespit et.
+    3. EBP (KANITA DAYALI UYGULAMA): Adayın cevaplarında bilimsel literatüre (Örn: PASS Teorisi, Polivagal Teori, Motor Öğrenme İlkeleri) ne kadar atıf yaptığını analiz et.
+    4. YEREL VS GLOBAL: MEB onaylı programlar ile uluslararası akreditasyonlar arasındaki yetkinlik hiyerarşisini değerlendir.
   `;
 
   const response = await ai.models.generateContent({
@@ -73,7 +74,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                     month: { type: Type.NUMBER },
                     meritScore: { type: Type.NUMBER },
                     burnoutRisk: { type: Type.NUMBER },
-                    competencyLevel: { type: Type.STRING, enum: ['Oryantasyon', 'Stabilizasyon', 'Uzmanlık', 'Otorite', 'Riskli Bölge'] },
+                    competencyLevel: { type: Type.STRING },
                     strategicAdvice: { type: Type.STRING }
                   },
                   required: ["month", "meritScore", "burnoutRisk", "competencyLevel", "strategicAdvice"]
@@ -94,6 +95,25 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
               developmentOpenness: DEEP_SEGMENT_SCHEMA
             },
             required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness"]
+          },
+          swot: {
+            type: Type.OBJECT,
+            properties: {
+              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+              opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+              threats: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["strengths", "weaknesses", "opportunities", "threats"]
+          },
+          interviewGuidance: {
+            type: Type.OBJECT,
+            properties: {
+              strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+              criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
+              simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
           }
         }
       }
