@@ -2,14 +2,14 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v10.0)
- * Güncelleme: Multidisipliner Takım ve Mentorluk modülü "Profesyonel Kimlik Analizi" formatına geçirilmiştir.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v11.0)
+ * Güncelleme: Kriz Liderliği ve Veli Diplomasisi modülü "Çok Boyutlu Profesyonel Refleks Analizi" formatına geçirilmiştir.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
-  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
+  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI (Mevcut yapı korunur) ---
   {
     id: 'aba_advanced_mastery',
-    title: 'İleri ABA ve Klinik Karar Mechanismaları',
+    title: 'İleri ABA ve Klinik Karar Mekanizmaları',
     description: 'Veri sadakati, sönme prosedürleri ve kompleks davranış manipülasyonu.',
     icon: '📊',
     category: 'clinical',
@@ -34,7 +34,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
       },
       {
         id: 'stf_aba_3',
-        text: 'Vaka "İlgi EldE Etme" işlevli bir davranış sergilerken, stajyerin yanlışlıkla çocuğa gülümsediğini fark ettiniz. Aksiyonunuz?',
+        text: 'Vaka "İlgi Elde Etme" işlevli bir davranış sergilerken, stajyerin yanlışlıkla çocuğa gülümsediğini fark ettiniz. Aksiyonunuz?',
         options: [
           { label: 'Hemen o an stajyere bakmayarak "görmezden gelme" modellemesi yapar, pekiştirmeyi nötralize etmeye çalışırım.', clinicalValue: 100, aiTag: 'immediate_modeling' },
           { label: 'Seans sonu stajyeri sertçe uyarırım ve raporuna bu hatayı teknik bir not olarak geçerim.', clinicalValue: 60, aiTag: 'delayed_correction' },
@@ -229,7 +229,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'stf_inn_2',
         text: 'Dijital veri takip sistemi (tablet kullanımı) seans sırasındaki "göz teması ve duygusal akışınızı" kestiğini hissediyorsunuz. Çözüm stratejiniz?',
         options: [
-          { label: 'Seansın "Digital-Free" (teknolojisiz) geçmesini sağlar, göz kontağını ve insani bağı en yüksek seviyede tutarım; verileri seans bittikten sonra "geriye dönük nöral hatırlama" yöntemiyle sisteme hatasız bir şekilde mühürlemeyi tercih ederim.', clinicalValue: 90, aiTag: 'human_centric_purist' },
+          { label: 'Seansın "Digital-Free" (teknolojisiz) geçmesini sağlar, göz kontağını ve insani bağı en highest seviyede tutarım; verileri seans bittikten sonra "geriye dönük nöral hatırlama" yöntemiyle sisteme hatasız bir şekilde mühürlemeyi tercih ederim.', clinicalValue: 90, aiTag: 'human_centric_purist' },
           { label: 'Tableti seansın içine bir "eğitim aracı" olarak entegre ederim; veriyi kaydederken bunu çocukla bir "başarı grafiği" paylaşımı gibi kurgulayarak, teknolojiyi bağ kurmanın bir parçası haline getiren hibrit bir model geliştiririm.', clinicalValue: 100, aiTag: 'adaptive_digital_coach' },
           { label: 'Veri hızı ve anlık analizin hata payını minimize ettiğini bildiğim için teknolojiye uyum sağlarım; duygusal akışın bu küçük kesintiden zarar görmeyeceği kadar ustalaşana dek dijital giriş pratiğimi artırırım.', clinicalValue: 80, aiTag: 'efficiency_focused_expert' }
         ]
@@ -309,7 +309,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK (YENİLENMİŞ - TEK DOĞRUSU OLMAYAN MODEL) ---
+  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK ---
   {
     id: 'team_and_mentorship',
     title: 'Multidisipliner Takım ve Mentorluk',
@@ -339,7 +339,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         id: 'stf_team_3',
         text: 'Ekip içi bir vaka toplantısında, başarısız giden bir süreçten dolayı tüm oklar size çevrildi ve sertçe eleştiriliyorsunuz. Duygusal regülasyonunuz nasıl işler?',
         options: [
-          { label: 'Eleştirileri kişisel bir saldırı olarak değil, vaka yönetimi için bir "Dış Denetim" verisi olarak kabul ederim; savunmaya geçmek yerine, eleştiri yapan arkadaşlarıma "Benim göremediğim hangi kör noktayı fark ettiniz?" sorusunu sorarak odağı vakaya geri döndürürüm.', clinicalValue: 100, aiTag: 'resilient_professional' },
+          { label: 'Eleştirileri kişisel bir saldırı olarak değil, vaka yönetimimi için bir "Dış Denetim" verisi olarak kabul ederim; savunmaya geçmek yerine, eleştiri yapan arkadaşlarıma "Benim göremediğim hangi kör noktayı fark ettiniz?" sorusunu sorarak odağı vakaya geri döndürürüm.', clinicalValue: 100, aiTag: 'resilient_professional' },
           { label: 'Verilere dayalı rasyonel bir savunma dosyası sunarım; duygusal tartışmalara girmeden, seans kayıtlarımı ve grafiklerimi göstererek kararlarımın teknik nedenselliğini ispatlarım; profesyonel itibarımı bilimsel kanıtlarla korurum.', clinicalValue: 90, aiTag: 'analytical_defender' },
           { label: 'Toplantıdaki gerilimi düşürmek için empatik bir dil kullanırım; ekibin stresini valide eder, sorumluluğu paylaşmayı teklif eder ve "Bunu bir suçlama seansından çıkarıp yeni bir yol haritası seansına nasıl çevirebiliriz?" diyerek moderatör rolü üstlenirim.', clinicalValue: 95, aiTag: 'harmonizing_stabilizer' }
         ]
@@ -410,7 +410,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ (Eskisiyle devam eder...) ---
+  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ (YENİLENMİŞ - ÇOK BOYUTLU MODEL) ---
   {
     id: 'crisis_leadership',
     title: 'Kriz Liderliği ve Veli Diplomasisi',
@@ -420,92 +420,92 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     questions: [
       {
         id: 'stf_cri_1',
-        text: 'Veli, kurumun bahçesinde "6 aydır bir arpa boyu yol gidemedik!" diye bağırıyor. İlk kriz refleksiniz?',
+        text: 'Veli, kurumun bahçesinde diğer velilerin önünde "6 aydır bir arpa boyu yol gidemedik, paramızla rezil oluyoruz!" diye bağırıyor. İlk stratejik kriz refleksiniz ne olur?',
         options: [
-          { label: 'Veliyi hızla kapalı bir odaya davet eder, duygusunu valide edip "Pre-test vs Güncel Veri" kıyaslamasını önüne koyarım.', clinicalValue: 100, aiTag: 'expert_deescalation' },
-          { label: 'Güvenliği çağırırım.', clinicalValue: 20, aiTag: 'extreme_avoidance' },
-          { label: 'Ben de ona bağırırım.', clinicalValue: -100, aiTag: 'aggression_reciprocity' }
+          { label: 'Veliyi hızla, diğer kişilerin etkilenmeyeceği kapalı ve konforlu bir odaya davet ederim; duygusunu valide edip "Pre-test vs Güncel Veri" kıyaslamasını önüne koyarak kaosu rakamlarla ve soğukkanlılıkla dindiririm.', clinicalValue: 100, aiTag: 'rational_deescalator' },
+          { label: 'Ailenin yaşadığı büyük hayal kırıklığını ve tükenmişliği derinlemesine anladığımı hissettiririm; önce sadece dinlerim ve "Haklısınız, bu süreç çok yorucu" diyerek duygusal bir boşalım alanı yaratır, güven bağını onarmaya odaklanırım.', clinicalValue: 95, aiTag: 'empathetic_connector' },
+          { label: 'Kurumun huzurunu ve imajını korumak adına, veliyi derhal idari ofise yönlendiririm ve mülkiyet sınırlarını hatırlatarak bu tarz bir iletişimin etik sözleşmeye aykırı olduğunu, akademik görüşmenin ancak sükunet sağlandığında başlayabileceğini belirtirim.', clinicalValue: 85, aiTag: 'institutional_enforcer' }
         ]
       },
       {
         id: 'stf_cri_2',
-        text: 'Öğrenci aniden kendine zarar verme (SIB) davranışına başladı ve parmağını ısırıyor. O saniyedeki önceliğiniz?',
+        text: 'Öğrenci aniden kendine zarar verme (SIB) davranışına başladı ve parmağını ciddi şekilde ısırıyor. O saniyedeki klinik önceliğiniz ve aksiyonunuz?',
         options: [
-          { label: 'En az kısıtlayıcı fiziksel müdahale (Last Restrictive) ile çocuğu ve kendimi güvenliğe alırım.', clinicalValue: 100, aiTag: 'clinical_safety_reflex' },
-          { label: 'Davranışın nedenini analiz etmek için defterimi alırım.', clinicalValue: 40, aiTag: 'over_analysis_in_danger' },
-          { label: 'Odadan çıkar, yardım çağırırım.', clinicalValue: 0, aiTag: 'abandonment_in_crisis' }
+          { label: 'En az kısıtlayıcı fiziksel müdahale (Last Restrictive) protokolü ile çocuğu ve kendimi güvenliğe alırım; müdahale esnasında duygusal hiçbir tepki vermeyerek davranışı pekiştirmekten kaçınır, krizi teknik bir veri seti gibi yönetirim.', clinicalValue: 100, aiTag: 'clinical_safety_expert' },
+          { label: 'Çocuğu yumuşak bir zemine alır ve ses tonumla ko-regülasyon (birlikte regüle olma) sağlarım; acısını anladığımı hissettiren bir temasla (güvenli ise) sistemini sakinleştirmeye çalışır, duyusal bir yatıştırma sürecini başlatırım.', clinicalValue: 90, aiTag: 'sensory_stabilizer' },
+          { label: 'Hemen çevredeki uyaranları temizler, odanın ışığını azaltır ve varsa diğer personelden yardım isteyerek acil durum protokolünü başlatırım; çocuğun fiziksel hasar almasını engelledikten sonra olayı bir "Klinik Otopsi" konusu olarak not ederim.', clinicalValue: 95, aiTag: 'procedural_crisis_manager' }
         ]
       },
       {
         id: 'stf_cri_3',
-        text: 'Veli seansın ortasında içeri girip "Hocam yanlış tutuyorsunuz, öyle değil böyle yapın" dedi. Müdahaleniz?',
+        text: 'Veli seansın ortasında aniden içeri girip "Hocam yanlış tutuyorsunuz, öyle değil böyle yapın, çocuk ağlıyor görmüyor musunuz?" dedi. Diplomatik hamleniz?',
         options: [
-          { label: 'Seansı o an "Veli Eğitimi" seansına çevirir, neden öyle tuttuğumu bilimsel olarak gösterip denemesini isterim.', clinicalValue: 100, aiTag: 'educational_diplomacy' },
-          { label: 'Öfkelenir ve veliyi dışarı çıkarırım.', clinicalValue: 30, aiTag: 'ego_fragility' },
-          { label: 'Veli ne diyorsa öyle yaparım.', clinicalValue: 10, aiTag: 'clinical_surrender' }
+          { label: 'Seansı o an durdurur ve veliyi içeri davet ederek "Veli Koçluğu" (Parent Coaching) moduna geçerim; neden öyle tuttuğumu bilimsel gerekçesiyle gösterip denemesini isterim; eleştiriyi eğitsel bir fırsata dönüştürürüm.', clinicalValue: 100, aiTag: 'educational_diplomat' },
+          { label: 'Veliyi nazikçe dışarı çıkarır ve seans sonrası görüşebileceğimizi söylerim; seansın kutsallığını ve çocukla kurulan çalışma disiplininin dış müdahalelerle bozulmaması gerektiğini profesyonel bir sınırla anlatırım.', clinicalValue: 90, aiTag: 'boundary_purist' },
+          { label: 'Velinin endişesini ("çocuğunuzun canının yanmasından korkuyorsunuz, sizi anlıyorum") hemen orada valide ederim; ancak teknik kararın uzmana ait olduğunu hissettirerek seansa devam eder, veliyi seans sonu detaylı teknik açıklama için odaya alırım.', clinicalValue: 95, aiTag: 'empathetic_negotiator' }
         ]
       },
       {
         id: 'stf_cri_4',
-        text: 'Bir vakanın gelişiminde "Plato" (ilerleme yok) dönemindesiniz. Veliye durumu nasıl açıklarsınız?',
+        text: 'Bir vakanın gelişiminde "Plato" (ilerleme yok) dönemindesiniz ve veli vazgeçmek üzere. Bu umutsuzluk krizini nasıl yönetirsiniz?',
         options: [
-          { label: 'Sinir sisteminin bir konsolidasyon aşamasında olduğunu, verileri analiz ettiğimizi ve strateji değişikliği yapacağımızı anlatırım.', clinicalValue: 100, aiTag: 'strategic_transparency' },
-          { label: '"Çocuk artık öğrenemiyor" derim.', clinicalValue: 10, aiTag: 'diagnostic_pessimism' },
-          { label: 'Biraz yalan söyler, "çok iyi gidiyor" derim.', clinicalValue: 0, aiTag: 'unethical_reassurance' }
+          { label: 'Sinir sisteminin bir konsolidasyon (pekiştirme) aşamasında olduğunu, verilerin bir sıçrama öncesi duraklamayı işaret ettiğini anlatırım; mevcut programı revize ederek veliye "Mikro-Hedefler" üzerinden yeni ve hızlı başarı hissi yaşatırım.', clinicalValue: 100, aiTag: 'strategic_optimist' },
+          { label: 'Vakanın nöral sınırlarını ve mevcut platosunun biyolojik gerçekliğini şeffaflıkla paylaşırım; boş umut vermek yerine durumu kabul edip "yaşam kalitesini artırma" odaklı farklı bir rotaya (örn: Öz bakım ağırlıklı) geçmeyi teklif ederim.', clinicalValue: 85, aiTag: 'transparent_realist' },
+          { label: 'Bağımsız bir süpervizörden görüş talep eder ve bu görüşü veliyle paylaşırım; üçüncü bir gözün sisteme dahil olmasının güven tazeleyeceğine inanır, süreci kurumsal bir işbirliği ile aşmaya odaklanırım.', clinicalValue: 95, aiTag: 'collaborative_solutionist' }
         ]
       },
       {
         id: 'stf_cri_5',
-        text: 'Kriz anında bir meslektaşınızın donup kaldığını (freeze) gördünüz. Rolünüz?',
+        text: 'Kriz anında bir meslektaşınızın vaka üzerinde kontrolü kaybettiğini ve "donup kaldığını" (freeze) gördünüz. O anki rolünüz nedir?',
         options: [
-          { label: 'Vakayı devralır, arkadaşıma güvenli bir alan açar ve kriz sonrası debrifing yaparım.', clinicalValue: 100, aiTag: 'crisis_leadership_mastery' },
-          { label: 'Onu izlerim.', clinicalValue: 20, aiTag: 'passive_observation' },
-          { label: '"Neden duruyorsun?" diye bağırırım.', clinicalValue: 0, aiTag: 'hostile_intervention' }
+          { label: 'Hiç tereddüt etmeden vakayı devralırım ve arkadaşıma "Gidip bir su iç, ben buradayım" diyerek güvenli bir çıkış alanı açarım; kriz sonrasında ise durumu bir "öğrenme debrifingi" olarak ekipçe analiz etmeyi sağlarım.', clinicalValue: 100, aiTag: 'crisis_leader' },
+          { label: 'Arkadaşımın yanına gider ve ona düşük profilli, fısıltıyla yönergeler vererek kontrolü tekrar eline alması için mentörlük yaparım; özgüveninin kırılmasını engeller, krizi onun yönetmesini ama benim desteğimle bitirmesini sağlarım.', clinicalValue: 95, aiTag: 'supportive_mentor' },
+          { label: 'Durumu derhal klinik direktöre bildiririm; kriz yönetiminde "donma" reaksiyonun vaka güvenliği için büyük risk olduğunu bilir, profesyonel bir müdahale ve personel rotasyonu talep ederek sistemi korurum.', clinicalValue: 80, aiTag: 'risk_mitigator' }
         ]
       },
       {
         id: 'stf_cri_6',
-        text: 'Veli, kurum müdürüne sizin hakkınızda yalan bir şikayette bulundu. Reaksiyonunuz?',
+        text: 'Veli, kurum müdürüne sizin hakkınızda "çocuğuma kötü davranıyor" şeklinde asılsız bir şikayette bulundu. Profesyonel duruşunuz?',
         options: [
-          { label: 'Yönetime seans kayıtlarımı ve objektif ilerleme verilerimi sunarak rasyonel bir savunma yaparım.', clinicalValue: 100, aiTag: 'professional_fortress' },
-          { label: 'Veliyle kavga ederim.', clinicalValue: 10, aiTag: 'lack_of_restraint' },
-          { label: 'Vakayı hemen bırakırım.', clinicalValue: 30, aiTag: 'reactive_termination' }
+          { label: 'Yönetime seans kayıtlarımı, vaka notlarımı ve objektif ilerleme verilerimi sunarak rasyonel bir savunma yaparım; veliyle olan ilişkimi "veri odaklı ve mesafeli" bir düzleme çekerek iddiaları bilimsel kanıtlarla çürütürüm.', clinicalValue: 100, aiTag: 'evidence_based_professional' },
+          { label: 'Veliyi birebir görüşmeye davet eder ve bu algının arkasındaki duygusal kırılmayı anlamaya çalışırım; "Nerede yanlış anlaşıldım?" sorusuyla köprü kurmaya çalışır, gerekirse vaka üzerindeki yaklaşımımı onunla beraber revize ederim.', clinicalValue: 85, aiTag: 'empathetic_mediator' },
+          { label: 'İftiranın profesyonel güven ilişkisini kalıcı olarak zedelediğini savunarak vakanın başka bir uzmana devredilmesini talep ederim; etik ve kişisel onurumun, ticari devamlılıktan daha önemli olduğunu yönetime net bir dille belirtirim.', clinicalValue: 90, aiTag: 'principled_guardian' }
         ]
       },
       {
         id: 'stf_cri_7',
-        text: 'Çocuğun ilaç dozajının değiştirildiğini ve seans performansının çöktüğünü fark ettiniz. Velinin tavrı "bunu hocaya söylemeyelim" olmuş. Ne yaparsınız?',
+        text: 'Vakanın ilaç dozajının veli tarafından gizlice değiştirildiğini ve seans performansının çöktüğünü fark ettiniz. Velinin tavrı "sakıncalı" bir savunma. Ne yaparsınız?',
         options: [
-          { label: 'Verilerdeki ani değişimi göstererek veliyi açık uçlu sorularla gerçeğe davet ederim; sağlığın eğitimden önce geldiğini vurgularım.', clinicalValue: 100, aiTag: 'diagnostic_detective' },
-          { label: 'Sormam, kendileri bilir.', clinicalValue: 40, aiTag: 'clinical_indifference' },
-          { label: 'İlacı eski doza dönmelerini söylerim.', clinicalValue: -50, aiTag: 'illegal_medical_advice' }
+          { label: 'Verilerdeki ani düşüşü grafiklerle göstererek veliyi gerçeğe davet ederim; sağlığın eğitimden önce geldiğini, bu durumun vakanın nöro-plastisitesine zarar verdiğini belirten bir "Etik Uyarı Notu"nu dosyasına mühürlerim.', clinicalValue: 100, aiTag: 'diagnostic_integrity' },
+          { label: 'Ailenin çaresizliğini ve "hızlı çözüm" arayışını anlarım; onları suçlamadan, bir çocuk nöroloğu ile randevu almalarına eşlik etmeyi teklif ederek süreci tıbbi bir denetime sokmaya ikna etmeye çalışırım.', clinicalValue: 95, aiTag: 'clinical_advocate' },
+          { label: 'Durumu kurumsal sosyal hizmet birimine raporlarım; çocuk sağlığının tehlikeye atılmasının hukuki bir sorumluluk olduğunu bilir, vaka güvenliği için yasal ve kurumsal bariyerleri hemen devreye alırım.', clinicalValue: 90, aiTag: 'protective_standardist' }
         ]
       },
       {
         id: 'stf_cri_8',
-        text: 'Kurumda yangın alarmı çaldı ve vakanız "sensory overload" nedeniyle yere kapandı. Ne yaparsınız?',
+        text: 'Kurumda yangın alarmı çaldı veya bir deprem sarsıntısı oldu. Vakanız duyusal aşırı yüklenme nedeniyle yere kapandı. Tahliye stratejiniz?',
         options: [
-          { label: 'Çocuğu kucaklar (güvenli taşıma) ve dışarıdaki güvenli toplanma alanına kadar regüle ederek tahliye ederim.', clinicalValue: 100, aiTag: 'emergency_heroism' },
-          { label: 'Çocuğu orada bırakıp kaçarım.', clinicalValue: -200, aiTag: 'desertion' },
-          { label: 'Alarmın susmasını beklerim.', clinicalValue: 10, aiTag: 'crisis_denial' }
+          { label: 'Çocuğu kucaklar (güvenli taşıma protokolü) ve dışarıdaki güvenli toplanma alanına kadar regüle ederek tahliye ederim; panik yapmadan çocuğun "sabit çapası" olur, tehlike anında fiziksel ve duygusal kalkanlık yaparım.', clinicalValue: 100, aiTag: 'resilient_guardian' },
+          { label: 'Öncelikle diğer personelden destek isterim; çocuğun duyusal hassasiyetini bildiğim için kulağına kulaklık takarak veya başını örterek uyarılmayı azaltır, onu yürümeye ikna ederek kontrollü bir tahliye gerçekleştirmeye çalışırım.', clinicalValue: 90, aiTag: 'thoughtful_responder' },
+          { label: 'Kendi can güvenliğimi de riske atmadan, en hızlı şekilde dışarı çıkış yolunu belirlerim; çocuk direnç gösteriyorsa onu en güvenli köşeye alıp yardım gelmesini beklemek veya zorla sürüklemek arasındaki en rasyonel yolu seçerim.', clinicalValue: 70, aiTag: 'pragmatic_survivalist' }
         ]
       },
       {
         id: 'stf_cri_9',
-        text: 'Veli seans sonunda "Hocam biz ayrılıyoruz, çocuk çok etkilenir mi?" dedi. Etik yanıtınız?',
+        text: 'Veli seans sonunda "Hocam biz kurumdan ayrılmaya karar verdik, çocuk size çok alışmıştı, bir veda konuşması yapar mısınız?" dedi. Etik yanıtınız?',
         options: [
-          { label: 'Çocuğun rutininin bozulacağını, bu sürecin profesyonel bir destekle yönetilmesi gerektiğini bilimsel olarak açıklarım.', clinicalValue: 100, aiTag: 'family_consultancy_mastery' },
-          { label: '"Hayır, bir şey olmaz" der geçerim.', clinicalValue: 30, aiTag: 'emotional_belittling' },
-          { label: '"Gitmeyin, çocuk mahvolur" diyerek korkuturum.', clinicalValue: 40, aiTag: 'manipulative_retention' }
+          { label: 'Ayrılık sürecinin çocukta yaratacağı "bağlanma krizini" veliye bilimsel olarak anlatırım; vedanın bir travma değil, bir "geçiş süreci" olarak yönetilmesi için onlara 2 haftalık bir ayrılık protokolü hazırlar ve profesyonelce uğurlarım.', clinicalValue: 100, aiTag: 'transitional_expert' },
+          { label: 'Velinin kararını sorgulamam ancak çocuğun iyiliği için kurumsal bir "Kapanış Dosyası" hazırlar ve yeni kurumuna/uzmanına iletilmek üzere teslim ederim; profesyonel nezaketimle vakanın geleceğini güvence altına alırım.', clinicalValue: 95, aiTag: 'professional_closer' },
+          { label: 'Veliyi bu karardan döndürmek için çocuğun gelişimindeki riskleri (gerileme ihtimali) hatırlatan bir "Risk Sunumu" yaparım; ticari bir kaygıdan ziyade, yarım kalan bir klinik sürecin vaka için yıkıcı olacağına dair sert bir uyarıda bulunurum.', clinicalValue: 85, aiTag: 'vaka_protector' }
         ]
       },
       {
         id: 'stf_cri_10',
-        text: 'Vakanın ilerlemesi için velinin evdeki "şımartma" tutumunu değiştirmesi şart. Veliyi kırmadan nasıl söylersiniz?',
+        text: 'Vakanın ilerlemesi için velinin evdeki "aşırı korumacı/şımartma" tutumunu değiştirmesi şart ancak veli çok otoriter ve eleştiriye kapalı. Nasıl bir bariyer kurarsınız?',
         options: [
-          { label: '"Evdeki tutarlılık, kurumdaki emeği 4 kat hızlandırır" diyerek kazanç odaklı bir işbirliği modeli sunarım.', clinicalValue: 100, aiTag: 'strategic_alignment' },
-          { label: '"Çocuğu mahvediyorsunuz" derim.', clinicalValue: 20, aiTag: 'direct_attack' },
-          { label: 'Söyleyemem, veli paradır.', clinicalValue: 0, aiTag: 'commercial_fear' }
+          { label: '"Evdeki tutarlılık, kurumdaki emeği 4 kat hızlandırır" diyerek kazanç odaklı bir işbirliği modeli sunarım; veliyi eleştirmek yerine, onu "ekibin bir parçası" ve "başarının mimarı" olarak konumlandırıp sorumluluk veririm.', clinicalValue: 100, aiTag: 'strategic_influencer' },
+          { label: 'Veliyi kurumun "Ebeveyn Danışmanlık" birimine yönlendiririm ve bir uzman eşliğinde evdeki davranışlarını video analizle izlemesini sağlarım; hatayı benim söylemem yerine, kendisinin veriler üzerinden görmesini sağlayan bir sistem kurarım.', clinicalValue: 95, aiTag: 'systemic_facilitator' },
+          { label: 'Veliye mevcut tutumu devam ederse eğitimin bir "yatırım kaybı" olduğunu ve bu şartlarda kurumun gelişim garantisi veremeyeceğini açıkça deklare ederim; vaka başarısı için aile disiplininin bir ön şart olduğunu profesyonelce mühürlerim.', clinicalValue: 90, aiTag: 'high_standard_clinician' }
         ]
       }
     ]
