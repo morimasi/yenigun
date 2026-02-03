@@ -1,185 +1,84 @@
-
 import { Question } from '../../types';
 
 export const academicSkillsQuestions: Question[] = [
   {
-    id: 'acad_skill_1',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Öğrenci okuma sırasında kelimelerin sonundaki ekleri sürekli yutuyor veya uyduruyorsa, bu durumun nöro-dilbilimsel karşılığı nedir?',
+    id: 'acad_1', category: 'technicalExpertise', type: 'radio',
+    text: 'Disleksi şüphesi olan bir çocukta okuma hızını artırmak için hangi yolu seçersiniz?',
     weightedOptions: [
-      { 
-        label: 'Görsel işlemleme hızı, işitsel işlemlemeden daha öndedir; tahmin ederek okuma (guessing) eğilimi vardır.', 
-        weights: { technicalExpertise: 1.0, clinical: 0.9 },
-        analysisInsight: 'Klinik hata analizi yeteneği yüksek.'
-      },
-      { 
-        label: 'Öğrencinin genel bir dikkat eksikliği vardır, kelimenin sonuna kadar odaklanamıyordur.', 
-        weights: { technicalExpertise: 0.4, pedagogicalAnalysis: 0.6 },
-        analysisInsight: 'Basit ve genel bir açıklama tercihi.'
-      }
+      { label: 'Metni hecelere bölerek mekanik okumayı mükemmelleştiririm; önce hatasızlık, sonra hız gelir.', weights: { clinical: 0.8, technicalExpertise: 1.0 }, analysisInsight: 'Teknik ve Adım Adım Yaklaşım.' },
+      { label: 'Bütünsel okuma stratejileri ve tekerlemelerle akıcılığı (fluency) teşvik ederim; önce okumayı sevdirmek, sonra teknik gelir.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.9 }, analysisInsight: 'Akışkan ve Süreç Odaklı Yaklaşım.' }
     ]
   },
   {
-    id: 'acad_skill_2',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Matematiksel muhakemede "Sayı Hissi" (Number Sense) zayıf olan bir çocukta işlem öğretimine nereden başlanmalıdır?',
+    id: 'acad_2', category: 'technicalExpertise', type: 'radio',
+    text: 'Matematiksel muhakemede (problem çözme) zorlanan bir öğrencide ilk hamleniz nedir?',
     weightedOptions: [
-      { 
-        label: 'Sembolik sayılardan önce, nesne grupları üzerinden "Subitizing" (şipşak sayılama) çalışmalarıyla başlarım.', 
-        weights: { technicalExpertise: 1.0, pedagogicalAnalysis: 1.0 },
-        analysisInsight: 'Bilimsel hiyerarşi odaklı.'
-      },
-      { 
-        label: 'Ritmik saymaları ezberleterek işlem hızı kazanmasını sağlarım.', 
-        weights: { technicalExpertise: 0.2, clinical: 0.3 },
-        analysisInsight: 'Ezberci ve geleneksel yöntem eğilimi.'
-      }
+      { label: 'Problemi resmetmesini (visual representation) isterim. Soyut sayıları somut nesnelere çevirerek zihnindeki haritayı görmeye çalışırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Somutlaştırıcı ve Analitik.' },
+      { label: 'Anahtar kelimeleri ezberletirim (örn: "toplam" kelimesi toplama yapılacağını anlatır). Formül bazlı bir çözüm yolu öğretirim.', weights: { clinical: 0.4, pedagogicalAnalysis: 0.5 }, analysisInsight: 'Geleneksel ve Ezber Odaklı.' }
     ]
   },
   {
-    id: 'acad_skill_3',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Disleksi müdahalesinde "Orton-Gillingham" yaklaşımının temel prensibi olan "Çok Duyulu Eğitim" (Multisensory) pratikte nasıl uygulanır?',
+    id: 'acad_3', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Öğrenci okuma-yazma ödevlerini yaparken çok yavaş ve sürekli silgi kullanıyor. Nasıl müdahale edersiniz?',
     weightedOptions: [
-      { 
-        label: 'Ses-harf ilişkisini aynı anda görerek, duyarak ve havada/kumda yazarak (VAKT) eşleştiririm.', 
-        weights: { technicalExpertise: 1.0, clinical: 1.0 },
-        analysisInsight: 'EBP (Evidence Based Practice) hakimiyeti.'
-      },
-      { 
-        label: 'Aynı kelimeyi farklı renkli kalemlerle defalarca yazdırarak görsel hafızayı güçlendiririm.', 
-        weights: { technicalExpertise: 0.5, pedagogicalAnalysis: 0.7 },
-        analysisInsight: 'Yüzeysel çok duyulu uygulama bilgisi.'
-      }
+      { label: 'Hata yapmanın öğrenmenin bir parçası olduğunu anlatır, silgisini masadan kaldırırım. Süreçteki çabayı ödüllendiririm.', weights: { pedagogicalAnalysis: 1.0, sustainability: 1.0 }, analysisInsight: 'Hata Dostu ve Dayanıklılık Geliştirici.' },
+      { label: 'Daha az ve daha kolay ödevler vererek başarı oranını artırırım. Özgüvenini kazanana kadar onu zorlamaktan kaçınırım.', weights: { pedagogicalAnalysis: 0.6, empathy: 0.9 }, analysisInsight: 'Koruyucu ve Kolaylaştırıcı.' }
     ]
   },
   {
-    id: 'acad_skill_4',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Öğrenci 2 basamaklı sayılarda eldeli toplamayı kağıtta yapıyor ama zihinden yapamıyorsa hangi bilişsel alan desteklenmelidir?',
+    id: 'acad_4', category: 'technicalExpertise', type: 'radio',
+    text: 'Sayı hissi (number sense) zayıf bir çocukta eldeli toplama öğretirken ne yaparsınız?',
     weightedOptions: [
-      { 
-        label: 'Çalışma Belleği (Working Memory) ve sayısal manipülasyon becerileri.', 
-        weights: { technicalExpertise: 1.0, clinical: 0.9 },
-        analysisInsight: 'Nöro-kognitif süreç analizi.'
-      },
-      { 
-        label: 'Onluk bozma kurallarının daha fazla tekrar edilmesi.', 
-        weights: { technicalExpertise: 0.3, pedagogicalAnalysis: 0.4 },
-        analysisInsight: 'Kural odaklı, kognitif süreçten uzak.'
-      }
+      { label: 'Basamak tablosu ve onluk bloklarla "eldeyi" fiziksel olarak bir üst basamağa taşıtırım; olayın mantığını elleriyle hissettiririm.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Konsept ve Mantık Odaklı.' },
+      { label: 'Kuralları tekerleme gibi öğretirim: "Sağdakini yaz, soldakini komşuya gönder." Kurallar oturdukça mantığın gelişeceğine inanırım.', weights: { clinical: 0.6, pedagogicalAnalysis: 0.7 }, analysisInsight: 'Prosedürel ve Kural Odaklı.' }
     ]
   },
   {
-    id: 'acad_skill_5',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Okuduğunu anlama çalışmalarında "SQ3R" veya benzeri stratejilerin kullanım amacı nedir?',
+    id: 'acad_5', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Öğrenci bir metni okuyor ama "ne anladın?" dediğinizde cevap veremiyor. Stratejiniz nedir?',
     weightedOptions: [
-      { 
-        label: 'Metni mekanik okumadan çıkarıp, aktif bir sorgulama ve yapılandırma sürecine dönüştürmek.', 
-        weights: { pedagogicalAnalysis: 1.0, technicalExpertise: 0.9 },
-        analysisInsight: 'Üst-bilişsel strateji bilinci.'
-      },
-      { 
-        label: 'Öğrencinin okuma hızını artırarak metni daha kısa sürede bitirmesini sağlamak.', 
-        weights: { pedagogicalAnalysis: 0.2, clinical: 0.1 },
-        analysisInsight: 'Hatalı pedagojik hedefleme.'
-      }
+      { label: 'Okuma sırasında ara sorular sorarak metni "parçalara" bölerim. Aktif okumayı ve tahmin etme becerisini geliştirmeye çalışırım.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9 }, analysisInsight: 'Metabilişsel Strateji Uzmanı.' },
+      { label: 'Metni ben ona yüksek sesle okurum veya resimlerini gösteririm. İşitsel ve görsel hafızasını kullanarak anlamayı desteklerim.', weights: { pedagogicalAnalysis: 0.7, empathy: 0.8 }, analysisInsight: 'Destekleyici ve Telafi Edici.' }
     ]
   },
   {
-    id: 'acad_skill_6',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Diskalkuli tanısı olan bir vakanın saatleri öğrenememesi durumunda izlenecek en efektif yol hangisidir?',
+    id: 'acad_6', category: 'technicalExpertise', type: 'radio',
+    text: 'Yazı yazarken harfleri ters yazan (b/d karıştıran) bir vakada yaklaşımınız?',
     weightedOptions: [
-      { 
-        label: 'Zaman kavramını lineer bir sayı doğrusuna dökerek (Linear Time) somutlaştırmak.', 
-        weights: { technicalExpertise: 1.0, clinical: 1.0 },
-        analysisInsight: 'Görsel-uzamsal somutlaştırma uzmanlığı.'
-      },
-      { 
-        label: 'Dijital saatleri ezberleterek analog saatleri zamana bırakmak.', 
-        weights: { technicalExpertise: 0.4, sustainability: 0.6 },
-        analysisInsight: 'Pragmatik ama kökten çözüm sunmayan yaklaşım.'
-      }
+      { label: 'Fiziksel ipuçları veririm (örn: "b" harfi karınlıdır, karnına dokun). Kinestetik hafızayı kullanarak farkı somutlaştırırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Çok Duyulu Eğitim Uygulayıcısı.' },
+      { label: 'Hatalı yazdığı harfi 20 kere yazdırarak görsel hafızasını zorlarım. Tekrarın yanlışı düzelteceğine inanırım.', weights: { clinical: 0.2, pedagogicalAnalysis: 0.3 }, analysisInsight: 'Yükleme Odaklı / Mekanik.' }
     ]
   },
   {
-    id: 'acad_skill_7',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Fonolojik farkındalıkta "Ses Birleştirme" (Blending) becerisi "Ses Analizi" (Segmenting) becerisinden neden önce çalışılmalıdır?',
+    id: 'acad_7', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Öğrenci çarpım tablosunu bir türlü ezberleyemiyor. Kararınız nedir?',
     weightedOptions: [
-      { 
-        label: 'Birleştirme, okumanın; analiz ise yazmanın temelidir ve sentez yeteneği bilişsel olarak analize zemin hazırlar.', 
-        weights: { technicalExpertise: 1.0, pedagogicalAnalysis: 0.9 },
-        analysisInsight: 'Gelişimsel hiyerarşi bilgisi.'
-      },
-      { 
-        label: 'Ses birleştirme oyunları daha eğlenceli olduğu için çocuğun motivasyonu yükselir.', 
-        weights: { technicalExpertise: 0.3, empathy: 0.8 },
-        analysisInsight: 'Duygusal önceliklendirme, teknik eksiklik.'
-      }
+      { label: 'Ezberlemek yerine "sayıların dansını" (örüntüleri) öğretirim. Toplama ile çarpma arasındaki mantığı kurması için oyunlar tasarlarım.', weights: { pedagogicalAnalysis: 1.0, developmentOpenness: 0.9 }, analysisInsight: 'Mantıksal-Matematiksel Tasarımcı.' },
+      { label: 'Ezberleyene kadar her gün bir kısmını sorarım, başaramazsa akademik seviyesinin bu olduğu kabul eder, hesap makinesi kullanmasına izin veririm.', weights: { pedagogicalAnalysis: 0.5, clinical: 0.4 }, analysisInsight: 'Pragmatist ama Teslimiyetçi.' }
     ]
   },
   {
-    id: 'acad_skill_8',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Yazılı anlatımda "Zihin Haritalama" (Mind Mapping) tekniğinin özel öğrenme güçlüğünde temel işlevi nedir?',
+    id: 'acad_8', category: 'technicalExpertise', type: 'radio',
+    text: 'Fonolojik farkındalık çalışmasında (ses birleştirme) zorlanan çocukta ne yaparsınız?',
     weightedOptions: [
-      { 
-        label: 'Ardıl işlemleme zayıflığını, eşzamanlı görselleştirme ile kompanse etmek.', 
-        weights: { technicalExpertise: 1.0, clinical: 0.9 },
-        analysisInsight: 'Kompansatuar strateji hakimiyeti.'
-      },
-      { 
-        label: 'Yazım kuralları ve imla hatalarını minimize etmek.', 
-        weights: { technicalExpertise: 0.2, pedagogicalAnalysis: 0.4 },
-        analysisInsight: 'Yanlış fonksiyonel atıf.'
-      }
+      { label: 'Sesleri "uzatarak" bağlarım (Aaaaa-Llll-Aaaaa gibi). Seslerin fiziksel olarak nasıl birleştiğini hissetmesi için model olurum.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Teknik Derinliği Yüksek Akışkan Uygulayıcı.' },
+      { label: 'Harf kartlarını yan yana koyar ve isimlerini söylemesini isterim. Görsel bütünlüğe güvenerek sesleri birleştirmesini beklerim.', weights: { clinical: 0.5, pedagogicalAnalysis: 0.6 }, analysisInsight: 'Görsel Odaklı / Mekanik.' }
     ]
   },
   {
-    id: 'acad_skill_9',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Matematik problemlerini okuyan ama çözemeyen bir öğrencide "Dilsel Karmaşıklık" mı yoksa "Sayısal Mantık" mı sorundur? Nasıl ayrıştırırsınız?',
+    id: 'acad_9', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Öğrenci akademik derslerde sürekli "bu ne işe yarayacak?" diye soruyor. Yanıtınız?',
     weightedOptions: [
-      { 
-        label: 'Aynı problemi sadece sayısal ifadelerle (denklem olarak) sunarım; yapabiliyorsa sorun dilsel/semantiktir.', 
-        weights: { technicalExpertise: 1.0, pedagogicalAnalysis: 1.0 },
-        analysisInsight: 'Diferansiyel tanı ve değerlendirme becerisi.'
-      },
-      { 
-        label: 'Öğrenciye problemi yüksek sesle okuturum, hata yapmıyorsa mantık problemi olduğunu varsayarım.', 
-        weights: { technicalExpertise: 0.5, clinical: 0.4 },
-        analysisInsight: 'Yetersiz değerlendirme protokolü.'
-      }
+      { label: 'Dersi hemen durdurur, o bilginin markette, sokakta veya evde nasıl hayat kurtaracağını simüle ederim. Fonksiyonelliği ispatlarım.', weights: { pedagogicalAnalysis: 1.0, sustainability: 0.9 }, analysisInsight: 'Hayat Odaklı ve Motivasyonel.' },
+      { label: '"Sınavlarda ve okulda başarılı olmak için lazım" diyerek sistemi hatırlatırım ve müfredata sadık kalarak devam ederim.', weights: { pedagogicalAnalysis: 0.3, integrity: 0.5 }, analysisInsight: 'Sistemik ama Geleneksel.' }
     ]
   },
   {
-    id: 'acad_skill_10',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Okuma akıcılığını (Fluency) ölçerken sadece "Doğru Kelime Sayısı"na mı bakılmalıdır?',
+    id: 'acad_10', category: 'technicalExpertise', type: 'radio',
+    text: 'Sınıfta akademik bir materyal tasarlarken önceliğiniz nedir?',
     weightedOptions: [
-      { 
-        label: 'Hayır; prosodi (vurgu/tonlama) ve anlama düzeyi de akıcılığın ayrılmaz parçasıdır.', 
-        weights: { technicalExpertise: 1.0, clinical: 1.0 },
-        analysisInsight: 'Bütüncül değerlendirme vizyonu.'
-      },
-      { 
-        label: 'Evet; hız ve doğruluk oranı klinik raporlama için yeterli bir veridir.', 
-        weights: { technicalExpertise: 0.3, pedagogicalAnalysis: 0.5 },
-        analysisInsight: 'Mekanik ve kısıtlı bakış açısı.'
-      }
+      { label: 'Çocuğun tek başına kurcalayıp keşfedebileceği kadar basit ve estetik bir materyal olması.', weights: { clinical: 0.9, developmentOpenness: 1.0 }, analysisInsight: 'Keşif ve Otonomi Destekçisi.' },
+      { label: 'Hata payını sıfıra indiren ve benim kontrolümde kullanılan çok yapılandırılmış bir materyal olması.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Kontrol ve Yapılandırma Odaklı.' }
     ]
   }
 ];

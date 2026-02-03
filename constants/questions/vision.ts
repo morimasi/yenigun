@@ -2,102 +2,83 @@ import { Question } from '../../types';
 
 export const visionQuestions: Question[] = [
   {
-    id: 'vis_p1_5', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Dışarıdan bir kurum size %30 daha fazla maaş ama "daha düşük akademik kalite" teklif etti. Karar kriteriniz ne olur?',
+    id: 'vis_1', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Kurumda 5 yıl sonra kendinizi nerede görüyorsunuz?',
     weightedOptions: [
-      { label: 'Teklifi reddederim. Standart altı bir kurum klinik kaslarımı köreltir.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'İlkesel Sadakat.' },
-      { label: 'Eğer o kurumda "Sistem Kurucu" olacaksam değerlendiririm.', weights: { institutionalLoyalty: 0.6, leadership: 0.9 }, analysisInsight: 'Güç Odaklı Profil.' },
-      { label: 'Mevcut kurumuma durumu açar, şartların iyileştirilmesini isterim.', weights: { institutionalLoyalty: 0.8, fit: 0.7 }, analysisInsight: 'Şeffaf Pragmatist.' },
-      { label: 'Kabul ederim. Profesyonel hayat bir emek-sermaye dengesidir.', weights: { institutionalLoyalty: -1.0, personality: 0.8 }, analysisInsight: 'Mobil Realist.' }
+      { label: 'Kurumun akademik standartlarını belirleyen bir "Klinik Süpervizör" veya "Metot Kurucu" olarak; bu markanın bir parçası kalmak isterim.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Yüksek Aidiyet ve Liderlik Hedefi.' },
+      { label: 'Kendi merkezimi açmış veya bağımsız bir danışman olarak; buradan aldığım tecrübeyi kendi markama taşımayı hedeflerim.', weights: { institutionalLoyalty: 0.2, developmentOpenness: 0.8 }, analysisInsight: 'Bireysel Kariyer / Geçici Personel Riski.' }
     ]
   },
   {
-    id: 'vis_p2_1', category: 'developmentOpenness', type: 'radio',
-    text: 'Yeni bir bilimsel araştırma, yıllardır uyguladığınız bir metodun "etkisiz" olduğunu kanıtladı. Reaksiyonunuz?',
+    id: 'vis_2', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Kurumun marka itibarını zedeleyecek bir hata yapıldığını fark ettiniz. Ne yaparsınız?',
     weightedOptions: [
-      { label: 'Eski yöntemi derhal terk eder, yeni protokol üzerine yoğun bir eğitim sürecine girerim.', weights: { developmentOpenness: 1.0, clinical: 1.0 }, analysisInsight: 'Yüksek Öğrenme Çevikliği.' },
-      { label: 'Araştırmayı derinlemesine inceler, kendi vaka sonuçlarımla karşılaştırıp kademeli geçiş yaparım.', weights: { developmentOpenness: 0.8, technicalExpertise: 0.9 }, analysisInsight: 'Analitik Tutuculuk.' }
+      { label: 'Durumu derhal iç kanallarda (yönetimde) çözer, dışarı sızmasını engellerim. "Kol kırılır yen içinde kalır" prensibiyle kurumu korurum.', weights: { institutionalLoyalty: 1.0, workEthics: 0.9 }, analysisInsight: 'Kurum Muhafızı.' },
+      { label: 'Dürüstlük gereği bu hatayı sosyal medyada veya velilerle paylaşırım; gerçeğin kurumsal çıkarlardan üstün olduğuna inanırım.', weights: { institutionalLoyalty: -0.5, integrity: 1.0 }, analysisInsight: 'Yıkıcı Dürüstlük / Kurumsal Risk.' }
     ]
   },
   {
-    id: 'vis_3',
-    category: 'institutionalLoyalty',
-    type: 'radio',
-    text: 'Kurumda 5 yıl sonra kendinizi hangi pozisyonda görüyorsunuz?',
+    id: 'vis_3', category: 'developmentOpenness', type: 'radio',
+    text: 'Maaşınızın piyasa ortalamasında olduğu bir durumda, başka bir kurum %30 daha fazla teklif etti ama "akademik kalitesi düşük". Ne yaparsınız?',
     weightedOptions: [
-      { label: 'Kurumun akademik standartlarını belirleyen bir "Klinik Süpervizör" veya "Mentor" olarak.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Yüksek aidiyet ve liderlik vizyonu.' },
-      { label: 'Kendi merkezini açmış veya bağımsız danışmanlık veren bir uzman olarak.', weights: { institutionalLoyalty: 0.2, sustainability: 0.6 }, analysisInsight: 'Bireysel kariyer odaklı, geçici personel riski.' }
+      { label: 'Teklifi reddederim; düşük standartlı bir kurumda çalışmanın liyakatimi körelteceğini ve mesleki vizyonuma zarar vereceğini bilirim.', weights: { developmentOpenness: 1.0, integrity: 1.0 }, analysisInsight: 'İlkesel ve Akademik Odaklı.' },
+      { label: 'Kabul ederim; profesyonel hayatın maddi bir karşılığı olmalıdır. Oraya gidip o kurumu da iyileştirebileceğimi düşünerek risk alırım.', weights: { institutionalLoyalty: 0.2, personality: 0.6 }, analysisInsight: 'Pragmatist / Mobil Profil.' }
     ]
   },
   {
-    id: 'vis_4',
-    category: 'institutionalLoyalty',
-    type: 'radio',
-    text: 'Kurumun marka itibarını zedeleyecek bir "hata" yapıldığını gördünüz. Ne yaparsınız?',
+    id: 'vis_4', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Kurumun belirlediği "Kurumsal Dil" ve "Kıyafet Kodu" size ne hissettirir?',
     weightedOptions: [
-      { label: 'Sorunu hemen iç kanallarda çözmek için çözüm odaklı bir rapor sunar, kurum dışına sızmasını engellerim.', weights: { institutionalLoyalty: 1.0, integrity: 0.9 }, analysisInsight: 'Koruyucu ve sadık personel.' },
-      { label: 'Dürüstlük gereği bu hatayı sosyal medyada veya diğer velilerle paylaşırım.', weights: { institutionalLoyalty: -0.5, integrity: 1.0 }, analysisInsight: 'Yıkıcı dürüstlük, kurumsal risk.' }
+      { label: 'Profesyonel bir disiplin; kurumsal bir kimliğin parçası olduğumu hissettirir ve bu düzene seve seve uyarım.', weights: { institutionalLoyalty: 1.0, sustainability: 0.8 }, analysisInsight: 'Disiplinli ve Uyumlu.' },
+      { label: 'Kısıtlayıcı bir şekilcilik; benim performansımın dış görünüşümle değil klinik başarım ile ölçülmesi gerektiğini savunurum.', weights: { institutionalLoyalty: 0.3, personality: 0.9 }, analysisInsight: 'Bireyselci / Kurumsal Direnç.' }
     ]
   },
   {
-    id: 'vis_5',
-    category: 'developmentOpenness',
-    type: 'radio',
-    text: 'Uzmanlık alanınızda "yıldız" bir isim olmak mı, "en çok kazanan" isim olmak mı önceliğinizdir?',
+    id: 'vis_5', category: 'developmentOpenness', type: 'radio',
+    text: 'Bir uzman olarak dünyadaki en büyük hayaliniz nedir?',
     weightedOptions: [
-      { label: 'Akademik olarak referans gösterilen bir "yıldız" olmak; başarı beraberinde maddi getiriyi zaten getirir.', weights: { developmentOpenness: 1.0, clinical: 1.0 }, analysisInsight: 'Akademik motivasyonu yüksek.' },
-      { label: 'Maddi olarak en üst seviyeye ulaşmak; iş hayatının asıl amacı budur.', weights: { developmentOpenness: 0.4, institutionalLoyalty: 0.3 }, analysisInsight: 'Finansal odaklı, teknik derinlik ikincil olabilir.' }
+      { label: 'Alanımda referans gösterilen bilimsel bir kitap yazmak veya bir metot geliştirmek.', weights: { developmentOpenness: 1.0, clinical: 1.0 }, analysisInsight: 'Akademik Yıldız Adayı.' },
+      { label: 'En çok vaka alan ve en yüksek maddi kazancı elde eden "aranan uzman" olmak.', weights: { developmentOpenness: 0.5, technicalExpertise: 0.7 }, analysisInsight: 'Başarı ve Finans Odaklı.' }
     ]
   },
   {
-    id: 'vis_6',
-    category: 'institutionalLoyalty',
-    type: 'radio',
-    text: 'Kurumun belirlediği "Kıyafet Kodu" veya "Kurumsal Dil" size kısıtlayıcı geliyor mu?',
+    id: 'vis_6', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Kurumun çok yoğun olduğu bir dönemde karşılıksız "ekstra mesai" talebine yanıtınız nedir?',
     weightedOptions: [
-      { label: 'Hayır; kurumsal kimliğin bir parçası olduğunu kabul eder ve profesyonel disiplinle uygularım.', weights: { institutionalLoyalty: 1.0, workEthics: 1.0 }, analysisInsight: 'Disiplinli ve kurallara uyumlu.' },
-      { label: 'Evet; bu tarz şekilci kuralların yaratıcılığımı ve klinik özgürlüğümü kısıtladığını düşünürüm.', weights: { institutionalLoyalty: 0.3, personality: 0.8 }, analysisInsight: 'Bireyselci ve kurumsal direnç potansiyeli.' }
+      { label: 'Kurumsal zorluk dönemlerinde gemiyi beraber yürütürüz; üzerime düşen desteği verir ve bunu sadakat borcum sayarım.', weights: { institutionalLoyalty: 1.0, team_player: 0.9 }, analysisInsight: 'Fedakar ve Aidiyeti Yüksek.' },
+      { label: 'Sadece sözleşmemdeki saatlere uyarım; emeğimin karşılığı yoksa fazlasını yapmam, bunun sömürüye açık bir kapı olduğunu düşünürüm.', weights: { institutionalLoyalty: 0.2, sustainability: 0.8 }, analysisInsight: 'Keskin Sınırlı ve Hak Odaklı.' }
     ]
   },
   {
-    id: 'vis_7',
-    category: 'developmentOpenness',
-    type: 'radio',
-    text: 'Süpervizyon almayı "yetersizlik" mi yoksa "güçlenme" mi olarak görürsünüz?',
+    id: 'vis_7', category: 'developmentOpenness', type: 'radio',
+    text: 'Süpervizyon almayı (başkası tarafından denetlenmeyi) ne olarak görürsünüz?',
     weightedOptions: [
-      // @fix: Fixed duplicate key 'developmentOpenness' in weights object. Changed second occurrence to 'clinical'.
-      { label: 'Güçlenme; en iyi uzmanların bile dışarıdan bir göze (peer-review) ihtiyacı olduğunu bilirim.', weights: { developmentOpenness: 1.0, clinical: 1.0 }, analysisInsight: 'Öğrenmeye ve denetime açık.' },
-      { label: 'Zayıflık; bir uzman her vakanın çözümünü kendi içinde bulabilmelidir.', weights: { developmentOpenness: 0.2, clinical: 0.5 }, analysisInsight: 'Mesleki narsisizm ve hata gizleme riski.' }
+      { label: 'Güçlenme; dışarıdan bir gözün eksiklerimi bulup beni daha iyiye taşıyacağı için minnet duyarım.', weights: { developmentOpenness: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Öğrenmeye ve Denetime Açık.' },
+      { label: 'Yetersizlik; bir uzman her vakanın çözümünü kendi içinde bulabilmelidir, denetlenmek özgüvenimi kırar.', weights: { developmentOpenness: 0.1, personality: 0.4 }, analysisInsight: 'Mesleki Narsisizm / Hata Gizleme Riski.' }
     ]
   },
   {
-    id: 'vis_8',
-    category: 'institutionalLoyalty',
-    type: 'radio',
-    text: 'Kurumun çok yoğun olduğu bir dönemde, karşılıksız "ekstra mesai" talebine yanıtınız?',
-    weightedOptions: [
-      { label: 'Kurumsal zorluk dönemlerinde elimden gelen desteği veririm; geminin yürümesi benim sorumluluğumdur.', weights: { institutionalLoyalty: 1.0, sustainability: 0.8 }, analysisInsight: 'Yüksek fedakarlık ve kurum aidiyeti.' },
-      { label: 'Sadece sözleşmemdeki saatlere uyarım; emeğimin karşılığı yoksa fazlasını yapmam.', weights: { institutionalLoyalty: 0.3, sustainability: 1.0 }, analysisInsight: 'Sınırları keskin, düşük aidiyet.' }
-    ]
-  },
-  {
-    id: 'vis_9',
-    category: 'developmentOpenness',
-    type: 'radio',
-    text: 'Bir vakanın ilerlemesi için branşınız dışındaki bir eğitimi (örn: Oyun Terapisi) kendi cebinden alır mısınız?',
-    weightedOptions: [
-      { label: 'Evet; eğer vaka başarısı için şartsa kendimi her alanda donatmak görevimdir.', weights: { developmentOpenness: 1.0, clinical: 1.0 }, analysisInsight: 'Aşırı özverili ve gelişim odaklı.' },
-      { label: 'Hayır; kurum bu eğitimi karşılamıyorsa almamı beklemeleri haksızlıktır.', weights: { developmentOpenness: 0.4, institutionalLoyalty: 0.5 }, analysisInsight: 'Koşullu gelişim eğilimi.' }
-    ]
-  },
-  {
-    id: 'vis_10',
-    category: 'institutionalLoyalty',
-    type: 'radio',
+    id: 'vis_8', category: 'institutionalLoyalty', type: 'radio',
     text: 'Yeni Gün Akademi\'yi 3 kelimeyle tanımlasanız hangilerini seçerdiniz?',
     weightedOptions: [
-      { label: 'Liyakat, Bilimsellik, Gelecek.', weights: { institutionalLoyalty: 1.0, vision: 1.0 }, analysisInsight: 'Kurumsal değerlerle tam uyum.' },
-      { label: 'İş, Maaş, Disiplin.', weights: { institutionalLoyalty: 0.4, personality: 0.6 }, analysisInsight: 'Sığ ve mekanik ilişki.' }
+      { label: 'Liyakat, Bilimsellik, Gelecek.', weights: { institutionalLoyalty: 1.0, integrity: 1.0 }, analysisInsight: 'Kurumsal Değerlerle Tam Uyum.' },
+      { label: 'İş, Disiplin, Maaş.', weights: { institutionalLoyalty: 0.4, personality: 0.5 }, analysisInsight: 'Sığ ve Mekanik İlişki.' }
+    ]
+  },
+  {
+    id: 'vis_9', category: 'developmentOpenness', type: 'radio',
+    text: 'Klinik bir tartışmada haksız olduğunuzu anladığınızda ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Derhal hatamı kabul eder, doğru bilgiyi savunan kişiye teşekkür ederim; bilgi ego yapmaktan değerlidir.', weights: { developmentOpenness: 1.0, integrity: 1.0 }, analysisInsight: 'Yüksek Bilişsel Esneklik.' },
+      { label: 'Kendi fikrimin bir kısmını hala savunur, konuyu "herkesin fikri kendine" diyerek kapatırım; otoritemin sarsılmasını istemem.', weights: { developmentOpenness: 0.2, personality: 0.7 }, analysisInsight: 'Düşük Esneklik / Otorite Odaklı.' }
+    ]
+  },
+  {
+    id: 'vis_10', category: 'institutionalLoyalty', type: 'radio',
+    text: 'Sizin için "ideal kurum" hangisidir?',
+    weightedOptions: [
+      { label: 'Beni akademik olarak sürekli zorlayan, yeni eğitimler veren ve liyakatimi artıran kurum.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Akademik Motivasyonu Birincil.' },
+      { label: 'Maddi şartları en iyi olan, rahat çalışma saatleri sunan ve huzurlu olan kurum.', weights: { institutionalLoyalty: 0.5, sustainability: 1.0 }, analysisInsight: 'Konfor ve Finans Motivasyonu Birincil.' }
     ]
   }
 ];

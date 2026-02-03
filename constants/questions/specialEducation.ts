@@ -1,131 +1,49 @@
-
 import { Question, Branch } from '../../types';
 
 export const specialEducationQuestions: Question[] = [
   {
-    id: 'sp_ed_aba_1',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Öğrenci "Sönme Patlaması" (Extinction Burst) halindeyken veli müdahaleyi durdurmanızı isterse klinik tavrınız ne olur?',
+    id: 'sped_1', category: 'technicalExpertise', type: 'radio',
+    text: 'Yeni başladığınız bir vakada çocuk yönergelere aşırı direnç gösteriyor ve sürekli kaçma davranışı sergiliyor. Sizin "seans otoritesi" kurma yönteminiz hangisine yakındır?',
     requiredBranch: [Branch.OzelEgitim],
     weightedOptions: [
-      { 
-        label: 'Klinik veri grafiğini göstererek sürecin normal olduğunu açıklar ve seansa devam ederim.', 
-        weights: { clinical: 1.0, ethics: 1.0 },
-        analysisInsight: 'Metodolojik sadakat ve veri odaklılık yüksek.'
-      },
-      { 
-        label: 'Velinin kaygısını önceliklendirip seansı o anlık daha sakin bir aktiviteye çekerim.', 
-        weights: { clinical: 0.6, empathy: 0.9 },
-        analysisInsight: 'Müşteri memnuniyeti odaklı, klinik risk toleransı düşük.'
-      }
+      { label: 'Önce çocuğun motivasyonel dünyasına girer, taleplerimi minimuma indirerek bir güven bağı (pairing) inşa ederim; otoriteyi bu bağın üzerine doğal bir sonuç olarak kurmayı tercih ederim.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'İlişki ve Bağ Odaklı Yaklaşım.' },
+      { label: 'Sınırları en baştan net çizerim. Çocuğun kaçma davranışının pekişmemesi için yapılandırılmış bir düzende, düşük seviyeli ama tutarlı görevlerle seans kontrolünü ele alırım.', weights: { clinical: 0.9, technicalExpertise: 1.0 }, analysisInsight: 'Yapılandırılmış ve Sınır Odaklı Yaklaşım.' }
     ]
   },
   {
-    id: 'sp_ed_bep_1',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'BEP (Bireyselleştirilmiş Eğitim Programı) hazırlarken "Fonksiyonel Analiz" verisi eksikse nasıl ilerlersiniz?',
+    id: 'sped_2', category: 'technicalExpertise', type: 'radio',
+    text: 'Bir davranışın "sönme patlaması" (extinction burst) aşamasında olduğunu fark ettiniz. Aile ise çocuğun daha kötüye gittiğini düşünerek müdahaleyi kesmek istiyor. Tavrınız?',
     requiredBranch: [Branch.OzelEgitim],
     weightedOptions: [
-      { 
-        label: 'Hedefleri yazmayı durdurur, 1 hafta boyunca ABC kaydı tutulmasını talep ederim.', 
-        weights: { clinical: 1.0, technicalExpertise: 1.0 },
-        analysisInsight: 'Bilimsel temel arayışı üst düzey.'
-      },
-      { 
-        label: 'Geçmiş raporlara dayanarak tahmini hedefler yazar, uygulama sırasında revize ederim.', 
-        weights: { clinical: 0.4, sustainability: 0.7 },
-        analysisInsight: 'Pragmatik ama klinik risk barındıran yaklaşım.'
-      }
+      { label: 'Aileye bilimsel verileri ve grafiklerdeki tipik yükselişi gösteririm. Bu aşamanın başarının eşiği olduğunu anlatarak onları ikna eder ve protokolün bozulmaması için otoritemi kullanırım.', weights: { clinical: 1.0, workEthics: 0.9 }, analysisInsight: 'Bilimsel Kanıt ve Veri Sadakati.' },
+      { label: 'Ailenin duygusal yükünü anladığımı hissettiririm. Müdahaleyi biraz esnetip aile için daha uygulanabilir bir "yumuşatılmış plan" sunarak işbirliğini korumayı, sert bir dirençle veliyi kaybetmeye tercih ederim.', weights: { clinical: 0.7, empathy: 1.0 }, analysisInsight: 'Sistemik Esneklik ve Veli Koçluğu.' }
     ]
   },
   {
-    id: 'sp_ed_3',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'FCT (İşlevsel İletişim Eğitimi) sırasında çocuğun vurduğu an "hayır vurma" derseniz hangi teknik hatayı yapmış olursunuz?',
+    id: 'sped_3', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'BEP (Bireyselleştirilmiş Eğitim Programı) hazırlarken önceliğiniz genellikle hangisidir?',
     requiredBranch: [Branch.OzelEgitim],
     weightedOptions: [
-      { label: 'İstenmeyen davranışı sözel olarak pekiştirmiş (attention) ve sönme prosedürünü bozmuş olurum.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Davranış analizi mekanizmalarına tam hakim.' },
-      { label: 'Çocuğun özgüvenini kırmış ve terapötik bağı zedelemiş olurum.', weights: { clinical: 0.4, empathy: 0.8 }, analysisInsight: 'Klinik veri yerine duygusal yorumlama eğilimi.' }
+      { label: 'Çocuğun toplumsal entegrasyonu için en kritik olan "bağımsız yaşam" ve "özbakım" becerilerini merkeze alırım; akademik başarının bu temel üzerine kendiliğinden inşa edileceğine inanırım.', weights: { pedagogicalAnalysis: 1.0, sustainability: 1.0 }, analysisInsight: 'Fonksiyonel ve Yaşamsal Odak.' },
+      { label: 'Çocuğun bilişsel potansiyelini zorlayacak "akademik ve kavramsal" hedefleri öncelerim; kognitif gelişim ne kadar yukarı çekilirse çocuğun dünyayı anlama ve adaptasyon hızının o kadar artacağını savunurum.', weights: { pedagogicalAnalysis: 0.9, technicalExpertise: 1.0 }, analysisInsight: 'Bilişsel Kapasite ve Potansiyel Odaklı.' }
     ]
   },
   {
-    id: 'sp_ed_4',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'DTT (Ayrık Denemelerle Öğretim) sırasında öğrenci 3 kez üst üste yanlış tepki verirse ne yaparsınız?',
+    id: 'sped_4', category: 'technicalExpertise', type: 'radio',
+    text: 'Seans sırasında öğrenci aniden kendine zarar verme (self-injury) davranışı başlattı. O anki klinik refleksi nasıl yönetirsiniz?',
     requiredBranch: [Branch.OzelEgitim],
     weightedOptions: [
-      { label: 'Hemen hata düzeltme (Error Correction) ve daha yoğun bir ipucu (Prompt) seviyesine geçerim.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Hatasız öğretim protokolü bilgisi yüksek.' },
-      { label: 'Öğrencinin yorulduğunu düşünüp ara verir, başka bir beceriye geçerim.', weights: { clinical: 0.5, sustainability: 0.6 }, analysisInsight: 'Yönetimsel kaçınma stratejisi.' }
+      { label: 'Hemen fiziksel bloklama yaparak güvenliği sağlarım ve bu davranışın fonksiyonunu (dikkat mi, kaçma mı?) analiz etmek için ABC verisi tutmaya başlarım; duyguya değil davranışın mekaniğine odaklanırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Soğukkanlı Davranış Analisti.' },
+      { label: 'Çocuğun o anki duyusal veya emosyonel ihtiyacını fark etmeye çalışırım. Onu sakinleştirecek ko-regülasyon araçlarını devreye sokar, davranışı bastırmak yerine kökündeki tetikleyiciyi anlamaya çalışırım.', weights: { clinical: 0.8, empathy: 1.0 }, analysisInsight: 'Duyusal ve Emosyonel Destek Uzmanı.' }
     ]
   },
   {
-    id: 'sp_ed_5',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Bir davranışın "işlevini" belirlemek için kullanılan en güvenilir yöntem hangisidir?',
+    id: 'sped_5', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Zor bir vaka ile çalışırken "küçük adımlar" (task analysis) prensibini nasıl uygularsınız?',
     requiredBranch: [Branch.OzelEgitim],
     weightedOptions: [
-      { label: 'Doğrudan gözlem ve ABC (A-B-C) verilerinin sistematik analizi.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Veri odaklı karar verme mekanizması güçlü.' },
-      { label: 'Veli ile yapılan mülakat ve çocuğun geçmiş hikayesi.', weights: { clinical: 0.6, empathy: 0.7 }, analysisInsight: 'Sezgisel ve dolaylı veri tercihi.' }
-    ]
-  },
-  {
-    id: 'sp_ed_6',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Öğrenci bir beceriyi sınıfta yapıyor ama bahçede yapamıyor. Bu durum hangi sürecin eksikliğidir?',
-    requiredBranch: [Branch.OzelEgitim],
-    weightedOptions: [
-      { label: 'Genelleme (Generalization) eğitiminin programlanmamış olması.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Klinik süreçlerin bütünlüğünü kavrıyor.' },
-      { label: 'Bahçedeki dış uyaranların çocuğun dikkatini dağıtması.', weights: { clinical: 0.4, sustainability: 0.5 }, analysisInsight: 'Dışsal faktörlere odaklı, metodolojik eksikliği görmüyor.' }
-    ]
-  },
-  {
-    id: 'sp_ed_7',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Pekiştirme tarifelerinde "Değişken Aralıklı" (Variable Interval) tarifeyi neden kullanırız?',
-    requiredBranch: [Branch.OzelEgitim],
-    weightedOptions: [
-      { label: 'Davranışın kalıcılığını (Maintenance) artırmak ve sönmeye karşı direnç oluşturmak için.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'İleri düzey ABA bilgisi.' },
-      { label: 'Çocuğun ne zaman ödül alacağını bilmemesi ve sürekli heyecanlı kalması için.', weights: { clinical: 0.5, empathy: 0.6 }, analysisInsight: 'Düşük teknik terminoloji kullanımı.' }
-    ]
-  },
-  {
-    id: 'sp_ed_8',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Ağır düzeyde otizmi olan bir vakanın seansında "Gömülü Öğretim" (Embedded Teaching) ne zaman tercih edilmelidir?',
-    requiredBranch: [Branch.OzelEgitim],
-    weightedOptions: [
-      { label: 'Çocuğun doğal motivasyonunu kullanmak ve sosyal etkileşim başlatmak istendiğinde.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Doğal öğretim yaklaşımlarına hakim.' },
-      { label: 'Masa başı eğitimde çocuk çok ağladığı ve tepki gösterdiği zamanlarda.', weights: { clinical: 0.6, sustainability: 0.8 }, analysisInsight: 'Kaçınma temelli pedagoji.' }
-    ]
-  },
-  {
-    id: 'sp_ed_9',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Öğrenciye bir özbakım becerisi öğretirken (örn: El yıkama) hangi zincirleme (Chaining) yöntemi daha hızlı sonuç verir?',
-    requiredBranch: [Branch.OzelEgitim],
-    weightedOptions: [
-      { label: 'Vakanın performans kaydına göre İleriye veya Geriye Zincirleme kararı verilmeli, tek bir standart yoktur.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Bireyselleştirilmiş müdahale vizyonu.' },
-      { label: 'Tüm adımlar aynı anda öğretilmeli (Total Task Presentation).', weights: { clinical: 0.7, sustainability: 0.7 }, analysisInsight: 'Genellemeci yaklaşım.' }
-    ]
-  },
-  {
-    id: 'sp_ed_10',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Veri toplarken "Süre Kaydı" (Duration Recording) yerine "Fırsat Temelli" (Trial-by-trial) veri ne zaman alınır?',
-    requiredBranch: [Branch.OzelEgitim],
-    weightedOptions: [
-      { label: 'Davranışın başlangıcı ve bitişi netse ve belirli bir uyaran sonrası gerçekleşiyorsa.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Ölçme ve değerlendirme hassasiyeti tam.' },
-      { label: 'Öğretmenin seans sırasında çok yoğun olduğu ve detaylı not tutamadığı durumlarda.', weights: { clinical: 0.3, integrity: 0.2 }, analysisInsight: 'Operasyonel kolaylığı klinik doğrunun önüne koyuyor.' }
+      { label: 'Hedefi mikroskobik parçalara bölerim. Çocuk %100 başarı göstermeden bir sonraki aşamaya geçmem; hata biriktirmemek benim için en önemli klinik kuraldır.', weights: { pedagogicalAnalysis: 1.0, clinical: 0.9 }, analysisInsight: 'Hatasız Öğretim Disiplini.' },
+      { label: 'Çocuğun doğal akışını bozmamak için daha geniş adımlarla ilerlerim. Hata yapmasına izin vererek "deneme-yanılma" yoluyla öğrenmesini, kognitif bir esneklik kazanmasını desteklerim.', weights: { pedagogicalAnalysis: 0.8, sustainability: 1.0 }, analysisInsight: 'Deneyimsel ve Akışkan Pedagoji.' }
     ]
   }
 ];

@@ -1,123 +1,49 @@
-
 import { Question, Branch } from '../../types';
 
 export const occupationalTherapyQuestions: Question[] = [
   {
-    id: 'ot_sensory_1',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Vestibüler girdi sırasında öğrencide "Otonomik Reaksiyon" (solgunluk, terleme) başlarsa ne yaparsınız?',
+    id: 'ot_1', category: 'technicalExpertise', type: 'radio',
+    text: 'Duyusal profili "aşırı duyarlı" olan bir çocukta duyu bütünleme seansına nereden başlarsınız?',
     requiredBranch: [Branch.Ergoterapi],
     weightedOptions: [
-      { 
-        label: 'Derhal aktiviteyi keser, propriyoseptif derin bası (çömelme, itme) uygularım.', 
-        weights: { clinical: 1.0, technicalExpertise: 1.0 },
-        analysisInsight: 'Kritik klinik güvenlik bilinci yüksek.'
-      },
-      { 
-        label: 'Girdinin şiddetini azaltır ama alışması için aktiviteyi tamamlamaya çalışırım.', 
-        weights: { clinical: 0.2, ethics: 0.4 },
-        analysisInsight: 'Fizyolojik riskleri göz ardı eden yaklaşım.'
-      }
+      { label: 'Çocuğun en güvende hissettiği propriyoseptif (derin bası) aktivitelerle başlar, sinir sistemini regüle ettikten sonra yeni duyusal uyaranları çok yavaş enjekte ederim.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Güvenli ve Hiyerarşik Müdahale.' },
+      { label: 'Çocuğun liderliğini takip ederim. Terapi odasındaki materyallere kendi hızıyla yaklaşmasına izin verir, keşifsel bir oyun içinde toleransını artırmaya odaklanırım.', weights: { clinical: 0.8, empathy: 1.0 }, analysisInsight: 'İlişkisel ve Keşif Odaklı.' }
     ]
   },
   {
-    id: 'ot_2',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Duyusal profili "Arayışçı" (Seeker) olan bir çocukta propriyoseptif girdi neden sakinleştiricidir?',
+    id: 'ot_2', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'İnce motor becerilerde zorlanan bir çocukta önceliğiniz nedir?',
     requiredBranch: [Branch.Ergoterapi],
     weightedOptions: [
-      { label: 'Derin duyu girdisi merkezi sinir sistemini (modülasyon) regüle ederek vücut farkındalığını artırır.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Nöro-fizyolojik temelleri biliyor.' },
-      { label: 'Çocuk çok hareketli olduğu için onu fiziksel olarak yormak sakinleşmesini sağlar.', weights: { clinical: 0.3, pedagogicalAnalysis: 0.4 }, analysisInsight: 'Sığ ve mekanik bakış açısı.' }
+      { label: 'Proksimal stabiliteye (gövde ve omuz kontrolü) bakarım. Merkez sağlam değilse parmakların düzgün çalışamayacağını bildiğim için kaba motordan inceye giden bir yol izlerimin.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Gelişimsel Hiyerarşi Bilinci.' },
+      { label: 'Günlük yaşam aktivitelerine (yemek yeme, düğmeleme) doğrudan odaklanırım. Çocuğun başarma hissini tatması için aparatlar ve adaptif araçlarla işlevselliği hemen artırırım.', weights: { clinical: 0.7, pedagogicalAnalysis: 0.9 }, analysisInsight: 'İşlevsel ve Adaptif Çözüm Odaklı.' }
     ]
   },
   {
-    id: 'ot_3',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'İnce motor becerilerde zorlanan (örn: kalem tutamayan) bir çocukta öncelikle hangi alan değerlendirilmelidir?',
+    id: 'ot_3', category: 'technicalExpertise', type: 'radio',
+    text: 'Vaka seans sırasında "vestibüler girdi" (sallanma vb.) sırasında aniden solgunlaşıyor. Reaksiyonunuz?',
     requiredBranch: [Branch.Ergoterapi],
     weightedOptions: [
-      { label: 'Proksimal stabilite (omuz ve gövde kontrolü); merkez sağlam değilse uçlar çalışamaz.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Gelişimsel hiyerarşiye hakim.' },
-      { label: 'Parmak kaslarının gücü ve kavrama (grip) kuvveti.', weights: { clinical: 0.5, technicalExpertise: 0.6 }, analysisInsight: 'Lokal ve kısıtlı değerlendirme.' }
+      { label: 'Hemen aktiviteyi keser ve çocuğu yere alırım. Otonomik bir yanıt olduğunu fark eder, sistemi sakinleştirmek için derhal propriyoseptif girdi uygularım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Yüksek Klinik Güvenlik Bilinci.' },
+      { label: 'Girdinin şiddetini azaltır ama çocuğu durdurmam. Sistemin bu uyaranla başa çıkmayı öğrenmesi için düşük tempoda süreci izlemeye devam ederim.', weights: { clinical: 0.3, sustainability: 0.5 }, analysisInsight: 'Risk Toleransı Yüksek / Deneysel.' }
     ]
   },
   {
-    id: 'ot_4',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Taktil (dokunsal) savunmacılığı olan bir çocukta "Wilbarger Fırçalama Protokolü" uygulanırken dikkat edilecek en kritik nokta nedir?',
+    id: 'ot_4', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Öğrenci günlük hayatta "praksis" (motor planlama) sorunu yaşıyorsa, müdahaleniz hangisine yakındır?',
     requiredBranch: [Branch.Ergoterapi],
     weightedOptions: [
-      { label: 'Fırçalama sonrası mutlaka eklemlere derin kompresyon (propriyosepsiyon) uygulanmalıdır.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Spesifik protokol disiplini yüksek.' },
-      { label: 'Çocuğun fırçayı eline alıp kendisinin sürmesi beklenmelidir.', weights: { clinical: 0.4, empathy: 0.7 }, analysisInsight: 'Protokol hatası riski.' }
+      { label: 'Karmaşık hareketleri görsel ipuçları ve küçük basamaklarla dökümante ederim. Çocuğun zihninde bir "hareket haritası" oluşturması için bilişsel stratejiler sunarım.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Bilişsel-Motor Strateji Uzmanı.' },
+      { label: 'Daha çok serbest parkur ve engelli oyunları kurgularım. Çocuğun bedensel farkındalığını doğal hareket döngüleri içinde, deneyimleyerek artırmasını sağlarım.', weights: { clinical: 0.8, developmentOpenness: 0.9 }, analysisInsight: 'Deneyimsel ve Doğal Öğrenme Dostu.' }
     ]
   },
   {
-    id: 'ot_5',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Öğrenci günlük yaşam becerilerinde (örn: giyinme) "Motor Planlama" (Praksis) sorunu yaşıyorsa, müdahaleniz ne olur?',
+    id: 'ot_5', category: 'technicalExpertise', type: 'radio',
+    text: 'Kurumda ergoterapi ünitesine yeni ve çok modern bir cihaz alındı ama siz eski yöntemlerinize daha çok güveniyorsunuz. Ne yaparsınız?',
     requiredBranch: [Branch.Ergoterapi],
     weightedOptions: [
-      { label: 'Görevi analiz ederek basamaklara ayırır (Task Analysis) ve görsel ipuçlarıyla desteklerim.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Yapılandırılmış ve işlevsel müdahale.' },
-      { label: 'Çocuğun kaslarını güçlendiren genel egzersizler yaptırırım.', weights: { clinical: 0.3, technicalExpertise: 0.4 }, analysisInsight: 'Problemin kaynağını yanlış saptama.' }
-    ]
-  },
-  {
-    id: 'ot_6',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Hiperaktif bir vakanın seansında "Ağırlaştırılmış Yelek" kullanımı hangi mekanizmayla fayda sağlar?',
-    requiredBranch: [Branch.Ergoterapi],
-    weightedOptions: [
-      { label: 'Derin bası yoluyla parasempatik sistemi aktive ederek regülasyonu destekler.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Biyolojik mekanizma bilgisi yüksek.' },
-      { label: 'Çocuğun ağırlığını artırarak onun daha az hareket etmesini zorunlu kılar.', weights: { clinical: 0.1, integrity: 0.2 }, analysisInsight: 'Etik olmayan ve yanlış yorumlama.' }
-    ]
-  },
-  {
-    id: 'ot_7',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Dispraksisi olan bir öğrencide okul başarısını artırmak için sınıfta yapılacak ilk adaptasyon nedir?',
-    requiredBranch: [Branch.Ergoterapi],
-    weightedOptions: [
-      { label: 'Oturma dengesini destekleyen ergonomik araçlar ve yazma yükünü azaltan teknolojik destekler.', weights: { clinical: 1.0, sustainability: 1.0 }, analysisInsight: 'Çevresel modifikasyon uzmanlığı.' },
-      { label: 'Çocuğa daha çok yazı ödevi vererek pratik yapmasını sağlamak.', weights: { clinical: 0.2, empathy: 0.4 }, analysisInsight: 'Vaka tükenmişliğini tetikleyen yaklaşım.' }
-    ]
-  },
-  {
-    id: 'ot_8',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Okülomotor (göz hareketleri) kontrolü zayıf olan bir çocukta akademik derslerde ne gibi sorunlar beklenir?',
-    requiredBranch: [Branch.Ergoterapi],
-    weightedOptions: [
-      { label: 'Satır takibi yapamama, kelime atlama ve tahtadakini deftere geçirememe.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Akademik-klinik korelasyon bilgisi tam.' },
-      { label: 'Sadece genel bir dikkat dağınıklığı ve hiperaktivite.', weights: { clinical: 0.4, pedagogicalAnalysis: 0.5 }, analysisInsight: 'Yüzeysel semptom analizi.' }
-    ]
-  },
-  {
-    id: 'ot_9',
-    category: 'pedagogicalAnalysis',
-    type: 'radio',
-    text: 'Bir çocuğun "Vücut Farkındalığı" (Body Scheme) zayıfsa, sosyal hayatta ne gibi riskler oluşur?',
-    requiredBranch: [Branch.Ergoterapi],
-    weightedOptions: [
-      { label: 'Kişisel alan (personal space) sınırlarını koruyamama ve sakarlık nedeniyle dışlanma.', weights: { clinical: 1.0, empathy: 0.9 }, analysisInsight: 'Sosyal-duygusal ergoterapi vizyonu.' },
-      { label: 'Sadece kıyafetlerini ters giyme ve düğmeleyememe gibi fiziksel sorunlar.', weights: { clinical: 0.5, technicalExpertise: 0.6 }, analysisInsight: 'Kısıtlı vaka projeksiyonu.' }
-    ]
-  },
-  {
-    id: 'ot_10',
-    category: 'technicalExpertise',
-    type: 'radio',
-    text: 'Eğitimde "Çok Duyulu" (Multisensory) yaklaşım, duyusal işlemleme bozukluğu olan çocuklarda neden her zaman başarılı olmaz?',
-    requiredBranch: [Branch.Ergoterapi],
-    weightedOptions: [
-      { label: 'Aynı anda gelen çok fazla girdi (overload), duyusal eşiği aşarak çocuğu "shutdown" moduna sokabilir.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'İleri düzey modülasyon bilgisi.' },
-      { label: 'Çocuğun dikkati çok çabuk dağıldığı için materyalleri oyun zanneder.', weights: { clinical: 0.4, pedagogicalAnalysis: 0.5 }, analysisInsight: 'Pedagojik indirgemecilik.' }
+      { label: 'Yeni teknolojinin literatürünü hemen araştırırım. Mevcut vaka portföyümde hangi çocuklarda "fark yaratabileceğini" analiz eder ve denemelere başlarım.', weights: { clinical: 0.9, developmentOpenness: 1.0 }, analysisInsight: 'İnovatif ve Araştırmacı.' },
+      { label: 'Eski yöntemlerimle aldığım sonuçlara güvenirim. Yeni cihazı ancak kurum zorunlu tutarsa veya klasik yöntemler tıkandığında bir alternatif olarak değerlendiririm.', weights: { clinical: 0.6, sustainability: 0.8 }, analysisInsight: 'Tutucu ve Tecrübe Odaklı.' }
     ]
   }
 ];
