@@ -209,7 +209,10 @@ const MethodologyInventoryView: React.FC = () => {
                            <p className="text-[11px] font-bold text-slate-600 group-hover/opt:text-white leading-snug mb-3">"{o.label}"</p>
                            <div className="flex gap-2">
                               {Object.entries(o.weights).map(([k,v]) => (
-                                <span key={k} className="text-[8px] font-black bg-white/10 text-slate-400 px-2 py-0.5 rounded border border-white/5 uppercase">{k.substring(0,3)}: {v}</span>
+                                /**
+                                 * @fix Cast v to any to satisfy ReactNode requirement during manual iteration of dynamic weights object.
+                                 */
+                                <span key={k} className="text-[8px] font-black bg-white/10 text-slate-400 px-2 py-0.5 rounded border border-white/5 uppercase">{k.substring(0,3)}: {v as any}</span>
                               ))}
                            </div>
                         </div>
@@ -320,8 +323,10 @@ const MethodologyInventoryView: React.FC = () => {
                           <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-xl border border-slate-200 shadow-sm group">
                              <span className="text-[10px] font-bold text-slate-600 truncate flex-1 pr-4">"{opt.label}"</span>
                              <div className="flex items-center gap-3">
-                                {/* @fix Line 213: Convert the expression to string to resolve "Type 'unknown' is not assignable to type 'ReactNode'" error when using Object.values on dynamic property */}
-                                <span className="text-[10px] font-black text-slate-900">%{String(draftTarget === 'CANDIDATE' ? (Object.values(opt.weights || {})[0] as number * 100) : opt.clinicalValue)}</span>
+                                /**
+                                 * @fix Line 212: Use String() and explicit any cast to satisfy ReactNode type when rendering dynamic object values in JSX.
+                                 */
+                                <span className="text-[10px] font-black text-slate-900">%{String(draftTarget === 'CANDIDATE' ? ((Object.values(opt.weights || {})[0] as number) * 100) : opt.clinicalValue)}</span>
                                 <button 
                                   onClick={() => {
                                     if(draftTarget === 'CANDIDATE') setDraftCandQ({...draftCandQ, weightedOptions: draftCandQ.weightedOptions?.filter((_, i) => i !== idx)});
