@@ -2,14 +2,14 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v9.0)
- * Güncelleme: Tekno-Pedagojik Adaptasyon modülü "Arketipsel Tercih Analizi" formatına geçirilmiştir.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v10.0)
+ * Güncelleme: Multidisipliner Takım ve Mentorluk modülü "Profesyonel Kimlik Analizi" formatına geçirilmiştir.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
-  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI (Önceki Turn'de güncellendi) ---
+  // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
   {
     id: 'aba_advanced_mastery',
-    title: 'İleri ABA ve Klinik Karar Mekanizmaları',
+    title: 'İleri ABA ve Klinik Karar Mechanismaları',
     description: 'Veri sadakati, sönme prosedürleri ve kompleks davranış manipülasyonu.',
     icon: '📊',
     category: 'clinical',
@@ -34,7 +34,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
       },
       {
         id: 'stf_aba_3',
-        text: 'Vaka "İlgi Elde Etme" işlevli bir davranış sergilerken, stajyerin yanlışlıkla çocuğa gülümsediğini fark ettiniz. Aksiyonunuz?',
+        text: 'Vaka "İlgi EldE Etme" işlevli bir davranış sergilerken, stajyerin yanlışlıkla çocuğa gülümsediğini fark ettiniz. Aksiyonunuz?',
         options: [
           { label: 'Hemen o an stajyere bakmayarak "görmezden gelme" modellemesi yapar, pekiştirmeyi nötralize etmeye çalışırım.', clinicalValue: 100, aiTag: 'immediate_modeling' },
           { label: 'Seans sonu stajyeri sertçe uyarırım ve raporuna bu hatayı teknik bir not olarak geçerim.', clinicalValue: 60, aiTag: 'delayed_correction' },
@@ -107,7 +107,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE (Önceki Turn'de güncellendi) ---
+  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE ---
   {
     id: 'ethics_and_boundaries',
     title: 'Etik Tahkim ve Profesyonel Mesafe',
@@ -208,7 +208,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON (YENİLENMİŞ - ÇOK BOYUTLU MODEL) ---
+  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON ---
   {
     id: 'academic_innovation',
     title: 'Tekno-Pedagojik Adaptasyon',
@@ -302,109 +302,109 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
         text: 'BEP hazırlarken kopyala-yapıştır yerine AI (Gemini) ile "Vakaya Özel Nöral İçerik" üretmek size ne hissettiriyor?',
         options: [
           { label: 'Her vakanın tekil ve eşsiz bir "nöral parmak izi" olduğunu kanıtlama fırsatı; teknolojinin sunduğu bu kişiselleştirme gücünü mesleki bir devrim olarak görüyor ve tüm gücümle kullanıyorum.', clinicalValue: 100, aiTag: 'high_individualization_expert' },
-          { label: 'İşimdeki "yazı işleri" yükünü azaltan bir konfor alanı; akademik derinlikten ziyade zaman kazandırmasını önemsiyor, bu sayede çocukla geçirdiğim fiziksel vaktin artmasından memnuniyet duyuyorum.', clinicalValue: 80, aiTag: 'efficiency_utilizer' },
+          { label: 'İşimdeki "yazı işleri" yükünü azaltan bir konfor alanı; akademik derinlikten ziyade zaman kazandırmasını önemsiyor, bu sayede childla geçirdiğim fiziksel vaktin artmasından memnuniyet duyuyorum.', clinicalValue: 80, aiTag: 'efficiency_utilizer' },
           { label: 'Kendi kalemimle yazmadığım bir planın "ruhu" olmadığını düşünüyorum; teknolojinin sunduğu taslağı sadece bir referans olarak alıp, her cümleyi kendi klinik gözlemimle yeniden inşa etmeden asla mühürlemiyorum.', clinicalValue: 95, aiTag: 'pedagogical_artisan' }
         ]
       }
     ]
   },
 
-  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK (Eskisiyle devam eder...) ---
+  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK (YENİLENMİŞ - TEK DOĞRUSU OLMAYAN MODEL) ---
   {
     id: 'team_and_mentorship',
     title: 'Multidisipliner Takım ve Mentorluk',
-    description: 'Ekip içi geri bildirim, stajyer yönetimi ve kriz anında liderlik.',
+    description: 'Ekip içi geri bildirim, disiplinlerarası koordinasyon ve mentorluk liderliği.',
     icon: '🤝',
     category: 'team',
     questions: [
       {
         id: 'stf_team_1',
-        text: 'Ergoterapist meslektaşınız sizin vakanızın davranışına yanlış müdahale ettiğini gördünüz. Tavrınız?',
+        text: 'Ergoterapist meslektaşınızın, sizin ABA odaklı yönettiğiniz vakanın problem davranışına "farklı ve sizin tekniklerinize aykırı" müdahale ettiğini gördünüz. İlk adımınız ne olur?',
         options: [
-          { label: 'Bir vaka toplantısı talep eder ve bilimsel verilerle "Davranış Analitik" bakış açısını ekipçe tartışmaya açarım.', clinicalValue: 100, aiTag: 'collaborative_leadership' },
-          { label: 'Herkes kendi işine baksın, karışmam.', clinicalValue: 20, aiTag: 'silo_mentality' },
-          { label: 'Veliye "o hoca yanlış yapıyor" derim.', clinicalValue: -100, aiTag: 'unprofessional_sabotage' }
+          { label: 'Vakanın nöral bütünlüğünü korumak adına, durumu bir "Klinik Çatışma" olarak değil, bir "Sentez Fırsatı" olarak görürüm; derhal disiplinlerarası bir vaka toplantısı talep eder, her iki metodun vaka üzerindeki deltalara dayalı verilerini masaya yatırarak ortak bir hibrit protokol oluşturulmasına liderlik ederim.', clinicalValue: 100, aiTag: 'systemic_integrator' },
+          { label: 'Meslektaşımın müdahalesinin benim disiplinimdeki verileri bozduğunu nazikçe ama net bir dille kendisine birebirde iletirim; uzmanlık alanlarının sınırlarına saygı duyulması gerektiğini, vakanın davranış kontrolü sorumluluğunun ana yürütücüsü olarak bu konuda teknik otoriteyi korumam gerektiğini savunurum.', clinicalValue: 90, aiTag: 'boundary_guardian' },
+          { label: 'Müdahalenin kısa vadeli sonuçlarını gözlemlerim; eğer vaka regülasyonunda bir iyileşme varsa, meslektaşımın yönteminden kendi disiplinime neler katabileceğimi sorgular, hiyerarşiden ziyade vaka çıktısını merkeze alan pragmatik bir işbirliği zemini ararım.', clinicalValue: 85, aiTag: 'pragmatic_collaborator' }
         ]
       },
       {
         id: 'stf_team_2',
-        text: 'Altınızda çalışan bir stajyer, verdiğiniz bir klinik talimatın "gereksiz" olduğunu iddia ediyor. Nasıl yönetirsiniz?',
+        text: 'Sorumluluğunuzdaki bir stajyer, verdiğiniz kritik bir klinik talimatın "literatüre aykırı" veya "gereksiz" olduğunu iddia ederek sizinle tartışmaya girdi. Mentorluk duruşunuz nedir?',
         options: [
-          { label: 'Talimatın klinik nedenselliğini (literatür desteğini) açıklar ve sonucunu veriyle görmesi için bir şans tanırım.', clinicalValue: 100, aiTag: 'mentorship_excellence' },
-          { label: '"Ben ne diyorsam o" diyerek otoritemi kurarım.', clinicalValue: 20, aiTag: 'authoritarian_bias' },
-          { label: 'Gidip staj koordinatörüne şikayet ederim.', clinicalValue: 40, aiTag: 'responsibility_shift' }
+          { label: 'Stajyerin bu sorgulayıcı tavrını akademik bir gelişim emaresi olarak görür, onu yanıma alarak ilgili vaka üzerinde bir "Kanıta Dayalı Gözlem" (EBP) seansı yaparım; talimatımın klinik nedenlerini saha sonuçlarıyla ona bizzat deneyimletir, otoritemi bilgiyle perçinlerim.', clinicalValue: 100, aiTag: 'growth_oriented_mentor' },
+          { label: 'Kurumsal hiyerarşinin ve klinik sorumluluğun bende olduğunu hatırlatırım; staj döneminin "uygulama sadakati" kazanma dönemi olduğunu, akademik tartışmaların vaka seansı sırasında değil, süpervizyon saatinde yapılması gerektiğini net bir dille belirtirim.', clinicalValue: 90, aiTag: 'hierarchical_leader' },
+          { label: 'Stajyerin sunduğu argümanın güncel literatürdeki karşılığını hızla tararım; eğer haklılık payı varsa kendi hatamı onun önünde kabul etmekten çekinmez, böylece kurum içinde "hatadan beslenen akademik dürüstlük" modellemesi yaparım.', clinicalValue: 95, aiTag: 'intellectually_honest_mentor' }
         ]
       },
       {
         id: 'stf_team_3',
-        text: 'Ekip içi bir toplantıda fikriniz sertçe eleştirildi. Duygusal regülasyonunuz?',
+        text: 'Ekip içi bir vaka toplantısında, başarısız giden bir süreçten dolayı tüm oklar size çevrildi ve sertçe eleştiriliyorsunuz. Duygusal regülasyonunuz nasıl işler?',
         options: [
-          { label: 'Eleştiriyi teknik bir geri bildirim olarak not alır, rasyonel kısımları planıma entegre ederim.', clinicalValue: 100, aiTag: 'high_emotional_intelligence' },
-          { label: 'Savunmaya geçer ve karşılık veririm.', clinicalValue: 30, aiTag: 'defensive_mechanism' },
-          { label: 'Sessiz kalıp toplantı sonrası küserim.', clinicalValue: 10, aiTag: 'passive_aggressive' }
+          { label: 'Eleştirileri kişisel bir saldırı olarak değil, vaka yönetimi için bir "Dış Denetim" verisi olarak kabul ederim; savunmaya geçmek yerine, eleştiri yapan arkadaşlarıma "Benim göremediğim hangi kör noktayı fark ettiniz?" sorusunu sorarak odağı vakaya geri döndürürüm.', clinicalValue: 100, aiTag: 'resilient_professional' },
+          { label: 'Verilere dayalı rasyonel bir savunma dosyası sunarım; duygusal tartışmalara girmeden, seans kayıtlarımı ve grafiklerimi göstererek kararlarımın teknik nedenselliğini ispatlarım; profesyonel itibarımı bilimsel kanıtlarla korurum.', clinicalValue: 90, aiTag: 'analytical_defender' },
+          { label: 'Toplantıdaki gerilimi düşürmek için empatik bir dil kullanırım; ekibin stresini valide eder, sorumluluğu paylaşmayı teklif eder ve "Bunu bir suçlama seansından çıkarıp yeni bir yol haritası seansına nasıl çevirebiliriz?" diyerek moderatör rolü üstlenirim.', clinicalValue: 95, aiTag: 'harmonizing_stabilizer' }
         ]
       },
       {
         id: 'stf_team_4',
-        text: 'Kuruma yeni katılan bir uzman, vakaların yarısını "elinden aldığınızı" hissediyor ve size soğuk davranıyor. Aksiyonunuz?',
+        text: 'Kuruma yeni katılan ve sizden daha deneyimli olan bir uzmanın, sizin vaka takip sisteminizi "yavaş ve demode" bulduğunu fark ettiniz. Aksiyonunuz?',
         options: [
-          { label: 'Kendisine vaka devir süreçlerini şeffaflıkla anlatır, mentorluk yapmayı ve iş yükünü paylaşmayı teklif ederim.', clinicalValue: 100, aiTag: 'team_stabilizer' },
-          { label: 'Rekabete hazırım, ben daha iyiyim.', clinicalValue: 20, aiTag: 'toxic_competitiveness' },
-          { label: 'Ben de ona soğuk davranırım.', clinicalValue: 10, aiTag: 'emotional_instability' }
+          { label: 'Deneyimine saygı duyarak kendisinden bir "Mikro-Eğitim" talep ederim; onun getirdiği yeni sistemi mevcut kurumsal hafızaya nasıl entegre edebileceğimizi tartışır, öğrenme çevikliğimi (learning agility) bir fırsata çeviririm.', clinicalValue: 100, aiTag: 'lifelong_learner' },
+          { label: 'Kurumun mevcut sisteminin bir standardı olduğunu ve bu standardın veri güvenliği/takibi için mühürlendiğini anlatırım; yeni fikirleri kurumun akademik kuruluna sunması gerektiğini belirterek sistemik disiplini korurum.', clinicalValue: 85, aiTag: 'standard_guardian' },
+          { label: 'Kendi sistemimin vaka çıktılarındaki başarısını rakamlarla gösteririm; yeni uzmanın önerisini ancak benim sistemimden daha yüksek bir "vaka verimliliği" vaat ediyorsa pilot bir uygulama ile denemeye gönüllü olurum.', clinicalValue: 90, aiTag: 'efficiency_focused' }
         ]
       },
       {
         id: 'stf_team_5',
-        text: 'Vaka toplantısında vakanın ilerlemediği konuşuluyor ve sorumluluk size atılmak isteniyor. Savunmanız?',
+        text: 'Çok yakın bir mesai arkadaşınızın tükenmişlik (burnout) yaşadığını ve bunun vakalara karşı "soğuk/mekanik" davranmasına neden olduğunu sezdiniz. Sorumluluğunuz nerede başlar?',
         options: [
-          { label: 'Tüm seans verilerimi, video kayıtlarımı ve çevresel değişkenleri masaya yatırıp analiz talep ederim.', clinicalValue: 100, aiTag: 'evidence_based_defense' },
-          { label: '"Çocuk artık öğrenemiyor" diyerek vakanın üzerine atarım.', clinicalValue: 0, aiTag: 'blaming_victim' },
-          { label: 'Başka hocaların hatalarını anlatmaya başlarım.', clinicalValue: 20, aiTag: 'diversion_tactic' }
+          { label: 'Arkadaşımı kurum dışı bir kahveye davet eder, hissettiklerimi bir "ayna" gibi ona yansıtırım; ona klinik bir süpervizyon desteği veya iş yükü rotasyonu konusunda yönetimle aracı olmayı teklif ederek ekip dayanışmasını önceliklendiririm.', clinicalValue: 100, aiTag: 'empathetic_ally' },
+          { label: 'Vaka güvenliği ve seans kalitesinin her türlü dostluğun üstünde olduğuna inanırım; durumu isim vermeden klinik direktöre "kadro genelinde bir motivasyonel düşüş" olarak raporlar ve acil bir "Klinik Hijyen" toplantısı yapılmasını sağlarım.', clinicalValue: 90, aiTag: 'clinical_watchdog' },
+          { label: 'Kendi seanslarımdaki enerjiyi artırarak ona dolaylı yoldan model olmaya çalışırım; profesyonel sınırları bozmadan, onun vakaları üzerindeki etkisini izlemeye devam eder, sadece etik bir ihlal görürsem müdahil olurum.', clinicalValue: 80, aiTag: 'non_interventive_observer' }
         ]
       },
       {
         id: 'stf_team_6',
-        text: 'Kurumda herkesin stresli olduğu bir dönemde, bir arkadaşınızın seans arası ağladığını gördünüz. Ne yaparsınız?',
+        text: 'Disiplinlerarası bir projede (Örn: Kurumun yeni müfredat tasarımı) liderlik size verildi ancak ekip üyeleri pasif direnç gösteriyor. Liderlik refleksiniz?',
         options: [
-          { label: 'Kısa bir mola alır, aktif dinleme yapar ve gerekiyorsa yönetimle "iş yükü optimizasyonu" konuşurum.', clinicalValue: 100, aiTag: 'empathetic_colleague' },
-          { label: 'Seansım var, geçer giderim.', clinicalValue: 30, aiTag: 'clinical_detachment' },
-          { label: 'Neden ağladığını hemen herkese anlatırım.', clinicalValue: -50, aiTag: 'toxic_gossip' }
+          { label: 'Ekip üyelerinin pasif direncini, projedeki "aidiyet eksikliğine" bağlarım; her birine kendi uzmanlık alanlarında tam yetki ve sorumluluk vererek onları "projenin sahibi" haline getirir, katılımcı bir liderlik modeli uygularım.', clinicalValue: 100, aiTag: 'inclusive_leader' },
+          { label: 'Projenin takvimini ve kurumsal hedeflerini net bir şekilde hatırlatırım; beklentileri yazılı hale getirir ve performans çıktılarını somutlaştırarak disiplini önceliklendiririm; projenin selameti için gerekiyorsa direktif temelli bir yol izleim.', clinicalValue: 85, aiTag: 'direct_task_master' },
+          { label: 'Direnç gösteren üyelerle birebir görüşmeler yaparak bariyerleri analiz ederim; kişisel sorunları veya metodolojik kaygıları çözümleyerek ekibi ikna yoluyla tekrar konsolide etmeye odaklanırım.', clinicalValue: 95, aiTag: 'diplomatic_negotiator' }
         ]
       },
       {
         id: 'stf_team_7',
-        text: 'Akademik kurul bir metodun değişmesine karar verdi ama siz bu değişimin yanlış olduğunu düşünüyorsunuz. Ne yaparsınız?',
+        text: 'Bir stajyerin, veliyle kurum dışında (etik sınırı aşan) bir yazışma yaptığını tesadüfen öğrendiniz. Müdahale metodunuz?',
         options: [
-          { label: 'Karara saygı duyup uygularım ancak karşıt görüşümü veriye dayalı bir raporla kurula sunarım.', clinicalValue: 100, aiTag: 'constructive_dissent' },
-          { label: 'Gizlice eski yöntemi uygulamaya devam ederim.', clinicalValue: 10, aiTag: 'procedural_subversion' },
-          { label: 'Sorgulamadan "emredersiniz" derim.', clinicalValue: 50, aiTag: 'blind_compliance' }
+          { label: 'Durumu derhal staj koordinatörüne ve yönetime mühürlü bir notla raporlarım; etik sınırların esnetilmesinin kurumun akademik imajına ve vakanın terapötik çerçevesine kalıcı zarar vereceğini savunurum.', clinicalValue: 100, aiTag: 'uncompromising_ethics_advocate' },
+          { label: 'Stajyeri odaya çeker ve bu eylemin neden "mesleki bir intihar" olduğunu pedagojik bir dille anlatırım; veli-uzman ilişkisinin nöro-dinamiklerini ona analiz ettirerek hatasından bir ders çıkarmasını sağlar, ardından kontrollü bir raporlama yaparım.', clinicalValue: 95, aiTag: 'transformative_mentor' },
+          { label: 'Durumu görmezden gelmem ama stajyeri korkutmak yerine, bir sonraki genel toplantıda "Dijital Etik ve Profesyonel Mesafe" konusunu genel bir başlık olarak açtırıp stajyerin kendi hatasını fark etmesini sağlayan bir dolaylı müdahale kurgularım.', clinicalValue: 85, aiTag: 'indirect_stabilizer' }
         ]
       },
       {
         id: 'stf_team_8',
-        text: 'Bir stajyerin, veliyle aşırı samimi (sınırı aşan) konuştuğunu duydunuz. Mentörlük hamleniz?',
+        text: 'Vaka toplantısında vakanın gelişimi için çok pahalı bir teknolojik yatırım önerdiniz ama yönetim "maliyet" gerekçesiyle reddetti. Takımın motivasyonunu nasıl korursunuz?',
         options: [
-          { label: 'Veliye çaktırmadan stajyeri odaya çeker ve "Profesyonel Mesafe" protokolünü hatırlatırım.', clinicalValue: 100, aiTag: 'clinical_boundary_mentor' },
-          { label: 'Herkesin önünde azarlarım.', clinicalValue: 10, aiTag: 'public_humiliation_bias' },
-          { label: 'Önemsemem, sonuçta stajyer.', clinicalValue: 20, aiTag: 'supervisory_neglect' }
+          { label: 'Reddedilen teknolojinin sağladığı veriyi "manuel ve düşük maliyetli" yöntemlerle nasıl toplayabileceğimize dair ekipçe bir "Bilişsel Fırtına" (Brainstorming) başlatırım; imkansızlığı yaratıcılığa yakıt olarak kullanırım.', clinicalValue: 100, aiTag: 'resourceful_optimist' },
+          { label: 'Yönetimin bu kararının uzun vadeli akademik risklerini içeren bir "Klinik Kayıp Projeksiyonu" hazırlarım; ekibime bu mücadelenin bir parçası olmaları için çağrıda bulunur, haklı talebimizi verilerle tekrar sunmak için destek toplarım.', clinicalValue: 90, aiTag: 'strategic_advocate' },
+          { label: 'Yönetimin ticari gerçeklerini ekibe rasyonel bir dille açıklarım; mevcut şartlarda "en iyiye" nasıl ulaşacağımıza odaklanmamız gerektiğini söyleyerek odağı hayal kırıklığından uygulama kalitesine çekerim.', clinicalValue: 85, aiTag: 'institutional_realist' }
         ]
       },
       {
         id: 'stf_team_9',
-        text: 'Ekibe yeni katılan bir uzmana ilk tavsiyeniz ne olur?',
+        text: 'Bir ekip arkadaşınızın sizin bir vaka üzerindeki "başarınızı" kendisine mal ettiğini (sunumda kendi fikriymiş gibi anlattığını) duydunuz. Tepkiniz?',
         options: [
-          { label: '"Veri her şeydir, çocukla bağ kur ama veriye sadık kal."', clinicalValue: 100, aiTag: 'high_standard_transfer' },
-          { label: '"Burada çok yorulursun, dikkat et."', clinicalValue: 20, aiTag: 'pessimistic_onboarding' },
-          { label: '"Müdürle aranı iyi tut."', clinicalValue: 40, aiTag: 'political_survivalism' }
+          { label: 'Bunu bir "kişisel ego" meselesi yerine "bilimsel atıf etiği" ihlali olarak görürüm; arkadaşımla yalnızken konuşur ve bilginin kaynağının doğru belirtilmesinin akademik güvenirlik için şart olduğunu hatırlatırım; egomu değil meslek ahlakını savunurum.', clinicalValue: 100, aiTag: 'ethical_purist' },
+          { label: 'Başarının vakada kalmış olmasını yeterli bulurum; kimin anlattığından ziyade vakanın ilerlemesine odaklanırım; ancak bir sonraki projede veri güvenliğimi ve "akademik imzamı" daha sıkı mühürleyen bir çalışma metodu geliştiririm.', clinicalValue: 80, aiTag: 'detached_pragmatist' },
+          { label: 'Toplantı sonrasında herkesin içindeyken "X arkadaşımızın anlattığı o metodun gelişim sürecindeki Y detayını ben şöyle kurgulamıştım..." diyerek, arkadaşımı bozmadan ama gerçeği de nazikçe herkesin önüne koyarak pozisyonumu korurum.', clinicalValue: 90, aiTag: 'socially_intelligent_competitor' }
         ]
       },
       {
         id: 'stf_team_10',
-        text: 'Başarılı bir seans sonrası ekip arkadaşınızın başarısını nasıl kutlarsınız?',
+        text: 'Mentorluk yaptığınız bir uzmanın başarısı sizin başarılarınızı gölgede bırakmaya başladı. İçsel ve profesyonel duruşunuz?',
         options: [
-          { label: 'Ekip içinde başarısını takdir eder, hangi tekniği kullandığını öğrenip kendime katmaya çalışırım.', clinicalValue: 100, aiTag: 'growth_mindset_colleague' },
-          { label: 'Kıskanırım ve sessiz kalırım.', clinicalValue: 10, aiTag: 'covert_hostility' },
-          { label: '"Şanslıydın" der geçerim.', clinicalValue: 0, aiTag: 'belittling_bias' }
+          { label: 'Bu durumun benim "mentorluk kalitemin" en büyük kanıtı olduğunu düşünür ve gurur duyarım; onu kurum içinde daha üst pozisyonlara (Örn: Süpervizörlük) taşıması için yönetime bizzat referans olur, yerimi devretmeye hazır bir liderlik sergilerim.', clinicalValue: 100, aiTag: 'master_mentor' },
+          { label: 'Kurum içindeki rekabetin akademik kaliteyi artıracağına inanırım; onun başarısından ilham alarak kendi metodolojimi günceller, "usta-çırak" ilişkisini "iki usta arasındaki verimli bir rekabete" dönüştürürüm.', clinicalValue: 95, aiTag: 'growth_mindset_professional' },
+          { label: 'Onun başarısını kurumsal bir başarı hikayesi olarak paketler, dış dünyaya pazarlarım; bireysel rekabetten ziyade kurumun liyakat markasını büyütmeye odaklanan bir yönetici zihniyetiyle hareket ederim.', clinicalValue: 90, aiTag: 'corporate_strategist' }
         ]
       }
     ]
