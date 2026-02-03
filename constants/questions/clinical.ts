@@ -2,55 +2,167 @@
 import { Question, Branch } from '../../types';
 
 export const clinicalQuestions: Question[] = [
-  // MEVCUT SORULAR KORUNDU
+  // --- KLİNİK YETERLİLİK (10 ADET) ---
   {
-    id: 'clin_p1_1', category: 'technicalExpertise', type: 'radio',
-    text: 'Bir beceri öğretimi sırasında çocuk "Hatasız Öğretim" (Errorless) protokolüne rağmen ısrarla yanlış karta uzanıyor. Stratejik aksiyonunuz ne olur?',
+    id: 'clin_new_1', category: 'technicalExpertise', type: 'radio',
+    text: 'Çok yoğun bir "Sönme Patlaması" (Burst) yaşayan çocukta, güvenlik riski yoksa ancak diğer sınıflar sesten rahatsız oluyorsa ne yaparsınız?',
     weightedOptions: [
-      { label: 'Metodolojik Revizyon: "İpucu Geciktirme" süresini 0 saniyeye çeker, hata ihtimalini bloke ederim.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Klinik Perfeksiyonist.' },
-      { label: 'Veri Analizi: "İpucu Bağımlılığı" riskine karşı geçici hata payını göze alıp yardımı tamamen çekerim.', weights: { clinical: 0.8, sustainability: 0.9 }, analysisInsight: 'Risk Alan Klinisyen.' },
-      { label: 'Motivasyonel Operasyon (MO): Pekiştireç değerini sorgular, "Pairing" aşamasına geri dönerim.', weights: { clinical: 0.7, empathy: 1.0 }, analysisInsight: 'Holistik Yaklaşım.' },
-      { label: 'Diskriminatif Uyaran (Sd): Kartların pozisyonunu randomize ederek dikkat odağını değiştiririm.', weights: { clinical: 0.9, pedagogicalAnalysis: 0.8 }, analysisInsight: 'Operasyonel Dikkat.' }
+      { label: 'Metodolojik Sadakat: Diğer sınıflardan özür dilerim ama prosedürü bozmam; sönme patlamasında geri adım atmak davranışı daha da güçlendirir.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Katı Klinik Disiplin.' },
+      { label: 'Sistemik Regülasyon: Çocuğu hemen kurum dışına veya ses yalıtımlı odaya çıkarırım; kurum huzuru seans veriminden öncedir.', weights: { clinical: 0.6, institutionalLoyalty: 0.8 }, analysisInsight: 'Kurum Odaklı Yaklaşım.' }
     ]
   },
-  // YENİ EKLEMELER: OTİZM & ABA
   {
-    id: 'clin_asd_1', category: 'technicalExpertise', type: 'radio',
-    requiredBranch: [Branch.OzelEgitim, Branch.Psikoloji],
-    text: 'Çocukta "Fonksiyonel İletişim Eğitimi" (FCT) çalışırken, çocuk talep etmek yerine kendine zarar verme (SIB) ile istediklerini elde etmeye çalışıyor. Protokolünüz?',
+    id: 'clin_new_2', category: 'technicalExpertise', type: 'radio',
+    text: 'Vakanın gelişimi için çok kritik ama ailenin maddi olarak zorlanacağı bir ek materyal/cihaz önerisi yapmanız gerekiyor. Tavrınız?',
     weightedOptions: [
-      { label: 'Sönme ve İstem (Extinction + Mand): Zarar verici davranışı fiziksel olarak bloklar ama ilgi göstermem; ancak uygun iletişim (kart/söz) kurduğu an pekiştiririm.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Katı Metodolojik Disiplin.' },
-      { label: 'Öncül Müdahale (Antecedent): Çocuk kriz sinyali verdiği an, davranış ortaya çıkmadan talebini karşılar ve stresi düşürürüm; sonra öğretim yaparım.', weights: { clinical: 0.6, empathy: 0.9 }, analysisInsight: 'Hassas Regülasyon Odağı.' }
+      { label: 'Klinik Realizm: Ailenin bütçesini düşünmeden en etkili bilimsel yolu önerir, kararı onlara bırakırım. Klinik doğru esnetilemez.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Saf Klinisyen.' },
+      { label: 'Ekonomik Adaptasyon: Daha az etkili olsa da ailenin alabileceği muadil yollar ararım; sürdürülebilirlik kaliteden önemlidir.', weights: { clinical: 0.5, empathy: 1.0 }, analysisInsight: 'Empatik Pragmatist.' }
     ]
   },
-  // YENİ EKLEMELER: DİSLEKSİ & OKUMA-YAZMA
   {
-    id: 'clin_sld_1', category: 'technicalExpertise', type: 'radio',
-    requiredBranch: [Branch.OzelEgitim, Branch.SinifOgretmenligi],
-    text: 'Okuma akıcılığı çok düşük bir Disleksi vakasında "Sessiz Okuma" mı yoksa "Koro Halinde Okuma" mı önceliklendirilmelidir?',
+    id: 'clin_new_3', category: 'technicalExpertise', type: 'radio',
+    text: 'Bir beceri öğretiminde "Hatasız Öğretim" mi yoksa "Doğal Deneme" mi? Çocuk hata yaptığında çok çabuk pes ediyorsa?',
     weightedOptions: [
-      { label: 'Prozodi Modelleme: Koro halinde okuma; çünkü modelin hızı ve vurgusu çocuğun nöral işleme hızını yukarı çeker.', weights: { clinical: 1.0, pedagogicalAnalysis: 0.9 }, analysisInsight: 'Kanıta Dayalı Müdahale Hakimiyeti.' },
-      { label: 'Bilişsel Odak: Sessiz okuma; içsel seslendirme (subvocalization) kaslarını güçlendirerek anlamlandırmayı artırır.', weights: { clinical: 0.7, technicalExpertise: 0.8 }, analysisInsight: 'Geleneksel Akademik Yaklaşım.' }
+      { label: 'Hatasız Öğretim (Errorless): Hata yapmasına asla izin vermem, ipucunu en baştan en yoğun seviyede veririm (Most-to-Least).', weights: { clinical: 0.9, technicalExpertise: 1.0 }, analysisInsight: 'Başarı Odaklılık.' },
+      { label: 'Hata Düzeltme (Error Correction): Hata yapmasına izin verir, hatadan öğrenmesini sağlarım; bu dayanıklılığını artırır.', weights: { clinical: 0.7, sustainability: 0.9 }, analysisInsight: 'Direnç Odaklılık.' }
     ]
   },
-  // YENİ EKLEMELER: ERGOTERAPİ & SENSORY
   {
-    id: 'clin_ot_1', category: 'technicalExpertise', type: 'radio',
-    requiredBranch: [Branch.Ergoterapi, Branch.Fizyoterapi],
-    text: 'Vesitbüler arayışı (sallanma ihtiyacı) olan bir çocukta ders odağını artırmak için hangi duyusal diyet stratejisi daha efektiftir?',
+    id: 'clin_new_4', category: 'technicalExpertise', type: 'radio',
+    text: 'VB-MAPP değerlendirmesinde bir alanın şişirildiğini (gerçekten yüksek olmadığını) fark ettiniz ama veli bu skora çok sevinmiş. Ne yaparsınız?',
     weightedOptions: [
-      { label: 'Propriyoseptif Dengeleme: Zıplama veya ağır itme egzersizleri ile "aşağıdan yukarıya" regülasyon sağlayıp vestibüler açlığı bastırmak.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Duyusal Mimari Uzmanlığı.' },
-      { label: 'Kontrollü Maruziyet: Sallanan bir platformda akademik görev vererek ihtiyacı "iş" içine entegre etmek.', weights: { clinical: 0.8, developmentOpenness: 0.9 }, analysisInsight: 'Adaptif Fonksiyonel Yaklaşım.' }
+      { label: 'Radikal Dürüstlük: Veliyi hemen bilgilendirir ve skoru aşağı çekerim. Yanlış veri üzerine plan kurulamaz.', weights: { clinical: 1.0, workEthics: 1.0 }, analysisInsight: 'Yüksek Etik Bütünlük.' },
+      { label: 'Kademeli Geçiş: Veliye çaktırmadan planı basitleştirir, verileri zamanla gerçeğe yaklaştırırım; aile motivasyonunu korurum.', weights: { clinical: 0.6, empathy: 0.9 }, analysisInsight: 'İlişki Odaklı Stratejist.' }
     ]
   },
-  // YENİ EKLEMELER: PSİKOLOJİ & REHBERLİK
   {
-    id: 'clin_psy_1', category: 'technicalExpertise', type: 'radio',
-    requiredBranch: [Branch.Psikoloji, Branch.PDR],
-    text: 'Oyun terapisinde çocuk size "Sen benim en iyi arkadaşımsın, seans bitmesin" diyerek sarılıyor. Terapötik sınır refleksiniz?',
+    id: 'clin_new_5', category: 'technicalExpertise', type: 'radio',
+    text: 'Çalıştığınız yöntemin vaka üzerinde etkisiz kaldığını 4 ay sonra kanıtlarla gördünüz. İlk refleksiniz?',
     weightedOptions: [
-      { label: 'Sınır ve Realite: "Beni çok sevmeni anlıyorum ama ben senin oyun öğretmeninim. Zamanımız bitti, haftaya aynı saatte buradayım." diyerek mesafeyi korumak.', weights: { clinical: 1.0, ethics: 1.0 }, analysisInsight: 'Yüksek Etik Bütünlük.' },
-      { label: 'İlişkisel Onay: "Ben de seninle olmayı seviyorum, 5 dakika daha uzatalım" diyerek güven bağını (Rapport) pekiştirmek.', weights: { clinical: 0.4, empathy: 0.8 }, analysisInsight: 'Sınır İhlali Riski / Yüksek Duygusallık.' }
+      { label: 'Özeleştiri: Kendi uygulama tekniğimi sorgular, süpervizyon alır ve aynı yöntemde derinleşmeye çalışırım.', weights: { clinical: 0.8, developmentOpenness: 0.9 }, analysisInsight: 'İçsel Denetimli.' },
+      { label: 'Metot Değişimi: Bu yöntemin bu çocuğun nöral profiline uygun olmadığını kabul eder, derhal farklı bir ekole (örn: ABA\'dan DIR\'a) geçerim.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Esnek Klinisyen.' }
+    ]
+  },
+  {
+    id: 'clin_new_6', category: 'technicalExpertise', type: 'radio',
+    text: 'Seansın en verimli yerinde çocuk "Tuvaletim geldi" dedi ama bunun bir "kaçınma davranışı" olduğundan %100 eminsiniz. Ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Fizyolojik Öncelik: Risk almam, hemen tuvalete götürürüm. Fizyolojik ihtiyaç klinik hedeften üstündür.', weights: { clinical: 0.7, workEthics: 0.8 }, analysisInsight: 'Güvenli Alan Terapisti.' },
+      { label: 'Davranışsal Kontrol: "Şu görevi bitirelim sonra" diyerek talebi geciktiririm; kaçınma davranışını pekiştirmem.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Operant Koşullama Uzmanı.' }
+    ]
+  },
+  {
+    id: 'clin_new_7', category: 'technicalExpertise', type: 'radio',
+    text: 'Ağır bir vaka için kurum dışından bir "Gölge Öğretmen" önerilmesi gerekiyor ama kurum müdürü buna karşı çıkıyor. Kararınız?',
+    weightedOptions: [
+      { label: 'Klinik Israr: Müdürle çatışmayı göze alır, vaka başarısı için gölge öğretmenin şart olduğunu bilimsel verilerle savunurum.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Vaka Avukatı.' },
+      { label: 'Kurumsal Uyum: Müdürün kararını uygular, mevcut şartlarda en iyisini yapmaya çalışırım.', weights: { clinical: 0.5, institutionalLoyalty: 1.0 }, analysisInsight: 'Hiyerarşik Uyum.' }
+    ]
+  },
+  {
+    id: 'clin_new_8', category: 'technicalExpertise', type: 'radio',
+    text: 'Öğrenci bir "Stereotipi" (Sallanma vb.) sergiliyor ve bu durum ders odağını bozmuyor ama veli bunu "çirkin" buluyor. Müdahale eder misiniz?',
+    weightedOptions: [
+      { label: 'Nöro-Çeşitlilik Saygısı: Hayır; çocuğun regülasyon aracıdır, odağı bozmuyorsa dokunmam. Veliye bunun işlevini anlatırım.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'Modern Pedagoji.' },
+      { label: 'Sosyal Uyum: Evet; toplum içinde dışlanmaması için o davranışı sosyal olarak kabul edilebilir bir davranışla yer değiştiririm.', weights: { clinical: 0.8, pedagogicalAnalysis: 0.9 }, analysisInsight: 'Normalizasyon Odaklı.' }
+    ]
+  },
+  {
+    id: 'clin_new_9', category: 'technicalExpertise', type: 'radio',
+    text: 'Seans videosu izlerken kendi hatanızı fark ettiniz ama vaka raporu çoktan "başarılı" olarak girildi. Ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Geri Bildirim: Raporu iptal eder, hatamı yazar ve seansı tekrar planlarım.', weights: { clinical: 1.0, workEthics: 1.0 }, analysisInsight: 'Dürüstlük Abidesi.' },
+      { label: 'Gelecek Odaklılık: Raporu değiştirip kurumun verimlilik puanını düşürmem ama bir sonraki seansta hatamı telafi ederim.', weights: { clinical: 0.7, institutionalLoyalty: 0.8 }, analysisInsight: 'Pragmatik Profesyonel.' }
+    ]
+  },
+  {
+    id: 'clin_new_10', category: 'technicalExpertise', type: 'radio',
+    text: 'Çoklu yetersizliği olan bir vakanın BEP toplantısında diğer uzmanlar (Ergoterapist, Dil Terapisti) sizin branşınıza müdahale ederse tepkiniz?',
+    weightedOptions: [
+      { label: 'Sınır Çizme: "Bu alan benim uzmanlığım" diyerek teknik sınırımı net çizerim.', weights: { clinical: 0.9, personality: 1.0 }, analysisInsight: 'Otoriter Uzman.' },
+      { label: 'Multidisipliner Entegrasyon: Önerilerini dinler, kendi klinik mantığımla süzüp ortak bir hedef belirlerim.', weights: { clinical: 1.0, sustainability: 1.0 }, analysisInsight: 'Takım Oyuncusu.' }
+    ]
+  },
+
+  // --- PEDAGOJİK ALTYAPI (10 ADET) ---
+  {
+    id: 'ped_new_1', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Çocuk yeni öğrendiği bir kelimeyi sadece sizinle kullanıyor, evde kullanmıyor. Sorun nerededir?',
+    weightedOptions: [
+      { label: 'Genelleme Eksikliği: Uyaran kontrolü bende kalmış; aileye yanlış eğitim veriyorum veya farklı ortam denemesi yapmadım.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Analitik Pedagoji.' },
+      { label: 'Veli Motivasyonu: Aile evde çocuğu pekiştirmiyor, tüm yük bende kalıyor.', weights: { clinical: 0.4, sustainability: 0.6 }, analysisInsight: 'Dışsal Suçlama Eğilimi.' }
+    ]
+  },
+  {
+    id: 'ped_new_2', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Okuma yazma aşamasındaki bir disleksi vakasında "Hız" mı "Doğruluk" mu?',
+    weightedOptions: [
+      { label: 'Doğruluk (Accuracy): Hata biriktirmemesi için yavaş ama kusursuz gitmeyi tercih ederim.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Derinlik Odaklı.' },
+      { label: 'Hız (Fluency): Yanlış okusa da akıcılığı teşvik ederim; motivasyon kırılmamalı.', weights: { clinical: 0.6, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Motivasyon Odaklı.' }
+    ]
+  },
+  {
+    id: 'ped_new_3', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Bir beceriyi öğretirken çocuğun "İlgi Odağı" (örn: dinozorlar) programda yok ama çocuk sadece onunla etkileşim kuruyor. Ne yaparsınız?',
+    weightedOptions: [
+      { label: 'Fırsat Öğretimi: Programı esnetir, tüm hedefleri dinozorlar üzerinden "Gömülü Öğretim" (Embedded) ile veririm.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Esnek Müfredat Yönetimi.' },
+      { label: 'Yapılandırılmış Disiplin: Dinozorları "Pekiştireç" olarak saklar, önce asıl müfredatı bitirmesini isterim.', weights: { clinical: 0.8, technicalExpertise: 0.9 }, analysisInsight: 'Geleneksel Disiplin.' }
+    ]
+  },
+  {
+    id: 'ped_new_4', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Çocuk masaya oturmayı reddediyor ve sürekli yerde oynamak istiyor. Akademik dersi nasıl işlersiniz?',
+    weightedOptions: [
+      { label: 'Ortam Adaptasyonu: Masayı kaldırırım. Yerde, onun seviyesinde akademik hedefleri oyunlaştırarak çalışırım.', weights: { clinical: 1.0, empathy: 0.9 }, analysisInsight: 'İlişki Odaklı.' },
+      { label: 'Sınır İnşası: Önce masaya oturma (Compliance) çalışır, akademik dersi ödül olarak masada veririm.', weights: { clinical: 0.7, technicalExpertise: 1.0 }, analysisInsight: 'Davranış Kontrolü.' }
+    ]
+  },
+  {
+    id: 'ped_new_5', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Geleneksel "Kartla Eğitim" mi yoksa "Doğal Ortamda (NET)" eğitim mi? Hangisi daha sürdürülebilirdir?',
+    weightedOptions: [
+      { label: 'Doğal Ortam: Hayatın içinde öğretilmeyen hiçbir bilgi kalıcı değildir.', weights: { clinical: 1.0, sustainability: 1.0 }, analysisInsight: 'Fonksiyonel Pedagoji.' },
+      { label: 'Yapılandırılmış (Masa başı): Önce temel beceriler sessiz ve steril bir odada kazanılmalı, sonra dışarı çıkarılmalı.', weights: { clinical: 0.8, technicalExpertise: 0.9 }, analysisInsight: 'Adım Adım Gelişim.' }
+    ]
+  },
+  {
+    id: 'ped_new_6', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Çocuğun "Öğrenme Hızı" (Learning Rate) beklentinizin çok altında kaldı. Kararınız?',
+    weightedOptions: [
+      { label: 'Hedef Sadeleştirme: Basamağı daha küçük mikro-adımlara böler, başarı hissini artırırım.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Metodolojik Esneklik.' },
+      { label: 'Zaman Tanıma: Aynı yöntemde ısrar eder, "geç öğrenme" periyodu olduğunu varsayarım.', weights: { clinical: 0.5, technicalExpertise: 0.6 }, analysisInsight: 'Sabırlı Ama Verimsiz.' }
+    ]
+  },
+  {
+    id: 'ped_new_7', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Görsel destekli bir "Sosyal Öykü" hazırladınız ama çocuk sadece resimlere bakıp gülüyor, metni anlamıyor. Çözümünüz?',
+    weightedOptions: [
+      { label: 'Görsel Sadeleştirme: Resimleri gerçek fotoğraflarla değiştirir veya uyaran fazlalığını azaltırım.', weights: { clinical: 1.0, technicalExpertise: 0.9 }, analysisInsight: 'Duyusal Analiz.' },
+      { label: 'Video Modelleme: Hikayeyi videoya çeker, kendisini izlemesini sağlarım.', weights: { clinical: 0.9, developmentOpenness: 1.0 }, analysisInsight: 'Teknoloji Adaptasyonu.' }
+    ]
+  },
+  {
+    id: 'ped_new_8', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Çocuğun "Dili Anlama" kapasitesi "İfade Etme" kapasitesinden çok düşükse hangisine odaklanırsınız?',
+    weightedOptions: [
+      { label: 'Alıcı Dil: Anlamadığı bir şeyi söylemesi mekaniktir; önce kavramları anlamasına yatırım yaparım.', weights: { clinical: 1.0, pedagogicalAnalysis: 1.0 }, analysisInsight: 'Bilişsel Öncelik.' },
+      { label: 'İfade Edici Dil: İletişim başlatması için kelime öğretimine (Mand) ağırlık veririm.', weights: { clinical: 0.7, technicalExpertise: 0.8 }, analysisInsight: 'Fonksiyonel Öncelik.' }
+    ]
+  },
+  {
+    id: 'ped_new_9', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Bir öğrencide "Taklit Becerileri" (Imitation) yoksa konuşma hedefine geçer misiniz?',
+    weightedOptions: [
+      { label: 'Önkoşul Sadakati: Hayır; taklit (motor ve oral) olmadan konuşma öğretmek temelsiz binadır. Taklit çalışırım.', weights: { clinical: 1.0, technicalExpertise: 1.0 }, analysisInsight: 'Gelişimsel Hiyerarşi Uzmanı.' },
+      { label: 'Paralel Süreç: Evet; hem taklit hem ses üretimi hedeflerini aynı anda yürütürüm.', weights: { clinical: 0.8, pedagogicalAnalysis: 0.9 }, analysisInsight: 'Dinamik Eğitmen.' }
+    ]
+  },
+  {
+    id: 'ped_new_10', category: 'pedagogicalAnalysis', type: 'radio',
+    text: 'Grup dersinde bir çocuk kriz geçirirse, grubun kalanını nasıl yönetirsiniz?',
+    weightedOptions: [
+      { label: 'Kriz İzolasyonu: Krizdeki çocuğu yardımcıyla dışarı çıkarır, kalanlarla dersi "normal" devam ettiririm.', weights: { clinical: 0.7, institutionalLoyalty: 0.9 }, analysisInsight: 'Verimlilik Odaklı.' },
+      { label: 'Eğitsel Fırsat: Durumu diğer çocuklara uygun dille açıklar, "arkadaşımıza destek" veya "bekleme" becerisi olarak seansa yediririm.', weights: { clinical: 1.0, empathy: 1.0 }, analysisInsight: 'İnsani Pedagoji.' }
     ]
   }
 ];
