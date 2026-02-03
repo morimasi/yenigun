@@ -1,115 +1,152 @@
 
 import { AssessmentBattery } from '../../types';
 
+/**
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v4.0)
+ * Bu veri seti, personelin kurum içindeki evrimini ve etik/teknik reflekslerini ölçer.
+ */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
-  // --- 1. KATEGORİ: İLERİ ABA & DAVRANIŞ ---
+  // --- 1. KATEGORİ: İLERİ ABA & DAVRANIŞ ANALİZİ ---
   {
-    id: 'aba_advanced',
-    title: 'İleri ABA ve Klinik Kriz Yönetimi',
-    description: 'Davranışsal analiz, veri sadakati ve kriz anında metodolojik refleks.',
+    id: 'aba_advanced_mastery',
+    title: 'İleri ABA ve Klinik Karar Mekanizmaları',
+    description: 'Veri sadakati, sönme prosedürleri ve kompleks davranış manipülasyonu.',
     icon: '📊',
     category: 'clinical',
     questions: [
       {
-        id: 'aba_1',
-        text: 'Bir davranış müdahale planında "Sönme Patlaması" (Extinction Burst) esnasında veli odaya girip "Çocuğa eziyet ediyorsunuz, durun!" diye bağırırsa, personelin klinik refleksi ne olmalıdır?',
+        id: 'stf_aba_1',
+        text: 'Öğrenci "Kaçınma" işlevli bir problem davranış sergilerken, o anki müdahale planınızda olmayan ama çocuğun çok sevdiği bir uyaran (örn: ışıklı oyuncak) yanlışlıkla odada unutulmuş. Ne yaparsınız?',
         options: [
-          { label: '"Haklısınız, çocuk çok stres oldu" diyerek seansı o an durdurur, pekiştireç vererek çocuğu regüle eder ve veliyi sakinleştiririm.', clinicalValue: 20, aiTag: 'protocol_breach_safety_bias' },
-          { label: 'Veliyi içeri davet edip sürece dahil ederim; annenin varlığı çocuğun kortizol seviyesini düşüreceği için sönme daha hızlı gerçekleşir.', clinicalValue: 30, aiTag: 'reinforcement_error' },
-          { label: 'Göz temasını ve kontrolü asla çocuktan çekmeden, nötr bir ses tonuyla veliyi dışarı davet ederim. O an müdahaleyi kesmek, problem davranışı "veli kurtarması" ile pekiştirmek anlamına gelir.', clinicalValue: 100, aiTag: 'high_clinical_discipline' },
-          { label: 'Çocuğu susturmak için hızlıca "Sabit Oranlı" pekiştirmeye geçer, kriz bittikten sonra durumu veliye izah ederim.', clinicalValue: 10, aiTag: 'methodological_collapse' }
+          { label: 'Davranışı sonlandırmak için oyuncağı "pekiştireç" olarak kullanır, sakinleşince derse dönerim.', clinicalValue: 10, aiTag: 'accidental_reinforcement' },
+          { label: 'Oyuncağı çocuğun göremeyeceği bir yere hızla kaldırırım ancak davranış devam ederse mola (time-out) veririm.', clinicalValue: 40, aiTag: 'reactive_management' },
+          { label: 'Oyuncağa hiç dokunmam ve çocuk ona yönelse bile kaçınma davranışını görmezden gelerek mevcut akademik yönergeyi düşük seviyeden sürdürürüm. Kaçınmanın "ödüllendirilmediğini" veriyle kanıtlarım.', clinicalValue: 100, aiTag: 'high_clinical_discipline' },
+          { label: 'Dersi o an bitirip veri formuna "çevresel engel nedeniyle seans verimsiz" notu düşerim.', clinicalValue: 0, aiTag: 'avoidance_behavior' }
         ]
       },
       {
-        id: 'aba_2',
-        text: 'Öğrenci "İpucu Bağımlılığı" geliştirmiş. "Most-to-Least" yerine "Least-to-Most" geçişi için hangi veri sinyali beklenmelidir?',
+        id: 'stf_aba_2',
+        text: 'Grafik analizinde öğrencinin "Bekleme" becerisinde 3 haftadır plato (ilerleme yok) çizdiğini gördünüz. İlk klinik refleksiniz?',
         options: [
-          { label: 'Öğrencinin derse girmeden önceki genel uyarılmışlık halinin yüksek olması ve materyallere spontane ilgi göstermesi.', clinicalValue: 10, aiTag: 'subjective_observation' },
-          { label: 'Evdeki çalışmalarda çocuğun ipucu almadan yönergeleri yaptığının video ile kanıtlanması.', clinicalValue: 0, aiTag: 'unverified_data' },
-          { label: 'Bağımsız denemelerde ardışık 3 oturumda %80 üzeri başarı sağlanması ve tepki bekleme süresinin 3 saniyenin altına düşmesi.', clinicalValue: 100, aiTag: 'data_driven_decision' },
-          { label: 'Çocuğun aynı beceriyi farklı materyallerle, ipucu verildiğinde hatasız yapabilmesi.', clinicalValue: 40, aiTag: 'generalization_confusion' }
-        ]
-      },
-      {
-        id: 'aba_3',
-        text: 'Bir beceri öğretiminde "Veri Kararlılığı" sağlanamıyor ve grafik testere dişi çiziyorsa, ilk şüphelenilmesi gereken değişken nedir?',
-        options: [
-          { label: 'Farklı uygulayıcıların yönergeyi, ipucunu veya pekiştireci sunma zamanlamasındaki milisaniyelik tutarsızlıklar.', clinicalValue: 100, aiTag: 'methodological_depth' },
-          { label: 'Çocuğun uyku düzeni, beslenme saati veya ilaç kullanımındaki düzensizlikler.', clinicalValue: 40, aiTag: 'external_attribution_bias' },
-          { label: 'Kullanılan ödülün çocuk için artık motive edici özelliğini kaybetmiş olması.', clinicalValue: 50, aiTag: 'reinforcement_focus' },
-          { label: 'Öğretilen becerinin çocuğun proksimal gelişim alanının çok üzerinde olması.', clinicalValue: 30, aiTag: 'developmental_mismatch' }
-        ]
-      },
-      {
-        id: 'aba_4',
-        text: 'İşlevsel Analiz sonucunda "Elde Etme" işlevi saptanan bir davranış için, çocuk ağladığında tablet verilmemesi kararı alınmıştır. Ancak çocuk kafasını vurmaya başlarsa ne yapılır?',
-        options: [
-          { label: 'Kendine zarar verme davranışı başladığı an prosedür iptal edilir; tablet verilir çünkü fiziksel bütünlük her türlü öğretimden önceliklidir.', clinicalValue: 10, aiTag: 'accidental_reinforcement' },
-          { label: 'Kask/Yastık ile fiziksel koruma sağlanır ancak tablet ASLA verilmez. Çocuk sakinleşip alternatif bir iletişim kurana kadar talep nötr şekilde askıda tutulur.', clinicalValue: 100, aiTag: 'expert_crisis_management' },
-          { label: 'Tablet verilmez ama çocuğa sıkıca sarılarak sakinleşmesi sağlanır, sonra derse dönülür.', clinicalValue: 20, aiTag: 'sensory_confused' },
-          { label: 'Odayı terk ederek çocuğun davranışının işlevsiz olduğunu görmesi sağlanır.', clinicalValue: 0, aiTag: 'negligence_risk' }
+          { label: 'Pekiştireç tarifesini (Schedule of Reinforcement) daha yoğun (FR1) hale getiririm.', clinicalValue: 50, aiTag: 'procedural_adjustment' },
+          { label: 'Uygulayıcılar arası güvenirlik (IOA) verilerini kontrol eder, yönerge sunumundaki mikrosaniyelik farkları incelerim. Sorunu "çocukta" değil "sistemde" ararım.', clinicalValue: 100, aiTag: 'analytical_depth' },
+          { label: 'Bu beceriyi rafa kaldırıp, çocuğun daha başarılı olduğu farklı bir gelişim alanına geçerim.', clinicalValue: 20, aiTag: 'pedagogical_surrender' }
         ]
       }
     ]
   },
 
-  // --- 2. KATEGORİ: AKADEMİK & BİLİŞSEL ---
+  // --- 2. KATEGORİ: ETİK TAHKİM & KURUMSAL SINIRLAR ---
   {
-    id: 'academic_interventions',
-    title: 'Akademik Müdahale & Bilişsel Stratejiler',
-    description: 'Özel öğrenme güçlüğü, disleksi ve matematiksel muhakeme.',
-    icon: '📐',
+    id: 'ethics_and_boundaries',
+    title: 'Etik Tahkim ve Profesyonel Mesafe',
+    description: 'Çıkar çatışmaları, gizlilik ve profesyonel sınır diplomasisi.',
+    icon: '⚖️',
+    category: 'ethics',
+    questions: [
+      {
+        id: 'stf_eth_1',
+        text: 'Veli, özel bayramda size maddi değeri yüksek bir hediye çeki vererek "Hocam çocuğumla çok ilgileniyorsunuz, bu emeğinizin karşılığı değil ama lütfen kabul edin" dedi. Tavrınız?',
+        options: [
+          { label: 'Veliyi kırmamak ve terapötik bağı zedelememek için kabul eder, durumu yönetime haber vermem.', clinicalValue: -100, aiTag: 'severe_boundary_violation' },
+          { label: 'Nazikçe reddederim ancak veli ısrar ederse "kuruma bağış yapmasını" öneririm.', clinicalValue: 60, aiTag: 'boundary_negotiation' },
+          { label: 'Hediyeyi kesin bir dille reddederim; profesyonel etik gereği vaka ile arama "maddi bir minnet" girmesine izin vermem ve durumu derhal şeffaflıkla süpervizörüme raporlarım.', clinicalValue: 100, aiTag: 'immaculate_integrity' }
+        ]
+      },
+      {
+        id: 'stf_eth_2',
+        text: 'Bir iş arkadaşınızın, vaka hakkında sosyal medyada (yüzü gizli olsa bile) "duygusal ve ifşa edici" bir paylaşım yaptığını gördünüz. Aksiyonunuz?',
+        options: [
+          { label: 'Arkadaşımı uyarırım, silmezse yönetime bildiririm.', clinicalValue: 70, aiTag: 'peer_correction' },
+          { label: 'Görmezden gelirim, sonuçta iyi niyetle ve farkındalık yaratmak için paylaşmıştır.', clinicalValue: 10, aiTag: 'unethical_loyalty' },
+          { label: 'KVKK ve klinik gizlilik ihlali nedeniyle durumu anında koordinatörlüğe raporlarım; vaka mahremiyeti kişisel dostluklardan önceliklidir.', clinicalValue: 100, aiTag: 'high_professional_standard' }
+        ]
+      }
+    ]
+  },
+
+  // --- 3. KATEGORİ: AKADEMİK İNOVASYON & TEKNOLOJİ ---
+  {
+    id: 'academic_innovation',
+    title: 'Tekno-Pedagojik Adaptasyon',
+    description: 'Yapay zeka kullanımı, dijital veri takibi ve modern literatür entegrasyonu.',
+    icon: '🚀',
     category: 'clinical',
     questions: [
       {
-        id: 'acad_1',
-        text: 'Ses Temelli Cümle Yöntemi ile okuma öğretirken, "Hece Birleştirme" aşamasında takılan bir çocuk için hangi teknik uygulanır?',
+        id: 'stf_inn_1',
+        text: 'Kurumun yeni geçtiği dijital veri takip sisteminin raporlama hızınızı yavaşlattığını düşünüyorsunuz. Ne yaparsınız?',
         options: [
-          { label: 'Ezberleyene kadar defalarca okutmak ve ev ödevi ile pekiştirmek.', clinicalValue: 0, aiTag: 'rote_learning_trap' },
-          { label: 'Sessiz harfi uzatarak sesli harfe bağlama tekniğini uygulamak (mmmmaaaa -> ma).', clinicalValue: 100, aiTag: 'phonological_mastery' },
-          { label: 'Harfleri bırakıp, görsel kartlarla kelimeyi bütün olarak öğretmek.', clinicalValue: 40, aiTag: 'global_method_confusion' },
-          { label: 'Okumaya ara verip sadece dinleme çalışmaları yaptırmak.', clinicalValue: 20, aiTag: 'passive_avoidance' }
+          { label: 'Eski usul kağıt kalemle not almaya devam eder, sistemi sadece "zorunlu" olduğu kadar kullanırım.', clinicalValue: 20, aiTag: 'resistance_to_change' },
+          { label: 'Sistemin açıklarını ve yavaşlatan noktalarını analitik bir liste haline getirip BT birimine "çözüm önerisiyle" başvururum.', clinicalValue: 100, aiTag: 'proactive_innovation' },
+          { label: 'Raporlamayı seans dışı saatlere yayarak sistemi olduğu gibi kabullenirim.', clinicalValue: 60, aiTag: 'passive_adaptation' }
         ]
       },
       {
-        id: 'acad_2',
-        text: 'Matematikte "Eldeli Toplama" yapamayan bir çocukta CRA hiyerarşisine göre ilk adım ne olmalıdır?',
+        id: 'stf_inn_2',
+        text: 'Yapay zekanın hazırladığı bir BEP (Bireyselleştirmiş Eğitim Planı) taslağını incelediğinizde, sizin fark etmediğiniz ama literatüre uygun bir hedef önerdiğini gördünüz. Yaklaşımınız?',
         options: [
-          { label: 'Onluk bozma ve gruplama mantığını fiziksel bloklarla somutlaştırarak öğretmek.', clinicalValue: 100, aiTag: 'cra_hierarchy_expert' },
-          { label: 'Deftere basamak tablosu çizdirmek ve boyatmak.', clinicalValue: 40, aiTag: 'representational_premature' },
-          { label: 'Daha çok işlem çözdürerek prosedürü otomatiğe bağlamak.', clinicalValue: 10, aiTag: 'drill_and_kill' },
-          { label: '"Büyük sayıyı aklında tut, küçüğü üzerine say" stratejisini vermek.', clinicalValue: 0, aiTag: 'cognitive_overload' }
+          { label: '"Makineler klinik tecrübenin yerini tutamaz" diyerek o hedefi silerim.', clinicalValue: 10, aiTag: 'cognitive_rigidity' },
+          { label: 'Önerilen hedefin bilimsel dayanağını (EBP) araştırır, vakaya uygunluğunu test eder ve mantıklıysa programa dahil ederim.', clinicalValue: 100, aiTag: 'open_minded_expert' },
+          { label: 'AI ne dediyse sorgulamadan kabul eder, programı güncellerim.', clinicalValue: 40, aiTag: 'lack_of_critical_thinking' }
         ]
       }
     ]
   },
 
-  // --- 3. KATEGORİ: VELİ & SINIR ---
+  // --- 4. KATEGORİ: TAKIM SİNERJİSİ & MENTORLUK ---
   {
-    id: 'parent_boundary_management',
-    title: 'Veli İlişkileri & Sınır Diplomasisi',
-    description: 'Manipülasyon, profesyonel mesafe ve beklenti yönetimi.',
-    icon: '🗣️',
-    category: 'parent',
+    id: 'team_and_mentorship',
+    title: 'Multidisipliner Takım ve Mentorluk',
+    description: 'Ekip içi geri bildirim, stajyer yönetimi ve kriz anında liderlik.',
+    icon: '🤝',
+    category: 'team',
     questions: [
       {
-        id: 'pb_1',
-        text: 'Veli, seansın 20. dakikasında kapıyı çalıp ağlayarak "Hocam eşimle kavga ettik, seansı erken bitirip dertleşebilir miyiz?" dediğinde kurumsal cevabınız ne olur?',
+        id: 'stf_team_1',
+        text: 'Yeni başlayan bir stajyerin, seans esnasında etik olmayan bir hata yaptığını (örn: çocukla alay eder gibi konuşmak) fark ettiniz. O anki müdahaleniz?',
         options: [
-          { label: 'İnsani bir krizdir, kabul eder ve dinlerim.', clinicalValue: 10, aiTag: 'boundary_dissolution' },
-          { label: 'Kapıyı kapatır, cevap vermem.', clinicalValue: 20, aiTag: 'aggressive_avoidance' },
-          { label: 'Üzüntüsünü paylaştığımı belirtirim ancak seans süresinin çocuğun hakkı olduğunu vurgulayıp, seans sonrasında 5 dakika ayırabileceğimi veya psikoloğa yönlendireceğimi söylerim.', clinicalValue: 100, aiTag: 'immaculate_boundary' },
-          { label: 'Müdüre şikayet ederim.', clinicalValue: 30, aiTag: 'escalation_bias' }
+          { label: 'Seansın bitmesini bekler, stajyeri odaya çekip sertçe azarlarım.', clinicalValue: 30, aiTag: 'poor_mentorship_style' },
+          { label: 'Seansı o an "model olma" (Modeling) yöntemiyle devralırım; stajyere hata yaptığını hissettirmeden doğru iletişimi çocuk üzerinde gösterir, seans sonu debrifing yaparım.', clinicalValue: 100, aiTag: 'master_mentor_reflex' },
+          { label: 'Müdürün odasına gidip stajyerin görevine son verilmesini talep ederim.', clinicalValue: 20, aiTag: 'escalation_bias' }
         ]
       },
       {
-        id: 'pb_2',
-        text: 'Mülakat sonrası bir veli size WhatsApp üzerinden "Özel dersi kurum dışı, evimizde yapabilir miyiz? Daha iyi ücret veririz." yazdığında aksiyonunuz?',
+        id: 'stf_team_2',
+        text: 'Başka bir branştan (örn: Ergoterapist) meslektaşınız, sizin vakanızla ilgili sizin klinik görüşünüze tamamen zıt bir tavsiyede bulundu. Ne yaparsınız?',
         options: [
-          { label: 'Mesajın ekran görüntüsünü alıp yönetime raporlarım ve etik gereği vaka devri talep ederim.', clinicalValue: 100, aiTag: 'high_integrity' },
-          { label: 'Sadece "hayır" diyerek konuyu kapatırım.', clinicalValue: 40, aiTag: 'hidden_loyalty' },
-          { label: 'Kabul ederim ama gizli tutulmasını isterim.', clinicalValue: -200, aiTag: 'ethical_black_list' },
-          { label: '"Kurumda kalmam lazım" derim.', clinicalValue: 60, aiTag: 'weak_refusal' }
+          { label: '"Kendi işine baksın" diyerek öneriyi dikkate almam.', clinicalValue: 0, aiTag: 'silo_mentality' },
+          { label: 'Gerekçesini bilimsel verilerle (Assessment verileriyle) sormak üzere bir vaka toplantısı talep ederim; multidisipliner bir sentez ararım.', clinicalValue: 100, aiTag: 'collaborative_leader' },
+          { label: 'Tartışmamak için "tamam" derim ama kendi bildiğimi yapmaya devam ederim.', clinicalValue: 30, aiTag: 'passive_aggressive' }
+        ]
+      }
+    ]
+  },
+
+  // --- 5. KATEGORİ: KRİZ YÖNETİMİ & VELİ DİPLOMASİSİ ---
+  {
+    id: 'crisis_leadership',
+    title: 'Kriz Liderliği ve Veli Diplomasisi',
+    description: 'Yüksek stresli veli toplantıları, fiziksel agresyon ve beklenti yönetimi.',
+    icon: '🔥',
+    category: 'parent',
+    questions: [
+      {
+        id: 'stf_cri_1',
+        text: 'Veli, kurumun bahçesinde bağırarak "6 aydır bir arpa boyu yol gidemedik, paramız çöpe gidiyor!" diye isyan ediyor. İlk hamleniz?',
+        options: [
+          { label: 'Benzer ilerlemeyen vakaları örnek göstererek kendimi savunurum.', clinicalValue: 20, aiTag: 'defensive_mechanism' },
+          { label: 'Veliyi hemen sakin ve kapalı bir odaya davet ederim; duygusunu valide eder (anlıyorum, yoruldunuz) ancak verilerle (Pre-test/Post-test) gerçekleşen mikro gelişimleri gösterip gerçekçi bir yol haritası sunarım.', clinicalValue: 100, aiTag: 'crisis_resolution_expert' },
+          { label: 'Güvenliğe haber verip velinin sakinleşene kadar kuruma alınmamasını isterim.', clinicalValue: 10, aiTag: 'aggressive_avoidance' }
+        ]
+      },
+      {
+        id: 'stf_cri_2',
+        text: 'Öğrenci aniden kendine zarar verme (Self-injury) davranışına başladı ve fiziksel müdahale gerektiriyor. O an neye odaklanırsınız?',
+        options: [
+          { label: 'Hemen davranışın "işlevini" bulmaya çalışır, ABC kaydı tutarım.', clinicalValue: 40, aiTag: 'over_analytical_in_danger' },
+          { label: 'En az kısıtlayıcı fiziksel müdahale (Last Restrictive) protokolünü uygulayarak çocuğun ve çevrenin güvenliğini sağlar, kriz bitene kadar nötr kalırım.', clinicalValue: 100, aiTag: 'clinical_safety_protocol' },
+          { label: 'Korkup odayı terk eder, yardım çağırırım.', clinicalValue: 0, aiTag: 'unfit_for_clinical_duty' }
         ]
       }
     ]
