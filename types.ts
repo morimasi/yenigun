@@ -1,105 +1,322 @@
 
-export enum ClinicalTestType {
-  BEP_ADAPTATION = 'BEP/IEP Dinamik Adaptasyon',
-  DMP_STRESS = 'DMP Stres Simülatörü',
-  CONFLICT_MANAGEMENT = 'Multidisipliner Çatışma',
-  DATA_LITERACY = 'Klinik Veri Okuryazarlığı',
-  BOUNDARY_INTEGRITY = 'Veli-Öğretmen Sınır İhlali',
-  COGNITIVE_FLEXIBILITY = 'Metot Değişimi ve Esneklik',
-  DE_ESCALATION_REFLEX = 'Kriz ve Güvenlik Yönetimi',
-  PARENT_MANIPULATION = 'Veli Sınır Testi'
-}
-
 export enum Branch {
   OzelEgitim = 'Özel Eğitim',
   DilKonusma = 'Dil ve Konuşma Terapisi',
   Ergoterapi = 'Ergoterapi',
   Fizyoterapi = 'Fizyoterapi',
   Psikoloji = 'Psikoloji',
-  PDR = 'PDR',
-  CocukGelimi = 'Çocuk Gelişimi',
-  OkulOncesi = 'Okul Öncesi',
-  SinifOgretmenligi = 'Sınıf Öğretmenliği'
+  PDR = 'PDR'
 }
 
-export interface Question { 
-  id: string; 
-  category: string; 
-  text: string; 
-  type: 'radio' | 'text' | 'checkbox'; 
-  options?: string[]; 
-  weightedOptions?: Array<{ 
-    label: string; 
-    weights: Record<string, number>; 
+export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
+export type MaritalStatus = 'Evli' | 'Bekar';
+
+export interface Question {
+  id: string;
+  text: string;
+  category: string;
+  type: 'radio' | 'text';
+  options?: string[];
+  requiredBranch?: Branch[];
+  weightedOptions?: Array<{
+    label: string;
+    weights: Record<string, number>;
+    analysisInsight?: string;
     branchOverrides?: Record<string, Record<string, number>>;
-    analysisInsight: string; 
-  }>; 
-  requiredBranch?: string[]; 
+  }>;
 }
 
-export interface AlgorithmicReport { 
-  overallScore: number; 
-  reliabilityIndex: number; 
-  ethicsScore: number; 
-  experienceWeight: number; 
-  retentionScore: number; 
-  burnoutResistance: number; 
-  fitScore: number; 
-  riskFlags: string[]; 
-  branchComplianceScore?: number;
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestions: Question[];
 }
 
-export interface CareerPhase {
-  month: number;
-  meritScore: number;
-  burnoutRisk: number;
-  competencyLevel: 'Oryantasyon' | 'Stabilizasyon' | 'Uzmanlık' | 'Otorite' | 'Riskli Bölge';
-  strategicAdvice: string;
+export interface Candidate {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  age: number;
+  gender: Gender;
+  maritalStatus?: MaritalStatus;
+  branch: Branch | string;
+  university: string;
+  department: string;
+  experienceYears: number;
+  previousInstitutions: string;
+  allTrainings: string[];
+  cvData?: {
+    base64: string;
+    mimeType: string;
+    fileName: string;
+  };
+  answers: Record<string, string | string[]>;
+  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
+  report?: AIReport;
+  algoReport?: AlgorithmicReport;
+  archiveCategory?: ArchiveCategory;
+  archiveNote?: string;
+  adminNotes?: string;
+  reminder_note?: string;
+  interviewSchedule?: {
+    date: string;
+    time: string;
+  };
+  timestamp: number;
 }
 
-export interface AIReport { 
-  score: number; 
-  integrityIndex: number; 
-  socialMaskingScore: number; 
-  summary: string; 
-  detailedAnalysisNarrative: string; 
-  recommendation: string; 
-  deepAnalysis: Record<string, IntelligenceSegment>; 
-  predictiveMetrics: { 
-    retentionProbability: number; 
-    burnoutRisk: number; 
-    learningVelocity: number; 
-    leadershipPotential: number; 
-    evolutionPath: string; 
-    evolutionTimeline: Array<{ phase: string; timeframe: string; expectedBehaviors: string[]; clinicalGrowth: string; managementAdvice: string; }>; 
-    growthForecast: Array<{ month: number; score: number }>; 
-    riskMitigation: { primaryRisk: string; preventionStrategy: string; };
-    trajectory: CareerPhase[]; // FAZ 5: Detaylı Kariyer Yörüngesi
-  }; 
-  interviewGuidance: { phases: InterviewPhase[]; criticalObservations: string[]; simulationTasks: string[]; }; 
-  swot: { strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[]; }; 
-  presentationSlides?: TrainingSlide[]; 
-  presentationConfig?: PresentationConfig; 
+export interface AIReport {
+  score: number;
+  integrityIndex: number;
+  socialMaskingScore: number;
+  summary: string;
+  detailedAnalysisNarrative: string;
+  recommendation: string;
+  predictiveMetrics: {
+    retentionProbability: number;
+    burnoutRisk: number;
+    learningVelocity: number;
+    leadershipPotential: number;
+    evolutionPath: string;
+    trajectory?: Array<{
+      month: number;
+      meritScore: number;
+      burnoutRisk: number;
+      competencyLevel: string;
+      strategicAdvice: string;
+    }>;
+  };
+  deepAnalysis: Record<string, {
+    score: number;
+    status: string;
+    reasoning: string;
+    behavioralIndicators: string[];
+    institutionalImpact: string;
+    pros: string[];
+    cons: string[];
+    risks: string[];
+  }>;
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  interviewGuidance: {
+    phases?: Array<{
+      title: string;
+      questions: Array<{ text: string }>;
+    }>;
+    strategicQuestions: string[];
+    criticalObservations: string[];
+    simulationTasks: string[];
+  };
+  presentationSlides?: TrainingSlide[];
 }
 
-export interface IntelligenceSegment { score: number; status: 'optimal' | 'warning' | 'critical'; reasoning: string; behavioralIndicators: string[]; institutionalImpact: string; pros: string[]; cons: string[]; risks: string[]; }
-export interface InterviewPhase { id: number; title: string; goal: string; questions: Array<{ text: string; why: string; lookFor: string; }>; redFlags: string[]; subliminalCues: string[]; }
-export interface Candidate { id: string; name: string; email: string; phone: string; age: number; gender: Gender; maritalStatus: MaritalStatus; branch: string; university: string; department: string; experienceYears: number; previousInstitutions: string; allTrainings: string[]; answers: Record<string, string | string[]>; timestamp: number; status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived'; archiveCategory?: ArchiveCategory; archiveNote?: string; adminNotes?: string; reminderNote?: string; report?: AIReport; algoReport?: AlgorithmicReport; interviewSchedule?: { date: string; time: string; method: string; location: string; }; cvData?: { base64: string; mimeType: string; fileName: string; }; }
-export interface TrainingSlide { id: string; type: 'title' | 'content' | 'case' | 'interaction'; title: string; subtitle?: string; content: string[]; speakerNotes: string; interactiveElement?: { question: string; expectedAnswer: string; misconception: string; }; visualPrompt: string; }
-export interface PresentationConfig { topic: string; targetAudience: 'individual' | 'team' | 'parents' | 'management'; tone: 'academic' | 'motivational' | 'strict' | 'workshop'; depth: 'beginner' | 'intermediate' | 'expert'; slideCount: number; staffId?: string; }
-export interface IDP { id: string; staffId: string; createdAt: number; focusArea: string; identifiedGaps: string[]; roadmap: { shortTerm: string; midTerm: string; longTerm: string; }; recommendedTrainings: string[]; autoGeneratedPresentation?: TrainingSlide[]; }
-export interface StaffMember { id: string; name: string; branch: Branch; startDate: number; role: 'teacher' | 'coordinator' | 'senior'; assessments: StaffAssessment[]; currentIDP?: IDP; status: 'active' | 'on_leave' | 'probation'; }
-export type ArchiveCategory = 'TALENT_POOL' | 'DISQUALIFIED' | 'FUTURE_REFERENCE' | 'HIRED_CONTRACTED' | 'BLACK_LIST' | 'PRESENTATION_LIBRARY';
-export type Gender = 'Kadın' | 'Erkek' | 'Belirtilmemiş';
-export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
-export interface FormStep { id: string; title: string; description: string; }
-export interface Certification { id: string; label: string; description: string; category: string; verificationQuestions: Question[]; }
-export interface SimulationResult { scenario: string; parentPersona: string; candidateResponse: string; stressLevel: number; aiEvaluation: { ethicalBoundaryScore: number; empathyCalibration: number; professionalDistance: number; crisisResolutionEfficiency: number; clinicalTruths: string[]; criticalMistakes: string[]; neuralDivergence: { contradictionIndex: number; decisionPath: string; alternativeOutcome: string; dominantEmotion: string; }; microBehaviors: { toneAnalysis: string; nonVerbalPrediction: string; silenceTolerance: string; }; }; }
-export interface AdvancedAnalyticsConfig { weights: { clinicalDepth: number; ethicalIntegrity: number; emotionalResilience: number; institutionalLoyalty: number; learningAgility: number; }; penalties: { criticalEthicalViolation: number; inconsistentAnswers: number; lowExperienceDiscount: number; }; thresholds: { minHiringScore: number; highPotentialCutoff: number; }; aiCognition: { skepticismLevel: number; innovationBias: number; stressTestIntensity: number; }; }
-export interface GlobalConfig { institutionName: string; primaryColor: string; accentColor: string; aiTone: 'strict' | 'balanced' | 'empathetic'; aiWeights: { ethics: number; clinical: number; experience: number; fit: number; }; aiPersona: { skepticism: number; empathy: number; formality: number; }; advancedAnalytics?: AdvancedAnalyticsConfig; automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean; }; interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string; }; notificationEmail: string; lastUpdated: number; }
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number;
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
+  fitScore: number;
+  riskFlags: string[];
+  branchComplianceScore: number;
+}
+
+export interface GlobalConfig {
+  institutionName: string;
+  primaryColor: string;
+  accentColor: string;
+  aiTone: 'balanced' | 'strict' | 'empathetic';
+  aiPersona: { skepticism: number; empathy: number; formality: number };
+  aiWeights: { ethics: number; clinical: number; experience: number; fit: number };
+  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean };
+  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string };
+  notificationEmail: string;
+  lastUpdated: number;
+  advancedAnalytics?: AdvancedAnalyticsConfig;
+}
+
+export interface AdvancedAnalyticsConfig {
+  weights: {
+    clinicalDepth: number;
+    ethicalIntegrity: number;
+    emotionalResilience: number;
+    institutionalLoyalty: number;
+    learningAgility: number;
+  };
+  penalties: {
+    criticalEthicalViolation: number;
+    inconsistentAnswers: number;
+    lowExperienceDiscount: number;
+  };
+  thresholds: {
+    minHiringScore: number;
+    highPotentialCutoff: number;
+  };
+  aiCognition: {
+    skepticismLevel: number;
+    innovationBias: number;
+    stressTestIntensity: number;
+  };
+}
+
+export type ArchiveCategory = 'TALENT_POOL' | 'FUTURE_REFERENCE' | 'DISQUALIFIED' | 'BLACK_LIST' | 'HIRED_CONTRACTED' | 'PRESENTATION_LIBRARY';
+
+export enum ClinicalTestType {
+  DMP_STRESS = 'DMP_STRESS',
+  ETHICAL_DILEMMA = 'ETHICAL_DILEMMA',
+  PARENT_MANIPULATION = 'PARENT_MANIPULATION',
+  CLINICAL_DEPTH = 'CLINICAL_DEPTH'
+}
+
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    clinicalTruths: string[];
+    criticalMistakes: string[];
+    neuralDivergence: {
+      contradictionIndex: number;
+      decisionPath: string;
+      alternativeOutcome: string;
+      dominantEmotion: string;
+    };
+    microBehaviors: {
+      toneAnalysis: string;
+      nonVerbalPrediction: string;
+      silenceTolerance: string;
+    };
+  };
+}
+
+export interface AssessmentBattery {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: 'clinical' | 'parent' | 'ethics' | 'team';
+  questions: AssessmentQuestion[];
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+  options: Array<{
+    label: string;
+    clinicalValue: number;
+    aiTag: string;
+  }>;
+}
+
+export interface IDP {
+  id: string;
+  staffId: string;
+  createdAt: number;
+  focusArea: string;
+  identifiedGaps: string[];
+  roadmap: {
+    shortTerm: string;
+    midTerm: string;
+    longTerm: string;
+  };
+  recommendedTrainings: string[];
+}
+
+export interface TrainingSlide {
+  id: string;
+  type: 'title' | 'content' | 'case' | 'interaction';
+  title: string;
+  subtitle?: string;
+  content: string[];
+  speakerNotes: string;
+  visualPrompt: string;
+  interactiveElement?: {
+    question: string;
+    expectedAnswer: string;
+    misconception: string;
+  };
+}
+
+export interface PresentationConfig {
+  topic: string;
+  targetAudience: 'individual' | 'team' | 'parents' | 'management';
+  tone: 'academic' | 'motivational' | 'strict' | 'workshop';
+  depth: 'beginner' | 'intermediate' | 'expert';
+  slideCount: number;
+}
+
 export type CommChannel = 'email' | 'whatsapp' | 'sms';
-export interface CommTemplate { id: string; name: string; subject?: string; body: string; channels: CommChannel[]; }
-export interface NotificationLog { id: string; targetId: string; targetName: string; channel: CommChannel; status: 'sent' | 'failed' | 'pending'; timestamp: number; errorMessage?: string; }
-export interface AssessmentBattery { id: string; title: string; description: string; icon: string; category: 'clinical' | 'ethics' | 'parent' | 'team'; questions: AssessmentQuestion[]; }
-export interface AssessmentQuestion { id: string; text: string; options: { label: string; clinicalValue: number; aiTag: string; }[]; }
-export interface StaffAssessment { id: string; staffId: string; timestamp: number; category: string; scores: { technical: number; soft_skills: number; institutional_fit: number; }; rawFeedback: string; aiGapAnalysis: string; }
+
+export interface CommTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  body: string;
+  channels: CommChannel[];
+}
+
+export interface NotificationLog {
+  id: string;
+  targetId: string;
+  targetName: string;
+  channel: CommChannel;
+  status: 'sent' | 'failed';
+  timestamp: number;
+  errorMessage?: string;
+}
+
+export interface FormStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'CLINICAL_SIMULATION' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS';
+
+export interface ExportConfig {
+  title: string;
+  subtitle?: string;
+  showWatermark: boolean;
+  sections: Array<{ id: string; label: string; active: boolean }>;
+  theme: 'corporate' | 'modern' | 'minimal';
+  includeCharts: boolean;
+  includeAiNarrative: boolean;
+  signatureRequired: boolean;
+}
+
+export interface UniversalExportData {
+  type: ExportType;
+  entityName: string;
+  referenceId: string;
+  payload: any;
+  config?: Partial<ExportConfig>;
+}
+
+export enum StaffRole {
+  Admin = 'admin',
+  Staff = 'staff',
+  Mentor = 'mentor'
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  role: StaffRole;
+  branch: Branch;
+  last_score?: number;
+  onboarding_complete: boolean;
+}

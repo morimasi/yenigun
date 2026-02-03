@@ -11,8 +11,9 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   const branch = candidate.branch as Branch;
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
+  // @fix Added developmentOpenness to the initial scores map to ensure valid access during calculation
   const scores: Record<string, number[]> = {
-    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: []
+    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: []
   };
   
   let reliabilityPoints = 100;
@@ -20,7 +21,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
 
   const answers = candidate.answers || {};
 
-  const weights = config?.advancedAnalytics?.weights || {
+  const weights: any = config?.advancedAnalytics?.weights || {
     clinicalDepth: 25,
     ethicalIntegrity: 30,
     emotionalResilience: 20,
@@ -28,7 +29,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
     learningAgility: 15
   };
 
-  const penalties = config?.advancedAnalytics?.penalties || {
+  const penalties: any = config?.advancedAnalytics?.penalties || {
     criticalEthicalViolation: 25,
     inconsistentAnswers: 10,
     lowExperienceDiscount: 0.9
@@ -84,20 +85,22 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
   let expMultiplier = 1;
   if (exp < 2) expMultiplier = penalties.lowExperienceDiscount;
 
-  const totalWeight = Object.values(weights).reduce((a,b) => a+b, 0) || 100;
+  // @fix Ensured numeric casting for weights summation to fix unknown operator errors
+  const totalWeight = (Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number) || 100;
 
+  // @fix Applied explicit numeric casting to weights properties to resolve arithmetic operation errors on unknown types
   let rawScore = (
-    (ethicsScore * weights.ethicalIntegrity) + 
-    (clinicalScore * weights.clinicalDepth) + 
-    (resilienceScore * weights.emotionalResilience) + 
-    (fitScore * weights.institutionalLoyalty) +
-    (agilityScore * weights.learningAgility)
+    (ethicsScore * (weights.ethicalIntegrity as number)) + 
+    (clinicalScore * (weights.clinicalDepth as number)) + 
+    (resilienceScore * (weights.emotionalResilience as number)) + 
+    (fitScore * (weights.institutionalLoyalty as number)) +
+    (agilityScore * (weights.learningAgility as number))
   ) / totalWeight;
 
-  rawScore = rawScore * expMultiplier;
+  rawScore = rawScore * (expMultiplier as number);
 
-  if (reliabilityPoints < 80) {
-      rawScore = rawScore * (reliabilityPoints / 100);
+  if ((reliabilityPoints as number) < 80) {
+      rawScore = rawScore * ((reliabilityPoints as number) / 100);
   }
 
   const overallScore = Math.min(100, Math.max(0, Math.round(rawScore)));

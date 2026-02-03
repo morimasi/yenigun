@@ -7,80 +7,40 @@ export const ethicsQuestions: Question[] = [
     id: 'eth_new_1', category: 'workEthics', type: 'radio',
     text: 'Veli, size kurum müdürü hakkında gizli bir şikayette bulunuyor ve "aramızda kalsın" diyor. Tavrınız?',
     weightedOptions: [
-      { label: 'Dinler ve "anlıyorum" diyerek geçiştiririm; veliyle bağı koparmamak için yönetime yansıtmam.', weights: { workEthics: 0.4, institutionalLoyalty: 0.3 }, analysisInsight: 'Riskli / Sınır İhlali Eğilimi.' },
-      { label: '"Bunu duyduğuma üzüldüm ama bu konuyu müdürümüzle doğrudan çözmeniz kurum politikamızdır" diyerek şeffaf bir sınır çizerim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek Kurumsal Bütünlük.' }
+      { label: 'Veliyle aramdaki güven bağını korumak için onu aktif bir şekilde dinlerim ve "anlıyorum" diyerek konuyu geçiştiririm; velinin duygusal boşalımına izin vererek ilişkinin kopmaması için bu konuşmayı yönetime yansıtmam.', weights: { workEthics: 0.4, institutionalLoyalty: 0.3 }, analysisInsight: 'Sınır İhlali Riski.' },
+      { label: 'Veliye, kurumumuzda şeffaflığın esas olduğunu hatırlatırım ve "Bunu duyduğuma üzüldüm ancak bu konuyu müdürümüzle doğrudan görüşmeniz sorunların çözümü için tek yoldur" diyerek hem profesyonel hem de kurumsal bir sınır çizerim.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Yüksek Kurumsal Bütünlük.' }
     ]
   },
   {
     id: 'eth_new_2', category: 'workEthics', type: 'radio',
-    text: 'Bir vakanızın raporunda, kurumun vergi/SGK muafiyeti için "olmadığı kadar ağır" bir engel oranı yazılmasını talep ediyorlar. Reaksiyonunuz?',
+    text: 'Bir vakanızın raporunda, kurumun vergi muafiyeti için "olmadığı kadar ağır" bir engel oranı yazılmasını talep ediyorlar. Reaksiyonunuz?',
     weightedOptions: [
-      { label: 'Asla kabul etmem. Yanlış beyan hem suçtur hem de vakanın klinik geleceğini bozar.', weights: { workEthics: 1.0, integrity: 1.0 }, analysisInsight: 'Kaya Gibi Etik.' },
-      { label: 'Kurumun menfaati ve vakanın devamlılığı için risk almadan onay veririm.', weights: { workEthics: 0.2, institutionalLoyalty: 0.5 }, analysisInsight: 'Yüksek Risk / Düşük İlke.' }
+      { label: 'Bu talebi meslek onuruma bir saldırı olarak görür ve kesinlikle reddederim; yanlış beyanın sadece bir suç değil, aynı zamanda çocuğun klinik geleceğini ve haklarını tamamen bozacak bir etik yıkım olduğunu açıkça ifade ederim.', weights: { workEthics: 1.0, integrity: 1.0 }, analysisInsight: 'Kaya Gibi Etik Duruş.' },
+      { label: 'Kurumun ekonomik bekasını ve vakanın devamlılığını sağlamak için yönetimin çizdiği çerçeveye uyarım; teknik raporun bir araç olduğunu, asıl önemli olanın verdiğimiz seans kalitesi olduğunu düşünerek risk almadan onay veririm.', weights: { workEthics: 0.2, institutionalLoyalty: 0.5 }, analysisInsight: 'Düşük Etik Direnç.' }
     ]
   },
   {
     id: 'eth_new_3', category: 'workEthics', type: 'radio',
     text: 'Başka bir kurumun sizin metodunuzu "çalmaya" çalıştığını duydunuz. Ne yaparsınız?',
     weightedOptions: [
-      { label: 'Durumu yönetime bildirir ve kurumsal koruma talep ederim.', weights: { workEthics: 0.9, institutionalLoyalty: 1.0 }, analysisInsight: 'Kurumsal Muhafız.' },
-      { label: '"Bilgi evrenseldir" diyerek sessiz kalırım veya paylaşımı teşvik ederim.', weights: { workEthics: 0.7, personality: 0.8 }, analysisInsight: 'İdealist / Dağınık.' }
+      { label: 'Bu durumun kurumsal fikri mülkiyet haklarını ihlal ettiğini savunarak derhal yönetimi bilgilendiririm ve hukuki/kurumsal koruma yollarının devreye sokulması için proaktif bir rapor hazırlarım.', weights: { workEthics: 0.9, institutionalLoyalty: 1.0 }, analysisInsight: 'Kurumsal Koruma İçgüdüsü.' },
+      { label: 'Bilginin evrensel olduğuna ve paylaştıkça değer kazandığına inanırım; bu durumu büyütmek yerine, diğer kurumun da çocuklara faydalı olması için sessiz kalırım veya gerekirse onlarla metodun detaylarını paylaşmayı teklif ederim.', weights: { workEthics: 0.7, personality: 0.8 }, analysisInsight: 'İdealist ve Bağımsız Profil.' }
     ]
   },
   {
     id: 'eth_new_4', category: 'workEthics', type: 'radio',
     text: 'Eski çalıştığınız kurumdaki bir veli sizi aradı ve şimdiki kurumunuza gelmek istediğini söyledi. Tavrınız?',
     weightedOptions: [
-      { label: 'Mevcut kurumuma haber verir ve etik bir geçiş süreci (poaching suçlaması olmadan) planlarım.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Şeffaf Profesyonel.' },
-      { label: 'Veliyi hemen yeni kuruma kaydettirir ve "müşteri getirdiğim için" prim talep ederim.', weights: { workEthics: 0.3, sustainability: 0.5 }, analysisInsight: 'Ticari Odaklı.' }
+      { label: 'Durumu derhal mevcut kurumuma haber veririm ve veliyle olan iletişimi kurumsal bir etik filtreyle (kurumlar arası rekabet kurallarını ihlal etmeden) yönetirim; profesyonel etik gereği "veli transferi" suçlaması almamayı önceliklendiririm.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Şeffaf Profesyonellik.' },
+      { label: 'Veliyi bir an önce yeni kurumuma kaydettirmek için süreci hızlandırırım; kurumuma yeni bir vaka kazandırmanın kurumsal bir başarı olduğunu düşünerek bu referansı yönetime bir prim veya liyakat artışı aracı olarak sunarım.', weights: { workEthics: 0.3, sustainability: 0.5 }, analysisInsight: 'Ticari ve Sonuç Odaklı Yaklaşım.' }
     ]
   },
   {
     id: 'eth_new_5', category: 'workEthics', type: 'radio',
     text: 'Kurumda bir arkadaşınızın vaka üzerinde fiziksel "kaba kuvvet" (istismar sınırı) kullandığını gördünüz. İlk adımınız?',
     weightedOptions: [
-      { label: 'Hiç beklemeden koordinatörlüğe veya disiplin kuruluna yazılı bildirim yaparım.', weights: { workEthics: 1.0, clinical: 0.9 }, analysisInsight: 'Sıfır Tolerans.' },
-      { label: 'Önce arkadaşımla konuşur, hatasını düzeltmesini sağlarım. Arkadaşımı satmam.', weights: { workEthics: 0.5, empathy: 0.6 }, analysisInsight: 'Omerta Kültürü / Riskli.' }
-    ]
-  },
-  {
-    id: 'eth_new_6', category: 'workEthics', type: 'radio',
-    text: 'Sosyal medyada bir öğrencimizin videosunu çekmek istiyorsunuz. Veli "tabii ki" dedi ama kurum yasaklamıştı. Paylaşır mısınız?',
-    weightedOptions: [
-      { label: 'Hayır. Kurum onayı yoksa veli onayı geçersizdir.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Sistem Uyumlu.' },
-      { label: 'Paylaşırım; veli izin verdikten sonra kurum karışamaz.', weights: { workEthics: 0.4, personality: 0.7 }, analysisInsight: 'Bireysel Odaklı.' }
-    ]
-  },
-  {
-    id: 'eth_new_7', category: 'workEthics', type: 'radio',
-    text: 'Kurumdaki bir seansın iptal olması sonucu oluşan boşlukta ne yaparsınız?',
-    weightedOptions: [
-      { label: 'Materyal hazırlar, arşiv düzenler veya meslektaşlarıma gözlem desteği veririm.', weights: { workEthics: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Yüksek Proaktiflik.' },
-      { label: 'Mola hakkım olarak görür, sosyal alanlarda vakit geçiririm.', weights: { workEthics: 0.6, sustainability: 0.8 }, analysisInsight: 'Denge Odaklı.' }
-    ]
-  },
-  {
-    id: 'eth_new_8', category: 'workEthics', type: 'radio',
-    text: 'Bir vakada hata yaptınız ve vaka geriledi. Veliye bunu nasıl açıklarsınız?',
-    weightedOptions: [
-      { label: 'Hatamı kabul eder, nedenlerini ve telafi planımı net şekilde sunarım.', weights: { clinical: 1.0, workEthics: 1.0 }, analysisInsight: 'Güven Veren Lider.' },
-      { label: 'Gerilemeyi çocuğun biyolojik durumuna veya evdeki eksikliklere bağlar, üzerimdeki baskıyı azaltırım.', weights: { workEthics: 0.2, technicalExpertise: 0.5 }, analysisInsight: 'Defansif / Riskli.' }
-    ]
-  },
-  {
-    id: 'eth_new_9', category: 'workEthics', type: 'radio',
-    text: 'Kurum dışında bir meslektaşınız kurumunuzu kötülüyor. Reaksiyonunuz?',
-    weightedOptions: [
-      { label: 'Kurumumu savunur ve eleştirilerinin haksız olduğunu profesyonel bir dille açıklarım.', weights: { workEthics: 0.9, institutionalLoyalty: 1.0 }, analysisInsight: 'Sadakat Testi Başarılı.' },
-      { label: 'Eğer haklı olduğu noktalar varsa sessiz kalır veya onaylarım.', weights: { workEthics: 0.6, personality: 0.8 }, analysisInsight: 'Bağımsız / Zayıf Sadakat.' }
-    ]
-  },
-  {
-    id: 'eth_new_10', category: 'workEthics', type: 'radio',
-    text: 'Veli, seans çıkışında şahsi numaranızı "acil bir durum olabilir" diyerek ısrarla istiyor. Verir misiniz?',
-    weightedOptions: [
-      { label: 'Hayır; kurumsal hattı verir ve mesai dışı iletişimin klinik tarafsızlığı bozacağını açıklarım.', weights: { workEthics: 1.0, institutionalLoyalty: 1.0 }, analysisInsight: 'Çelik Sınırlar.' },
-      { label: 'Numarayı veririm ama sadece SMS üzerinden ulaşmasını rica ederim.', weights: { workEthics: 0.4, empathy: 0.8 }, analysisInsight: 'Sınır İhlali Riski.' }
+      { label: 'Hiç beklemeden ve duygusal bir tereddüt yaşamadan koordinatörlüğe veya disiplin kuruluna yazılı bildirim yaparım; bir çocuğun fiziksel bütünlüğünün, meslektaş dayanışmasından sonsuz kat daha kutsal olduğunu savunurum.', weights: { workEthics: 1.0, clinical: 0.9 }, analysisInsight: 'Sıfır Tolerans Disiplini.' },
+      { label: 'Önce arkadaşımı birebirde sertçe uyarır ve yaptığı hatayı düzeltmesini, aksi takdirde şikayet edeceğimi söylerim; mesai arkadaşımı doğrudan feda etmek yerine, ona kendisini düzeltmesi için bir şans tanıyarak "omerta" kültürüne yakın dururum.', weights: { workEthics: 0.5, empathy: 0.6 }, analysisInsight: 'Meslektaş Koruma Refleksi.' }
     ]
   },
 
@@ -89,80 +49,16 @@ export const ethicsQuestions: Question[] = [
     id: 'loy_new_1', category: 'institutionalLoyalty', type: 'radio',
     text: 'Kurumda çok sevdiğiniz bir iş arkadaşınız haksız yere işten çıkarıldı. Kuruma tepkiniz ne olur?',
     weightedOptions: [
-      { label: 'Motivasyonum düşer, sadece zorunlu işleri yaparım ve yeni iş bakmaya başlarım.', weights: { institutionalLoyalty: 0.2, sustainability: 0.4 }, analysisInsight: 'Duygusal Karar Verici.' },
-      { label: 'Üzüntümü arkadaşımla özelde paylaşırım ama kurumdaki performansımı ve vakalarımı bu durumdan etkiletmem.', weights: { institutionalLoyalty: 1.0, sustainability: 1.0 }, analysisInsight: 'Yüksek Profesyonel Olgunluk.' }
+      { label: 'Kurumsal adalete olan inancım zayıflar ve motivasyonum ciddi şekilde düşer; işe sadece zorunlu olduğu için gider ve sessizce yeni bir iş bakma sürecine girerim; duygularımın profesyonel performansımı etkilemesine engel olamam.', weights: { institutionalLoyalty: 0.2, sustainability: 0.4 }, analysisInsight: 'Duygusal ve Tepkisel Karar Verici.' },
+      { label: 'Yaşanan üzücü olayı iş arkadaşımla özel hayatımda paylaşırım ancak kurum içindeki performansımı, seans kalitemi ve diğer vaka sorumluluklarımı bu durumdan tamamen ayrıştırırım; kurumun tüzel kişiliği ile kişisel olayları birbirine karıştırmam.', weights: { institutionalLoyalty: 1.0, sustainability: 1.0 }, analysisInsight: 'Yüksek Profesyonel Olgunluk.' }
     ]
   },
   {
     id: 'loy_new_2', category: 'institutionalLoyalty', type: 'radio',
     text: 'Kurumun bir politikasını (örn: kılık kıyafet, raporlama hızı) saçma buluyorsunuz. Ne yaparsınız?',
     weightedOptions: [
-      { label: 'Kurallara uyarım, uygun bir zamanda yönetime öneri dosyası sunarım.', weights: { institutionalLoyalty: 1.0, workEthics: 0.9 }, analysisInsight: 'Disiplinli / Yapıcı.' },
-      { label: 'Gizlice uymam veya uymayanları desteklerim.', weights: { institutionalLoyalty: 0.1, personality: 0.6 }, analysisInsight: 'Pasif-Agresif.' }
-    ]
-  },
-  {
-    id: 'loy_new_3', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Dışarıdan bir kurum size %20 daha fazla maaş teklif etti. Karar kriteriniz ne olur?',
-    weightedOptions: [
-      { label: 'Mevcut kurumumun akademik kalitesi yüksekse kalırım. Para uzmanlığımı geliştirmez.', weights: { institutionalLoyalty: 1.0, clinical: 1.0 }, analysisInsight: 'İlkesel Sadakat.' },
-      { label: 'Koşullar daha iyiyse hemen geçerim. Profesyonel hayat rasyoneldir.', weights: { institutionalLoyalty: -1.0, sustainability: 0.8 }, analysisInsight: 'Mobil Realist.' }
-    ]
-  },
-  {
-    id: 'loy_new_4', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Yönetim sizden pazar günü yapılacak bir seminere "gönüllü" katılmanızı istedi. Tavrınız?',
-    weightedOptions: [
-      { label: 'Katılırım; kurumun büyümesi benim vizyonumun bir parçasıdır.', weights: { institutionalLoyalty: 1.0, developmentOpenness: 1.0 }, analysisInsight: 'Gelecek Lider Adayı.' },
-      { label: '"Özel zamanım" diyerek reddederim. İş iştir.', weights: { institutionalLoyalty: 0.5, sustainability: 0.9 }, analysisInsight: 'Memur Zihniyeti.' }
-    ]
-  },
-  {
-    id: 'loy_new_5', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Kurumdaki bir sorunu önce kime söylersiniz?',
-    weightedOptions: [
-      { label: 'Hemen bağlı olduğum koordinatöre veya müdüre giderim.', weights: { institutionalLoyalty: 1.0, workEthics: 1.0 }, analysisInsight: 'Sistem Dostu.' },
-      { label: 'Önce arkadaşlarımla konuşur, ortak bir tepki örgütlerim.', weights: { institutionalLoyalty: 0.4, leadership: 0.7 }, analysisInsight: 'Sendikal / Potansiyel Muhalif.' }
-    ]
-  },
-  {
-    id: 'loy_new_6', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Kurumun vizyonunu 1 cümlede nasıl tanımlarsınız?',
-    weightedOptions: [
-      { label: '"Biz burada sadece çocuk değil, gelecek inşa ediyoruz."', weights: { institutionalLoyalty: 1.0, personality: 0.9 }, analysisInsight: 'Misyoner Profil.' },
-      { label: '"Burası bölgenin en çok vaka gören ve disiplinli kurumu."', weights: { institutionalLoyalty: 0.7, technicalExpertise: 0.8 }, analysisInsight: 'Sonuç Odaklı Profesyonel.' }
-    ]
-  },
-  {
-    id: 'loy_new_7', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Bir hata sonucu kurum zarar gördü (örn: bir cihaz kırıldı). Kimse bilmiyor.',
-    weightedOptions: [
-      { label: 'Ben yaptım der, gerekirse maaşımdan kesilmesini isterim.', weights: { institutionalLoyalty: 1.0, workEthics: 1.0 }, analysisInsight: 'Aşırı Dürüstlük.' },
-      { label: 'Kendi imkanlarımla tamir ettirir veya yerine koyarım, olayı büyütmem.', weights: { institutionalLoyalty: 0.8, sustainability: 0.9 }, analysisInsight: 'Çözüm Odaklı Gizlilik.' }
-    ]
-  },
-  {
-    id: 'loy_new_8', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Yeni bir personel geldi ve çok yetenekli. Onu "rakip" mi görürsünüz "yük hafifletici" mi?',
-    weightedOptions: [
-      { label: 'Ona kurum kültürünü öğretir ve işbirliği yaparım. Kurum kazanırsa ben de kazanırım.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Liderlik Kumaşı.' },
-      { label: 'Kendi vakalarımı ve otoritemi korurum; yeni gelenin parlaması beni gölgeler.', weights: { institutionalLoyalty: 0.3, personality: 0.4 }, analysisInsight: 'Kırılgan Ego.' }
-    ]
-  },
-  {
-    id: 'loy_new_9', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Kurumdaki "Maaş Gizliliği" kuralı hakkında ne düşünüyorsunuz?',
-    weightedOptions: [
-      { label: 'Destekliyorum: Kaosu önler ve odak noktasını paradan liyakate çeker.', weights: { institutionalLoyalty: 1.0, technicalExpertise: 0.8 }, analysisInsight: 'Kurumsal Disiplin.' },
-      { label: 'Emek sömürüsünü gizlediğini düşünüyorum.', weights: { institutionalLoyalty: 0.2, personality: 0.9 }, analysisInsight: 'Hak Odaklı Aktivist.' }
-    ]
-  },
-  {
-    id: 'loy_new_10', category: 'institutionalLoyalty', type: 'radio',
-    text: 'Burada 5 yıl sonra kendinizi nerede görüyorsunuz?',
-    weightedOptions: [
-      { label: 'Bölüm başkanı veya kurumun akademik direktörü olarak.', weights: { institutionalLoyalty: 1.0, leadership: 1.0 }, analysisInsight: 'Uzun Vadeli Yatırım.' },
-      { label: 'Çok aranan, en zor vakaları çözen bağımsız bir uzman olarak.', weights: { institutionalLoyalty: 0.6, technicalExpertise: 1.0 }, analysisInsight: 'Bireysel Yıldız.' }
+      { label: 'İmzalamış olduğum sözleşme gereği kurallara tam uyum gösteririm; sistemin işlemesi için kuralların sorgulanmadan uygulanması gerektiğini bilirim ancak uygun bir zamanda yönetime yapıcı ve analitik bir öneri dosyası sunarım.', weights: { institutionalLoyalty: 1.0, workEthics: 0.9 }, analysisInsight: 'Disiplinli ve Yapıcı Muhalif.' },
+      { label: 'Bu kuralları içselleştiremediğim için gizlice uymamayı tercih ederim veya uymayan iş arkadaşlarımı destekleyerek kurumsal bir mikro-direnç alanı oluştururum; kişisel özgürlüğümün ve mantığımın kurallardan üstün olduğunu düşünürüm.', weights: { institutionalLoyalty: 0.1, personality: 0.6 }, analysisInsight: 'Pasif-Agresif Tutum.' }
     ]
   }
 ];
