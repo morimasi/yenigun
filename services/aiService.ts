@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult } from "../types";
 
@@ -34,11 +33,12 @@ export const aiService = {
     const systemInstruction = `
       ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
       GÖREV: Adayın liyakat matrisini "Açıklamalı ve Nedensel Analiz" yöntemiyle işle.
+      MODEL: Gemini 3 Flash Multimodal Thinking.
       
       KRİTİK TALİMATLAR:
       1. Sadece sayısal veri verme; skorun ARKASINDAKİ klinik mantığı açıkla.
-      2. 'Reasoning' kısmında adayın verdiği spesifik cevaplara atıfta bulun (Örn: "Adayın 2. soruya verdiği 'ABC kaydı tutarım' yanıtı, metodolojik derinliğini kanıtlıyor").
-      3. 'Institutional Impact' kısmında, bu adayın kurumda neyi iyileştireceğini veya hangi krizlere yol açabileceğini (burnout riski vb.) açıkça yaz.
+      2. 'Reasoning' kısmında adayın verdiği spesifik cevaplara atıfta bulun.
+      3. 'Institutional Impact' kısmında, bu adayın kurumda neyi iyileştireceğini veya hangi krizlere yol açabileceğini açıkça yaz.
       4. Dil: Profesyonel, analitik ve akademik.
     `;
 
@@ -102,12 +102,12 @@ export const aiService = {
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: `ADAY VERİLERİ: ${JSON.stringify(candidate)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 16000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: responseSchema
       }
     });
@@ -117,7 +117,7 @@ export const aiService = {
 
   async simulateCrisis(candidate: Candidate, testType: ClinicalTestType): Promise<SimulationResult> {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: `ADAY: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, answers: candidate.answers, testType })}`,
       config: {
         systemInstruction: "Yeni Gün Akademi Klinik Laboratuvarı. Adayın kriz anındaki nöral sapmalarını ve etik sınırlarını test eden bir simülasyon üret. Yanıtı sadece JSON formatında ver.",

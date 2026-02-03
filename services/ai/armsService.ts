@@ -1,14 +1,9 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { StaffMember, IDP, TrainingSlide, PresentationConfig, AIReport, Candidate } from "../../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
-  /**
-   * Personelin klinik profili ve test sonuçları temelinde 90 günlük IDP üretir.
-   * @fix: Made assessmentHistory optional and updated staff type to support Candidate evaluation during hiring.
-   */
   async generateIDP(staff: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -16,11 +11,11 @@ export const armsService = {
       config: {
         systemInstruction: `
           ROL: Yeni Gün Akademi Baş Klinik Mentor. 
-          GÖREV: Personelin test geçmişindeki metodolojik sapmaları analiz et ve 90 günlük, somut, bilimsel (EBP) bir gelişim planı oluştur.
-          ÇIKTI: Saf JSON formatında roadmap ve milestones içermeli.
+          GÖREV: Personelin test geçmişindeki metodolojik sapmaları analiz et ve 90 günlük gelişim planı oluştur.
+          MODEL: Gemini 3 Flash Thinking.
         `,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 20000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -63,20 +58,14 @@ export const armsService = {
     };
   },
 
-  /**
-   * Personelin IDP'sine özel eğitim slaytları tasarlar.
-   */
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
       config: {
-        systemInstruction: `
-          ROL: Akademik Müfredat Tasarımcısı. 
-          GÖREV: Personelin gelişim planındaki zayıf noktaları kapatacak, vaka temelli interaktif bir eğitim seti tasarla.
-        `,
+        systemInstruction: `ROL: Akademik Müfredat Tasarımcısı. GÖREV: Vaka temelli interaktif bir eğitim seti tasarla.`,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.ARRAY,
           items: {
@@ -107,20 +96,14 @@ export const armsService = {
     return JSON.parse(response.text || '[]');
   },
 
-  /**
-   * @fix: Added missing 'generateCustomPresentation' method to armsService.
-   */
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: `
-          ROL: Kıdemli Akademik Müfredat Tasarımcısı. 
-          GÖREV: Verilen konfigürasyona uygun, akademik derinliği olan bir eğitim sunumu tasarla.
-        `,
+        systemInstruction: `ROL: Kıdemli Akademik Müfredat Tasarımcısı. GÖREV: Akademik derinliği olan bir eğitim sunumu tasarla.`,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 20000 },
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.ARRAY,
           items: {

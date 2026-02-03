@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, GlobalConfig } from "../../types";
 
@@ -20,14 +19,11 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
     config: {
       systemInstruction: `
          ROL: Yeni Gün Akademi Stratejik İK Analisti.
-         GÖREV: Mevcut aday havuzunu kurumun 12 aylık akademik hedefleriyle kıyasla. 
-         ANALİZ: 
-         1. Hangi branşta liyakat krizi var? 
-         2. Hangi adaylar "Geleceğin Lideri" (HiPo) adayıdır? 
-         3. Pazar trendlerine göre hangi uzmanlık alanı daha kritik hale gelecek?
+         GÖREV: Mevcut aday havuzunu kurumun hedefleriyle kıyasla. 
+         MODEL: Gemini 3 Flash Thinking.
       `,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 20000 },
+      thinkingConfig: { thinkingBudget: 24576 },
       responseSchema: {
         type: Type.OBJECT,
         properties: {
@@ -36,7 +32,7 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
           criticalRiskArea: { type: Type.STRING },
           recommendedAction: { type: Type.STRING },
           marketPrediction: { type: Type.STRING },
-          highPotentialCandidates: { type: Type.ARRAY, items: { type: Type.STRING }, description: "En yüksek liyakat ve dürüstlük korelasyonuna sahip 3 isim." }
+          highPotentialCandidates: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
         required: ["executiveSummary", "topPerformingBranch", "criticalRiskArea", "recommendedAction", "marketPrediction", "highPotentialCandidates"]
       }

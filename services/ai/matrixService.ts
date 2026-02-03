@@ -18,6 +18,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Strateji Uzmanı.
     GÖREV: Personelin 80 soruluk "Liyakat Matrisi" cevaplarını analiz et.
+    MODEL: Gemini 3 Flash Multimodal Thinking.
     
     ANALİZ KRİTERLERİ:
     1. aiTag SEMANTİĞİ: Cevaplardaki etiketleri (Örn: radical_honesty, flexible_pedagogy) personelin mesleki kimliğini tanımlamak için kullan.
@@ -32,7 +33,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 24000 },
+      thinkingConfig: { thinkingBudget: 24576 },
       responseSchema: {
         type: Type.OBJECT,
         properties: {
