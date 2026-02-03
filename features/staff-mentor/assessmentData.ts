@@ -2,8 +2,8 @@
 import { AssessmentBattery } from '../../types';
 
 /**
- * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v12.0)
- * Güncelleme: Cevap dilleri, akademik jargondan arındırılarak "Uygulayıcı Dostu" hale getirilmiştir.
+ * YENİ GÜN AKADEMİ | PERSONEL LİYAKAT VE KLİNİK OTOPSİ BATARYASI (v13.0)
+ * Güncelleme: Tüm modüller "Uygulayıcı Dostu" ve "Arketip Odaklı" dile geçirilmiştir.
  */
 export const MODULAR_BATTERIES: AssessmentBattery[] = [
   // --- 1. İLERİ ABA VE KLİNİK KARAR MEKANİZMALARI ---
@@ -35,7 +35,63 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON (DOĞALLAŞTIRILMIŞ) ---
+  // --- 2. ETİK TAHKİM VE PROFESYONEL MESAFE (SADELEŞTİRİLMİŞ) ---
+  {
+    id: 'ethics_and_boundaries',
+    title: 'Etik Tahkim ve Profesyonel Mesafe',
+    description: 'Veli ile aradaki mesafe, gizlilik ve meslek etiği kararları.',
+    icon: '⚖️',
+    category: 'ethics',
+    questions: [
+      {
+        id: 'stf_eth_1',
+        text: 'Veli sizi "aileden biri" gibi gördüğünü söyleyerek evdeki özel bir akşam yemeğine davet etti. Bu samimi teklif karşısındaki duruşunuz ne olur?',
+        options: [
+          { label: 'Kurum kuralları ve mesleki sınırlarım gereği, ailelerle ders saatleri dışında sosyal görüşme yapmamın ileride vereceğim eğitim kararlarını etkileyebileceğini nazikçe anlatır ve daveti kibarca reddederim. Aramızdaki saygın mesafeyi korumayı seçerim.', clinicalValue: 100, aiTag: 'formal_purist' },
+          { label: 'Aile ile kurulan güven bağını (ittifakı) güçlendirmek ve çocuğu kendi doğal ev ortamında gözlemleme şansı bulmak adına bu davete bir kereliğine katılırım. Ancak bunun bir alışkanlığa dönüşmemesi için sonraki süreçte sınırlarıma çok daha dikkat ederim.', clinicalValue: 90, aiTag: 'relational_empathetic' },
+          { label: 'Bu tarz bireysel davetleri kabul etmem ancak aileyi kırmamak için kurumun düzenlediği genel toplantı, piknik veya çay saatleri gibi kontrollü ortamlarda daha fazla vakit geçirmeyi teklif ederim. İlişkiyi kişisel değil, kurumsal bir düzlemde tutmaya çalışırım.', clinicalValue: 95, aiTag: 'strategic_mediator' }
+        ]
+      },
+      {
+        id: 'stf_eth_2',
+        text: 'Çok sevdiğiniz bir veli, "Kurumun haberi olmasın, bize evde gizlice özel ders ver, sana iki katı ödeme yapalım" dedi. Nasıl bir yol izlersiniz?',
+        options: [
+          { label: 'Bu teklifi kesinlikle kabul etmem. Bir vaka ile hem kurumda hem de dışarıda para ilişkisi kurmanın (çiftli ilişki) dürüstlüğümü bozacağını, bunun meslek ahlakına sığmayacağını aileye net bir şekilde söylerim. Güvenlerini sarsmadan bu konuyu kapatırım.', clinicalValue: 100, aiTag: 'uncompromising_ethics' },
+          { label: 'Hemen kurum yönetimine bilgi veririm. Eğer vakanın gerçekten ek ders alması gerekiyorsa, bunu kurum çatısı altında ve resmi bir şekilde yapmayı öneririm. Her şeyin şeffaf ve denetlenebilir olduğu bir sistemde çalışmayı şart koşarım.', clinicalValue: 95, aiTag: 'transparent_institutionalist' },
+          { label: 'Teklifi doğrudan reddetmem ancak veliye "Önce müdürümüzle görüşüp izin almam gerekir, kurumun onayı olmadan böyle bir şey yapamam" diyerek topu yönetime atarım. Kendi başıma etik bir sorumluluk almaktan kaçınır, kurumsal kararı beklerim.', clinicalValue: 85, aiTag: 'pragmatic_clinical_advocate' }
+        ]
+      },
+      {
+        id: 'stf_eth_3',
+        text: 'Ders sırasında çocuğun vücudunda bir morluk/yara gördünüz. Veli "evde çarptı" diyor ama siz emin değilsiniz. İlk adımınız?',
+        options: [
+          { label: 'Durumu hiç vakit kaybetmeden kurum müdürüne ve çocuk koruma birimlerine raporlarım. Çocuğun güvenliği, aile ile olan aramdaki dostluktan çok daha önemlidir. Risk varsa bunu bildirmek benim yasal ve ahlaki görevimdir, gerekirse aile ile aramın bozulmasını göze alırım.', clinicalValue: 100, aiTag: 'legal_watchdog' },
+          { label: 'Önce aileyi sakin bir köşeye çeker ve olayın nasıl olduğunu detaylıca, yargılamadan sormaya çalışırım. Eğer gerçekten bir destek ihtiyacı sezersem veya ailede bir kriz varsa, onlara yardım etmek için kurumun rehberlik birimini devreye sokarım. Hemen suçlamak yerine anlamayı seçerim.', clinicalValue: 90, aiTag: 'supportive_counselor' },
+          { label: 'Gördüğüm yarayı objektif bir şekilde fotoğraflayıp vaka dosyasına not alırım. Sonraki birkaç ders boyunca çocuğu ve aileyi çok yakından izlerim. Aceleci bir karar verip aileyi ürkütmektense, elimde daha somut bir kanıt olana kadar gözlem yapmaya ve veri toplamaya devam ederim.', clinicalValue: 95, aiTag: 'methodical_observer' }
+        ]
+      },
+      {
+        id: 'stf_eth_4',
+        text: 'Sosyal medya hesabınızda, vakanızın başarısını ve size olan sevgisini gösteren bir fotoğrafı (ailenin sözlü izniyle) paylaşmaya nasıl bakarsınız?',
+        options: [
+          { label: 'Asla paylaşmam. Çocuğun gelecekteki mahremiyetini ve dijital haklarını korumak, ailenin o anki duygusal izninden daha önemlidir. Uzman kimliğim ile sosyal medya kimliğim arasına kesin bir sınır çekerim; vakalarım benim reklam aracım olamaz.', clinicalValue: 100, aiTag: 'privacy_purist' },
+          { label: 'Eğitimin faydalarını ve kurumumuzun başarısını göstermek için, çocuğun yüzünü net göstermeyecek şekilde (arkadan veya emojiyle) paylaşabilirim. Bunu yaparken kendimi değil, özel eğitimin çocuklara neler kattığını anlatmaya odaklanan bir dil kullanırım.', clinicalValue: 90, aiTag: 'awareness_advocate' },
+          { label: 'Bu tarz bir paylaşımı ancak kurumun resmi hesabı üzerinden yapılmasını desteklerim. Kendi hesabımdan paylaşmak yerine, içeriği kurumun medya birimine gönderirim. Böylece paylaşım bireysel bir hareketten çıkıp kurumsal bir başarı hikayesine dönüşür.', clinicalValue: 95, aiTag: 'corporate_safety_expert' }
+        ]
+      },
+      {
+        id: 'stf_eth_5',
+        text: 'Bir mesai arkadaşınızın derslere sürekli geç girdiğini ama raporlara tam süre yazdığını fark ettiniz. Ne yaparsınız?',
+        options: [
+          { label: 'Arkadaşımı bir kenara çekip bu durumun hem çocukların hakkını yemek olduğunu hem de kendi profesyonelliğine zarar verdiğini açıkça söylerim. Eğer uyarıma rağmen düzelmezse, çocukların eğitim hakkını korumak için durumu yönetime rapor etmekten çekinmem.', clinicalValue: 100, aiTag: 'peer_supervisor' },
+          { label: 'Durumu isim vermeden genel bir ekip toplantısında gündeme getiririm. "Ders saatlerine uyum ve rapor dürüstlüğü" üzerine bir konuşma başlatarak, herkesin kendi hatasını fark etmesini sağlarım. Sorunu kişiselleştirmeden kurum içinde bir oto-kontrol mekanizması kurmaya çalışırım.', clinicalValue: 95, aiTag: 'systemic_regulator' },
+          { label: 'Arkadaşımın bir sorun yaşayıp yaşamadığını anlamaya çalışırım. Belki bir tükenmişlik yaşıyordur diyerek ona destek teklif ederim. Onu şikayet etmek yerine, bu durumu nasıl telafi edebileceğine (ek çalışmalar vb.) dair ona rehberlik ederek sorunu dostane bir yolla çözerim.', clinicalValue: 85, aiTag: 'empathetic_leader' }
+        ]
+      }
+    ]
+  },
+
+  // --- 3. TEKNO-PEDAGOJİK ADAPTASYON ---
   {
     id: 'academic_innovation',
     title: 'Tekno-Pedagojik Adaptasyon',
@@ -60,20 +116,11 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
           { label: 'Tableti dersin bir parçası yaparım. Veri girerken bunu çocuğa bir "puan kazanma oyunu" gibi gösterip, teknolojiyi aramızdaki bağı koparan bir engel değil, bizi birleştiren bir araç haline getiririm.', clinicalValue: 100, aiTag: 'adaptive_digital_coach' },
           { label: 'Sistemin hatasız çalışması için tableti kullanmaya devam ederim. Zamanla elim alışacağı için veri girişini hızlandırır, çocukla olan göz temasımı minimum düzeyde kesmeye çalışarak sürece uyum sağlarım.', clinicalValue: 80, aiTag: 'efficiency_focused_expert' }
         ]
-      },
-      {
-        id: 'stf_inn_3',
-        text: 'Seansın en önemli yerinde sistem çöktü ve tüm materyalleriniz tablette kilitli kaldı. O an ne yaparsınız?',
-        options: [
-          { label: 'Hiç panik yapmam; sınıftaki bardak, minder veya kağıt gibi basit nesnelerle hedeflerime uygun yeni bir oyun kurarım. İyi bir öğretmenin materyali teknolojide değil, kendi yaratıcılığındadır.', clinicalValue: 100, aiTag: 'resilient_innovator' },
-          { label: 'Sistem düzelene kadar dersin akışını durdururum. Bu süreyi çocukla serbestçe oyun oynayıp bağ kurarak değerlendiririm; planlı dersin bozulmasının yarattığı gerginliği çocuğa hissettirmem.', clinicalValue: 85, aiTag: 'flexible_stabilizer' },
-          { label: 'Hemen yönetime haber veririm. Yanlış veya eksik materyalle yapılacak bir dersin verimli olmayacağını, hata yapmaktansa dersin telafisinin yapılmasının daha profesyonelce olduğunu savunurum.', clinicalValue: 60, aiTag: 'procedural_integrity_focused' }
-        ]
       }
     ]
   },
 
-  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK (DOĞALLAŞTIRILMIŞ) ---
+  // --- 4. MULTİDİSİPLİNER TAKIM VE MENTORLUK ---
   {
     id: 'team_and_mentorship',
     title: 'Multidisipliner Takım ve Mentorluk',
@@ -102,7 +149,7 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
     ]
   },
 
-  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ (DOĞALLAŞTIRILMIŞ) ---
+  // --- 5. KRİZ LİDERLİĞİ VE VELİ DİPLOMASİSİ ---
   {
     id: 'crisis_leadership',
     title: 'Kriz Liderliği ve Veli Diplomasisi',
@@ -117,44 +164,6 @@ export const MODULAR_BATTERIES: AssessmentBattery[] = [
           { label: 'Veliyi hemen sakinleşebileceği kapalı bir odaya davet ederim. Duygularını anladığımı belirttikten sonra, çocuğun ilk günkü haliyle bugünkü halini rakamlarla ve grafiklerle önüne koyarak durumu rasyonel bir şekilde yatıştırırım.', clinicalValue: 100, aiTag: 'rational_deescalator' },
           { label: 'Ailenin yaşadığı hayal kırıklığını ve yorgunluğu gerçekten hissettiğimi gösteririm. Önce sadece dinlerim ve "Haklısınız, çok yoruldunuz" diyerek rahatlamasını sağlarım; aramızdaki güven bağını onarmaya odaklanırım.', clinicalValue: 95, aiTag: 'empathetic_connector' },
           { label: 'Kurumun imajını korumak için veliyi idari ofise yönlendiririm. Bu tarz bir bağırmanın kurallarımıza aykırı olduğunu hatırlatır ve ancak sakinleştiği zaman profesyonel bir görüşme yapabileceğimizi net bir dille belirtirim.', clinicalValue: 85, aiTag: 'institutional_enforcer' }
-        ]
-      },
-      {
-        id: 'stf_cri_2',
-        text: 'Öğrenci sınıfta aniden kendine zarar vermeye başladı (parmağını ısırıyor). O saniyedeki önceliğiniz?',
-        options: [
-          { label: 'En güvenli ve nazik tutuş tekniklerini kullanarak çocuğu ve kendimi korumaya alırım. Bu sırada hiçbir duygusal tepki vermem ki çocuk bu eylemi ilgi çekmek için kullanmasın; krizi teknik bir süreç gibi yönetirim.', clinicalValue: 100, aiTag: 'clinical_safety_expert' },
-          { label: 'Çocuğu hemen yumuşak bir mindere alırım ve yumuşak bir ses tonuyla onu sakinleştirmeye çalışırım. Acısını anladığımı hissettiren hafif bir temasla sinir sistemini yatıştırıp güven vermeye odaklanırım.', clinicalValue: 90, aiTag: 'sensory_stabilizer' },
-          { label: 'Odadaki uyaranları azaltır (ışığı kısmak vb.) ve gerekirse yardım çağırırım. Çocuğun kendine fiziksel bir hasar vermesini engelledikten sonra, bu olayın neden kaynaklandığını detaylıca not alıp ekipçe incelerim.', clinicalValue: 95, aiTag: 'procedural_crisis_manager' }
-        ]
-      },
-      {
-        id: 'stf_cri_3',
-        text: 'Veli, çocuğun derslerdeki gelişiminin yavaşladığını görüp pes etmek üzere. Bu umutsuzluk krizini nasıl aşarsınız?',
-        options: [
-          { label: 'Çocuğun öğrenme sürecinde bazen "duraklama dönemleri" olabileceğini, bunun aslında bir sıçrama öncesi hazırlık olduğunu anlatırım. Planı yenileyerek aileye "çok küçük ama hızlı" başarılar yaşatacak yeni hedefler belirlerim.', clinicalValue: 100, aiTag: 'strategic_optimist' },
-          { label: 'Durumu tüm çıplaklığıyla paylaşırım. Boş umut vermek yerine gerçekleri söylerim ve "belki akademik değil, yaşam kalitesini artıracak öz bakım becerilerine mi odaklansak?" diyerek dürüst bir yol ayrımı teklif ederim.', clinicalValue: 85, aiTag: 'transparent_realist' },
-          { label: 'Başka bir uzmandan veya süpervizörden görüş isterim. Velinin önünde bu görüşü paylaşarak sisteme "üçüncü bir gözün" dahil olmasının güven tazeleyeceğine inanırım; süreci kurumsal bir dayanışma ile aşmaya çalışırım.', clinicalValue: 95, aiTag: 'collaborative_solutionist' }
-        ]
-      }
-    ]
-  },
-
-  // --- 6. AKADEMİK MÜDAHALE VE ÇÖZÜMLER (Eskisiyle devam eder...) ---
-  {
-    id: 'academic_neuro_pedagogy',
-    title: 'Akademik Müdahale ve Çözümler',
-    description: 'Okuma-yazma ve matematik öğretiminde yaşanan tıkanıklıklara yaklaşımlar.',
-    icon: '📝',
-    category: 'clinical',
-    questions: [
-      {
-        id: 'stf_acad_1',
-        text: 'Öğrenci harfleri tanıyor ama sesleri birleştirip hece yapamıyor. Ne yaparsınız?',
-        options: [
-          { label: 'Kağıt kalemi bir kenara bırakırım. Sadece seslerle kafiyeli oyunlar oynatıp, seslerin birleşme mantığını oyun üzerinden çocuğun zihnine yerleştirmeye çalışırım.', clinicalValue: 100, aiTag: 'phonological_remediation' },
-          { label: 'Harfleri somut nesnelere benzetirim (örn: S harfi yılan gibi). Bu görsel resimler üzerinden birleştirme aşamasını tamamen görsel bir hafıza oyununa çeviririm.', clinicalValue: 60, aiTag: 'compensatory_visual_coding' },
-          { label: 'Her doğru birleştirmede sevdiği bir ödülü vererek deneme sayısını artırırım. Çok pratik yaparak bu tıkanıklığı zamanla aşacağına inanırım.', clinicalValue: 40, aiTag: 'behavioral_drill' }
         ]
       }
     ]
