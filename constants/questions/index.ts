@@ -1,17 +1,35 @@
 
-import { clinicalQuestions } from './clinical';
-import { ethicsQuestions } from './ethics';
-import { resilienceQuestions } from './resilience';
-import { visionQuestions } from './vision';
+import { specialEducationQuestions } from './specialEducation';
+import { languageSpeechQuestions } from './languageSpeech';
+import { occupationalTherapyQuestions } from './occupationalTherapy';
+import { pedagogyQuestions } from './pedagogy';
+import { ethicsQuestions } from './ethics'; // Mevcut etik soruları korunuyor
+import { resilienceQuestions } from './resilience'; // Mevcut direnç soruları korunuyor
+import { visionQuestions } from './vision'; // Mevcut vizyon soruları korunuyor
 import { Question } from '../../types';
 
 /**
- * Yeni Gün Akademi | MIA Soru Bankası v12.0
- * İkilem Temelli Liyakat Sorgulama Motoru
+ * YENİ GÜN AKADEMİ | AKADEMİK SORU BANKASI v15.0
+ * Branş bazlı modüler mimari ile optimize edilmiştir.
  */
 export const BRANCH_QUESTIONS: Record<string, Question[]> = {
-  clinical_logic: clinicalQuestions, // Klinik Yeterlilik + Pedagojik Altyapı
-  ethics_parent: ethicsQuestions,   // İş Etiği + Sınır + Sadakat
-  resilience_team: resilienceQuestions, // Resilians + Gelişime Açıklık
-  vision_loyalty: visionQuestions     // Vizyoner Projeksiyon
+  // ANA AKADEMİK ETAPLAR
+  clinical_logic: [
+    ...pedagogyQuestions,
+    ...specialEducationQuestions,
+    ...languageSpeechQuestions,
+    ...occupationalTherapyQuestions
+  ],
+  
+  // KURUMSAL VE ETİK ETAPLAR
+  ethics_parent: ethicsQuestions,
+  resilience_team: resilienceQuestions,
+  vision_loyalty: visionQuestions
+};
+
+export {
+  specialEducationQuestions,
+  languageSpeechQuestions,
+  occupationalTherapyQuestions,
+  pedagogyQuestions
 };
