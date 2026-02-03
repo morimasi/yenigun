@@ -31,16 +31,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
   const handleStartExport = async () => {
     setIsExporting(true);
     try {
-      // 1. ADIM: Mühürleme API Çağrısı (Opsiyonel persistence adımı)
-      if (data.type === 'CLINICAL_SIMULATION') {
-         await fetch(`/api/clinical-lab?action=seal`, {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ simId: data.referenceId })
-         });
-      }
-
-      // 2. ADIM: PDF Üretimi
+      // PDF Üretimi
       await UniversalPdfService.generateHighResPdf('publishing-canvas', data);
       alert("Döküman başarıyla mühürlendi ve yerel sürücüye aktarıldı.");
     } catch (e) {
@@ -50,15 +41,12 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
     }
   };
 
-  // Sayfa bazlı içerik dağıtımı (Logic Partitioning)
-  // Bu bölüm aslında children'ı değil, data.payload'u kullanarak gerçek sayfalar üretir.
   const activeSections = config.sections.filter(s => s.active).map(s => s.id);
 
   return (
     <div className="fixed inset-0 z-[1000] bg-slate-950/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-12 animate-fade-in no-print">
       <div className="w-full max-w-[1400px] h-full bg-white rounded-[4rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col md:flex-row overflow-hidden border border-white/10">
         
-        {/* PANEL A: PUBLISHING CONTROLS (SOL) */}
         <div className="w-full md:w-[420px] bg-slate-50 border-r border-slate-200 p-12 overflow-y-auto custom-scrollbar flex flex-col h-full">
            <div className="mb-12">
               <div className="flex items-center gap-3 mb-6">
@@ -71,7 +59,6 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
            </div>
 
            <div className="space-y-10 flex-1">
-              {/* Bölüm Seçimi */}
               <div className="space-y-4">
                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">RAPOR KAPSAMI</label>
                  <div className="grid grid-cols-1 gap-2">
@@ -92,7 +79,6 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                  </div>
               </div>
 
-              {/* Parametreler */}
               <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 space-y-6 shadow-sm">
                  <div className="flex items-center justify-between group cursor-pointer" onClick={() => setConfig({...config, showWatermark: !config.showWatermark})}>
                     <div>
@@ -127,10 +113,8 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
            </div>
         </div>
 
-        {/* PANEL B: PREVIEW STAGE (SAĞ) */}
         <div className="flex-1 bg-slate-200/50 p-8 md:p-16 overflow-y-auto custom-scrollbar flex flex-col items-center gap-12">
            
-           {/* SAYFA GEZGİNİ (ÜST) */}
            <div className="flex bg-white/50 backdrop-blur-xl p-2 rounded-[2rem] shadow-xl border border-white gap-2 sticky top-0 z-50">
               {activeSections.map((sec, i) => (
                  <button 
@@ -143,13 +127,10 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
               ))}
            </div>
 
-           {/* GERÇEK PDF ÖNİZLEME (Hidden for Canvas, visible for UI) */}
            <div className="relative w-full max-w-[210mm] transition-all duration-700" id="publishing-canvas">
               
-              {/* SAYFA 1: KAPAK VE ÖZET */}
               {activeSections.includes('cover') && (
                 <div className={`pdf-page bg-white w-full shadow-2xl mb-12 relative overflow-hidden ${activePreviewPage !== activeSections.indexOf('cover') ? 'hidden' : 'block'}`} style={{ width: '210mm', height: '297mm', padding: '25mm' }}>
-                   {/* Sayfa Tasarımı */}
                    <div className="flex flex-col h-full border-[10px] border-slate-900 p-12 relative">
                       <div className="mb-20">
                          <div className="flex items-center gap-6 mb-12">
@@ -170,7 +151,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                          <div className="bg-slate-50 p-12 rounded-[4rem] border border-slate-100 relative">
                             <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.4em] mb-6">YÖNETİCİ ÖZETİ</h4>
                             <p className="text-lg font-medium text-slate-700 leading-relaxed italic text-justify">
-                               {data.payload.report?.summary || data.payload.result?.summary || "Döküman özetleniyor..."}
+                               {data.payload.report?.summary || "Döküman özetleniyor..."}
                             </p>
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-600/5 rounded-full blur-2xl"></div>
                          </div>
@@ -178,7 +159,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                          <div className="grid grid-cols-2 gap-12">
                             <div className="p-10 bg-slate-900 rounded-[3rem] text-white">
                                <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-4">LİYAKAT SKORU</span>
-                               <p className="text-8xl font-black leading-none">%{data.payload.report?.score || data.payload.result?.stressLevel || '?'}</p>
+                               <p className="text-8xl font-black leading-none">%{data.payload.report?.score || '?'}</p>
                             </div>
                             <div className="p-10 border-4 border-slate-100 rounded-[3rem] flex flex-col justify-center">
                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">DÜRÜSTLÜK ENDEKSİ</span>
@@ -201,35 +182,20 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                 </div>
               )}
 
-              {/* SAYFA 2: DERİN ANALİZ MATRİSİ */}
               {activeSections.includes('matrix') && (
                 <div className={`pdf-page bg-white w-full shadow-2xl mb-12 relative overflow-hidden ${activePreviewPage !== activeSections.indexOf('matrix') ? 'hidden' : 'block'}`} style={{ width: '210mm', height: '297mm', padding: '25mm' }}>
                    <div className="border-l-[12px] border-orange-600 h-full pl-16 py-10">
                       <h3 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] mb-16">02 // BOYUTSAL ANALİZ MATRİSİ</h3>
                       <div className="space-y-12">
-                         {/* Eğer aday raporu ise matrix göster, simülasyon ise sim verisi göster */}
-                         {data.payload.report?.deepAnalysis ? (
-                            Object.entries(data.payload.report.deepAnalysis).slice(0, 4).map(([key, val]: any) => (
-                               <div key={key} className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
-                                  <div className="flex justify-between items-end mb-6">
-                                     <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</h5>
-                                     <span className="text-3xl font-black text-orange-600">%{val.score}</span>
-                                  </div>
-                                  <p className="text-[12px] font-medium text-slate-600 leading-relaxed italic italic">"{val.reasoning}"</p>
+                         {data.payload.report?.deepAnalysis && Object.entries(data.payload.report.deepAnalysis).slice(0, 4).map(([key, val]: any) => (
+                            <div key={key} className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
+                               <div className="flex justify-between items-end mb-6">
+                                  <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</h5>
+                                  <span className="text-3xl font-black text-orange-600">%{val.score}</span>
                                </div>
-                            ))
-                         ) : (
-                            <div className="bg-slate-900 p-12 rounded-[4rem] text-white">
-                               <h5 className="text-[11px] font-black text-orange-500 uppercase tracking-widest mb-10">Klinik Senaryo Detayları</h5>
-                               <p className="text-2xl font-black italic mb-10 leading-tight">"{data.payload.result?.scenario}"</p>
-                               <div className="grid grid-cols-1 gap-6">
-                                  <div className="p-8 bg-white/5 rounded-3xl border border-white/10">
-                                     <span className="text-[10px] font-black text-slate-400 uppercase block mb-4">Aday Refleksi</span>
-                                     <p className="text-sm font-bold italic">"{data.payload.result?.candidateResponse}"</p>
-                                  </div>
-                               </div>
+                               <p className="text-[12px] font-medium text-slate-600 leading-relaxed italic">"{val.reasoning}"</p>
                             </div>
-                         )}
+                         ))}
                       </div>
 
                       {config.signatureRequired && (
@@ -244,13 +210,11 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                             </div>
                          </div>
                       )}
-                      
                       <div className="absolute bottom-10 right-10 text-[9px] font-black text-slate-400 uppercase tracking-widest">SAYFA 02</div>
                    </div>
                 </div>
               )}
 
-              {/* SAYFA 3: GELECEK VE STRATEJİ */}
               {activeSections.includes('predictions') && (
                 <div className={`pdf-page bg-white w-full shadow-2xl mb-12 relative overflow-hidden ${activePreviewPage !== activeSections.indexOf('predictions') ? 'hidden' : 'block'}`} style={{ width: '210mm', height: '297mm', padding: '25mm' }}>
                    <div className="h-full flex flex-col">
@@ -261,7 +225,6 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                             <p className="text-3xl font-black italic leading-tight tracking-tighter">
                                "{data.payload.report?.predictiveMetrics?.evolutionPath || "Analiz ediliyor..."}"
                             </p>
-                            <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/10 rounded-full blur-[100px]"></div>
                          </div>
 
                          <div className="grid grid-cols-2 gap-10">
@@ -290,38 +253,20 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                 </div>
               )}
 
-              {/* SAYFA 4: MÜLAKAT REHBERİ VEYA SİMÜLASYON İZİ */}
               {activeSections.includes('strategic') && (
                 <div className={`pdf-page bg-white w-full shadow-2xl mb-12 relative overflow-hidden ${activePreviewPage !== activeSections.indexOf('strategic') ? 'hidden' : 'block'}`} style={{ width: '210mm', height: '297mm', padding: '25mm' }}>
                    <div className="h-full flex flex-col">
-                      <h3 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] mb-16 border-b-2 border-slate-900 pb-4">04 // MÜLAKAT VE KLİNİK İZ</h3>
+                      <h3 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] mb-16 border-b-2 border-slate-900 pb-4">04 // MÜLAKAT REHBERİ</h3>
                       <div className="space-y-8 flex-1">
-                         {data.payload.report?.interviewGuidance ? (
+                         {data.payload.report?.interviewGuidance?.strategicQuestions ? (
                             <div className="space-y-6">
                                <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-4">Stratejik Soru Havuzu</h5>
-                               {data.payload.report.interviewGuidance.strategicQuestions?.slice(0, 6).map((q: string, i: number) => (
+                               {data.payload.report.interviewGuidance.strategicQuestions.slice(0, 6).map((q: string, i: number) => (
                                   <div key={i} className="flex gap-8 items-start p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
                                      <span className="w-10 h-10 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black shrink-0">{i+1}</span>
                                      <p className="text-[12px] font-bold italic text-slate-700 leading-relaxed">"{q}"</p>
                                   </div>
                                ))}
-                            </div>
-                         ) : data.payload.result?.aiEvaluation?.neuralDivergence ? (
-                            <div className="space-y-12">
-                               <div className="p-12 bg-slate-900 rounded-[4rem] text-white">
-                                  <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-8">NÖRAL İZ ANALİZİ (DEEP TRACE)</span>
-                                  <p className="text-xl font-bold italic leading-relaxed text-slate-300 mb-10">"{data.payload.result.aiEvaluation.neuralDivergence.decisionPath}"</p>
-                                  <div className="grid grid-cols-2 gap-8">
-                                     <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
-                                        <span className="text-[9px] font-black text-slate-500 uppercase block mb-2">Dominant Duygu</span>
-                                        <p className="text-2xl font-black text-orange-200 uppercase">{data.payload.result.aiEvaluation.neuralDivergence.dominantEmotion}</p>
-                                     </div>
-                                     <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
-                                        <span className="text-[9px] font-black text-slate-500 uppercase block mb-2">Bilişsel Çelişki</span>
-                                        <p className="text-2xl font-black text-white">%{data.payload.result.aiEvaluation.neuralDivergence.contradictionIndex}</p>
-                                     </div>
-                                  </div>
-                               </div>
                             </div>
                          ) : (
                             <div className="h-full flex items-center justify-center opacity-20">
@@ -336,7 +281,6 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
 
            </div>
 
-           {/* Sayfa Alt Gezgini */}
            <div className="flex gap-4 mb-20 no-print">
               <button onClick={() => setActivePreviewPage(p => Math.max(0, p - 1))} className="p-6 bg-white rounded-full shadow-xl hover:bg-slate-900 hover:text-white transition-all">←</button>
               <button onClick={() => setActivePreviewPage(p => Math.min(activeSections.length - 1, p + 1))} className="p-6 bg-white rounded-full shadow-xl hover:bg-slate-900 hover:text-white transition-all">→</button>

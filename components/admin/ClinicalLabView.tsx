@@ -76,13 +76,14 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                     value={activeCandidateId}
                     onChange={e => { setActiveCandidateId(e.target.value); setResult(null); }}
                   >
-                    {candidates.map(c => <option key={c.id} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
+                    {candidates.map(c => <option key={c.id as React.Key} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
                   </select>
                 </div>
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">STRES TESTİ PROTOKOLÜ</label>
                   <div className="grid grid-cols-1 gap-3">
-                    {Object.values(ClinicalTestType).map(t => (
+                    {/* @fix: Explicitly cast Object.values(ClinicalTestType) to ClinicalTestType[] to avoid unknown type error in JSX. */}
+                    {(Object.values(ClinicalTestType) as ClinicalTestType[]).map(t => (
                       <button
                         key={t}
                         onClick={() => { setSelectedTest(t); setResult(null); }}
@@ -90,7 +91,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                           selectedTest === t ? 'bg-orange-600 text-white shadow-xl scale-[1.02]' : 'bg-white/5 text-slate-400 hover:bg-white/10'
                         }`}
                       >
-                        <span>{t}</span>
+                        <span>{t as React.ReactNode}</span>
                         <div className={`w-3 h-3 rounded-full ${selectedTest === t ? 'bg-white animate-pulse' : 'bg-slate-700'}`}></div>
                       </button>
                     ))}
@@ -266,7 +267,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                          { t: 'Beden Dili Projeksiyonu', v: result.aiEvaluation.microBehaviors.nonVerbalPrediction, icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
                          { t: 'Sessizlik Eşiği', v: result.aiEvaluation.microBehaviors.silenceTolerance, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }
                        ].map((m, i) => (
-                         <div key={i} className="p-12 bg-white rounded-[3.5rem] border border-slate-100 shadow-xl group hover:border-orange-500 transition-all">
+                         <div key={i} className="p-12 bg-white rounded-[3.5rem] border border-slate-100 shadow-xl group hover:border-orange-50 transition-all">
                             <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-orange-600 group-hover:text-white transition-all mb-8 shadow-inner">
                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d={m.icon} /></svg>
                             </div>

@@ -11,6 +11,13 @@ export enum Branch {
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Evli' | 'Bekar';
 
+// @fix: Missing ClinicalTestType enum definition added to resolve import errors.
+export enum ClinicalTestType {
+  DMP_STRESS = 'DMP_STRESS',
+  ETHICAL_DILEMMA = 'ETHICAL_DILEMMA',
+  PARENT_MANIPULATION = 'PARENT_MANIPULATION'
+}
+
 export interface Question {
   id: string;
   text: string;
@@ -117,6 +124,33 @@ export interface AIReport {
   presentationSlides?: TrainingSlide[];
 }
 
+// @fix: Missing SimulationResult interface definition added to resolve import errors in Lab views.
+export interface SimulationResult {
+  scenario: string;
+  parentPersona: string;
+  candidateResponse: string;
+  stressLevel: number;
+  aiEvaluation: {
+    ethicalBoundaryScore: number;
+    empathyCalibration: number;
+    professionalDistance: number;
+    crisisResolutionEfficiency: number;
+    clinicalTruths: string[];
+    criticalMistakes: string[];
+    neuralDivergence: {
+      contradictionIndex: number;
+      decisionPath: string;
+      alternativeOutcome: string;
+      dominantEmotion: string;
+    };
+    microBehaviors: {
+      toneAnalysis: string;
+      nonVerbalPrediction: string;
+      silenceTolerance: string;
+    };
+  };
+}
+
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -168,39 +202,6 @@ export interface AdvancedAnalyticsConfig {
 }
 
 export type ArchiveCategory = 'TALENT_POOL' | 'FUTURE_REFERENCE' | 'DISQUALIFIED' | 'BLACK_LIST' | 'HIRED_CONTRACTED' | 'PRESENTATION_LIBRARY';
-
-export enum ClinicalTestType {
-  DMP_STRESS = 'DMP_STRESS',
-  ETHICAL_DILEMMA = 'ETHICAL_DILEMMA',
-  PARENT_MANIPULATION = 'PARENT_MANIPULATION',
-  CLINICAL_DEPTH = 'CLINICAL_DEPTH'
-}
-
-export interface SimulationResult {
-  scenario: string;
-  parentPersona: string;
-  candidateResponse: string;
-  stressLevel: number;
-  aiEvaluation: {
-    ethicalBoundaryScore: number;
-    empathyCalibration: number;
-    professionalDistance: number;
-    crisisResolutionEfficiency: number;
-    clinicalTruths: string[];
-    criticalMistakes: string[];
-    neuralDivergence: {
-      contradictionIndex: number;
-      decisionPath: string;
-      alternativeOutcome: string;
-      dominantEmotion: string;
-    };
-    microBehaviors: {
-      toneAnalysis: string;
-      nonVerbalPrediction: string;
-      silenceTolerance: string;
-    };
-  };
-}
 
 export interface AssessmentBattery {
   id: string;
@@ -284,7 +285,8 @@ export interface FormStep {
   description: string;
 }
 
-export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'CLINICAL_SIMULATION' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS';
+// @fix: Updated ExportType to include 'CLINICAL_SIMULATION' to match usage in ClinicalLabView.
+export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION';
 
 export interface ExportConfig {
   title: string;

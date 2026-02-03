@@ -185,14 +185,15 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                       onChange={e => setActiveCandidateId(e.target.value)}
                       disabled={isSimulating}
                     >
-                      {candidates.map(c => <option key={c.id} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
+                      {candidates.map(c => <option key={c.id as React.Key} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
                     </select>
                  </div>
 
                  <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">TEST PROTOKOLÜ</label>
                     <div className="flex flex-col gap-2">
-                       {Object.values(ClinicalTestType).map(t => (
+                       {/* @fix: Cast Object.values(ClinicalTestType) to ClinicalTestType[] to fix unknown mapping error. */}
+                       {(Object.values(ClinicalTestType) as ClinicalTestType[]).map(t => (
                           <button
                             key={t}
                             onClick={() => setSelectedTest(t)}
@@ -201,7 +202,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                               selectedTest === t ? 'bg-orange-600 border-orange-500 text-white shadow-xl' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
                             }`}
                           >
-                             <span>{t.replace('_', ' ')}</span>
+                             <span>{(t as string).replace('_', ' ')}</span>
                              <div className={`w-2 h-2 rounded-full ${selectedTest === t ? 'bg-white animate-pulse' : 'bg-slate-700'}`}></div>
                           </button>
                        ))}

@@ -7,7 +7,6 @@ import AnalyticsView from './AnalyticsView';
 import CalendarView from './CalendarView';
 import SettingsView from './SettingsView';
 import DecisionSupportView from './DecisionSupportView';
-import ClinicalLabView from '../../features/clinical-lab/ClinicalLabView';
 import MethodologyInventoryView from './MethodologyInventoryView';
 import ArchiveView from './ArchiveView';
 import ArmsDashboard from '../../features/staff-mentor/ArmsDashboard';
@@ -26,7 +25,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'lab' | 'methodology' | 'archive' | 'arms' | 'comm'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'methodology' | 'archive' | 'arms' | 'comm'>('pipeline');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -34,7 +33,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'analytics': return <AnalyticsView candidates={props.candidates} config={props.config} />;
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
       case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
-      case 'lab': return <ClinicalLabView candidates={props.candidates} />;
       case 'methodology': return <MethodologyInventoryView />;
       case 'archive': return <ArchiveView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} onDeleteCandidate={props.onDeleteCandidate} />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
@@ -46,7 +44,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
 
   return (
     <div className="flex flex-col h-screen bg-[#F1F5F9] font-sans text-slate-900 overflow-hidden text-sm">
-      {/* ÜST KOMUTA BARI (Compact Toolbar) */}
       <header className="shrink-0 z-[100] h-14 bg-white border-b border-slate-200 shadow-sm relative">
         <AdminTopNav 
           activeTab={activeTab} 
@@ -57,9 +54,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
         />
       </header>
       
-      {/* ANA İÇERİK ALANI */}
       <main className="flex-1 flex flex-col min-h-0 relative z-0">
-        {/* Alt Bilgi Barı (Context Strip - Ultra Thin) */}
         <div className="h-6 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-40 text-[10px]">
            <div className="flex items-center gap-2 font-bold text-slate-500 uppercase tracking-widest">
               <span className="text-slate-400">MODÜL:</span>
@@ -71,7 +66,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
            </div>
         </div>
 
-        {/* Dinamik İçerik Sahnesi */}
         <div className="flex-1 overflow-y-auto p-3 scroll-smooth bg-[#F1F5F9]">
            {renderContent()}
         </div>
