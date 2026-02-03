@@ -1,6 +1,6 @@
 
 -- ============================================================================
--- YENİ GÜN AKADEMİ | PERSONEL ANALİZ PERSİSTENCE YAMASI (v3.1)
+-- YENİ GÜN AKADEMİ | PERSONEL ANALİZ PERSİSTENCE YAMASI (v3.2)
 -- ============================================================================
 
 -- 1. TAHKİMAT: Staff tablosuna AI analizlerini saklamak için JSONB kolonu ekle
@@ -15,12 +15,15 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_staff_report_jsonb ON staff USING GIN (report);
 
 -- 3. GÜNCELLEME: view_staff_performance_matrix'in genişletilmesi
-CREATE OR REPLACE VIEW view_staff_performance_matrix AS
+-- Önce eski view'i düşürüyoruz çünkü PostgreSQL kolon yapısı değişimine (RENAME/ORDER) izin vermez.
+DROP VIEW IF EXISTS view_staff_performance_matrix;
+
+CREATE VIEW view_staff_performance_matrix AS
 SELECT 
     s.id,
     s.name,
     s.branch,
-    s.report, -- AI Raporu view üzerinden de erişilebilir
+    s.report, -- AI Raporu artık view üzerinden de erişilebilir
     COUNT(sa.id) as total_tests,
     ROUND(AVG(sa.score)) as global_merit_score,
     MAX(sa.timestamp) as last_activity

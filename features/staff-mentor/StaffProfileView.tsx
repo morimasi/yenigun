@@ -32,26 +32,30 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
     fetchDetails();
   }, [fetchDetails]);
 
-  // AI Analizi (Report) Çalıştırma ve Otomatik Kaydetme
+  /**
+   * DERİN ANALİZ VE OTOMATİK VERİTABANI KAYDI
+   * Bu fonksiyon bir kez çalıştırıldığında sonuç veritabanına mühürlenir.
+   */
   const handleDeepAnalysis = async (force = false) => {
     if (!data) return;
     
-    // Eğer kayıtlı rapor varsa ve zorlanmıyorsa analizi çalıştırma
+    // Eğer kayıtlı bir rapor zaten varsa ve "Zorla (force)" denmemişse işlemi durdur.
     if ((data.profile as any).report && !force) {
         return;
     }
 
     setIsAnalysing(true);
     try {
-      // Staff verisini Candidate formatına uydurarak genel analiz motorunu kullanıyoruz
-      const staffAsCandidate = {
+      // 1. ADIM: Personel verilerini analiz motoru için hazırla
+      const staffSnapshot = {
         ...data.profile,
         answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {})
       };
       
-      const aiReport = await generateCandidateAnalysis(staffAsCandidate as any, {} as any);
+      // 2. ADIM: Nöral Motoru (Gemini) Çalıştır
+      const aiReport = await generateCandidateAnalysis(staffSnapshot as any, {} as any);
       
-      // Analizi Veritabanına Mühürle
+      // 3. ADIM: Sonucu Veritabanına "Otomatik" Mühürle (Persistence)
       const saveRes = await fetch('/api/staff?action=save_analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,10 +63,15 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
       });
 
       if (saveRes.ok) {
-        await fetchDetails(); // Güncel veriyi çek
+        // 4. ADIM: Başarılıysa UI verisini tazele (Artık report veritabanından gelecek)
+        await fetchDetails();
+        alert("Klinik analiz başarıyla tamamlandı ve veritabanına mühürlendi.");
+      } else {
+        throw new Error("DB_SAVE_FAIL");
       }
     } catch (e) {
-      alert("Derin Analiz Hatası: Nöral motor yanıt vermedi.");
+      console.error("Deep Analysis Fail:", e);
+      alert("Analiz Hatası: Nöral motor veya veritabanı yanıt vermedi.");
     } finally {
       setIsAnalysing(false);
     }
@@ -94,7 +103,7 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
       { subject: 'ETİK', value: report.deepAnalysis.workEthics?.score || 0 },
       { subject: 'KLİNİK', value: report.deepAnalysis.technicalExpertise?.score || 0 },
       { subject: 'PEDAGOJİ', value: report.deepAnalysis.pedagogicalAnalysis?.score || 0 },
-      { subject: 'AKADEMİK', value: report.deepAnalysis.academicPedagogy?.score || 0 }, // 6. Kategori
+      { subject: 'AKADEMİK', value: report.deepAnalysis.academicPedagogy?.score || 0 }, // Yeni Kategori
       { subject: 'SADAKAT', value: report.deepAnalysis.institutionalLoyalty?.score || 0 },
       { subject: 'DİRENÇ', value: report.deepAnalysis.sustainability?.score || 0 }
     ];
@@ -157,7 +166,7 @@ const StaffProfileView: React.FC<{ staffId: string }> = ({ staffId }) => {
                 disabled={isAnalysing}
                 className="px-6 py-3 bg-white border-2 border-slate-900 text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm"
             >
-               {isAnalysing ? 'İŞLENİYOR...' : staffReport ? 'YENİDEN ANALİZ ET' : 'DERİN ANALİZ BAŞLAT'}
+               {isAnalysing ? 'İŞLENİYOR...' : staffReport ? 'ANALİZİ YENİLE' : 'DERİN ANALİZ BAŞLAT'}
             </button>
             <button onClick={() => setIsExportOpen(true)} disabled={!staffReport} className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all disabled:opacity-30">YAYINLA</button>
             <button onClick={handleGenerateIDP} disabled={isGeneratingIDP} className="px-6 py-3 bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-md active:scale-95 disabled:opacity-50">
