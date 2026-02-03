@@ -14,40 +14,25 @@ const extractPureJSON = (text: string): any => {
   } catch (e) { return null; }
 };
 
-const DEEP_SEGMENT_SCHEMA = {
-  type: Type.OBJECT,
-  properties: {
-    score: { type: Type.NUMBER },
-    status: { type: Type.STRING },
-    reasoning: { type: Type.STRING, description: "Seçilen cevaplardaki aiTag ve clinicalValue verilerinin bilimsel analizi." },
-    behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } },
-    institutionalImpact: { type: Type.STRING },
-    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-    cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-    risks: { type: Type.ARRAY, items: { type: Type.STRING } }
-  },
-  required: ["score", "status", "reasoning", "behavioralIndicators", "institutionalImpact", "pros", "cons", "risks"]
-};
-
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Strateji Uzmanı.
     GÖREV: Personelin 80 soruluk "Liyakat Matrisi" cevaplarını analiz et.
     
     ANALİZ KRİTERLERİ:
-    1. aiTag ANALİZİ: Cevaplardaki etiketleri (Örn: digital_native, crisis_commander) personelin baskın kimliğini belirlemek için kullan.
-    2. clinicalValue ANALİZİ: Puanların 90-100 aralığında olması yüksek yetkinliği, altındaki değerler ise "Kurumsal Uyum" ihtiyacını gösterir.
-    3. TUTARLILIK: ABA, Akademi ve Etik modülleri arasındaki mantıksal uyumu denetle.
-    4. PROJEKSİYON: Bu personelin kurumdaki 24 aylık gelişim ivmesini tahmin et.
+    1. aiTag SEMANTİĞİ: Cevaplardaki etiketleri (Örn: radical_honesty, flexible_pedagogy) personelin mesleki kimliğini tanımlamak için kullan.
+    2. KLİNİK KORELASYON: ABA cevapları ile Akademik cevaplar arasındaki metodolojik tutarlılığı sorgula.
+    3. EKİP UYUMU: Team ve Crisis modüllerindeki cevaplara göre adayın "Mentor" mu yoksa "Bireysel Uzman" mı olduğunu belirle.
+    4. PROJEKSİYON: 24 aylık bir gelişim ivmesi ve burnout riski hesapla.
   `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `PERSONEL VERİ SETİ: ${JSON.stringify(candidate)}` }], 
+    contents: [{ text: `PERSONEL DOSYASI: ${JSON.stringify(candidate)}` }], 
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 24000 }, 
+      thinkingConfig: { thinkingBudget: 24000 },
       responseSchema: {
         type: Type.OBJECT,
         properties: {
@@ -83,37 +68,14 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
             required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath", "trajectory"]
           },
           deepAnalysis: {
-            type: Type.OBJECT,
-            properties: {
-              workEthics: DEEP_SEGMENT_SCHEMA,
-              technicalExpertise: DEEP_SEGMENT_SCHEMA,
-              pedagogicalAnalysis: DEEP_SEGMENT_SCHEMA,
-              parentStudentRelations: DEEP_SEGMENT_SCHEMA,
-              sustainability: DEEP_SEGMENT_SCHEMA,
-              institutionalLoyalty: DEEP_SEGMENT_SCHEMA,
-              developmentOpenness: DEEP_SEGMENT_SCHEMA,
-              academicPedagogy: DEEP_SEGMENT_SCHEMA
-            },
-            required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "parentStudentRelations", "sustainability", "institutionalLoyalty", "developmentOpenness", "academicPedagogy"]
-          },
-          swot: {
-            type: Type.OBJECT,
-            properties: {
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-              threats: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ["strengths", "weaknesses", "opportunities", "threats"]
-          },
-          interviewGuidance: {
-            type: Type.OBJECT,
-            properties: {
-              strategicQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-              criticalObservations: { type: Type.ARRAY, items: { type: Type.STRING } },
-              simulationTasks: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ["strategicQuestions", "criticalObservations", "simulationTasks"]
+             type: Type.OBJECT,
+             properties: {
+                workEthics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING } }, required: ["score", "reasoning"] },
+                technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING } }, required: ["score", "reasoning"] },
+                pedagogicalAnalysis: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING } }, required: ["score", "reasoning"] },
+                leadership: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING } }, required: ["score", "reasoning"] }
+             },
+             required: ["workEthics", "technicalExpertise", "pedagogicalAnalysis", "leadership"]
           }
         }
       }
