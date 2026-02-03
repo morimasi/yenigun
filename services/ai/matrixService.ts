@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "../../types";
 
@@ -20,7 +19,7 @@ const DEEP_SEGMENT_SCHEMA = {
   properties: {
     score: { type: Type.NUMBER },
     status: { type: Type.STRING },
-    reasoning: { type: Type.STRING },
+    reasoning: { type: Type.STRING, description: "Seçilen cevaplardaki aiTag ve clinicalValue verilerinin bilimsel analizi." },
     behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } },
     institutionalImpact: { type: Type.STRING },
     pros: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -33,20 +32,18 @@ const DEEP_SEGMENT_SCHEMA = {
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
     ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Strateji Uzmanı.
-    MOD: Nöral Rekonstrüksiyon (Deep Historical Synthesis).
+    GÖREV: Personelin 80 soruluk "Liyakat Matrisi" cevaplarını analiz et.
     
-    GÖREV: Personelin/Adayın tüm verilerini (Geçmiş testler, cevaplar, metodolojik seçimler) birleştirerek 360 derece akademik liyakat raporu üret.
-    
-    KRİTİK TALİMATLAR:
-    1. TARİHSEL IVME (LEARNING CURVE): Eğer "assessmentHistory" varsa, personelin gelişim ivmesini analiz et. Puanları artıyor mu, plato mu çiziyor, yoksa bir 'Bilişsel Yorgunluk' emaresi mi var?
-    2. METODOLOJİK SAPMA: İlk mülakat cevapları ile son test cevapları arasındaki 'Etik ve Teknik Tutarlılığı' ölç. Zamanla esneme mi var yoksa derinleşme mi?
-    3. DERİN MUHAKEME: Cevapların arkasındaki 'Nöro-Pedagojik' mantığı açıkla. Sadece sonuç verme, 'Neden bu puanı aldı?' sorusuna vaka temelli kanıt sun.
-    4. STRATEJİK TAVSİYE: Yönetime, bu personel için 90 günlük 'Müdahale veya Ödüllendirme' rotası öner.
+    ANALİZ KRİTERLERİ:
+    1. aiTag ANALİZİ: Cevaplardaki etiketleri (Örn: digital_native, crisis_commander) personelin baskın kimliğini belirlemek için kullan.
+    2. clinicalValue ANALİZİ: Puanların 90-100 aralığında olması yüksek yetkinliği, altındaki değerler ise "Kurumsal Uyum" ihtiyacını gösterir.
+    3. TUTARLILIK: ABA, Akademi ve Etik modülleri arasındaki mantıksal uyumu denetle.
+    4. PROJEKSİYON: Bu personelin kurumdaki 24 aylık gelişim ivmesini tahmin et.
   `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `VERİ SETİ (SNAP-SHOT): ${JSON.stringify(candidate)}` }], 
+    contents: [{ text: `PERSONEL VERİ SETİ: ${JSON.stringify(candidate)}` }], 
     config: {
       systemInstruction,
       responseMimeType: "application/json",
