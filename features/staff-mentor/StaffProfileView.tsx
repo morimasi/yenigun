@@ -29,23 +29,19 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
 
   useEffect(() => { fetchDetails(); }, [fetchDetails]);
 
-  /**
-   * REFRESH ANALYTICS ENGINE
-   * Personelin mülakat anından bugüne kadarki tüm verilerini (assessmentHistory) AI'ya gönderir.
-   */
   const handleRefreshAnalysis = async () => {
     if (!data) return;
     
-    if (!confirm("KRİTİK İŞLEM: Personelin tüm geçmiş test verileri ve liyakat ivmesi yeniden sentezlenecek. Mevcut rapor güncellenecektir. Onaylıyor musunuz?")) return;
+    if (!confirm("KRİTİK İŞLEM: Personelin tüm gelişim verileri, geçmiş testleri ve liyakat ivmesi yeniden sentezlenecek. Bu işlem mevcut raporu ve gelişim planını güncelleyecektir. Onaylıyor musunuz?")) return;
 
     setIsAnalysing(true);
     
     const phases = [
-      "Geçmiş Test Verileri Okunuyor...",
-      "Bilişsel Çelişki Katsayıları Sentezleniyor...",
-      "Gelişim İvmesi Modelleniyor (Trajectory)...",
-      "Akademik Portre Yeniden Kurgulanıyor...",
-      "Liyakat Mühürü Güncelleniyor..."
+      "Tarihsel Veri Seti Okunuyor...",
+      "Bilişsel Çelişki Katsayıları Modelleniyor...",
+      "Delta Analizi (Initial vs Current) Başlatıldı...",
+      "Nöro-Pedagojik İyileştirme Sentezi Yapılıyor...",
+      "Güncel Liyakat Mühürü Hazırlanıyor..."
     ];
 
     let phaseIdx = 0;
@@ -55,7 +51,6 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
     }, 2500);
 
     try {
-      // 360 Derece Tarihsel Veri Paketi Oluştur
       const deepSnapshot: Partial<Candidate> = {
         id: data.profile.id,
         name: data.profile.name,
@@ -63,14 +58,12 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
         experienceYears: data.profile.experience_years,
         university: data.profile.university,
         department: data.profile.department,
-        // Tüm cevapları tek bir akıllı havuza dök
         answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {}),
-        // AI'ya tarihsel ivmeyi besle
         timestamp: Date.now(),
         status: 'hired'
       };
 
-      // @ts-ignore - analyzeCandidate beklediği objeye assessmentHistory bilgisini gizlice enjekte ediyoruz
+      // @ts-ignore
       deepSnapshot.assessmentHistory = data.assessments.map(a => ({
         score: a.score,
         timestamp: a.timestamp,
@@ -89,7 +82,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
       if (saveRes.ok) { 
         await fetchDetails(); 
         onUpdate?.(); 
-        alert("Nöral Analiz Başarıyla Yenilendi. Yeni gelişim rotası mühürlendi."); 
+        alert("Nöral Analiz ve Gelişim Rotası Başarıyla Yenilendi."); 
       }
     } catch (e) { 
       alert("Analiz Motoru Bağlantı Hatası: Sistem yoğun olabilir, lütfen tekrar deneyiniz."); 
@@ -158,29 +151,9 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                  </div>
               </div>
            </div>
-           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 animate-fade-in">Nöral Rekonstrüksiyon</h3>
+           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 animate-fade-in">Analiz Derinleştiriliyor</h3>
            <p className="text-orange-500 font-black text-xl uppercase tracking-[0.5em] h-8 transition-all duration-500">{analysisPhase}</p>
         </div>
-      )}
-
-      {/* EXPORT OVERLAY */}
-      {isExportOpen && (
-        <ExportStudio
-          onClose={() => setIsExportOpen(false)}
-          data={{
-            type: 'STAFF_PERFORMANCE_DOSSIER',
-            entityName: data.profile.name,
-            referenceId: staffId,
-            payload: data
-          }}
-        >
-           <div className="p-10 bg-white min-h-screen space-y-12">
-              <div className="bg-slate-900 p-16 rounded-[4rem] text-white">
-                 <h1 className="text-6xl font-black uppercase tracking-tighter mb-4">{data.profile.name}</h1>
-                 <p className="text-xl font-bold text-orange-500 uppercase tracking-widest">Resmi Klinik Liyakat Dosyası</p>
-              </div>
-           </div>
-        </ExportStudio>
       )}
 
       {/* 1. PROFILE HEADER COCKPIT */}
@@ -197,7 +170,6 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                </div>
                <div className="flex flex-wrap items-center gap-6">
                   <span className="px-5 py-2 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">{data.profile.branch}</span>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{data.profile.experience_years} Yıl Saha Tecrübesi</span>
                   <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-100">
                      {['overview', 'idp', 'analytics', 'history'].map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-700'}`}>{tab}</button>
@@ -207,18 +179,16 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
             </div>
          </div>
          <div className="flex gap-4 shrink-0">
-            {/* ANALİZİ YENİLE BUTONU */}
             <button 
                onClick={handleRefreshAnalysis} 
                disabled={isAnalysing} 
                className="group relative px-10 py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-2xl active:scale-95 disabled:opacity-50 overflow-hidden"
-               title="Tüm geçmiş testleri ve ivmeyi sentezleyerek raporu tazeler"
             >
                <span className="relative z-10 flex items-center gap-3">
                   <svg className={`w-4 h-4 ${isAnalysing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-700'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
                   </svg>
-                  {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZİ YENİLE'}
+                  {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZLERİ GELİŞTİR'}
                </span>
             </button>
             <button onClick={() => setIsExportOpen(true)} className="p-5 bg-white border-2 border-slate-200 text-slate-900 rounded-[2rem] hover:bg-slate-50 transition-all shadow-sm">
@@ -248,32 +218,10 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                </div>
                <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[120px]"></div>
             </div>
-
-            <div className="bg-white p-10 rounded-[4rem] border border-slate-200 shadow-xl space-y-10">
-               <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-4">Akademik Tahminleme (Predictions)</h4>
-               <div className="space-y-8">
-                  {[
-                    { label: 'ÖĞRENME HIZI', v: data.profile.report?.predictiveMetrics.learningVelocity || 0, c: 'text-blue-500' },
-                    { label: 'TÜKENMİŞLİK DİRENCİ', v: 100 - (data.profile.report?.predictiveMetrics.burnoutRisk || 0), c: 'text-rose-500' },
-                    { label: 'LİDERLİK POTANSİYELİ', v: data.profile.report?.predictiveMetrics.leadershipPotential || 0, c: 'text-orange-500' }
-                  ].map(m => (
-                    <div key={m.label} className="space-y-3">
-                       <div className="flex justify-between items-end">
-                          <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{m.label}</span>
-                          <span className={`text-3xl font-black ${m.c}`}>%{m.v}</span>
-                       </div>
-                       <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                          <div className={`h-full transition-all duration-1000 ${m.c.replace('text-', 'bg-')}`} style={{ width: `${m.v}%` }}></div>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
          </div>
 
          {/* RIGHT: IDP & GROWTH WORKSPACE */}
          <div className="xl:col-span-7 space-y-8">
-            
             {activeTab === 'idp' && (
                <div className="animate-scale-in space-y-8">
                   <div className="bg-orange-600 p-16 rounded-[4.5rem] text-white shadow-2xl relative overflow-hidden group">
@@ -289,10 +237,9 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                            {isGeneratingIDP ? 'PLAN ÜRETİLİYOR...' : 'YENİ PLAN ÜRET'}
                         </button>
                      </div>
-                     <div className="absolute -left-40 -bottom-40 w-[600px] h-[600px] bg-black/10 rounded-full blur-[150px] group-hover:scale-110 transition-transform duration-[3s]"></div>
                   </div>
 
-                  {data.activeIDP && (
+                  {data.activeIDP && data.activeIDP.roadmap && (
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
                           { t: 'ADAPTASYON (0-30 GÜN)', c: data.activeIDP.roadmap.shortTerm, i: '🌱' },
@@ -302,37 +249,11 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                            <div key={i} className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm hover:border-orange-500 hover:shadow-xl transition-all group flex flex-col gap-6">
                               <span className="text-4xl">{r.i}</span>
                               <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover:text-orange-600">{r.t}</h5>
-                              <p className="text-[14px] font-bold text-slate-800 leading-relaxed italic">"{r.c}"</p>
+                              <p className="text-[14px] font-bold text-slate-800 leading-relaxed italic">"{r.c || 'İçerik planlanıyor...'}"</p>
                            </div>
                         ))}
                      </div>
                   )}
-               </div>
-            )}
-
-            {activeTab === 'analytics' && (
-               <div className="animate-fade-in space-y-8">
-                  <div className="bg-white p-12 rounded-[4.5rem] border border-slate-200 shadow-xl">
-                     <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest mb-12 border-l-4 border-orange-600 pl-8">Bilişsel Gelişim Eğrisi (Learning Curve)</h4>
-                     <div className="h-[350px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                           <AreaChart data={learningCurve}>
-                              <defs>
-                                <linearGradient id="curveColor" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#ea580c" stopOpacity={0.3}/>
-                                  <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 800, fill: '#94a3b8' }} />
-                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700 }} domain={[0, 100]} />
-                              <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 'bold' }} />
-                              <Area type="monotone" dataKey="score" stroke="#ea580c" strokeWidth={5} fillOpacity={1} fill="url(#curveColor)" />
-                           </AreaChart>
-                        </ResponsiveContainer>
-                     </div>
-                     <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-8">Veriler son {learningCurve.length} testi baz almaktadır.</p>
-                  </div>
                </div>
             )}
 
@@ -343,37 +264,6 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                      <p className="text-2xl font-bold text-slate-700 leading-relaxed italic text-justify group-hover:text-slate-900 transition-colors">
                         "{data.profile.report?.detailedAnalysisNarrative || 'Uzman için henüz derin bir akademik analiz mühürlenmedi. Lütfen sağ üstteki butondan analiz motorunu başlatın.'}"
                      </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="bg-emerald-50 p-12 rounded-[4rem] border border-emerald-100 shadow-sm">
-                        <h5 className="text-[11px] font-black text-emerald-700 uppercase tracking-widest mb-8 flex items-center gap-3">
-                           <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                           Klinik Kazanımlar
-                        </h5>
-                        <ul className="space-y-6">
-                           {data.profile.report?.swot.strengths.map((s, i) => (
-                              <li key={i} className="flex gap-5 items-start text-[14px] font-bold text-emerald-900">
-                                 <span className="w-8 h-8 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-black text-[14px] shrink-0 shadow-lg">✓</span>
-                                 <span className="uppercase tracking-tight">{s}</span>
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                     <div className="bg-rose-50 p-12 rounded-[4rem] border border-rose-100 shadow-sm">
-                        <h5 className="text-[11px] font-black text-rose-700 uppercase tracking-widest mb-8 flex items-center gap-3">
-                           <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>
-                           Gelişim Alanları
-                        </h5>
-                        <ul className="space-y-6">
-                           {data.profile.report?.swot.threats.map((t, i) => (
-                              <li key={i} className="flex gap-5 items-start text-[14px] font-bold text-rose-900">
-                                 <span className="w-8 h-8 bg-rose-600 text-white rounded-xl flex items-center justify-center font-black text-[14px] shrink-0 shadow-lg">!</span>
-                                 <span className="uppercase tracking-tight">{t}</span>
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
                   </div>
                </div>
             )}

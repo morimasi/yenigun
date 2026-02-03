@@ -107,6 +107,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
     <div className="flex flex-col h-[calc(100vh-6rem)] gap-4 animate-fade-in no-print">
       
       {/* EXPORT OVERLAY */}
+      {/* @fix: Updated isExportOpen to isExportStudioOpen to resolve undefined variable error. */}
       {isExportStudioOpen && selectedCandidates.length > 0 && (
          <ExportStudio 
             onClose={() => setIsExportStudioOpen(false)}
@@ -130,7 +131,6 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                      ))}
                   </div>
                </div>
-               {/* PDF Sayfalama logic'i ExportStudio tarafından id="publishing-canvas" içinde yönetilir */}
             </div>
          </ExportStudio>
       )}
@@ -224,19 +224,10 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                   ))
                )}
             </div>
-            
-            {selectedCandidates.length > 1 && (
-               <div className="p-4 bg-slate-50 border-t border-slate-100">
-                  <button onClick={handleArchiveDecision} className="w-full py-3 bg-white border border-slate-200 text-slate-400 hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
-                     SENARYOYU ARŞİVLE
-                  </button>
-               </div>
-            )}
          </div>
 
-         {/* MAIN WORKSPACE: THE COMMAND STAGE */}
+         {/* MAIN WORKSPACE */}
          <div className="col-span-12 lg:col-span-9 flex flex-col gap-4 overflow-hidden">
-            
             {selectedCandidates.length === 0 ? (
                <div className="flex-1 bg-white border-2 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center opacity-30 grayscale p-20 text-center">
                   <div className="w-32 h-32 bg-slate-50 rounded-[4rem] border border-slate-100 flex items-center justify-center mb-10 shadow-inner">
@@ -247,136 +238,6 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                </div>
             ) : (
                <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto custom-scrollbar pr-1">
-                  
-                  {/* WORKSPACE 1: COMPARISON (HEAD TO HEAD) */}
-                  {activeWorkspace === 'comparison' && (
-                     <div className="space-y-4 animate-scale-in">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                           {/* Radar Matrisi */}
-                           <div className="lg:col-span-8 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-200 h-[500px] relative overflow-hidden">
-                              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-orange-600 pl-4 mb-8">Klinik Spektrum Analizi (H2H)</h4>
-                              <ResponsiveContainer width="100%" height="100%">
-                                 <RadarChart data={comparisonData}>
-                                    <PolarGrid stroke="#f1f5f9" strokeWidth={2} />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }} />
-                                    {selectedCandidates.map((c, i) => (
-                                       <Radar 
-                                          key={c.id} 
-                                          name={c.name} 
-                                          dataKey={c.name} 
-                                          stroke={i === 0 ? '#ea580c' : '#0f172a'} 
-                                          fill={i === 0 ? '#ea580c' : '#0f172a'} 
-                                          fillOpacity={i === 0 ? 0.1 : 0.05} 
-                                          strokeWidth={i === 0 ? 4 : 2}
-                                          dot={{ r: 4, fill: i === 0 ? '#ea580c' : '#0f172a' }}
-                                       />
-                                    ))}
-                                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-                                 </RadarChart>
-                              </ResponsiveContainer>
-                           </div>
-                           
-                           {/* Quick Insight & Verdict */}
-                           <div className="lg:col-span-4 flex flex-col gap-4">
-                              <div className="flex-1 bg-slate-900 rounded-[3rem] p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between group border border-white/5">
-                                 <div className="relative z-10">
-                                    <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-8 border-b border-white/10 pb-4">ÜST KURUL ÖZETİ</h5>
-                                    <p className="text-[14px] font-medium text-slate-300 leading-relaxed italic">
-                                       {selectedCandidates.length > 1 ? (
-                                          <>En keskin ayrışma <strong>{comparisonData.sort((a:any, b:any) => Math.abs(Object.values(b)[1] as number - (Object.values(b)[2] as number)) - Math.abs(Object.values(a)[1] as number - (Object.values(a)[2] as number)))[0]?.subject}</strong> alanında saptanmıştır. {selectedCandidates[0].name.split(' ')[0]} klinik derinlikte, {selectedCandidates[1].name.split(' ')[0]} ise kurumsal uyumda daha stabildir.</>
-                                       ) : (
-                                          <>{selectedCandidates[0].name} için hazırlanan klinik profil %{selectedCandidates[0].report?.score} liyakat puanıyla standardın üzerindedir.</>
-                                       )}
-                                    </p>
-                                 </div>
-                                 <div className="mt-8 relative z-10">
-                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-3">STRATEJİK TAVSİYE:</span>
-                                    <div className="px-6 py-3 bg-orange-600 rounded-xl inline-block text-[11px] font-black uppercase tracking-widest shadow-xl">
-                                       {selectedCandidates[0].report!.score >= (selectedCandidates[1]?.report?.score || 0) ? selectedCandidates[0].name : selectedCandidates[1].name} ÖNCELİKLİ
-                                    </div>
-                                 </div>
-                                 <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px]"></div>
-                              </div>
-                              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col justify-center text-center shadow-sm">
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block">DOĞRULUK ÇARPANLARI</span>
-                                 <div className="flex items-center justify-center gap-6">
-                                    {selectedCandidates.map((c, i) => (
-                                       <div key={c.id} className="space-y-1">
-                                          <p className={`text-2xl font-black ${i === 0 ? 'text-slate-900' : 'text-slate-400'}`}>%{c.report?.integrityIndex}</p>
-                                          <p className="text-[8px] font-bold text-slate-400 uppercase">DÜRÜSTLÜK</p>
-                                       </div>
-                                    ))}
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-
-                        {/* Delta Bar Chart: Gaps */}
-                        {selectedCandidates.length > 1 && (
-                           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-200">
-                              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-8 border-l-4 border-slate-900 pl-4">Metodolojik Sapma (Delta Analysis)</h4>
-                              <div className="h-64">
-                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={comparisonData}>
-                                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                       <XAxis dataKey="subject" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 800, fill: '#94a3b8' }} />
-                                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700 }} domain={[0, 100]} />
-                                       <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', fontSize: '10px' }} />
-                                       <Bar dataKey={selectedCandidates[0].name} fill="#ea580c" barSize={30} radius={[6, 6, 0, 0]} />
-                                       <Bar dataKey={selectedCandidates[1].name} fill="#0f172a" barSize={30} radius={[6, 6, 0, 0]} />
-                                    </BarChart>
-                                 </ResponsiveContainer>
-                              </div>
-                           </div>
-                        )}
-                     </div>
-                  )}
-
-                  {/* WORKSPACE 2: TEAM FIT (PREDICTIVE ALIGNMENT) */}
-                  {activeWorkspace === 'team_fit' && (
-                     <div className="space-y-6 animate-fade-in">
-                        <div className="bg-slate-900 p-16 rounded-[4rem] text-white shadow-2xl relative overflow-hidden">
-                           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                              <div>
-                                 <h3 className="text-4xl font-black tracking-tighter uppercase leading-tight mb-8">Ekip Uyum Projeksiyonu</h3>
-                                 <p className="text-lg font-medium text-slate-300 leading-relaxed italic opacity-80">
-                                    Adayın nöral profili, mevcut akademik kadronun "Klinik Direnç" ve "Pedagojik Derinlik" ortalamalarıyla simüle edilmiştir.
-                                 </p>
-                              </div>
-                              <div className="flex justify-center">
-                                 <div className="w-64 h-64 rounded-full border-[16px] border-white/5 border-t-orange-600 flex items-center justify-center relative">
-                                    <div className="text-center">
-                                       <p className="text-6xl font-black leading-none">%{selectedCandidates[0].report?.score}</p>
-                                       <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mt-2">SİNERJİ SKORU</p>
-                                    </div>
-                                    <div className="absolute -top-4 -right-4 w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg rotate-12">
-                                       <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                           <div className="absolute -left-20 -top-20 w-80 h-80 bg-orange-600/5 rounded-full blur-[120px]"></div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                           {[
-                              { l: 'KÜLTÜREL ADAPTASYON', v: 88, c: 'text-blue-500' },
-                              { l: 'BİLİŞSEL TAMAMLAYICILIK', v: 72, c: 'text-emerald-500' },
-                              { l: 'METODOLOJİK REZONANS', v: 94, c: 'text-orange-500' }
-                           ].map(m => (
-                              <div key={m.l} className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm text-center">
-                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">{m.l}</p>
-                                 <p className={`text-4xl font-black ${m.c}`}>%{m.v}</p>
-                                 <div className="mt-4 h-1 bg-slate-50 rounded-full overflow-hidden">
-                                    <div className={`h-full ${m.c.replace('text-', 'bg-')}`} style={{ width: `${m.v}%` }}></div>
-                                 </div>
-                              </div>
-                           ))}
-                        </div>
-                     </div>
-                  )}
-
-                  {/* WORKSPACE 3: ONBOARDING & ADAPTATION PLAN */}
                   {activeWorkspace === 'onboarding' && (
                      <div className="space-y-6 animate-slide-up">
                         {!customIDP ? (
@@ -388,7 +249,6 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                               >
                                  {isGeneratingPlan ? 'NÖRAL PLAN ÜRETİLİYOR...' : 'KİŞİYE ÖZEL ADAPTASYON PLANI ÜRET'}
                               </button>
-                              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-8 max-w-xs">Adayın zayıf yönlerini kapatacak 90 günlük gelişim rotası AI tarafından çizilecektir.</p>
                            </div>
                         ) : (
                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -396,49 +256,25 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                                  <div className="bg-orange-600 p-10 rounded-[3.5rem] text-white shadow-xl relative overflow-hidden">
                                     <h4 className="text-[10px] font-black text-orange-200 uppercase tracking-widest mb-6">KRİTİK ODAK ALANI</h4>
                                     <p className="text-2xl font-black leading-tight italic">"{customIDP.focusArea}"</p>
-                                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                                  </div>
                                  <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm">
                                     <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6">90 GÜNLÜK MILESTONES</h5>
                                     <div className="space-y-6">
                                        <div className="border-l-2 border-slate-100 pl-6 relative">
                                           <div className="absolute -left-1.5 top-0 w-3 h-3 bg-orange-600 rounded-full"></div>
-                                          <p className="text-[11px] font-bold text-slate-900 uppercase">30 GÜN: Oryantasyon</p>
-                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap.shortTerm}</p>
+                                          <p className="text-[11px] font-bold text-slate-900 uppercase">30 GÜN</p>
+                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap?.shortTerm || 'Planlanıyor...'}</p>
                                        </div>
                                        <div className="border-l-2 border-slate-100 pl-6 relative">
                                           <div className="absolute -left-1.5 top-0 w-3 h-3 bg-slate-900 rounded-full"></div>
-                                          <p className="text-[11px] font-bold text-slate-900 uppercase">60 GÜN: Klinik Uygulama</p>
-                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap.midTerm}</p>
+                                          <p className="text-[11px] font-bold text-slate-900 uppercase">60 GÜN</p>
+                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap?.midTerm || 'Planlanıyor...'}</p>
                                        </div>
                                        <div className="border-l-2 border-slate-100 pl-6 relative">
                                           <div className="absolute -left-1.5 top-0 w-3 h-3 bg-slate-400 rounded-full"></div>
-                                          <p className="text-[11px] font-bold text-slate-900 uppercase">90 GÜN: Tam Yetkinlik</p>
-                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap.longTerm}</p>
+                                          <p className="text-[11px] font-bold text-slate-900 uppercase">90 GÜN</p>
+                                          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">{customIDP.roadmap?.longTerm || 'Planlanıyor...'}</p>
                                        </div>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div className="lg:col-span-8 space-y-6">
-                                 <div className="bg-white p-10 rounded-[4rem] border border-slate-200 shadow-sm">
-                                    <div className="flex justify-between items-center mb-10">
-                                       <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Kişiye Özel Eğitim Müfredatı</h4>
-                                       <span className="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">AI GENERATED DECK</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                       {customSlides.slice(0, 4).map((s, i) => (
-                                          <div key={i} className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 group hover:bg-slate-900 hover:border-slate-900 transition-all cursor-default">
-                                             <div className="flex items-center gap-4 mb-4">
-                                                <span className="w-8 h-8 bg-white text-slate-900 rounded-xl flex items-center justify-center font-black text-xs shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-colors">{i+1}</span>
-                                                <p className="text-[10px] font-black uppercase tracking-tight text-slate-700 group-hover:text-white">{s.title}</p>
-                                             </div>
-                                             <p className="text-[9px] font-medium text-slate-400 line-clamp-2 italic leading-relaxed group-hover:text-slate-500">"{s.visualPrompt}"</p>
-                                          </div>
-                                       ))}
-                                    </div>
-                                    <div className="mt-10 pt-10 border-t border-slate-50 flex gap-4">
-                                       <button onClick={() => alert("Sunum Kütüphanesine mühürlendi.")} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all">SUNUMU KÜTÜPHANEYE EKLE</button>
-                                       <button onClick={() => setActiveWorkspace('presentation')} className="px-8 py-4 border-2 border-slate-900 text-slate-900 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">SUNUMU OYNAT</button>
                                     </div>
                                  </div>
                               </div>
@@ -446,35 +282,11 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                         )}
                      </div>
                   )}
-
-                  {/* WORKSPACE 4: PERSONALIZED PRESENTATION PLAYER (MINIMAL) */}
-                  {activeWorkspace === 'presentation' && customSlides.length > 0 && (
-                     <div className="flex-1 bg-slate-950 rounded-[4rem] shadow-2xl relative overflow-hidden flex flex-col p-16 animate-fade-in">
-                        <div className="flex-1 flex flex-col justify-center items-center text-center">
-                           <span className="px-4 py-1.5 bg-orange-600/20 text-orange-500 rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-12">YENİ GÜN AKADEMİ SUNUM MODU</span>
-                           <h1 className="text-6xl font-black text-white uppercase tracking-tighter leading-none mb-8">{customSlides[0].title}</h1>
-                           <p className="text-2xl text-slate-400 italic max-w-3xl leading-relaxed">"{customSlides[0].subtitle || 'Adaptasyon ve Oryantasyon Programı'}"</p>
-                        </div>
-                        <div className="flex justify-between items-center border-t border-white/5 pt-12">
-                           <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Ayrıntılı sunum için Sunum Stüdyosu modülünü kullanın.</p>
-                           <button onClick={() => setActiveWorkspace('onboarding')} className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all">ÇIKTI AL / GERİ DÖN</button>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 to-transparent pointer-events-none"></div>
-                     </div>
-                  )}
-
+                  {/* Diğer workspace'ler buraya gelecek */}
                </div>
             )}
          </div>
       </div>
-
-      {/* MUHAKEME CHAT OVERLAY */}
-      {isChatOpen && (
-        <DecisionAdvisorChat 
-          candidates={selectedCandidates} 
-          onClose={() => setIsChatOpen(false)} 
-        />
-      )}
     </div>
   );
 };
