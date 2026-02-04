@@ -15,7 +15,6 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
   const [statusMessage, setStatusMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<string>('Sistem Yöneticisi');
 
-  // --- 1. KONFİGÜRASYON BAŞLANGIÇ DURUMU ---
   const [config, setConfig] = useState<ExportConfig>({
     title: data.config?.title || 'AKADEMİK LİYAKAT DOSYASI',
     showWatermark: true,
@@ -40,36 +39,37 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
   // --- AKSİYONLAR ---
 
-  // A. PDF İNDİRME (Universal Engine v5.0)
+  // A. PDF İNDİRME (Universal Engine v6.0 - Ghost Protocol)
   const handleDownloadPDF = async () => {
     if (isProcessing) return;
     
     setIsProcessing(true);
-    setStatusMessage('Görüntü İşleniyor...');
+    setStatusMessage('Motor Başlatılıyor...');
     
-    // UI Render'ın tamamlanması için kısa bir gecikme (Race Condition Önleyici)
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     try {
-      setStatusMessage('PDF Render Ediliyor...');
+      // 1. UI Stabilizasyonu için kısa bekleme
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      setStatusMessage('Görüntü İşleniyor...');
+      
       // 'print-stage' ID'si sağ paneldeki container'dır.
+      // v6.0 ile bu element klonlanıp izole bir alanda işlenecektir.
       await UniversalPdfService.generateHighResPdf('print-stage', data);
+      
       setStatusMessage('Tamamlandı');
     } catch (e: any) {
       console.error("Export Error:", e);
-      alert(`PDF Oluşturulamadı: ${e.message || 'Bilinmeyen Hata'}. Lütfen sayfayı yenileyip tekrar deneyin.`);
+      alert(`PDF Oluşturma Hatası: ${e.message || 'Bilinmeyen bir render hatası oluştu.'}`);
     } finally {
       setIsProcessing(false);
       setStatusMessage('');
     }
   };
 
-  // B. YAZDIRMA (Browser Native)
   const handlePrint = () => {
     window.print();
   };
 
-  // C. ARŞİVE MÜHÜRLEME (Database Commit)
   const handleArchive = async () => {
     if (!confirm(`Bu dosya "${currentUser}" imzasıyla veritabanına mühürlenecek. Onaylıyor musunuz?`)) return;
     
@@ -121,7 +121,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg">P</div>
                <div>
                   <h3 className="text-lg font-black text-slate-900 uppercase leading-none">Yayın Stüdyosu</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v5.0 Final Render</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v6.0 Ghost Engine</p>
                </div>
             </div>
          </div>
@@ -205,7 +205,11 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
       {/* SAĞ PANEL: CANLI ÖNİZLEME (RENDER STAGE) */}
       <div className="flex-1 bg-slate-800/50 overflow-y-auto custom-scrollbar flex justify-center p-8 md:p-16 relative print:p-0 print:bg-white print:overflow-visible">
-         {/* Bu ID (print-stage) PDF servisi tarafından hedeflenir */}
+         {/* 
+            Bu ID (print-stage) PDF servisi tarafından hedeflenir.
+            Ancak PDF motoru v6.0 ile bu içerik "Ghost Container"a kopyalanarak işlenir.
+            Böylece ekrandaki kaydırma veya modal durumu PDF çıktısını bozmaz.
+         */}
          <div id="print-stage" className="flex flex-col gap-8 items-center print:block print:w-full print:gap-0">
             <CandidateReport 
                candidate={data.payload as any} 
