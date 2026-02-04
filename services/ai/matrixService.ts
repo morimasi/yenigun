@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "../../types";
 
@@ -70,18 +71,16 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
                 burnoutRisk: { type: Type.NUMBER },
                 competencyLevel: { type: Type.STRING },
                 strategicAdvice: { type: Type.STRING }
-              },
-              required: ["month", "meritScore", "burnoutRisk", "competencyLevel", "strategicAdvice"]
+              }
             }
           }
-        },
-        required: ["retentionProbability", "burnoutRisk", "learningVelocity", "leadershipPotential", "evolutionPath", "trajectory"]
+        }
       },
       deepAnalysis: {
         type: Type.OBJECT,
         properties: {
-          workEthics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } }, behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["score", "status", "reasoning", "clinicalNuances", "literatureReference", "teamImpact"] },
-          technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+          workEthics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } }, behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+          technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
           pedagogicalAgility: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
           crisisResilience: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
           parentalDiplomacy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
@@ -110,12 +109,12 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         }
       }
     },
-    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "predictiveMetrics", "deepAnalysis"]
+    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "deepAnalysis"]
   };
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `AKADEMİK ADAY DOSYASI: ${JSON.stringify(candidate)}` }],
+    contents: [{ text: `ADAY AKADEMİK VERİ SETİ: ${JSON.stringify(candidate)}` }],
     config: {
       systemInstruction,
       responseMimeType: "application/json",
