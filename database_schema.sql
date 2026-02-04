@@ -1,6 +1,6 @@
 
 -- ============================================================================
--- YENİ GÜN AKADEMİ | KURUMSAL ERP VE NÖRAL MÜFREDAT VERİTABANI (v15.0 - FINAL)
+-- YENİ GÜN AKADEMİ | KURUMSAL ERP VE NÖRAL MÜFREDAT VERİTABANI (v15.1 - FINAL)
 -- ============================================================================
 -- BU ŞEMA, "NEURAL CURRICULUM STUDIO" VE "CLINICAL LAB" MODÜLLERİNİ DESTEKLER.
 -- Idempotent yapıdadır: Hata vermeden defalarca çalıştırılabilir.
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS candidates (
 CREATE INDEX IF NOT EXISTS idx_cand_email ON candidates(email);
 CREATE INDEX IF NOT EXISTS idx_cand_branch ON candidates(branch);
 CREATE INDEX IF NOT EXISTS idx_cand_status ON candidates(status);
-CREATE INDEX IF NOT EXISTS idx_cand_report_gin ON candidates USING GIN (report); -- AI raporu içinde arama için
+CREATE INDEX IF NOT EXISTS idx_cand_report_gin ON candidates USING GIN (report);
 
 -- ============================================================================
 -- TABLO 3: STAFF (Akademik Kadro & Profil)
@@ -87,6 +87,23 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- MIGRATION: 'staff' tablosu için eksik kolon kontrolü (Schema Drift Koruması)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='status') THEN
+        ALTER TABLE staff ADD COLUMN status TEXT DEFAULT 'active';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='role') THEN
+        ALTER TABLE staff ADD COLUMN role TEXT DEFAULT 'staff';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='onboarding_complete') THEN
+        ALTER TABLE staff ADD COLUMN onboarding_complete BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='report') THEN
+        ALTER TABLE staff ADD COLUMN report JSONB;
+    END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_staff_email ON staff(email);
 CREATE INDEX IF NOT EXISTS idx_staff_report_gin ON staff USING GIN (report);
 
@@ -107,8 +124,6 @@ CREATE TABLE IF NOT EXISTS staff_assessments (
 -- ============================================================================
 -- TABLO 5: STAFF_IDP (Bireysel Gelişim Planı - NÖRAL MÜFREDAT)
 -- ============================================================================
--- "Neural Curriculum Studio" modülünün kalbidir.
--- Versioning destekler (Aynı personelin eski planları saklanabilir).
 CREATE TABLE IF NOT EXISTS staff_idp (
     id TEXT PRIMARY KEY, -- 'IDP-XXXX' formatında
     staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
@@ -124,7 +139,7 @@ CREATE TABLE IF NOT EXISTS staff_idp (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- MIGRATION: 'status' ve 'focus_area' kolonlarının varlığını garanti altına al
+-- MIGRATION: 'staff_idp' tablosu için eksik kolon kontrolü
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='status') THEN
@@ -195,12 +210,6 @@ FROM staff s
 LEFT JOIN staff_assessments sa ON s.id = sa.staff_id
 WHERE s.status = 'active'
 GROUP BY s.id, s.name, s.branch, s.role, s.report;
-
--- 2. MÜFREDAT İLERLEME RAPORU (PROGRESS TRACKING)
--- Hangi personel müfredatının yüzde kaçını tamamladı?
--- JSONB içindeki 'isCompleted: true' sayısını hesaplamak karmaşıktır, 
--- bu yüzden bu view yaklaşık bir değer veya meta-veri üzerinden çalışır.
--- Not: Gerçek sayım uygulama katmanında yapılır, burası genel durum içindir.
 
 -- ============================================================================
 -- TEMİZLİK VE TETİKLEYİCİLER
