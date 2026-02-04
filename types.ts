@@ -1,22 +1,67 @@
 
 // ... (Mevcut tipler korunur)
 
+// YENİ: EĞİTİM MÜFREDAT YAPISI
+export interface TrainingUnit {
+  id: string;
+  title: string;
+  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision';
+  content: string; // Açıklama veya Link
+  durationMinutes: number;
+  isCompleted: boolean;
+  aiRationale?: string; // AI bu üniteyi neden atadı?
+}
+
+export interface TrainingModule {
+  id: string;
+  title: string;
+  focusArea: string; // Hangi yetkinliği hedefliyor? (Örn: Etik, Klinik)
+  difficulty: 'basic' | 'intermediate' | 'advanced';
+  units: TrainingUnit[];
+  status: 'locked' | 'active' | 'completed';
+  dueDate?: string;
+}
+
+export interface IDP {
+  id: string;
+  staffId: string;
+  createdAt: number;
+  // Eski alanlar (Legacy Support)
+  focusArea: string;
+  identifiedGaps: string[];
+  roadmap: {
+    shortTerm: string;
+    midTerm: string;
+    longTerm: string;
+  };
+  recommendedTrainings: string[];
+  milestones: {
+    title: string;
+    dueDate: string;
+    isCompleted: boolean;
+  }[];
+  // YENİ: DETAYLI MÜFREDAT
+  curriculum?: TrainingModule[];
+  aiAnalysisSummary?: string;
+}
+
+// ... (Diğer tipler aynı kalır)
 export interface ExportConfig {
   title: string;
   showWatermark: boolean;
   signatureRequired: boolean;
   theme: 'corporate' | 'modern' | 'minimal';
   
-  // MODÜLER GÖRÜNÜRLÜK AYARLARI (YENİ)
+  // MODÜLER GÖRÜNÜRLÜK AYARLARI
   sections: {
-    cover: boolean;              // Kapak Sayfası
-    executiveSummary: boolean;   // Yönetici Özeti & Kimlik
-    competencyMatrix: boolean;   // Yetkinlik Matrisi (Radar)
-    behavioralDNA: boolean;      // Davranışsal DNA & Nöral Analiz
-    swotAnalysis: boolean;       // SWOT
-    futureProjection: boolean;   // 24 Aylık Projeksiyon
-    interviewGuide: boolean;     // Mülakat Soruları
-    clinicalSimulation: boolean; // Simülasyon Sonuçları
+    cover: boolean;
+    executiveSummary: boolean;
+    competencyMatrix: boolean;
+    behavioralDNA: boolean;
+    swotAnalysis: boolean;
+    futureProjection: boolean;
+    interviewGuide: boolean;
+    clinicalSimulation: boolean;
   };
 }
 
@@ -28,7 +73,6 @@ export interface UniversalExportData {
   config?: Partial<ExportConfig>;
 }
 
-// ... (Kalan tipler aynı)
 export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER';
 
 export enum Branch {
@@ -59,7 +103,7 @@ export interface Question {
   type: 'radio' | 'text';
   text: string;
   requiredBranch?: Branch[];
-  options?: string[]; // Basic options
+  options?: string[]; 
   weightedOptions?: {
     label: string;
     weights: Record<string, number>;
@@ -231,25 +275,6 @@ export interface GlobalConfig {
   automation?: any;
   interviewSettings?: any;
   advancedAnalytics?: any;
-}
-
-export interface IDP {
-  id: string;
-  staffId: string;
-  createdAt: number;
-  focusArea: string;
-  identifiedGaps: string[];
-  roadmap: {
-    shortTerm: string;
-    midTerm: string;
-    longTerm: string;
-  };
-  recommendedTrainings: string[];
-  milestones: {
-    title: string;
-    dueDate: string;
-    isCompleted: boolean;
-  }[];
 }
 
 export interface TrainingSlide {
