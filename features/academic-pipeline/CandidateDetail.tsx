@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, GlobalConfig, Branch } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
@@ -17,7 +18,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isExportStudioOpen, setIsExportStudioOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   
-  // GENİŞLETİLMİŞ MATRİS TANIMLARI (STATİK REFERANS NOKTALARI)
+  // GENİŞLETİLMİŞ VE EKSİKSİZ MATRİS TANIMLARI
   const matrixSegments = useMemo(() => [
     { 
         id: 'technicalExpertise', 
@@ -28,7 +29,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         clinicalFocus: 'Metodolojik hakimiyet, veri analizi, program hazırlama kapasitesi.'
     },
     { 
-        id: 'pedagogicalAgility', 
+        id: 'pedagogicalAnalysis', 
         label: 'PEDAGOJİK ÇEVİKLİK', 
         icon: '🏃', 
         group: 'KLİNİK',
@@ -44,20 +45,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         clinicalFocus: 'Duygusal regülasyon, profesyonel mesafe, kriz yönetimi.'
     },
     { 
-        id: 'parentalDiplomacy', 
+        id: 'parentStudentRelations', 
         label: 'VELİ DİPLOMASİSİ', 
         icon: '🤝', 
         group: 'KLİNİK',
         deepDesc: 'Zorlu ve manipülatif veli profilleriyle terapötik ittifakı bozmadan sınırları koruyabilme sanatı.',
         clinicalFocus: 'İletişim stratejisi, sınır yönetimi, ikna kabiliyeti.'
-    },
-    { 
-        id: 'clinicalDocumentation', 
-        label: 'BİLİMSEL KAYIT', 
-        icon: '📝', 
-        group: 'KLİNİK',
-        deepDesc: 'Sürecin şeffaf, ölçülebilir ve denetlenebilir şekilde raporlanması ve arşiv disiplini.',
-        clinicalFocus: 'Veri dürüstlüğü, objektif raporlama, ABC kaydı.'
     },
     { 
         id: 'workEthics', 
@@ -76,7 +69,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         clinicalFocus: 'İçgörü (Insight), tevazu, öğrenme motivasyonu.'
     },
     { 
-        id: 'cognitiveAgility', 
+        id: 'developmentOpenness', 
         label: 'BİLİŞSEL ADAPTASYON', 
         icon: '🚀', 
         group: 'KURUMSAL',
@@ -92,7 +85,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         clinicalFocus: 'Aidiyet, kurumsal hafıza, vizyon birliği.'
     },
     { 
-        id: 'stabilityFactor', 
+        id: 'sustainability', 
         label: 'TÜKENMİŞLİK EŞİĞİ', 
         icon: '🔋', 
         group: 'KURUMSAL',
@@ -190,6 +183,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                  </div>
                  <p className="text-sm font-black uppercase tracking-widest text-slate-400">Bu boyut için nöral sentez henüz tamamlanmadı.</p>
+                 <p className="text-[10px] font-bold text-slate-300 mt-2 uppercase">Lütfen "Yeniden Analiz Et" butonunu kullanarak derin taramayı başlatın.</p>
               </div>
            ) : (
              <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden group">
@@ -211,51 +205,46 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
                 <div className="space-y-10">
                     
-                    {/* GEREKÇELENDİRME (CORE) */}
+                    {/* GEREKÇELENDİRME (CORE REASONING) */}
                     <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 relative">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">NÖRAL MUHAKEME (NEDEN BU PUAN?)</span>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4 flex items-center gap-2">
+                           <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                           NÖRAL NEDENSELLİK (REASONING)
+                        </span>
                         <p className="text-lg font-bold text-slate-800 leading-relaxed text-justify italic">"{data.reasoning}"</p>
                     </div>
 
-                    {/* SATIR ARASI & ETKİ ANALİZİ */}
+                    {/* KLİNİK NÜANSLAR VE LİTERATÜR */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-6">
                           <div className="bg-blue-50/50 p-8 rounded-[2.5rem] border border-blue-100 hover:bg-blue-50 transition-colors h-full">
-                             <span className="text-[9px] font-black text-blue-700 uppercase tracking-widest block mb-4">KLİNİK NÜANSLAR (GİZLİ VERİ)</span>
+                             <span className="text-[9px] font-black text-blue-700 uppercase tracking-widest block mb-4 flex items-center gap-2">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                KLİNİK NÜANSLAR (GİZLİ VERİ)
+                             </span>
                              <p className="text-[12px] font-bold text-blue-900 leading-relaxed italic">"{data.clinicalNuances}"</p>
                           </div>
                        </div>
                        <div className="space-y-6">
-                          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group/team h-full">
-                             <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-4">MOLEKÜLER EKİP ETKİSİ</span>
-                             <p className="text-[12px] font-bold text-slate-300 leading-relaxed italic relative z-10">"{data.teamImpact}"</p>
-                             <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-orange-600/5 rounded-full blur-2xl group-hover/team:bg-orange-600/10 transition-colors"></div>
+                          <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100 hover:bg-emerald-50 transition-colors h-full">
+                             <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest block mb-4 flex items-center gap-2">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                LİTERATÜR KORELASYONU
+                             </span>
+                             <p className="text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
                           </div>
                        </div>
                     </div>
 
-                    {/* AKADEMİK & RİSK ANALİZİ */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <div className="space-y-6">
-                          <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100">
-                             <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest block mb-4">LİTERATÜR KORELASYONU</span>
-                             <p className="text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
-                          </div>
-                       </div>
-                       <div className="space-y-4">
-                             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <span className="text-[8px] font-black text-emerald-600 uppercase block mb-3">TESPİT EDİLEN AVANTAJLAR</span>
-                                <ul className="space-y-2">
-                                   {(data.pros || []).slice(0,3).map((p:string, i:number) => <li key={i} className="text-[10px] font-bold text-slate-600 flex gap-3"><span className="text-emerald-500">✓</span> {p}</li>)}
-                                </ul>
-                             </div>
-                             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <span className="text-[8px] font-black text-rose-600 uppercase block mb-3">KRİTİK RİSKLER</span>
-                                <ul className="space-y-2">
-                                   {(data.risks || []).slice(0,3).map((r:string, i:number) => <li key={i} className="text-[10px] font-bold text-slate-600 flex gap-3"><span className="text-rose-500">!</span> {r}</li>)}
-                                </ul>
-                             </div>
-                       </div>
+                    {/* EKİP ETKİSİ (TEAM IMPACT) */}
+                    <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group/team">
+                        <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-4 flex items-center gap-2">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            MOLEKÜLER EKİP ETKİSİ
+                        </span>
+                        <p className="text-[13px] font-bold text-slate-300 leading-relaxed italic relative z-10">"{data.teamImpact}"</p>
+                        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-orange-600/5 rounded-full blur-2xl group-hover/team:bg-orange-600/10 transition-colors"></div>
                     </div>
 
                     {/* MİKRO DAVRANIŞLAR */}

@@ -21,57 +21,67 @@ const extractPureJSON = (text: string): any => {
 };
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
-  // AI PERSONALITY INJECTION
+  // AI PERSONALITY INJECTION: ULTRA-CLINICAL MODE
   const persona = config.aiPersona || { skepticismLevel: 50, innovationBias: 50, detailedReporting: true };
   
-  let skepticismPrompt = "";
-  if (persona.skepticismLevel > 80) {
-      skepticismPrompt = "MOD: AŞIRI ŞÜPHECİ (PARANOID AUDITOR). Adayın her beyanını sorgula, çelişkileri acımasızca ara ve kanıt yoksa puan kırma eğiliminde ol.";
-  } else if (persona.skepticismLevel > 50) {
-      skepticismPrompt = "MOD: DENGELİ DENETÇİ. Beyanları klinik mantıkla tart, tutarsızlık varsa belirt.";
-  } else {
-      skepticismPrompt = "MOD: DESTEKLEYİCİ MENTOR. Adayın potansiyeline odaklan, eksiklikleri gelişim alanı olarak gör.";
-  }
-
-  let innovationPrompt = "";
-  if (persona.innovationBias > 70) {
-      innovationPrompt = "YENİLİKÇİLİK ÖNCELİKLİ: Geleneksel yöntemler yerine modern/teknolojik yaklaşımları kullanan adaylara bonus puan ver.";
-  }
-
-  const detailLevel = persona.detailedReporting ? "Her analiz maddesi için en az 3 cümlelik, akademik terminoloji içeren, derinlemesine gerekçeler yaz." : "Özet ve net gerekçeler yaz.";
-
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Denetçi (AI Supervisor).
-    ${skepticismPrompt}
-    ${innovationPrompt}
-    ${detailLevel}
+    ROL: Yeni Gün Akademi "Baş Klinik Denetçi" ve "Akademik Kurul Başkanı".
+    GÖREV: Adayın verdiği cevapları bir mülakatçı gibi değil, bir "Klinik Dedektif" gibi analiz et. Yüzeysel yorumları yasaklıyorum.
     
-    ANALİZ PROTOKOLÜ (MİA MATRİSİ):
-    1. KLİNİK DERİNLİK: Metodolojik sadakat ve veri disiplini.
-    2. PEDAGOJİK ÇEVİKLİK: B Planı üretme ve kognitif esneklik.
-    3. KRİZ DİRENCİ: Duygusal regülasyon ve profesyonel mesafe.
-    4. VELİ DİPLOMASİSİ: Sınır koruma ve terapötik ittifak.
-    5. ETİK & SINIRLAR: Çıkar çatışması yönetimi ve entegrite.
-    6. KURUMSAL SADAKAT: Vizyon uyumu ve uzun vadeli bağlılık.
+    ANALİZ BOYUTLARI (DERİN MUHAKEME GEREKLİDİR):
     
-    Adayın cevaplarını bu lenslerden geçir ve JSON formatında raporla.
+    1. REASONING (NEDENSELLİK):
+       - Aday neden A şıkkını değil de B şıkkını seçti? 
+       - Bu seçimin arkasındaki nöral ve bilişsel süreç nedir?
+       - Cevap, adayın hangi klinik açığını veya ustalığını ifşa ediyor?
+       - "İyi cevap verdi" deme. "Adayın X duruma yaklaşımı, Y teorisindeki Z prensibiyle örtüşmektedir" şeklinde analiz et.
+
+    2. CLINICAL NUANCES (KLİNİK NÜANSLAR & GİZLİ VERİ):
+       - Satır aralarını oku. Adayın cevabında gizli bir "Tükenmişlik", "Ego", "Ezbercilik" veya "Sorumluluktan Kaçış" emaresi var mı?
+       - Mikro-davranış tahmini yap. Bu aday kriz anında donar mı, savaşır mı?
+
+    3. LITERATURE REFERENCE (LİTERATÜR & TEORİ):
+       - Adayın yaklaşımını akademik bir temele oturt. (Örn: Skinner'ın Pekiştirme Tarifesi, Piaget'nin Bilişsel Şemaları, Vygotsky'nin ZPD'si, Bowlby'nin Bağlanma Teorisi).
+       - Bu cevap hangi ekole (Davranışçı, Hümanist, Nörogelişimsel) daha yakın?
+
+    4. TEAM IMPACT (MOLEKÜLER EKİP ETKİSİ):
+       - Bu kişi ekibe girerse "Kanserleşen Hücre" mi olur yoksa "İyileştirici Antikor" mu?
+       - Junior uzmanları eğitir mi yoksa onları ezer mi?
+       - Kurumsal kültürü bozar mı yoksa güçlendirir mi? Fütüristik bir tahmin yap.
+
+    ÇIKTI FORMATI:
+    - Kesinlikle saf JSON formatında olmalı.
+    - Dil: Akademik, Keskin, Analitik Türkçe.
+    - Asla "Genel olarak iyi" gibi yuvarlak laflar etme. Veriye ve teoriye dayan.
   `;
 
-  // ... (Schema definitions remain same, ensuring strict JSON output)
+  // --- SCHEMA DEFINITION (ENFORCED DEPTH) ---
   const segmentSchema = {
     type: Type.OBJECT,
     properties: {
       score: { type: Type.NUMBER },
       status: { type: Type.STRING, enum: ["OPTIMAL", "EXCEPTIONAL", "RISK", "BORDERLINE"] },
-      reasoning: { type: Type.STRING },
-      clinicalNuances: { type: Type.STRING },
-      literatureReference: { type: Type.STRING },
-      teamImpact: { type: Type.STRING },
+      reasoning: { 
+        type: Type.STRING, 
+        description: "En az 3 cümlelik, sebep-sonuç ilişkisi kuran derin klinik gerekçelendirme." 
+      },
+      clinicalNuances: { 
+        type: Type.STRING, 
+        description: "Adayın cevabından çıkarılan gizli psikolojik ve mesleki profil analizi." 
+      },
+      literatureReference: { 
+        type: Type.STRING, 
+        description: "Adayın yaklaşımının dayandığı spesifik akademik teori veya kuram (Örn: Bandura Sosyal Öğrenme)." 
+      },
+      teamImpact: { 
+        type: Type.STRING, 
+        description: "Adayın kurum kültürüne ve ekip dinamiğine olası pozitif/negatif etkisinin simülasyonu." 
+      },
       pros: { type: Type.ARRAY, items: { type: Type.STRING } },
       risks: { type: Type.ARRAY, items: { type: Type.STRING } },
       behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } }
     },
-    required: ["score", "status", "reasoning", "clinicalNuances", "literatureReference", "teamImpact", "pros", "risks"]
+    required: ["score", "status", "reasoning", "clinicalNuances", "literatureReference", "teamImpact", "pros", "risks", "behavioralIndicators"]
   };
 
   const responseSchema = {
@@ -110,14 +120,22 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         type: Type.OBJECT,
         properties: {
           technicalExpertise: segmentSchema,
-          pedagogicalAnalysis: segmentSchema, // Mapped from pedagogicalAgility
+          pedagogicalAnalysis: segmentSchema,
           crisisResilience: segmentSchema,
-          parentStudentRelations: segmentSchema, // Mapped from parentalDiplomacy
+          parentStudentRelations: segmentSchema,
           workEthics: segmentSchema,
           institutionalLoyalty: segmentSchema,
-          developmentOpenness: segmentSchema, // Mapped from cognitiveAgility
-          sustainability: segmentSchema // Mapped from stabilityFactor
-        }
+          developmentOpenness: segmentSchema,
+          sustainability: segmentSchema,
+          cognitiveAgility: segmentSchema,
+          metacognitiveAwareness: segmentSchema
+        },
+        // Tüm kategorilerin eksiksiz doldurulmasını zorunlu kılıyoruz
+        required: [
+            "technicalExpertise", "pedagogicalAnalysis", "crisisResilience", 
+            "parentStudentRelations", "workEthics", "institutionalLoyalty", 
+            "developmentOpenness", "sustainability", "cognitiveAgility", "metacognitiveAwareness"
+        ]
       },
       swot: {
         type: Type.OBJECT,
@@ -142,11 +160,11 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `ADAY VERİLERİ: ${JSON.stringify(candidate)}` }],
+    contents: [{ text: `ADAY VERİLERİ (DETAYLI ANALİZ İÇİN): ${JSON.stringify(candidate)}` }],
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      thinkingConfig: { thinkingBudget: 24576 },
+      thinkingConfig: { thinkingBudget: 24576 }, // Maksimum düşünme bütçesi ile derinlik artırılır
       responseSchema: responseSchema
     }
   });
@@ -154,12 +172,14 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   const parsed = extractPureJSON(response.text);
   if (!parsed) throw new Error("MIA_AI_SCHEMA_FAILURE");
   
-  // Mapping Fixes (AI returns keys that might slightly differ from UI expectations)
+  // Mapping Corrections (Eğer model farklı isimlendirme yaparsa düzeltecek haritalama)
   if(parsed.deepAnalysis) {
-      if(!parsed.deepAnalysis.pedagogicalAnalysis && parsed.deepAnalysis.pedagogicalAgility) parsed.deepAnalysis.pedagogicalAnalysis = parsed.deepAnalysis.pedagogicalAgility;
-      if(!parsed.deepAnalysis.parentStudentRelations && parsed.deepAnalysis.parentalDiplomacy) parsed.deepAnalysis.parentStudentRelations = parsed.deepAnalysis.parentalDiplomacy;
-      if(!parsed.deepAnalysis.developmentOpenness && parsed.deepAnalysis.cognitiveAgility) parsed.deepAnalysis.developmentOpenness = parsed.deepAnalysis.cognitiveAgility;
-      if(!parsed.deepAnalysis.sustainability && parsed.deepAnalysis.stabilityFactor) parsed.deepAnalysis.sustainability = parsed.deepAnalysis.stabilityFactor;
+      // Ensure specific keys are mapped correctly if the AI uses synonyms
+      const da = parsed.deepAnalysis;
+      if(!da.pedagogicalAnalysis && da.pedagogicalAgility) da.pedagogicalAnalysis = da.pedagogicalAgility;
+      if(!da.parentStudentRelations && da.parentalDiplomacy) da.parentStudentRelations = da.parentalDiplomacy;
+      if(!da.developmentOpenness && da.cognitiveAgility) da.developmentOpenness = da.cognitiveAgility;
+      if(!da.sustainability && da.stabilityFactor) da.sustainability = da.stabilityFactor;
   }
 
   return parsed;
