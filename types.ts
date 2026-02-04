@@ -1,10 +1,15 @@
+
 export enum Branch {
-  OzelEgitim = 'Özel Eğitim',
+  OzelEgitim = 'Özel Eğitim Öğretmenliği',
   DilKonusma = 'Dil ve Konuşma Terapisi',
   Ergoterapi = 'Ergoterapi',
-  Fizyoterapi = 'Fizyoterapi',
+  Fizyoterapi = 'Fizyoterapi ve Rehabilitasyon',
   Psikoloji = 'Psikoloji',
-  PDR = 'PDR'
+  PDR = 'Rehberlik ve Psikolojik Danışmanlık (PDR)',
+  OkulOncesi = 'Okul Öncesi Öğretmenliği',
+  SinifOgretmenligi = 'Sınıf Öğretmenliği',
+  Odyoloji = 'Odyoloji',
+  OyunTerapisi = 'Oyun Terapisi'
 }
 
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
