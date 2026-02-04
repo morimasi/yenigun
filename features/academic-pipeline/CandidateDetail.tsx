@@ -17,19 +17,91 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isExportStudioOpen, setIsExportStudioOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   
-  // STATİK MATRIX SEGMENTLERİ - SERVICE İLE %100 UYUMLU ID'LER
+  // GENİŞLETİLMİŞ MATRİS TANIMLARI (STATİK REFERANS NOKTALARI)
   const matrixSegments = useMemo(() => [
-    { id: 'technicalExpertise', label: 'KLİNİK DERİNLİK', icon: '🧠', group: 'KLİNİK' },
-    { id: 'pedagogicalAgility', label: 'PEDAGOJİK ÇEVİKLİK', icon: '🏃', group: 'KLİNİK' },
-    { id: 'crisisResilience', label: 'KRİZ DİRENCİ', icon: '🔥', group: 'KLİNİK' },
-    { id: 'parentalDiplomacy', label: 'VELİ DİPLOMASİSİ', icon: '🤝', group: 'KLİNİK' },
-    { id: 'clinicalDocumentation', label: 'BİLİMSEL KAYIT', icon: '📝', group: 'KLİNİK' },
-    { id: 'workEthics', label: 'ETİK & SINIRLAR', icon: '⚖️', group: 'ETİK' },
-    { id: 'metacognitiveAwareness', label: 'ÖZ-DENETİM', icon: '🔍', group: 'ETİK' },
-    { id: 'cognitiveAgility', label: 'BİLİŞSEL ADAPTASYON', icon: '🚀', group: 'KURUMSAL' },
-    { id: 'institutionalLoyalty', label: 'SADAKAT & UYUM', icon: '🏛️', group: 'KURUMSAL' },
-    { id: 'stabilityFactor', label: 'TÜKENMİŞLİK EŞİĞİ', icon: '🔋', group: 'KURUMSAL' }
+    { 
+        id: 'technicalExpertise', 
+        label: 'KLİNİK DERİNLİK', 
+        icon: '🧠', 
+        group: 'KLİNİK',
+        deepDesc: 'Kanıta dayalı yöntemlerin (ABA, Floortime, ETEÇOM) uygulama sadakati ve vaka formülasyon yeteneği.',
+        clinicalFocus: 'Metodolojik hakimiyet, veri analizi, program hazırlama kapasitesi.'
+    },
+    { 
+        id: 'pedagogicalAgility', 
+        label: 'PEDAGOJİK ÇEVİKLİK', 
+        icon: '🏃', 
+        group: 'KLİNİK',
+        deepDesc: 'Anlık gelişen durumlara göre öğretim stratejisini esnetebilme ve B planına geçebilme hızı.',
+        clinicalFocus: 'Kognitif esneklik, öğretimsel adaptasyon, fırsat öğretimi.'
+    },
+    { 
+        id: 'crisisResilience', 
+        label: 'KRİZ DİRENCİ', 
+        icon: '🔥', 
+        group: 'KLİNİK',
+        deepDesc: 'Yoğun problem davranış (Meltdown/Aggression) anlarında nöral stabiliteyi koruma ve güvenli müdahale.',
+        clinicalFocus: 'Duygusal regülasyon, profesyonel mesafe, kriz yönetimi.'
+    },
+    { 
+        id: 'parentalDiplomacy', 
+        label: 'VELİ DİPLOMASİSİ', 
+        icon: '🤝', 
+        group: 'KLİNİK',
+        deepDesc: 'Zorlu ve manipülatif veli profilleriyle terapötik ittifakı bozmadan sınırları koruyabilme sanatı.',
+        clinicalFocus: 'İletişim stratejisi, sınır yönetimi, ikna kabiliyeti.'
+    },
+    { 
+        id: 'clinicalDocumentation', 
+        label: 'BİLİMSEL KAYIT', 
+        icon: '📝', 
+        group: 'KLİNİK',
+        deepDesc: 'Sürecin şeffaf, ölçülebilir ve denetlenebilir şekilde raporlanması ve arşiv disiplini.',
+        clinicalFocus: 'Veri dürüstlüğü, objektif raporlama, ABC kaydı.'
+    },
+    { 
+        id: 'workEthics', 
+        label: 'ETİK & SINIRLAR', 
+        icon: '⚖️', 
+        group: 'ETİK',
+        deepDesc: 'Mesleki kodlara (etik ilkelere) sarsılmaz bağlılık ve çıkar çatışmalarını (dual relationships) yönetme.',
+        clinicalFocus: 'Entegrite, dürüstlük, çıkar çatışması farkındalığı.'
+    },
+    { 
+        id: 'metacognitiveAwareness', 
+        label: 'ÖZ-DENETİM', 
+        icon: '🔍', 
+        group: 'ETİK',
+        deepDesc: 'Kendi klinik performansını dış bir gözle eleştirebilme ve süpervizyona açık olma olgunluğu.',
+        clinicalFocus: 'İçgörü (Insight), tevazu, öğrenme motivasyonu.'
+    },
+    { 
+        id: 'cognitiveAgility', 
+        label: 'BİLİŞSEL ADAPTASYON', 
+        icon: '🚀', 
+        group: 'KURUMSAL',
+        deepDesc: 'Yeni teknolojilere, yöntemlere ve kurumsal değişimlere entegre olabilme hızı.',
+        clinicalFocus: 'İnovasyon, teknoloji okuryazarlığı, değişim yönetimi.'
+    },
+    { 
+        id: 'institutionalLoyalty', 
+        label: 'SADAKAT & UYUM', 
+        icon: '🏛️', 
+        group: 'KURUMSAL',
+        deepDesc: 'Kurum vizyonunu içselleştirme ve uzun vadeli stratejik ortaklık potansiyeli.',
+        clinicalFocus: 'Aidiyet, kurumsal hafıza, vizyon birliği.'
+    },
+    { 
+        id: 'stabilityFactor', 
+        label: 'TÜKENMİŞLİK EŞİĞİ', 
+        icon: '🔋', 
+        group: 'KURUMSAL',
+        deepDesc: 'Mesleki deformasyona karşı psikolojik sağlamlık ve enerjinin sürdürülebilirliği.',
+        clinicalFocus: 'Psikolojik sermaye, stres toleransı, kariyer ömrü.'
+    }
   ], []);
+
+  const activeSegmentDef = useMemo(() => matrixSegments.find(s => s.id === selectedMatrixId), [selectedMatrixId, matrixSegments]);
 
   const radarData = useMemo(() => {
     const da = candidate.report?.deepAnalysis;
@@ -84,18 +156,26 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <button 
                     key={s.id} 
                     onClick={() => setSelectedMatrixId(s.id)}
-                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}
+                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}
                     >
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl">{s.icon}</span>
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {da?.[s.id] && <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(da[s.id]?.status)}`}></div>}
-                        <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>
-                           {da?.[s.id] ? `%${da[s.id].score}` : '-'}
-                        </span>
-                    </div>
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl">{s.icon}</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {da?.[s.id] && <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(da[s.id]?.status)}`}></div>}
+                                <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>
+                                {da?.[s.id] ? `%${da[s.id].score}` : '-'}
+                                </span>
+                            </div>
+                        </div>
+                        {/* Seçili İse Açıklama Göster */}
+                        {selectedMatrixId === s.id && (
+                            <div className="mt-2 pt-2 border-t border-white/10">
+                                <p className="text-[9px] text-slate-400 leading-relaxed font-medium">{s.deepDesc}</p>
+                            </div>
+                        )}
                     </button>
                 ))}
              </div>
@@ -115,10 +195,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
              <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden group">
                 <div className={`absolute top-0 left-0 w-1.5 h-full ${getStatusColor(data.status)}`}></div>
                 
-                <div className="flex justify-between items-start mb-10">
+                {/* HEADLINE */}
+                <div className="flex justify-between items-start mb-8">
                    <div>
-                      <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.5em] mb-2">KLİNİK MUHAKEME VE NEDENSELLİK</h4>
-                      <p className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{matrixSegments.find(s => s.id === selectedMatrixId)?.label}</p>
+                      <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.5em] mb-2">KLİNİK OTOPSİ RAPORU</h4>
+                      <p className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{activeSegmentDef?.label}</p>
+                      <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-lg">{activeSegmentDef?.clinicalFocus}</p>
                    </div>
                    <div className="text-right">
                       <span className={`px-5 py-2 rounded-xl text-[10px] font-black text-white uppercase tracking-widest shadow-lg ${getStatusColor(data.status)}`}>
@@ -128,52 +210,61 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                 </div>
 
                 <div className="space-y-10">
+                    
+                    {/* GEREKÇELENDİRME (CORE) */}
                     <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 relative">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">TEMEL GEREKÇELENDİRME</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">NÖRAL MUHAKEME (NEDEN BU PUAN?)</span>
                         <p className="text-lg font-bold text-slate-800 leading-relaxed text-justify italic">"{data.reasoning}"</p>
                     </div>
 
+                    {/* SATIR ARASI & ETKİ ANALİZİ */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-6">
-                          <div className="bg-blue-50/50 p-8 rounded-[2.5rem] border border-blue-100 hover:bg-blue-50 transition-colors">
-                             <span className="text-[9px] font-black text-blue-700 uppercase tracking-widest block mb-4">KLİNİK NÜANSLAR (SATIR ARASI)</span>
+                          <div className="bg-blue-50/50 p-8 rounded-[2.5rem] border border-blue-100 hover:bg-blue-50 transition-colors h-full">
+                             <span className="text-[9px] font-black text-blue-700 uppercase tracking-widest block mb-4">KLİNİK NÜANSLAR (GİZLİ VERİ)</span>
                              <p className="text-[12px] font-bold text-blue-900 leading-relaxed italic">"{data.clinicalNuances}"</p>
                           </div>
-                          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group/team">
+                       </div>
+                       <div className="space-y-6">
+                          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group/team h-full">
                              <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-4">MOLEKÜLER EKİP ETKİSİ</span>
                              <p className="text-[12px] font-bold text-slate-300 leading-relaxed italic relative z-10">"{data.teamImpact}"</p>
                              <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-orange-600/5 rounded-full blur-2xl group-hover/team:bg-orange-600/10 transition-colors"></div>
                           </div>
                        </div>
+                    </div>
 
+                    {/* AKADEMİK & RİSK ANALİZİ */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-6">
                           <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100">
                              <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest block mb-4">LİTERATÜR KORELASYONU</span>
-                             <p className="text-[12px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
+                             <p className="text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
                           </div>
-                          <div className="grid grid-cols-1 gap-4">
+                       </div>
+                       <div className="space-y-4">
                              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <span className="text-[8px] font-black text-emerald-600 uppercase block mb-3">KRİTİK AVANTAJLAR</span>
+                                <span className="text-[8px] font-black text-emerald-600 uppercase block mb-3">TESPİT EDİLEN AVANTAJLAR</span>
                                 <ul className="space-y-2">
                                    {(data.pros || []).slice(0,3).map((p:string, i:number) => <li key={i} className="text-[10px] font-bold text-slate-600 flex gap-3"><span className="text-emerald-500">✓</span> {p}</li>)}
                                 </ul>
                              </div>
                              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <span className="text-[8px] font-black text-rose-600 uppercase block mb-3">TESPİT EDİLEN RİSKLER</span>
+                                <span className="text-[8px] font-black text-rose-600 uppercase block mb-3">KRİTİK RİSKLER</span>
                                 <ul className="space-y-2">
                                    {(data.risks || []).slice(0,3).map((r:string, i:number) => <li key={i} className="text-[10px] font-bold text-slate-600 flex gap-3"><span className="text-rose-500">!</span> {r}</li>)}
                                 </ul>
                              </div>
-                          </div>
                        </div>
                     </div>
 
+                    {/* MİKRO DAVRANIŞLAR */}
                     {data.behavioralIndicators && data.behavioralIndicators.length > 0 && (
                       <div className="pt-8 border-t border-slate-100">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-5">GÖZLEMLENEBİLİR MİKRO-DAVRANIŞSAL PROJEKSİYONLAR</span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-5">GÖZLEMLENEBİLİR MİKRO-DAVRANIŞSAL İPUÇLARI</span>
                           <div className="flex flex-wrap gap-3">
                              {data.behavioralIndicators.map((ind: string, i: number) => (
-                                <span key={i} className="px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-tight shadow-sm"># {ind}</span>
+                                <span key={i} className="px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-tight shadow-sm hover:bg-slate-100 transition-colors"># {ind}</span>
                              ))}
                           </div>
                       </div>
