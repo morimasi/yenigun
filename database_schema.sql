@@ -124,6 +124,18 @@ CREATE TABLE IF NOT EXISTS staff_idp (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- MIGRATION: 'status' ve 'focus_area' kolonlarının varlığını garanti altına al
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='status') THEN
+        ALTER TABLE staff_idp ADD COLUMN status TEXT DEFAULT 'active';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='focus_area') THEN
+        ALTER TABLE staff_idp ADD COLUMN focus_area TEXT;
+    END IF;
+END $$;
+
 -- JSONB içindeki müfredat başlıklarında arama yapabilmek için
 CREATE INDEX IF NOT EXISTS idx_idp_data_gin ON staff_idp USING GIN (data);
 CREATE INDEX IF NOT EXISTS idx_idp_staff_active ON staff_idp(staff_id) WHERE status = 'active';
@@ -165,6 +177,9 @@ CREATE TABLE IF NOT EXISTS communication_logs (
 
 -- 1. PERSONEL PERFORMANS MATRİSİ
 -- Admin panelinde "Liyakat Ortalaması" gibi metrikleri anlık hesaplar.
+-- View yapısı değiştiğinde (kolon ekleme/çıkarma) önce düşürülmesi gerekir.
+DROP VIEW IF EXISTS view_staff_performance_matrix;
+
 CREATE OR REPLACE VIEW view_staff_performance_matrix AS
 SELECT 
     s.id,
