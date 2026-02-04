@@ -19,7 +19,7 @@ export interface ReportCustomizationOptions {
 const PAGE_STYLE = {
   width: '210mm',
   height: '296mm', // A4 boyutu (hafif toleranslı)
-  padding: '15mm', // Kompakt marj (Standart 25mm yerine)
+  padding: '15mm', // Kompakt marj
   backgroundColor: 'white',
   position: 'relative' as const,
   overflow: 'hidden',
@@ -42,7 +42,7 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
 
   // --- SAYFA 1: KAPAK VE ÖZET ---
   const PageOne = () => (
-    <div className="pdf-page bg-white relative" style={PAGE_STYLE}>
+    <div id="report-page-1" className="pdf-page bg-white relative" style={PAGE_STYLE}>
       {/* HEADER */}
       <div className="flex justify-between items-start border-b-[6px] border-slate-900 pb-8 mb-10">
         <div className="flex items-center gap-5">
@@ -131,7 +131,7 @@ const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, optio
 
   // --- SAYFA 2: DETAYLI ANALİZ VE İMZA ---
   const PageTwo = () => (
-    <div className="pdf-page bg-white relative" style={PAGE_STYLE}>
+    <div id="report-page-2" className="pdf-page bg-white relative" style={PAGE_STYLE}>
       
       <div className="mb-8 border-b-2 border-slate-100 pb-4 flex justify-between items-end">
          <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em]">BOYUTSAL DERİN ANALİZ</h3>

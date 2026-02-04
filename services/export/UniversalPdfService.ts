@@ -5,16 +5,16 @@ import { UniversalExportData } from '../../types';
 
 export const UniversalPdfService = {
   /**
-   * YENİ NESİL PDF MOTORU (v3.0 - PUBLISHER GRADE)
+   * YENİ NESİL PDF MOTORU (v3.1 - STABILIZED)
    * HTML elementlerini A4 kağıt standartlarına (210mm x 297mm) göre izole eder.
-   * Yüksek DPI (300) ile render alarak bulanıklığı önler.
+   * "Unable to find element in cloned iframe" hatasını önlemek için ID kontrolü ve scroll sıfırlama eklendi.
    */
   async generateHighResPdf(elementId: string, data: UniversalExportData): Promise<void> {
     const rootElement = document.getElementById(elementId);
     if (!rootElement) throw new Error("Yayınlama alanı (Render Stage) bulunamadı.");
 
     // Sadece '.pdf-page' sınıfına sahip, A4 boyutundaki konteynerleri seç.
-    const pages = rootElement.querySelectorAll('.pdf-page');
+    const pages = Array.from(rootElement.querySelectorAll('.pdf-page'));
     if (pages.length === 0) throw new Error("Sayfalandırma hatası: Sayfa şablonları oluşturulamadı.");
 
     // PDF Hazırlığı (A4 Portrait, mm bazlı)
@@ -29,40 +29,57 @@ export const UniversalPdfService = {
       for (let i = 0; i < pages.length; i++) {
         const pageElement = pages[i] as HTMLElement;
         
+        // KRİTİK DÜZELTME: html2canvas'in klonlanmış dökümanda elementi bulabilmesi için benzersiz ID şarttır.
+        // Eğer ID yoksa geçici bir ID ata.
+        const originalId = pageElement.id;
+        if (!originalId) {
+            pageElement.id = `pdf-page-gen-${Date.now()}-${i}`;
+        }
+
         // İlk sayfa hariç her döngüde yeni sayfa ekle
         if (i > 0) pdf.addPage();
 
         // HTML2CANVAS OPTİMİZASYONU
-        // scale: 2 (192 DPI) -> Hem okunaklı hem performanslı. 300 DPI bazen tarayıcıyı kilitler.
         const canvas = await html2canvas(pageElement, {
-          scale: 2, 
+          scale: 2, // 192 DPI (Print Quality)
           useCORS: true,
-          backgroundColor: '#ffffff', // Şeffaf arka plan sorununu önler
+          backgroundColor: '#ffffff',
           logging: false,
           allowTaint: true,
-          windowWidth: 794, // Tam A4 pixel genişliği (96 DPI CSS standardı)
-          windowHeight: 1123, // Tam A4 pixel yüksekliği
+          // Scroll fix: Elementin görünür viewport dışında olması durumunda boş çıkmasını engeller
+          scrollY: 0, 
+          scrollX: 0,
+          // Window dimensions: Full DOM context
+          windowWidth: document.documentElement.offsetWidth,
+          windowHeight: document.documentElement.offsetHeight,
           onclone: (clonedDoc) => {
-            // Render sırasında görünmemesi gereken UI elementlerini (butonlar, scrollbarlar) temizle
+            // Klonlanan dökümanda hedef elementi bul
             const clonedEl = clonedDoc.getElementById(pageElement.id);
             if (clonedEl) {
+                // Render sırasında görünmemesi gereken UI elementlerini temizle ve stili sabitle
                 clonedEl.style.transform = 'none';
                 clonedEl.style.boxShadow = 'none';
                 clonedEl.style.margin = '0';
-                clonedEl.style.overflow = 'hidden'; // Taşmaları engelle
+                clonedEl.style.overflow = 'hidden'; 
+                // Flex container sorunlarını önlemek için
+                clonedEl.style.display = 'block'; 
             }
           }
         });
 
+        // İşlem bitince geçici ID'yi temizle (orijinalinde yoksa)
+        if (!originalId) {
+            pageElement.removeAttribute('id');
+        }
+
         // Görüntüyü PDF boyutlarına tam oturt
-        const imgData = canvas.toDataURL('image/jpeg', 0.95); // Yüksek kalite JPEG
+        const imgData = canvas.toDataURL('image/jpeg', 0.90); // Optimizasyon: Kalite 0.90
         const pdfWidth = 210;
         const pdfHeight = 297;
         
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
         
-        // DİJİTAL FİLİGRAN (PDF KATMANI)
-        // Resmin üzerine vektörel yazı ekleyerek keskinliği korur.
+        // DİJİTAL FİLİGRAN (PDF KATMANI - Vektörel)
         pdf.setFontSize(6);
         pdf.setTextColor(150);
         pdf.text(
@@ -78,7 +95,7 @@ export const UniversalPdfService = {
       
     } catch (error) {
       console.error("PDF Motoru Kritik Hata:", error);
-      throw error;
+      alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyiniz.");
     }
   }
 };
