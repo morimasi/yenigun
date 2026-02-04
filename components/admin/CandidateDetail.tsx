@@ -38,7 +38,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
     try {
-      const algoReport = calculateAlgorithmicAnalysis(candidate);
+      const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       const aiReport = await generateCandidateAnalysis(candidate, config);
       onUpdate({ ...candidate, report: aiReport, algoReport, timestamp: Date.now() });
     } catch (e: any) { alert("Analiz Hatası."); } 

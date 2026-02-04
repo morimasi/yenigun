@@ -2,168 +2,224 @@
 import React from 'react';
 import { AIReport, Candidate, Branch } from '../types';
 import { BRANCH_CATEGORY_MULTIPLIERS } from '../constants/taxonomy';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 export interface ReportCustomizationOptions {
-  showPersonalDetails: boolean;
-  showAcademicBackground: boolean;
-  showAIAnalysis: boolean;
-  showSWOT: boolean;
-  showCompetencyMap: boolean;
-  showInterviewNotes: boolean;
+  showPersonalDetails?: boolean;
+  showAcademicBackground?: boolean;
+  showAIAnalysis?: boolean;
+  showSWOT?: boolean;
+  showCompetencyMap?: boolean;
+  showInterviewNotes?: boolean;
   headerTitle?: string;
+  showWatermark?: boolean;
+  signatureRequired?: boolean;
 }
 
-const defaultOptions: ReportCustomizationOptions = {
-  showPersonalDetails: true,
-  showAcademicBackground: true,
-  showAIAnalysis: true,
-  showSWOT: true,
-  showCompetencyMap: true,
-  showInterviewNotes: true
+const PAGE_STYLE = {
+  width: '210mm',
+  height: '296mm', // A4 boyutu (hafif toleranslı)
+  padding: '15mm', // Kompakt marj (Standart 25mm yerine)
+  backgroundColor: 'white',
+  position: 'relative' as const,
+  overflow: 'hidden',
+  boxShadow: '0 0 15px rgba(0,0,0,0.1)'
 };
 
-const SectionHeader: React.FC<{ title: string; number: string }> = ({ title, number }) => (
-  <div className="flex items-center gap-6 mb-10 border-b-4 border-slate-900 pb-4 break-after-avoid mt-16 first:mt-0 relative">
-    <span className="text-[14px] font-black bg-slate-900 text-white px-4 py-2 rounded-lg">{number}</span>
-    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-900">{title}</h3>
-    <div className="absolute right-0 bottom-4 text-[9px] font-black text-slate-200 uppercase tracking-[0.5em]">CONFIDENTIAL BRANCH SPECIFIC ANALYSIS</div>
-  </div>
-);
-
-const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, options?: ReportCustomizationOptions }> = ({ report, candidate, options = defaultOptions }) => {
+const CandidateReport: React.FC<{ report?: AIReport, candidate: Candidate, options?: ReportCustomizationOptions }> = ({ report, candidate, options }) => {
   const dateStr = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
   const branchMultipliers = BRANCH_CATEGORY_MULTIPLIERS[candidate.branch as Branch] || {};
 
+  // Radar Data Hazırlığı
   const radarData = (report?.deepAnalysis && typeof report.deepAnalysis === 'object') ? [
-    { subject: 'ETİK', value: report.deepAnalysis.workEthics?.score || 0, ideal: Math.min(100, 70 * (branchMultipliers.ethics || 1.0)) },
-    { subject: 'KLİNİK', value: report.deepAnalysis.technicalExpertise?.score || 0, ideal: Math.min(100, 70 * (branchMultipliers.clinical || 1.0)) },
-    { subject: 'PEDAGOJİ', value: report.deepAnalysis.pedagogicalAnalysis?.score || 0, ideal: Math.min(100, 70 * (branchMultipliers.pedagogicalAnalysis || 1.0)) },
-    { subject: 'DİRENÇ', value: report.deepAnalysis.sustainability?.score || 0, ideal: Math.min(100, 70 * (branchMultipliers.sustainability || 1.0)) },
-    { subject: 'UYUM', value: report.deepAnalysis.institutionalLoyalty?.score || 0, ideal: Math.min(100, 70 * (branchMultipliers.institutionalLoyalty || 1.0)) },
-    { subject: 'GELİŞİM', value: report.deepAnalysis.developmentOpenness?.score || 0, ideal: 75 },
+    { subject: 'ETİK', value: report.deepAnalysis.workEthics?.score || 0, fullMark: 100 },
+    { subject: 'KLİNİK', value: report.deepAnalysis.technicalExpertise?.score || 0, fullMark: 100 },
+    { subject: 'PEDAGOJİ', value: report.deepAnalysis.pedagogicalAnalysis?.score || 0, fullMark: 100 },
+    { subject: 'DİRENÇ', value: report.deepAnalysis.sustainability?.score || 0, fullMark: 100 },
+    { subject: 'UYUM', value: report.deepAnalysis.institutionalLoyalty?.score || 0, fullMark: 100 },
+    { subject: 'GELİŞİM', value: report.deepAnalysis.developmentOpenness?.score || 0, fullMark: 100 },
   ] : [];
 
-  return (
-    <div className="bg-white p-[25mm] w-[210mm] text-slate-900 relative shadow-none border border-slate-100 font-sans" id="report-export-area" style={{ minHeight: '297mm' }}>
-      
-      {/* OFFICIAL HEADER */}
-      <div className="flex justify-between items-start border-b-[8px] border-slate-900 pb-16 mb-16 relative z-10">
-        <div className="space-y-10">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-slate-900 text-white rounded-[2.5rem] flex items-center justify-center font-black text-5xl shadow-2xl">YG</div>
-            <div>
-              <p className="text-[11px] font-black text-orange-600 uppercase tracking-[0.6em] mb-2">AKADEMİK LİYAKAT KURULU</p>
-              <h2 className="text-[22px] font-black text-slate-900 uppercase tracking-tighter leading-tight max-w-[400px]">{options.headerTitle || 'UZMANLIK VE YETKİNLİK KARAR DOSYASI'}</h2>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-7xl font-black tracking-tighter uppercase leading-[0.8] text-slate-900">{candidate.name}</h1>
-            <div className="flex items-center gap-4">
-               <p className="text-xl font-black text-orange-600 uppercase tracking-[0.3em]">{candidate.branch}</p>
-               <div className="w-2 h-2 rounded-full bg-slate-200"></div>
-               <p className="text-xl font-black text-slate-400 uppercase tracking-[0.2em]">{candidate.experienceYears} Yıl Deneyim</p>
-            </div>
+  // --- SAYFA 1: KAPAK VE ÖZET ---
+  const PageOne = () => (
+    <div className="pdf-page bg-white relative" style={PAGE_STYLE}>
+      {/* HEADER */}
+      <div className="flex justify-between items-start border-b-[6px] border-slate-900 pb-8 mb-10">
+        <div className="flex items-center gap-5">
+          <div className="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-4xl shadow-xl">YG</div>
+          <div>
+            <p className="text-[10px] font-black text-orange-600 uppercase tracking-[0.4em] mb-1">AKADEMİK KURUL</p>
+            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">Liyakat Değerleme<br/>Raporu</h1>
           </div>
         </div>
-
-        <div className="text-right flex flex-col items-end gap-6">
-          <div className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col items-center min-w-[200px]">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500 mb-3">BRANŞ UYUMU</p>
-            <p className="text-7xl font-black leading-none text-white">%{candidate.algoReport?.branchComplianceScore || '?'}</p>
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-4">GENEL LİYAKAT: %{report?.score || '?'}</p>
-          </div>
-          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-right leading-relaxed">
-            TARİH: {dateStr} <br />
-            REFERANS: {candidate.id.toUpperCase()} <br />
-            MODEL: GEMINI-3-FLASH (REASONING)
-          </div>
+        <div className="text-right space-y-1">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">DOSYA NO: {candidate.id.substring(0,8).toUpperCase()}</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TARİH: {dateStr}</p>
         </div>
       </div>
 
-      {/* KLİNİK DNA RADAR (Overlay Mode) */}
-      <section className="mb-20 grid grid-cols-12 gap-12 break-inside-avoid relative z-10">
-         <div className="col-span-6 h-[400px] bg-slate-50 rounded-[4rem] p-10 border border-slate-100 flex items-center justify-center relative">
-            <div className="absolute top-8 left-8">
-               <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest block mb-2">UZMANLIK SPEKTRUMU</span>
-               <div className="flex gap-4">
-                  <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase"><div className="w-2 h-2 bg-black rounded-full"></div> ADAY</div>
-                  <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase"><div className="w-2 h-2 bg-slate-200 rounded-full"></div> İDEAL</div>
-               </div>
-            </div>
+      {/* CANDIDATE INFO STRIP */}
+      <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl mb-10 flex justify-between items-center">
+         <div>
+            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{candidate.name}</h2>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">{candidate.branch} • {candidate.experienceYears} YIL DENEYİM</p>
+         </div>
+         <div className="text-right">
+            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">GENEL SKOR</span>
+            <span className={`text-5xl font-black ${report?.score && report.score > 75 ? 'text-emerald-600' : 'text-slate-900'}`}>%{report?.score || '?'}</span>
+         </div>
+      </div>
+
+      {/* EXECUTIVE SUMMARY */}
+      <div className="mb-10">
+         <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] mb-4 border-l-4 border-orange-600 pl-3">YÖNETİCİ ÖZETİ</h3>
+         <div className="p-8 bg-white border-2 border-slate-100 rounded-3xl text-justify">
+            <p className="text-[12px] font-medium text-slate-700 leading-relaxed italic">
+               "{report?.summary || 'Analiz verisi bekleniyor...'}"
+            </p>
+         </div>
+      </div>
+
+      {/* METRICS GRID (COMPACT) */}
+      <div className="grid grid-cols-2 gap-8 mb-10">
+         {/* RADAR CHART */}
+         <div className="bg-slate-50 rounded-3xl border border-slate-100 p-4 h-[220px] relative">
+            <span className="absolute top-4 left-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">YETKİNLİK AĞI</span>
             <ResponsiveContainer width="100%" height="100%">
-               <RadarChart data={radarData}>
-                  <PolarGrid stroke="#cbd5e1" strokeWidth={1} />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fontWeight: 900, fill: '#64748b' }} />
-                  <Radar dataKey="ideal" stroke="#e2e8f0" fill="#cbd5e1" fillOpacity={0.4} strokeWidth={1} />
-                  <Radar dataKey="value" stroke="#000000" fill="#000000" fillOpacity={0.08} strokeWidth={3} />
+               <RadarChart data={radarData} outerRadius="65%">
+                  <PolarGrid stroke="#cbd5e1" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 800, fill: '#64748b' }} />
+                  <Radar dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.4} strokeWidth={2} />
                </RadarChart>
             </ResponsiveContainer>
          </div>
-         <div className="col-span-6 flex flex-col justify-center space-y-10">
-            <div className="p-10 bg-slate-900 rounded-[3rem] text-white">
-               <span className="text-[9px] font-bold text-orange-500 uppercase tracking-widest block mb-4">GÜVEN VE DOĞRULUK</span>
-               <div className="flex justify-between items-end mb-8">
-                  <div>
-                     <p className="text-4xl font-black">%{report?.integrityIndex || 0}</p>
-                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Dürüstlük Endeksi</p>
-                  </div>
-                  <div className="text-right">
-                     <p className="text-4xl font-black">%{report?.socialMaskingScore || 0}</p>
-                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Sosyal Maske</p>
-                  </div>
+
+         {/* KEY INDICATORS */}
+         <div className="flex flex-col gap-4">
+            <div className="flex-1 bg-slate-900 rounded-3xl p-6 text-white flex flex-col justify-center">
+               <span className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mb-2">DÜRÜSTLÜK ENDEKSİ</span>
+               <div className="flex items-end gap-3">
+                  <span className="text-5xl font-black">%{report?.integrityIndex || 0}</span>
+                  <span className="text-[10px] text-slate-400 mb-2 opacity-80">GÜVENİLİR BEYAN</span>
                </div>
-               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-orange-600" style={{ width: `${report?.integrityIndex || 0}%` }}></div>
-               </div>
+               <div className="h-1.5 bg-white/10 rounded-full mt-4 overflow-hidden"><div className="h-full bg-emerald-500" style={{ width: `${report?.integrityIndex}%` }}></div></div>
             </div>
-            <div className="p-10 bg-white border-2 border-slate-100 rounded-[3rem]">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Kurumsal Değerlendirme</span>
-               <p className="text-[12px] font-bold text-slate-800 leading-relaxed italic">"{report?.summary}"</p>
+            <div className="flex-1 border-2 border-slate-100 rounded-3xl p-6 flex flex-col justify-center">
+               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">SOSYAL MASKELEME</span>
+               <div className="flex items-end gap-3">
+                  <span className="text-5xl font-black text-slate-800">%{report?.socialMaskingScore || 0}</span>
+                  <span className="text-[10px] text-slate-400 mb-2">RİSK FAKTÖRÜ</span>
+               </div>
+               <div className="h-1.5 bg-slate-100 rounded-full mt-4 overflow-hidden"><div className="h-full bg-rose-500" style={{ width: `${report?.socialMaskingScore}%` }}></div></div>
             </div>
          </div>
-      </section>
-
-      {/* MATRIX DETAILS */}
-      <SectionHeader title="Boyutsal Analiz Verisi" number="01" />
-      <div className="grid grid-cols-2 gap-10 relative z-10">
-        {report?.deepAnalysis && Object.entries(report.deepAnalysis).map(([key, segment]: [string, any]) => (
-           <div key={key} className="p-8 border border-slate-100 bg-slate-50/50 rounded-[2.5rem] break-inside-avoid">
-              <div className="flex justify-between items-center mb-6">
-                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').trim()}</h5>
-                 <span className="text-2xl font-black text-slate-900">%{segment?.score || 0}</span>
-              </div>
-              <p className="text-[11px] font-medium text-slate-600 leading-relaxed text-justify italic">"{segment?.reasoning?.substring(0, 200)}..."</p>
-           </div>
-        ))}
       </div>
 
-      {/* PREDICTIONS */}
-      <SectionHeader title="Gelişim ve Risk Projeksiyonu" number="02" />
-      <div className="bg-slate-900 p-12 rounded-[4rem] text-white relative z-10">
-         <div className="grid grid-cols-2 gap-16">
-            <div className="space-y-8">
-               {[
-                  { l: 'KURUMSAL BAĞLILIK', v: report?.predictiveMetrics?.retentionProbability || 0 },
-                  { l: 'BİLİŞSEL ÇEVİKLİK', v: report?.predictiveMetrics?.learningVelocity || 0 }
-               ].map((item, idx) => (
-                  <div key={idx} className="space-y-3">
-                     <div className="flex justify-between items-end">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.l}</span>
-                        <span className="text-3xl font-black text-orange-500">%{item.v}</span>
-                     </div>
-                     <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-orange-600" style={{ width: `${item.v}%` }}></div>
-                     </div>
-                  </div>
+      {/* FOOTER */}
+      {options?.showWatermark && (
+         <div className="absolute bottom-12 right-12 opacity-10 pointer-events-none transform -rotate-12 border-4 border-slate-900 text-slate-900 font-black text-4xl p-4 rounded-xl uppercase tracking-[0.5em]">
+            MIA CONFIDENTIAL
+         </div>
+      )}
+      
+      <div className="absolute bottom-6 left-0 w-full px-12 flex justify-between items-center text-[8px] font-bold text-slate-300 uppercase tracking-widest">
+         <span>SAYFA 1/2</span>
+         <span>BU BELGE YENİ GÜN AKADEMİ LİYAKAT PROTOKOLLERİNE GÖRE ÜRETİLMİŞTİR.</span>
+      </div>
+    </div>
+  );
+
+  // --- SAYFA 2: DETAYLI ANALİZ VE İMZA ---
+  const PageTwo = () => (
+    <div className="pdf-page bg-white relative" style={PAGE_STYLE}>
+      
+      <div className="mb-8 border-b-2 border-slate-100 pb-4 flex justify-between items-end">
+         <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em]">BOYUTSAL DERİN ANALİZ</h3>
+         <span className="text-[9px] font-bold text-slate-400 uppercase">DETAYLI DÖKÜM</span>
+      </div>
+
+      {/* COMPACT MATRIX GRID (2 Columns, Dense) */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-6 mb-12">
+         {report?.deepAnalysis && Object.entries(report.deepAnalysis).slice(0, 6).map(([key, val]: any, idx) => (
+            <div key={key} className="break-inside-avoid">
+               <div className="flex justify-between items-end mb-2 border-b border-slate-100 pb-1">
+                  <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{key.replace(/([A-Z])/g, ' $1')}</h4>
+                  <span className={`text-sm font-black ${val.score > 75 ? 'text-emerald-600' : val.score < 50 ? 'text-rose-600' : 'text-orange-600'}`}>%{val.score}</span>
+               </div>
+               <p className="text-[10px] font-medium text-slate-600 leading-snug text-justify">
+                  {val.reasoning ? `"${val.reasoning.substring(0, 200)}..."` : 'Veri yok.'}
+               </p>
+            </div>
+         ))}
+      </div>
+
+      {/* SWOT & PROJECTION */}
+      <div className="grid grid-cols-2 gap-8 mb-12 h-[200px]">
+         <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+            <h5 className="text-[9px] font-black text-emerald-800 uppercase tracking-widest mb-4">GÜÇLÜ YÖNLER</h5>
+            <ul className="space-y-2">
+               {report?.swot?.strengths?.slice(0, 4).map((s, i) => (
+                  <li key={i} className="flex gap-2 text-[10px] font-bold text-emerald-700 leading-tight">
+                     <span className="text-emerald-500">•</span> {s}
+                  </li>
                ))}
+            </ul>
+         </div>
+         <div className="bg-rose-50 rounded-2xl p-6 border border-rose-100">
+            <h5 className="text-[9px] font-black text-rose-800 uppercase tracking-widest mb-4">RİSK ALANLARI</h5>
+            <ul className="space-y-2">
+               {report?.swot?.weaknesses?.slice(0, 4).map((w, i) => (
+                  <li key={i} className="flex gap-2 text-[10px] font-bold text-rose-700 leading-tight">
+                     <span className="text-rose-500">•</span> {w}
+                  </li>
+               ))}
+            </ul>
+         </div>
+      </div>
+
+      {/* FUTURE PROJECTION */}
+      <div className="mb-16">
+         <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">24 AYLIK PROJEKSİYON</h5>
+         <div className="bg-slate-900 text-white p-6 rounded-2xl flex items-center gap-6">
+            <div className="flex-1">
+               <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">EVRİM YOLU</p>
+               <p className="text-lg font-black italic leading-tight">"{report?.predictiveMetrics?.evolutionPath || 'Analiz Ediliyor...'}"</p>
             </div>
-            <div className="flex flex-col justify-center border-l border-white/10 pl-16">
-               <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-4">24 AY SONUNDA KONUM:</span>
-               <p className="text-xl font-black uppercase tracking-tight italic leading-snug">"{report?.predictiveMetrics?.evolutionPath}"</p>
+            <div className="text-right border-l border-white/20 pl-6">
+               <span className="block text-3xl font-black text-emerald-400">%{report?.predictiveMetrics?.retentionProbability}</span>
+               <span className="text-[8px] font-bold text-slate-400 uppercase">TUTUNMA İHTİMALİ</span>
             </div>
          </div>
       </div>
+
+      {/* SIGNATURES */}
+      {options?.signatureRequired && (
+         <div className="absolute bottom-16 left-0 w-full px-12 grid grid-cols-3 gap-12">
+            {[
+               { t: 'KLİNİK SÜPERVİZÖR', s: 'Onay' },
+               { t: 'AKADEMİK DİREKTÖR', s: 'Onay' },
+               { t: 'KURUCU TEMSİLCİSİ', s: 'Onay' }
+            ].map((sig, i) => (
+               <div key={i} className="text-center">
+                  <div className="h-16 border-b border-slate-300 mb-2"></div>
+                  <p className="text-[8px] font-black text-slate-900 uppercase tracking-widest">{sig.t}</p>
+                  <p className="text-[7px] font-bold text-slate-400 uppercase">{sig.s}</p>
+               </div>
+            ))}
+         </div>
+      )}
+
+      <div className="absolute bottom-6 left-0 w-full px-12 flex justify-between items-center text-[8px] font-bold text-slate-300 uppercase tracking-widest">
+         <span>SAYFA 2/2</span>
+         <span>BU BELGE YENİ GÜN AKADEMİ LİYAKAT PROTOKOLLERİNE GÖRE ÜRETİLMİŞTİR.</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-8 items-center bg-slate-200/50 py-8">
+      <PageOne />
+      <PageTwo />
     </div>
   );
 };
