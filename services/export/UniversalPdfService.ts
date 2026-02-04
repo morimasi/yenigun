@@ -5,17 +5,22 @@ import { UniversalExportData } from '../../types';
 
 export const UniversalPdfService = {
   /**
-   * YENİ NESİL PDF MOTORU (v3.1 - STABILIZED)
+   * YENİ NESİL PDF MOTORU (v4.0 - FAULT TOLERANT)
    * HTML elementlerini A4 kağıt standartlarına (210mm x 297mm) göre izole eder.
-   * "Unable to find element in cloned iframe" hatasını önlemek için ID kontrolü ve scroll sıfırlama eklendi.
+   * "Unable to find element in cloned iframe" hatasını önlemek için Deterministik ID ve Scroll Reset kullanır.
    */
   async generateHighResPdf(elementId: string, data: UniversalExportData): Promise<void> {
+    // 1. KÖK ELEMENT KONTROLÜ
     const rootElement = document.getElementById(elementId);
-    if (!rootElement) throw new Error("Yayınlama alanı (Render Stage) bulunamadı.");
+    if (!rootElement) {
+        console.error(`PDF Motoru Hatası: '${elementId}' ID'li kapsayıcı bulunamadı.`);
+        throw new Error("Yayınlama alanı (Render Stage) başlatılamadı.");
+    }
 
-    // Sadece '.pdf-page' sınıfına sahip, A4 boyutundaki konteynerleri seç.
-    const pages = Array.from(rootElement.querySelectorAll('.pdf-page'));
-    if (pages.length === 0) throw new Error("Sayfalandırma hatası: Sayfa şablonları oluşturulamadı.");
+    // 2. SAYFA TESPİTİ VE FİLTRELEME
+    // Sadece '.pdf-page' sınıfına sahip ve görünür olan elementleri al
+    const pages = Array.from(rootElement.querySelectorAll('.pdf-page')) as HTMLElement[];
+    if (pages.length === 0) throw new Error("Sayfalandırma hatası: Yazdırılacak sayfa bulunamadı.");
 
     // PDF Hazırlığı (A4 Portrait, mm bazlı)
     const pdf = new jsPDF({
@@ -25,77 +30,105 @@ export const UniversalPdfService = {
       compress: true
     });
 
+    // UX: İşlem sırasında kullanıcının scroll yapmasını engelle
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     try {
       for (let i = 0; i < pages.length; i++) {
-        const pageElement = pages[i] as HTMLElement;
+        const pageElement = pages[i];
         
-        // KRİTİK DÜZELTME: html2canvas'in klonlanmış dökümanda elementi bulabilmesi için benzersiz ID şarttır.
-        // Eğer ID yoksa geçici bir ID ata.
+        // --- KRİTİK DÜZELTME: STATİK ID ENJEKSİYONU ---
+        // html2canvas'in klonlanmış dökümanda elementi kesinlikle bulabilmesi için
+        // anlık ve benzersiz bir ID atıyoruz.
         const originalId = pageElement.id;
-        if (!originalId) {
-            pageElement.id = `pdf-page-gen-${Date.now()}-${i}`;
-        }
+        const tempId = `pdf-safe-render-${Date.now()}-${i}`;
+        pageElement.id = tempId;
 
         // İlk sayfa hariç her döngüde yeni sayfa ekle
         if (i > 0) pdf.addPage();
 
-        // HTML2CANVAS OPTİMİZASYONU
+        // --- HTML2CANVAS KONFİGÜRASYONU ---
         const canvas = await html2canvas(pageElement, {
-          scale: 2, // 192 DPI (Print Quality)
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          logging: false,
+          scale: 2, // 192 DPI (Yüksek Kalite)
+          useCORS: true, // Görseller için CORS izni
+          backgroundColor: '#ffffff', // Şeffaf arka plan riskini önle
+          logging: false, // Konsol kirliliğini önle
           allowTaint: true,
-          // Scroll fix: Elementin görünür viewport dışında olması durumunda boş çıkmasını engeller
-          scrollY: 0, 
+          
+          // SCROLL VE POZİSYON DÜZELTMELERİ (HATA ENGELLEYİCİ)
+          scrollY: -window.scrollY, // Scroll kaymasını nötrle
           scrollX: 0,
-          // Window dimensions: Full DOM context
           windowWidth: document.documentElement.offsetWidth,
           windowHeight: document.documentElement.offsetHeight,
+          
+          // GÜVENLİ KLONLAMA (ONCLONE)
           onclone: (clonedDoc) => {
-            // Klonlanan dökümanda hedef elementi bul
-            const clonedEl = clonedDoc.getElementById(pageElement.id);
+            const clonedEl = clonedDoc.getElementById(tempId);
+            
             if (clonedEl) {
-                // Render sırasında görünmemesi gereken UI elementlerini temizle ve stili sabitle
+                // Render sırasında bozulabilecek stilleri sabitle
                 clonedEl.style.transform = 'none';
                 clonedEl.style.boxShadow = 'none';
                 clonedEl.style.margin = '0';
-                clonedEl.style.overflow = 'hidden'; 
-                // Flex container sorunlarını önlemek için
-                clonedEl.style.display = 'block'; 
+                clonedEl.style.border = 'none'; // Kenar çizgilerini temizle
+                
+                // Flex/Grid taşmalarını önle
+                clonedEl.style.width = '210mm';
+                clonedEl.style.height = '297mm';
+                clonedEl.style.overflow = 'hidden';
+                
+                // Varsa içindeki scrollbarları gizle
+                const scrollables = clonedEl.querySelectorAll('.custom-scrollbar');
+                scrollables.forEach((el: any) => {
+                    el.style.overflow = 'visible'; 
+                    el.style.height = 'auto';
+                });
+            } else {
+                console.warn(`PDF Uyarısı: Sayfa ${i+1} klonlanırken hedef element bulunamadı.`);
             }
           }
         });
 
-        // İşlem bitince geçici ID'yi temizle (orijinalinde yoksa)
-        if (!originalId) {
+        // --- ID TEMİZLİĞİ ---
+        // İşlem bitince orijinal ID'yi geri yükle veya temizle
+        if (originalId) {
+            pageElement.id = originalId;
+        } else {
             pageElement.removeAttribute('id');
         }
 
-        // Görüntüyü PDF boyutlarına tam oturt
-        const imgData = canvas.toDataURL('image/jpeg', 0.90); // Optimizasyon: Kalite 0.90
+        // --- PDF YERLEŞTİRME ---
+        const imgData = canvas.toDataURL('image/jpeg', 0.92); // Kalite/Boyut dengesi (0.92 optimum)
         const pdfWidth = 210;
         const pdfHeight = 297;
         
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
         
-        // DİJİTAL FİLİGRAN (PDF KATMANI - Vektörel)
-        pdf.setFontSize(6);
-        pdf.setTextColor(150);
+        // --- DİJİTAL MÜHÜR (VEKTÖREL) ---
+        // Resim üzerine vektörel yazı ekleyerek netliği artırır
+        pdf.setFontSize(7);
+        pdf.setTextColor(100, 116, 139); // Slate-500
         pdf.text(
-            `YENİ GÜN AKADEMİ | MIA INTELLIGENCE | REF:${data.referenceId} | SAYFA ${i + 1}/${pages.length}`, 
+            `CONFIDENTIAL DOCUMENT | REF: ${data.referenceId} | ${new Date().toLocaleDateString('tr-TR')} | ${i + 1}/${pages.length}`, 
             105, 
             294, 
             { align: 'center' }
         );
       }
 
-      const fileName = `${data.type}_${data.entityName.replace(/\s+/g, '_').toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+      // Dosya isimlendirme
+      const safeName = data.entityName.replace(/[^a-z0-9]/gi, '_').toUpperCase();
+      const fileName = `YG_AKADEMI_${data.type}_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
       pdf.save(fileName);
       
     } catch (error) {
       console.error("PDF Motoru Kritik Hata:", error);
-      alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyiniz.");
+      throw error; // Hatayı yukarı fırlat ki UI yakalasın
+    } finally {
+      // Temizlik: Scroll kilidini aç
+      document.body.style.overflow = originalOverflow;
     }
   }
 };

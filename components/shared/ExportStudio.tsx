@@ -12,6 +12,7 @@ interface ExportStudioProps {
 
 const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<string>('Sistem Yöneticisi');
 
   // --- 1. KONFİGÜRASYON BAŞLANGIÇ DURUMU ---
@@ -32,31 +33,31 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
     }
   });
 
-  // Kullanıcı bilgisini çek
   useEffect(() => {
     const token = localStorage.getItem('yeni_gun_admin_token');
-    if (token) {
-        try {
-            // Simülasyon için localStorage'dan veya mock user'dan alıyoruz.
-            // Gerçek app'te decoded jwt kullanılır.
-            setCurrentUser('Kurul Başkanı'); 
-        } catch (e) {}
-    }
+    if (token) setCurrentUser('Kurul Başkanı'); 
   }, []);
 
   // --- AKSİYONLAR ---
 
-  // A. PDF İNDİRME (Universal Engine)
+  // A. PDF İNDİRME (Universal Engine v4.0)
   const handleDownloadPDF = async () => {
     setIsProcessing(true);
+    setStatusMessage('Görüntü İşleniyor...');
+    
+    // UI Render'ın tamamlanması için kısa bir gecikme (Race Condition Önleyici)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     try {
-      // PDF Motoruna ID'yi (print-stage) ve datayı gönder
+      setStatusMessage('PDF Render Ediliyor...');
       await UniversalPdfService.generateHighResPdf('print-stage', data);
-    } catch (e) {
-      alert("PDF Motoru Hatası: Render işlemi tamamlanamadı.");
+      setStatusMessage('Tamamlandı');
+    } catch (e: any) {
+      alert(`PDF Oluşturma Hatası: ${e.message}`);
       console.error(e);
     } finally {
       setIsProcessing(false);
+      setStatusMessage('');
     }
   };
 
@@ -67,18 +68,19 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
   // C. ARŞİVE MÜHÜRLEME (Database Commit)
   const handleArchive = async () => {
-    if (!confirm(`Bu dosya "${currentUser}" imzasıyla veritabanına mühürlenecek ve statüsü 'ARŞİV' olarak güncellenecektir. Onaylıyor musunuz?`)) return;
+    if (!confirm(`Bu dosya "${currentUser}" imzasıyla veritabanına mühürlenecek. Onaylıyor musunuz?`)) return;
     
     setIsProcessing(true);
+    setStatusMessage('Arşive Yazılıyor...');
     try {
       const candidate = data.payload as Candidate;
+      const activeSections = Object.keys(config.sections).filter((k) => config.sections[k as keyof typeof config.sections]);
       
-      // Arşivlenirken güncel rapor ve seçimleri de gömelim
       const archivePayload: Candidate = {
         ...candidate,
         status: 'archived',
-        archiveCategory: 'HIRED_CONTRACTED', // Varsayılan olarak başarılı arşiv, duruma göre değiştirilebilir
-        archiveNote: `RESMİ MÜHÜR: Bu dosya ${new Date().toLocaleDateString('tr-TR')} tarihinde ${currentUser} tarafından yayınlanmış ve arşive zimmetlenmiştir. Yayınlanan Modüller: ${Object.keys(config.sections).filter((k) => config.sections[k as keyof typeof config.sections]).join(', ')}.`,
+        archiveCategory: 'HIRED_CONTRACTED', 
+        archiveNote: `RESMİ MÜHÜR: ${new Date().toLocaleDateString('tr-TR')} - ${currentUser}. Kapsam: ${activeSections.join(', ')}.`,
         timestamp: Date.now()
       };
 
@@ -86,7 +88,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
       
       if (result.success) {
         alert("Dosya başarıyla mühürlendi ve dijital arşive kaldırıldı.");
-        onClose(); // İşlem bitince kapat
+        onClose();
       } else {
         throw new Error(result.error);
       }
@@ -94,6 +96,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
       alert(`Arşivleme Hatası: ${e.message}`);
     } finally {
       setIsProcessing(false);
+      setStatusMessage('');
     }
   };
 
@@ -115,7 +118,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg">P</div>
                <div>
                   <h3 className="text-lg font-black text-slate-900 uppercase leading-none">Yayın Stüdyosu</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v3.0 Konfigürasyon</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v4.0 Final Render</p>
                </div>
             </div>
          </div>
@@ -139,8 +142,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
             {/* 2. İÇERİK SEÇİCİ */}
             <div className="space-y-2">
-               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">MODÜL SEÇİMİ (YAZDIRILACAK ALANLAR)</label>
-               
+               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">MODÜL SEÇİMİ</label>
                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2 space-y-1">
                   {[
                     { k: 'cover', l: 'Kapak Sayfası & Başlık' },
@@ -165,43 +167,34 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
                   ))}
                </div>
             </div>
-
          </div>
 
-         {/* 3. AKSİYON BUTONLARI (FOOTER) */}
+         {/* 3. AKSİYON BUTONLARI */}
          <div className="p-6 border-t border-slate-100 bg-slate-50 space-y-3">
-            
-            {/* Üst Sıra: Yazdır ve PDF */}
             <div className="flex gap-3">
-               <button 
-                  onClick={handlePrint} 
-                  className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm"
-               >
+               <button onClick={handlePrint} className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm">
                   YAZDIR (A4)
                </button>
                <button 
                   onClick={handleDownloadPDF} 
                   disabled={isProcessing}
-                  className="flex-1 py-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl disabled:opacity-50"
+                  className="flex-1 py-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl disabled:opacity-50 relative overflow-hidden"
                >
-                  {isProcessing ? 'RENDER...' : 'PDF İNDİR'}
+                  {isProcessing ? (
+                      <span className="flex items-center justify-center gap-2 animate-pulse">
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          {statusMessage}
+                      </span>
+                  ) : 'PDF İNDİR'}
                </button>
             </div>
 
-            {/* Alt Sıra: Arşivle */}
-            <button 
-               onClick={handleArchive}
-               disabled={isProcessing}
-               className="w-full py-4 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-            >
+            <button onClick={handleArchive} disabled={isProcessing} className="w-full py-4 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-               ARŞİVE MÜHÜRLE ({currentUser})
+               ARŞİVE MÜHÜRLE
             </button>
 
-            <button 
-               onClick={onClose} 
-               className="w-full py-3 text-slate-400 text-[9px] font-bold uppercase hover:text-rose-500 transition-all"
-            >
+            <button onClick={onClose} className="w-full py-3 text-slate-400 text-[9px] font-bold uppercase hover:text-rose-500 transition-all">
                VAZGEÇ VE KAPAT
             </button>
          </div>
