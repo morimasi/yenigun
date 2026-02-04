@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "../../types";
 
@@ -11,7 +12,6 @@ const extractPureJSON = (text: string): any => {
     if (firstBrace === -1) return null;
     let jsonStr = lastBrace > firstBrace ? cleanText.substring(firstBrace, lastBrace + 1) : cleanText.substring(firstBrace);
     const parsed = JSON.parse(jsonStr);
-    
     if (!parsed.deepAnalysis) parsed.deepAnalysis = {};
     return parsed;
   } catch (e) { 
@@ -21,69 +21,43 @@ const extractPureJSON = (text: string): any => {
 };
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
+  // AI PERSONALITY INJECTION
+  const persona = config.aiPersona || { skepticismLevel: 50, innovationBias: 50, detailedReporting: true };
+  
+  let skepticismPrompt = "";
+  if (persona.skepticismLevel > 80) {
+      skepticismPrompt = "MOD: AŞIRI ŞÜPHECİ (PARANOID AUDITOR). Adayın her beyanını sorgula, çelişkileri acımasızca ara ve kanıt yoksa puan kırma eğiliminde ol.";
+  } else if (persona.skepticismLevel > 50) {
+      skepticismPrompt = "MOD: DENGELİ DENETÇİ. Beyanları klinik mantıkla tart, tutarsızlık varsa belirt.";
+  } else {
+      skepticismPrompt = "MOD: DESTEKLEYİCİ MENTOR. Adayın potansiyeline odaklan, eksiklikleri gelişim alanı olarak gör.";
+  }
+
+  let innovationPrompt = "";
+  if (persona.innovationBias > 70) {
+      innovationPrompt = "YENİLİKÇİLİK ÖNCELİKLİ: Geleneksel yöntemler yerine modern/teknolojik yaklaşımları kullanan adaylara bonus puan ver.";
+  }
+
+  const detailLevel = persona.detailedReporting ? "Her analiz maddesi için en az 3 cümlelik, akademik terminoloji içeren, derinlemesine gerekçeler yaz." : "Özet ve net gerekçeler yaz.";
+
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Stratejik İK Simülasyon Uzmanı.
-    MİSYON: Adayın liyakat matrisini, sıradan bir İK uzmanı gibi değil, 30 yıllık deneyime sahip bir "Klinik Süpervizör" derinliğinde analiz et.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçi (AI Supervisor).
+    ${skepticismPrompt}
+    ${innovationPrompt}
+    ${detailLevel}
     
-    ANALİZ PROTOKOLÜ (HER BİR KATEGORİ İÇİN BU SORULARI SOR VE YANITLA):
-
-    1. 🧠 KLİNİK DERİNLİK (technicalExpertise):
-       - Aday ABA, Floortime veya ETEÇOM gibi yöntemleri mekanik mi uyguluyor yoksa mantığını kavramış mı?
-       - Veri tutma ve analiz etme disiplini var mı? Yoksa "göz kararı" mı çalışıyor?
-       - *Çıktı Odak:* Metodolojik sadakat (Fidelity) ve vaka formülasyon gücü.
-
-    2. 🏃 PEDAGOJİK ÇEVİKLİK (pedagogicalAgility):
-       - Planladığı ders tutmadığında (çocuk ağladı, materyal kırıldı) ne kadar hızlı "B Planı" üretebiliyor?
-       - Öğretim stratejisini çocuğun o anki nörolojik durumuna (uyarılmışlık seviyesi) göre bükebiliyor mu?
-       - *Çıktı Odak:* Anlık adaptasyon ve kognitif esneklik.
-
-    3. 🔥 KRİZ DİRENCİ (crisisResilience):
-       - Meltdown (öfke nöbeti) anında limbik sistemi mi devreye giriyor (donma/kaçma) yoksa prefrontal korteksi mi (yönetme)?
-       - Çocuğun agresyonunu şahsına mı alıyor, yoksa "davranışsal bir veri" olarak mı görüyor?
-       - *Çıktı Odak:* Duygusal regülasyon ve profesyonel mesafe.
-
-    4. 🤝 VELİ DİPLOMASİSİ (parentalDiplomacy):
-       - Manipülatif velilere karşı sınır koyabiliyor mu? Yoksa "memnun etme" (People Pleasing) tuzağına mı düşüyor?
-       - Zor haberleri (gelişim yokluğu vb.) dürüstçe ama yıkıcı olmadan verebiliyor mu?
-       - *Çıktı Odak:* Terapötik ittifak yönetimi ve sınır koruma.
-
-    5. 📝 BİLİMSEL KAYIT (clinicalDocumentation):
-       - Raporları "bürokratik bir yük" olarak mı görüyor yoksa "tedavinin pusulası" olarak mı?
-       - Hatalarını gizleme eğilimi var mı? Şeffaflık seviyesi nedir?
-       - *Çıktı Odak:* Veri dürüstlüğü ve arşivleme disiplini.
-
-    6. ⚖️ ETİK & SINIRLAR (workEthics):
-       - Çıkar çatışması (özel ders teklifi, hediye kabulü) durumlarında refleksi ne?
-       - Kurumun kaynaklarını ve itibarını kendi malı gibi koruyor mu?
-       - *Çıktı Odak:* Entegrite ve ahlaki pusula.
-
-    7. 🔍 ÖZ-DENETİM (metacognitiveAwareness):
-       - "Ben oldum" mu diyor, yoksa "Daha öğrenecek çok şeyim var" mı?
-       - Kendi klinik kör noktalarını fark edebiliyor mu? Süpervizyona açık mı?
-       - *Çıktı Odak:* Mesleki tevazu ve içgörü.
-
-    8. 🚀 BİLİŞSEL ADAPTASYON (cognitiveAgility):
-       - Yeni teknolojilere (AI, tablet uygulamaları) direnç mi gösteriyor, entegre mi ediyor?
-       - Yeni bir bilimsel makale okuduğunda bunu pratiğe dökme hevesi var mı?
-       - *Çıktı Odak:* Öğrenme hızı ve inovasyon.
-
-    9. 🏛️ SADAKAT & UYUM (institutionalLoyalty):
-       - Kurumu sadece bir "basamak" olarak mı görüyor?
-       - Zor zamanlarda gemiyi terk etme eğilimi var mı?
-       - *Çıktı Odak:* Uzun vadeli vizyon ortaklığı.
-
-    10. 🔋 TÜKENMİŞLİK EŞİĞİ (stabilityFactor):
-        - Mesleki yorgunluk belirtileri (Compassion Fatigue) gösteriyor mu?
-        - Enerjisi sürdürülebilir mi yoksa saman alevi gibi mi?
-        - *Çıktı Odak:* Psikolojik sağlamlık ve kariyer ömrü.
-
-    ÇIKTI FORMATI (JSON):
-    - 'reasoning': Bu puanı neden verdin? Adayın hangi cevabı bu sonucu doğurdu? (En az 3 cümle).
-    - 'clinicalNuances': Adayın söylemediği ama satır aralarında hissettirdiği "gizli" risk veya potansiyel.
-    - 'teamImpact': Bu kişi ekibe girerse, mevcut kadroyu nasıl etkiler? (Örn: "Juniorları motive eder" veya "Ekipte toksik rekabet yaratır").
-    - 'literatureReference': Bu analizi hangi bilimsel kavrama dayandırıyorsun? (Örn: "Dunning-Kruger Etkisi", "Bandura'nın Sosyal Öğrenme Teorisi").
+    ANALİZ PROTOKOLÜ (MİA MATRİSİ):
+    1. KLİNİK DERİNLİK: Metodolojik sadakat ve veri disiplini.
+    2. PEDAGOJİK ÇEVİKLİK: B Planı üretme ve kognitif esneklik.
+    3. KRİZ DİRENCİ: Duygusal regülasyon ve profesyonel mesafe.
+    4. VELİ DİPLOMASİSİ: Sınır koruma ve terapötik ittifak.
+    5. ETİK & SINIRLAR: Çıkar çatışması yönetimi ve entegrite.
+    6. KURUMSAL SADAKAT: Vizyon uyumu ve uzun vadeli bağlılık.
+    
+    Adayın cevaplarını bu lenslerden geçir ve JSON formatında raporla.
   `;
 
+  // ... (Schema definitions remain same, ensuring strict JSON output)
   const segmentSchema = {
     type: Type.OBJECT,
     properties: {
@@ -136,15 +110,13 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         type: Type.OBJECT,
         properties: {
           technicalExpertise: segmentSchema,
-          pedagogicalAgility: segmentSchema,
+          pedagogicalAnalysis: segmentSchema, // Mapped from pedagogicalAgility
           crisisResilience: segmentSchema,
-          parentalDiplomacy: segmentSchema,
-          clinicalDocumentation: segmentSchema,
+          parentStudentRelations: segmentSchema, // Mapped from parentalDiplomacy
           workEthics: segmentSchema,
-          metacognitiveAwareness: segmentSchema,
-          cognitiveAgility: segmentSchema,
           institutionalLoyalty: segmentSchema,
-          stabilityFactor: segmentSchema
+          developmentOpenness: segmentSchema, // Mapped from cognitiveAgility
+          sustainability: segmentSchema // Mapped from stabilityFactor
         }
       },
       swot: {
@@ -170,7 +142,7 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `ADAY AKADEMİK VERİ SETİ (DETAYLI ANALİZ İÇİN): ${JSON.stringify(candidate)}` }],
+    contents: [{ text: `ADAY VERİLERİ: ${JSON.stringify(candidate)}` }],
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -181,5 +153,14 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
 
   const parsed = extractPureJSON(response.text);
   if (!parsed) throw new Error("MIA_AI_SCHEMA_FAILURE");
+  
+  // Mapping Fixes (AI returns keys that might slightly differ from UI expectations)
+  if(parsed.deepAnalysis) {
+      if(!parsed.deepAnalysis.pedagogicalAnalysis && parsed.deepAnalysis.pedagogicalAgility) parsed.deepAnalysis.pedagogicalAnalysis = parsed.deepAnalysis.pedagogicalAgility;
+      if(!parsed.deepAnalysis.parentStudentRelations && parsed.deepAnalysis.parentalDiplomacy) parsed.deepAnalysis.parentStudentRelations = parsed.deepAnalysis.parentalDiplomacy;
+      if(!parsed.deepAnalysis.developmentOpenness && parsed.deepAnalysis.cognitiveAgility) parsed.deepAnalysis.developmentOpenness = parsed.deepAnalysis.cognitiveAgility;
+      if(!parsed.deepAnalysis.sustainability && parsed.deepAnalysis.stabilityFactor) parsed.deepAnalysis.sustainability = parsed.deepAnalysis.stabilityFactor;
+  }
+
   return parsed;
 };

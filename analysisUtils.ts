@@ -3,40 +3,37 @@ import { Candidate, AlgorithmicReport, GlobalConfig, Branch } from './types';
 import { BRANCH_QUESTIONS } from './constants';
 import { BRANCH_CATEGORY_MULTIPLIERS } from './constants/taxonomy';
 
-export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: GlobalConfig): AlgorithmicReport => {
+export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: GlobalConfig): AlgorithmicReport => {
   const branch = candidate.branch as Branch;
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
+  // Ham skorların toplanacağı havuz
   const scores: Record<string, number[]> = {
-    ethics: [], pedagogy: [], clinical: [], crisis: [], resilience: [], fit: [], loyalty: [], formality: [], developmentOpenness: [],
-    academicSkills: [] // Yeni Klinik Parametre
+    ethics: [], pedagogy: [], clinical: [], resilience: [], fit: [], loyalty: [], agility: []
   };
   
   let reliabilityPoints = 100;
   const riskFlags: string[] = [];
   const answers = candidate.answers || {};
 
-  const weights: any = config?.advancedAnalytics?.weights || {
-    clinicalDepth: 25,
-    ethicalIntegrity: 25,
-    emotionalResilience: 15,
-    institutionalLoyalty: 10,
-    learningAgility: 10,
-    academicPedagogy: 15 // Yeni Ağırlık Katmanı
+  // 1. CONFIG MODÜLLERİNİ YÜKLE (Default değerler yerine config'den gelenler)
+  const weights = config.weightMatrix || { 
+    clinicalExpertise: 30, ethicalIntegrity: 30, emotionalResilience: 15, 
+    institutionalLoyalty: 10, learningAgility: 10, academicPedagogy: 5 
+  };
+  
+  const penalties = config.riskEngine || { 
+    criticalEthicalViolationPenalty: 40, inconsistentAnswerPenalty: 20, 
+    lowExperienceDiscountFactor: 0.85 
   };
 
-  const penalties: any = config?.advancedAnalytics?.penalties || {
-    criticalEthicalViolation: 25,
-    inconsistentAnswers: 10,
-    lowExperienceDiscount: 0.9
-  };
-
-  // Cevapların Analizi
+  // 2. CEVAP ANALİZİ
   Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
     const answer = answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
+        // Branş override kontrolü
         const activeWeights = (selectedOption.branchOverrides && selectedOption.branchOverrides[branch]) 
           ? selectedOption.branchOverrides[branch] 
           : selectedOption.weights;
@@ -45,76 +42,81 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config?: Glob
           const numericWeight = Number(weight);
           const multiplier = multipliers[cat] || 1.0;
           
-          // Kategori mapping
-          let targetCat = cat;
-          if (cat === 'pedagogicalAnalysis') targetCat = 'pedagogy';
-          if (cat === 'workEthics') targetCat = 'ethics';
-          if (cat === 'technicalExpertise') targetCat = 'clinical';
-          
-          if (scores[targetCat]) scores[targetCat].push(numericWeight * 100 * multiplier);
-          else if (cat === 'academicSkills') scores.academicSkills.push(numericWeight * 100 * multiplier);
+          // Kategori Eşleştirme (Taxonomy -> Score Pool)
+          if (cat === 'workEthics' || cat === 'integrity') scores.ethics.push(numericWeight * 100 * multiplier);
+          else if (cat === 'clinical' || cat === 'technicalExpertise') scores.clinical.push(numericWeight * 100 * multiplier);
+          else if (cat === 'pedagogicalAnalysis' || cat === 'academicSkills') scores.pedagogy.push(numericWeight * 100 * multiplier);
+          else if (cat === 'sustainability' || cat === 'emotionalResilience') scores.resilience.push(numericWeight * 100 * multiplier);
+          else if (cat === 'institutionalLoyalty' || cat === 'team_player') scores.loyalty.push(numericWeight * 100 * multiplier);
+          else if (cat === 'developmentOpenness' || cat === 'learningAgility') scores.agility.push(numericWeight * 100 * multiplier);
         });
 
-        if (activeWeights.ethics && Number(activeWeights.ethics) < 0.4) {
-          riskFlags.push(`Branş Etiği İhlal Riski: ${q.id}`);
-          reliabilityPoints -= penalties.criticalEthicalViolation;
+        // Etik İhlal Kontrolü (Risk Engine)
+        if (activeWeights.workEthics && Number(activeWeights.workEthics) < 0.3) {
+          riskFlags.push(`Kritik Etik İhlal: ${q.text.substring(0, 30)}...`);
+          reliabilityPoints -= penalties.criticalEthicalViolationPenalty;
         }
       }
     }
   });
 
-  const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 70;
+  // 3. ORTALAMALAR
+  const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 50; // Nötr başlangıç
 
   const ethicsScore = getAvg(scores.ethics);
   const clinicalScore = getAvg(scores.clinical);
   const resilienceScore = getAvg(scores.resilience);
-  const fitScore = getAvg(scores.fit);
   const loyaltyScore = getAvg(scores.loyalty);
-  const agilityScore = getAvg(scores.developmentOpenness);
-  const academicScore = getAvg(scores.academicSkills); // Yeni Skor
+  const agilityScore = getAvg(scores.agility);
+  const pedagogyScore = getAvg(scores.pedagogy);
 
+  // 4. TUTARLILIK KONTROLLERİ (Risk Engine)
   const exp = candidate.experienceYears || 0;
-  const experienceWeight = Math.min(exp * 10, 100);
   
-  const retentionScore = Math.round((loyaltyScore * 0.7) + (fitScore * 0.3));
-  const burnoutResistance = Math.round((resilienceScore * 0.8) + (clinicalScore * 0.2));
-
+  // Deneyimli ama klinik skoru düşükse -> Tutarsızlık cezası
   if (exp > 5 && clinicalScore < 50) {
-    reliabilityPoints -= penalties.inconsistentAnswers;
-    riskFlags.push("Branş Deneyimi/Yetkinlik Uyumsuzluğu");
+    reliabilityPoints -= penalties.inconsistentAnswerPenalty;
+    riskFlags.push("Deneyim/Yetkinlik Tutarsızlığı");
   }
 
-  let expMultiplier = 1;
-  if (exp < 2) expMultiplier = penalties.lowExperienceDiscount;
+  // Junior indirimi
+  let finalMultiplier = 1;
+  if (exp < 2) {
+      finalMultiplier = penalties.lowExperienceDiscountFactor; 
+      riskFlags.push("Junior Deneyim İndirimi Uygulandı");
+  }
 
-  const totalWeight = Object.values(weights).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number || 100;
+  // 5. AĞIRLIKLI SKOR HESABI (Weight Matrix)
+  // Toplam ağırlığı dinamik hesapla (Config'den 100 gelmeyebilir, normalize et)
+  const totalConfigWeight = Object.values(weights).reduce((a, b) => a + b, 0) || 100;
 
   let rawScore = (
-    (ethicsScore * (weights.ethicalIntegrity || 25)) + 
-    (clinicalScore * (weights.clinicalDepth || 25)) + 
-    (resilienceScore * (weights.emotionalResilience || 15)) + 
-    (fitScore * (weights.institutionalLoyalty || 10)) +
-    (agilityScore * (weights.learningAgility || 10)) +
-    (academicScore * (weights.academicPedagogy || 15))
-  ) / totalWeight;
+    (clinicalScore * weights.clinicalExpertise) +
+    (ethicsScore * weights.ethicalIntegrity) +
+    (resilienceScore * weights.emotionalResilience) +
+    (loyaltyScore * weights.institutionalLoyalty) +
+    (agilityScore * weights.learningAgility) +
+    (pedagogyScore * weights.academicPedagogy)
+  ) / totalConfigWeight;
 
-  rawScore = rawScore * (expMultiplier as number);
+  // 6. FİNAL KALİBRASYON
+  rawScore = rawScore * finalMultiplier;
 
-  if ((reliabilityPoints as number) < 80) {
-      rawScore = rawScore * ((reliabilityPoints as number) / 100);
+  // Güvenilirlik puanı çok düştüyse genel skoru aşağı çek
+  if (reliabilityPoints < 70) {
+      rawScore = rawScore * (reliabilityPoints / 100);
+      riskFlags.push("Düşük Güvenilirlik Endeksi Nedeniyle Skor Bastırıldı");
   }
 
-  const overallScore = Math.min(100, Math.max(0, Math.round(rawScore)));
-
   return {
-    overallScore,
+    overallScore: Math.min(100, Math.max(0, Math.round(rawScore))),
     reliabilityIndex: Math.max(0, reliabilityPoints),
     ethicsScore,
-    experienceWeight,
-    retentionScore,
-    burnoutResistance,
-    fitScore,
+    experienceWeight: Math.min(exp * 10, 100),
+    retentionScore: loyaltyScore,
+    burnoutResistance: resilienceScore,
+    fitScore: Math.round((loyaltyScore + agilityScore) / 2),
     riskFlags,
-    branchComplianceScore: Math.round((clinicalScore + ethicsScore + academicScore) / 3)
+    branchComplianceScore: Math.round((clinicalScore + pedagogyScore) / 2)
   };
 };

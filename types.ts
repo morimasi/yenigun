@@ -200,41 +200,49 @@ export type ArchiveCategory = 'TALENT_POOL' | 'FUTURE_REFERENCE' | 'DISQUALIFIED
 
 export interface GlobalConfig {
   institutionName: string;
-  primaryColor: string;
-  accentColor: string;
-  aiTone: string;
-  aiPersona: { skepticism: number; empathy: number; formality: number };
-  aiWeights: { ethics: number; clinical: number; experience: number; fit: number };
-  automation: { autoEmailOnSchedule: boolean; requireCvUpload: boolean; allowMultipleApplications: boolean };
-  interviewSettings: { defaultDuration: number; bufferTime: number; autoStatusAfterInterview: boolean; defaultMeetingLink: string };
-  notificationEmail: string;
   lastUpdated: number;
-  advancedAnalytics?: AdvancedAnalyticsConfig;
-}
+  
+  // MODÜL 1: AĞIRLIK MATRİSİ (Skorlama Motoru)
+  weightMatrix: {
+    clinicalExpertise: number; // Teknik Bilgi
+    ethicalIntegrity: number;  // Etik
+    emotionalResilience: number; // Direnç
+    institutionalLoyalty: number; // Sadakat
+    learningAgility: number; // Öğrenme Hızı
+    academicPedagogy: number; // Pedagojik Derinlik
+  };
 
-export interface AdvancedAnalyticsConfig {
-  weights: {
-    clinicalDepth: number;
-    ethicalIntegrity: number;
-    emotionalResilience: number;
-    institutionalLoyalty: number;
-    learningAgility: number;
-    academicPedagogy?: number;
+  // MODÜL 2: CEZA VE TOLERANS (Risk Motoru)
+  riskEngine: {
+    criticalEthicalViolationPenalty: number; // Etik İhlal Kesintisi
+    inconsistentAnswerPenalty: number; // Tutarsızlık Kesintisi
+    lowExperienceDiscountFactor: number; // Düşük Deneyim Çarpanı (0.8 = %20 indirim)
+    jobHoppingPenalty: number; // Sık iş değiştirme cezası
   };
-  penalties: {
-    criticalEthicalViolation: number;
-    inconsistentAnswers: number;
-    lowExperienceDiscount: number;
+
+  // MODÜL 3: AI BİLİŞSEL MİZAÇ (Muhakeme Motoru)
+  aiPersona: {
+    skepticismLevel: number; // Şüphecilik (0-100)
+    innovationBias: number; // Yenilikçilik Ödülü (0-100)
+    stressTestIntensity: number; // Kriz Simülasyon Zorluğu (0-100)
+    detailedReporting: boolean; // Uzun/Kısa Rapor
   };
-  thresholds: {
-    minHiringScore: number;
-    highPotentialCutoff: number;
+
+  // MODÜL 4: SİSTEM VE OTOMASYON
+  systemSettings: {
+    minHiringScore: number; // Otomatik Tavsiye Eşiği
+    highPotentialCutoff: number; // HiPo Eşiği
+    interviewDurationMinutes: number;
+    autoRejectBelowScore: number; // Otomatik Red Eşiği
+    defaultMeetingLink: string;
   };
-  aiCognition: {
-    skepticismLevel: number;
-    innovationBias: number;
-    stressTestIntensity: number;
-  };
+  
+  // Legacy support (optional for backward compatibility if needed, but ideally removed)
+  aiTone?: string; 
+  aiWeights?: any; 
+  automation?: any; 
+  interviewSettings?: any;
+  advancedAnalytics?: any; 
 }
 
 export type ExportType = 'CANDIDATE_REPORT' | 'STAFF_IDP' | 'METHODOLOGY_DOC' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'MENTOR_REPORT';

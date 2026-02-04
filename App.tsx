@@ -8,15 +8,49 @@ import { storageService } from './services/storageService';
 
 const DEFAULT_CONFIG: GlobalConfig = {
   institutionName: 'Yeni Gün Akademi',
-  primaryColor: '#ea580c',
-  accentColor: '#0f172a',
+  lastUpdated: Date.now(),
+  
+  // MODÜL 1: AĞIRLIK MATRİSİ
+  weightMatrix: {
+    clinicalExpertise: 30,
+    ethicalIntegrity: 30,
+    emotionalResilience: 15,
+    institutionalLoyalty: 10,
+    learningAgility: 10,
+    academicPedagogy: 5
+  },
+
+  // MODÜL 2: RİSK MOTORU
+  riskEngine: {
+    criticalEthicalViolationPenalty: 40,
+    inconsistentAnswerPenalty: 20,
+    lowExperienceDiscountFactor: 0.85,
+    jobHoppingPenalty: 15
+  },
+
+  // MODÜL 3: AI PERSONALITY
+  aiPersona: { 
+    skepticismLevel: 50, 
+    innovationBias: 50, 
+    stressTestIntensity: 50, 
+    detailedReporting: true 
+  },
+
+  // MODÜL 4: SİSTEM AYARLARI
+  systemSettings: {
+    minHiringScore: 70,
+    highPotentialCutoff: 85,
+    interviewDurationMinutes: 45,
+    autoRejectBelowScore: 40,
+    defaultMeetingLink: 'https://meet.google.com/new'
+  },
+
+  // Legacy fields mapped or kept for compatibility if allowed by type
   aiTone: 'balanced',
-  aiPersona: { skepticism: 50, empathy: 50, formality: 70 },
   aiWeights: { ethics: 40, clinical: 30, experience: 15, fit: 15 },
   automation: { autoEmailOnSchedule: true, requireCvUpload: true, allowMultipleApplications: false },
   interviewSettings: { defaultDuration: 45, bufferTime: 15, autoStatusAfterInterview: false, defaultMeetingLink: 'https://meet.google.com/new' },
-  notificationEmail: 'info@yenigun.com',
-  lastUpdated: Date.now()
+  advancedAnalytics: {}
 };
 
 const App: React.FC = () => {
