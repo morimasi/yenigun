@@ -40,8 +40,10 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
   // --- AKSİYONLAR ---
 
-  // A. PDF İNDİRME (Universal Engine v4.0)
+  // A. PDF İNDİRME (Universal Engine v5.0)
   const handleDownloadPDF = async () => {
+    if (isProcessing) return;
+    
     setIsProcessing(true);
     setStatusMessage('Görüntü İşleniyor...');
     
@@ -50,11 +52,12 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
 
     try {
       setStatusMessage('PDF Render Ediliyor...');
+      // 'print-stage' ID'si sağ paneldeki container'dır.
       await UniversalPdfService.generateHighResPdf('print-stage', data);
       setStatusMessage('Tamamlandı');
     } catch (e: any) {
-      alert(`PDF Oluşturma Hatası: ${e.message}`);
-      console.error(e);
+      console.error("Export Error:", e);
+      alert(`PDF Oluşturulamadı: ${e.message || 'Bilinmeyen Hata'}. Lütfen sayfayı yenileyip tekrar deneyin.`);
     } finally {
       setIsProcessing(false);
       setStatusMessage('');
@@ -118,7 +121,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg">P</div>
                <div>
                   <h3 className="text-lg font-black text-slate-900 uppercase leading-none">Yayın Stüdyosu</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v4.0 Final Render</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">v5.0 Final Render</p>
                </div>
             </div>
          </div>

@@ -5,9 +5,10 @@ import { UniversalExportData } from '../../types';
 
 export const UniversalPdfService = {
   /**
-   * YENİ NESİL PDF MOTORU (v4.0 - FAULT TOLERANT)
+   * YENİ NESİL PDF MOTORU (v5.0 - CRASH PROOF)
    * HTML elementlerini A4 kağıt standartlarına (210mm x 297mm) göre izole eder.
-   * "Unable to find element in cloned iframe" hatasını önlemek için Deterministik ID ve Scroll Reset kullanır.
+   * "Unable to find element in cloned iframe" hatasını önlemek için 
+   * Deterministik ID, Scroll Reset ve Safe-Query yöntemlerini kullanır.
    */
   async generateHighResPdf(elementId: string, data: UniversalExportData): Promise<void> {
     // 1. KÖK ELEMENT KONTROLÜ
@@ -30,9 +31,13 @@ export const UniversalPdfService = {
       compress: true
     });
 
-    // UX: İşlem sırasında kullanıcının scroll yapmasını engelle
+    // UX & SAFETY: İşlem sırasında kullanıcının scroll yapmasını ve layout kaymalarını engelle
     const originalOverflow = document.body.style.overflow;
+    const originalScrollY = window.scrollY;
     document.body.style.overflow = 'hidden';
+    
+    // Scroll'u en tepeye al (Kritik Hata Önleyici)
+    window.scrollTo(0, 0);
 
     try {
       for (let i = 0; i < pages.length; i++) {
@@ -40,9 +45,9 @@ export const UniversalPdfService = {
         
         // --- KRİTİK DÜZELTME: STATİK ID ENJEKSİYONU ---
         // html2canvas'in klonlanmış dökümanda elementi kesinlikle bulabilmesi için
-        // anlık ve benzersiz bir ID atıyoruz.
+        // anlık, benzersiz ve basit (special char içermeyen) bir ID atıyoruz.
         const originalId = pageElement.id;
-        const tempId = `pdf-safe-render-${Date.now()}-${i}`;
+        const tempId = `pdf_safe_render_page_${i}`;
         pageElement.id = tempId;
 
         // İlk sayfa hariç her döngüde yeni sayfa ekle
@@ -57,41 +62,46 @@ export const UniversalPdfService = {
           allowTaint: true,
           
           // SCROLL VE POZİSYON DÜZELTMELERİ (HATA ENGELLEYİCİ)
-          scrollY: -window.scrollY, // Scroll kaymasını nötrle
+          scrollY: 0, 
           scrollX: 0,
           windowWidth: document.documentElement.offsetWidth,
           windowHeight: document.documentElement.offsetHeight,
           
           // GÜVENLİ KLONLAMA (ONCLONE)
           onclone: (clonedDoc) => {
-            const clonedEl = clonedDoc.getElementById(tempId);
-            
-            if (clonedEl) {
-                // Render sırasında bozulabilecek stilleri sabitle
-                clonedEl.style.transform = 'none';
-                clonedEl.style.boxShadow = 'none';
-                clonedEl.style.margin = '0';
-                clonedEl.style.border = 'none'; // Kenar çizgilerini temizle
+            // HATA NOKTASI BURASIYDI: Artık try-catch ve null check var.
+            try {
+                const clonedEl = clonedDoc.getElementById(tempId);
                 
-                // Flex/Grid taşmalarını önle
-                clonedEl.style.width = '210mm';
-                clonedEl.style.height = '297mm';
-                clonedEl.style.overflow = 'hidden';
-                
-                // Varsa içindeki scrollbarları gizle
-                const scrollables = clonedEl.querySelectorAll('.custom-scrollbar');
-                scrollables.forEach((el: any) => {
-                    el.style.overflow = 'visible'; 
-                    el.style.height = 'auto';
-                });
-            } else {
-                console.warn(`PDF Uyarısı: Sayfa ${i+1} klonlanırken hedef element bulunamadı.`);
+                if (clonedEl) {
+                    // Render sırasında bozulabilecek stilleri sabitle
+                    clonedEl.style.transform = 'none';
+                    clonedEl.style.boxShadow = 'none';
+                    clonedEl.style.margin = '0';
+                    clonedEl.style.border = 'none'; // Kenar çizgilerini temizle
+                    
+                    // Flex/Grid taşmalarını önle
+                    clonedEl.style.width = '210mm';
+                    clonedEl.style.height = '297mm';
+                    clonedEl.style.overflow = 'hidden';
+                    
+                    // Varsa içindeki scrollbarları gizle
+                    const scrollables = clonedEl.querySelectorAll('.custom-scrollbar');
+                    scrollables.forEach((el: any) => {
+                        el.style.overflow = 'visible'; 
+                        el.style.height = 'auto';
+                    });
+                } else {
+                    console.warn(`PDF Uyarısı: Sayfa ${i+1} klonlanırken hedef element (${tempId}) bulunamadı. Render devam ediyor...`);
+                }
+            } catch (cloneError) {
+                console.warn("Clone manipülasyon hatası (yoksayıldı):", cloneError);
             }
           }
         });
 
         // --- ID TEMİZLİĞİ ---
-        // İşlem bitince orijinal ID'yi geri yükle veya temizle
+        // İşlem bitince orijinal ID'yi geri yükle
         if (originalId) {
             pageElement.id = originalId;
         } else {
@@ -127,8 +137,9 @@ export const UniversalPdfService = {
       console.error("PDF Motoru Kritik Hata:", error);
       throw error; // Hatayı yukarı fırlat ki UI yakalasın
     } finally {
-      // Temizlik: Scroll kilidini aç
+      // Temizlik: Scroll ve Overflow'u eski haline getir
       document.body.style.overflow = originalOverflow;
+      window.scrollTo(0, originalScrollY);
     }
   }
 };
