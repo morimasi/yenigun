@@ -1,9 +1,9 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { StaffMember, Branch, StaffRole } from '../../types';
+import { StaffMember, Branch, StaffRole, Candidate } from '../../types';
 import StaffProfileView from './StaffProfileView';
 import PresentationStudio from './PresentationStudio';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area } from 'recharts';
+import { exportService } from '../../services/exportService';
 
 interface ArmsDashboardProps {
   refreshTrigger?: number;
@@ -17,6 +17,15 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Selection & Bulk Actions State
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+
+  // Edit State
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Create Staff State
   const [newStaff, setNewStaff] = useState({
     name: '', email: '', role: StaffRole.Staff, branch: Branch.OzelEgitim, experience_years: 0, password: 'yg' + Math.floor(1000 + Math.random() * 9000)
@@ -36,6 +45,8 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
 
   useEffect(() => { fetchStaff(); }, [refreshTrigger]);
 
+  // --- ACTIONS ---
+
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -52,6 +63,98 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
     } catch (e) { alert("Kayıt hatası."); }
   };
 
+  const handleUpdateStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStaff) return;
+    try {
+      const res = await fetch('/api/staff?action=update_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingStaff)
+      });
+      if (res.ok) {
+        alert("Personel profili güncellendi.");
+        setIsEditModalOpen(false);
+        setEditingStaff(null);
+        fetchStaff();
+      }
+    } catch (e) { alert("Güncelleme hatası."); }
+  };
+
+  const toggleCheck = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = new Set(checkedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setCheckedIds(next);
+  };
+
+  const toggleAll = () => {
+    if (checkedIds.size === filteredStaff.length) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(filteredStaff.map(s => s.id)));
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (!confirm(`${checkedIds.size} adet personel kaydı ARŞİVE taşınacak. Onaylıyor musunuz?`)) return;
+    
+    try {
+      const ids = Array.from(checkedIds);
+      const res = await fetch('/api/staff?action=bulk_archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      });
+      
+      if (res.ok) {
+        setCheckedIds(new Set());
+        fetchStaff();
+        alert("Seçili kayıtlar arşive taşındı.");
+      }
+    } catch (e) { alert("Toplu işlem hatası."); }
+  };
+
+  const handleBulkDownload = async () => {
+    const targets = staffList.filter(s => checkedIds.has(s.id) && s.report);
+    if (targets.length === 0) return alert("Seçili personellerde AI raporu bulunamadı.");
+    
+    setIsExporting(true);
+    setExportProgress(10);
+
+    try {
+      // StaffMember'ı Candidate tipine mapleyerek export servisini kullanıyoruz (Duck Typing)
+      const mappedCandidates = targets.map(s => ({
+        id: s.id,
+        name: s.name,
+        branch: s.branch,
+        email: s.email,
+        phone: s.phone || '',
+        experienceYears: s.experience_years,
+        university: s.university || '',
+        department: s.department || '',
+        status: 'hired',
+        report: s.report,
+        timestamp: Date.now(),
+        answers: {}
+      } as Candidate));
+
+      await exportService.exportAllCandidatesAsZip(mappedCandidates, setExportProgress);
+    } catch (e) {
+      alert("ZIP oluşturma hatası.");
+    } finally {
+      setIsExporting(false);
+      setExportProgress(0);
+    }
+  };
+
+  const openEditModal = (staff: StaffMember, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingStaff(staff);
+    setIsEditModalOpen(true);
+  };
+
   const filteredStaff = useMemo(() => {
     return staffList.filter(s => 
       s.name.toLocaleLowerCase('tr-TR').includes(searchTerm.toLocaleLowerCase('tr-TR')) ||
@@ -61,22 +164,18 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
 
   const stats = useMemo(() => {
     if (staffList.length === 0) return { avgScore: 0, highPerformers: 0, distribution: [] };
-    
     const avg = Math.round(staffList.reduce((a, b) => a + (b.last_score || 0), 0) / staffList.length);
     const hipo = staffList.filter(s => (s.last_score || 0) > 85).length;
-    
     const branchMap: any = {};
     staffList.forEach(s => {
        if (!branchMap[s.branch]) branchMap[s.branch] = { name: s.branch, value: 0, count: 0 };
        branchMap[s.branch].value += (s.last_score || 0);
        branchMap[s.branch].count++;
     });
-
     const distribution = Object.values(branchMap).map((b: any) => ({
       name: b.name,
       score: Math.round(b.value / b.count)
     }));
-
     return { avgScore: avg, highPerformers: hipo, distribution };
   }, [staffList]);
 
@@ -85,6 +184,63 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
   return (
     <div className="flex flex-col gap-6 animate-fade-in h-[calc(100vh-6rem)] relative">
       
+      {/* BULK ACTION BAR (FLOATING) */}
+      {checkedIds.size > 0 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-6 animate-slide-up border border-white/10 backdrop-blur-xl">
+           <div className="flex items-center gap-3 pl-2">
+              <span className="w-6 h-6 bg-orange-600 rounded-lg flex items-center justify-center font-black text-xs">{checkedIds.size}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">PERSONEL SEÇİLDİ</span>
+           </div>
+           <div className="h-8 w-px bg-white/10"></div>
+           <div className="flex gap-2">
+              <button onClick={handleBulkDownload} disabled={isExporting} className="px-5 py-2 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all">
+                 {isExporting ? `PAKETLENİYOR %${exportProgress}` : 'ZIP İNDİR'}
+              </button>
+              <button onClick={handleBulkArchive} className="px-5 py-2 bg-rose-600/20 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">
+                 ARŞİVE KALDIR
+              </button>
+           </div>
+           <button onClick={() => setCheckedIds(new Set())} className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+           </button>
+        </div>
+      )}
+
+      {/* EDIT MODAL */}
+      {isEditModalOpen && editingStaff && (
+        <div className="fixed inset-0 z-[2000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+           <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 animate-scale-in shadow-2xl">
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-8">Personel Düzenle</h3>
+              <form onSubmit={handleUpdateStaff} className="space-y-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Ad Soyad</label>
+                    <input type="text" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editingStaff.name} onChange={e => setEditingStaff({...editingStaff, name: e.target.value})} />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">E-Posta</label>
+                    <input type="email" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editingStaff.email} onChange={e => setEditingStaff({...editingStaff, email: e.target.value})} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Branş</label>
+                       <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editingStaff.branch} onChange={e => setEditingStaff({...editingStaff, branch: e.target.value as Branch})}>
+                          {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+                       </select>
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Deneyim (Yıl)</label>
+                       <input type="number" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editingStaff.experience_years} onChange={e => setEditingStaff({...editingStaff, experience_years: parseInt(e.target.value)})} />
+                    </div>
+                 </div>
+                 <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest">İPTAL</button>
+                    <button type="submit" className="flex-1 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all">GÜNCELLE</button>
+                 </div>
+              </form>
+           </div>
+        </div>
+      )}
+
       {/* 1. COMMAND HEADER */}
       <div className="bg-slate-900 p-8 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 border border-white/5 shrink-0">
         <div className="relative z-10 flex items-center gap-8">
@@ -129,7 +285,9 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
             <div className="p-8 border-b border-slate-50 bg-slate-50/50 space-y-4">
                <div className="flex justify-between items-center">
                   <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">KADRO NAVİGASYON</h4>
-                  <span className="px-2 py-1 bg-slate-900 text-white rounded text-[9px] font-bold">LIVE</span>
+                  <button onClick={toggleAll} className="text-[9px] font-bold text-orange-600 uppercase hover:underline">
+                     {checkedIds.size === filteredStaff.length ? 'SEÇİMİ KALDIR' : 'TÜMÜNÜ SEÇ'}
+                  </button>
                </div>
                <div className="relative group">
                   <input 
@@ -149,26 +307,36 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
                      <p className="text-[10px] font-black uppercase tracking-widest">Kayıt Bulunamadı</p>
                   </div>
                ) : (
-                  filteredStaff.map(s => (
-                     <button 
-                       key={s.id} 
-                       onClick={() => { setSelectedStaffId(s.id); setActiveTab('dashboard'); }} 
-                       className={`w-full p-5 rounded-[2.5rem] border-2 transition-all flex items-center gap-5 text-left group ${selectedStaffId === s.id ? 'bg-slate-900 border-slate-900 text-white shadow-2xl scale-[1.02]' : 'bg-white border-transparent hover:border-orange-300 hover:bg-slate-50'}`}
-                     >
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg shrink-0 transition-all ${selectedStaffId === s.id ? 'bg-orange-600' : 'bg-slate-100 text-slate-400 group-hover:bg-orange-100'}`}>
-                           {s.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                           <p className="text-[13px] font-black uppercase truncate leading-none mb-2">{s.name}</p>
-                           <p className={`text-[9px] font-bold uppercase truncate opacity-60 ${selectedStaffId === s.id ? 'text-slate-400' : 'text-slate-500'}`}>{s.branch}</p>
-                        </div>
-                        {s.last_score !== undefined && (
-                           <div className="text-right">
-                              <span className={`text-[13px] font-black ${s.last_score > 75 ? 'text-emerald-500' : 'text-orange-500'}`}>%{s.last_score}</span>
-                           </div>
-                        )}
-                     </button>
-                  ))
+                  filteredStaff.map(s => {
+                     const isChecked = checkedIds.has(s.id);
+                     const isSelected = selectedStaffId === s.id;
+
+                     return (
+                       <div 
+                         key={s.id} 
+                         onClick={() => { setSelectedStaffId(s.id); setActiveTab('dashboard'); }} 
+                         className={`w-full p-4 rounded-[2.5rem] border-2 transition-all flex items-center gap-4 text-left group cursor-pointer relative ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-2xl scale-[1.02]' : 'bg-white border-transparent hover:border-orange-300 hover:bg-slate-50'}`}
+                       >
+                          {/* CHECKBOX AREA */}
+                          <div onClick={(e) => toggleCheck(s.id, e)} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isChecked ? 'bg-orange-600 border-orange-600' : 'border-slate-200 hover:border-orange-400'}`}>
+                             {isChecked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M5 13l4 4L19 7" /></svg>}
+                          </div>
+
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 transition-all ${isSelected ? 'bg-orange-600' : 'bg-slate-100 text-slate-400 group-hover:bg-orange-100'}`}>
+                             {s.name.charAt(0)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                             <p className="text-[12px] font-black uppercase truncate leading-none mb-1.5">{s.name}</p>
+                             <p className={`text-[8px] font-bold uppercase truncate opacity-60 ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>{s.branch}</p>
+                          </div>
+                          
+                          {/* EDIT TRIGGER (Hover) */}
+                          <button onClick={(e) => openEditModal(s, e)} className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity ${isSelected ? 'hover:bg-white/20 text-white' : 'hover:bg-slate-200 text-slate-400'}`}>
+                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                       </div>
+                     );
+                  })
                )}
             </div>
          </div>
