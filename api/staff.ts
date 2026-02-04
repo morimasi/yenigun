@@ -81,15 +81,21 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 3.2. UPDATE PROFILE (NEW)
+    // 3.2. UPDATE PROFILE (CRITICAL FIX: ONBOARDING & FIELDS)
     if (method === 'POST' && action === 'update_profile') {
-        const { id, name, email, branch, experience_years } = await request.json();
+        const { id, name, branch, experience_years, university, department } = await request.json();
+        
+        // Validation
+        if (!id) return new Response(JSON.stringify({ error: 'Staff ID missing' }), { status: 400, headers });
+
         await sql`
             UPDATE staff SET 
             name = ${name}, 
-            email = ${email}, 
             branch = ${branch}, 
             experience_years = ${experience_years},
+            university = ${university || null},
+            department = ${department || null},
+            onboarding_complete = TRUE,
             updated_at = CURRENT_TIMESTAMP
             WHERE id = ${id}
         `;
@@ -158,6 +164,7 @@ export default async function handler(request: Request) {
     }
 
   } catch (error: any) {
+    console.error("Staff API Error:", error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
   }
   return new Response(null, { status: 405 });
