@@ -1,3 +1,4 @@
+
 import { sql } from '@vercel/postgres';
 
 export const config = { runtime: 'edge' };
@@ -17,15 +18,15 @@ export default async function handler(request: Request) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // 1. LIST ALL STAFF (ADMIN ONLY)
+    // 1. LIST ALL STAFF (ADMIN ONLY) - Uses the optimized VIEW
     if (method === 'GET' && action === 'list_all') {
       const { rows } = await sql`
-        SELECT s.*, 
-        (SELECT COUNT(*) FROM staff_assessments WHERE staff_id = s.id) as assessment_count,
-        (SELECT score FROM staff_assessments WHERE staff_id = s.id ORDER BY timestamp DESC LIMIT 1) as last_score
-        FROM staff s 
-        WHERE status = 'active'
-        ORDER BY created_at DESC
+        SELECT 
+            id, name, branch, role, email, phone, experience_years, 
+            global_merit_score as last_score, 
+            report 
+        FROM view_staff_performance_matrix
+        ORDER BY last_activity_date DESC NULLS LAST
       `;
       return new Response(JSON.stringify(rows), { status: 200, headers });
     }
@@ -33,60 +34,59 @@ export default async function handler(request: Request) {
     // 2. GET FULL STAFF DETAILS
     if (method === 'GET' && action === 'get_details') {
       const staffId = searchParams.get('staffId');
-      const { rows: profile } = await sql`SELECT * FROM staff WHERE id = ${staffId}`;
-      const { rows: assessments } = await sql`SELECT * FROM staff_assessments WHERE staff_id = ${staffId} ORDER BY timestamp DESC`;
-      const { rows: idp } = await sql`SELECT * FROM staff_idp WHERE staff_id = ${staffId} AND is_active = TRUE LIMIT 1`;
+      
+      // Paralel sorgu ile performans artışı
+      const [profileRes, assessRes, idpRes] = await Promise.all([
+          sql`SELECT * FROM staff WHERE id = ${staffId}`,
+          sql`SELECT * FROM staff_assessments WHERE staff_id = ${staffId} ORDER BY timestamp DESC`,
+          sql`SELECT * FROM staff_idp WHERE staff_id = ${staffId} AND status = 'active' LIMIT 1`
+      ]);
+
+      const profile = profileRes.rows[0];
+      const activeIDPRecord = idpRes.rows[0];
+      
+      // Veritabanındaki düz yapıyı Frontend tipine (IDP interface) dönüştür
+      let activeIDP = null;
+      if (activeIDPRecord) {
+          activeIDP = {
+              id: activeIDPRecord.id,
+              staffId: activeIDPRecord.staff_id,
+              status: activeIDPRecord.status,
+              createdAt: new Date(activeIDPRecord.created_at).getTime(),
+              updatedAt: new Date(activeIDPRecord.updated_at).getTime(),
+              ...activeIDPRecord.data // JSONB içeriğini yay
+          };
+      }
       
       return new Response(JSON.stringify({
-        profile: profile[0],
-        assessments: assessments,
-        activeIDP: idp[0]
+        profile: profile,
+        assessments: assessRes.rows,
+        activeIDP: activeIDP
       }), { status: 200, headers });
     }
 
-    // 3. ARCHIVE STAFF (SINGLE)
+    // 3. ARCHIVE STAFF
     if (method === 'POST' && action === 'archive') {
       const staffId = searchParams.get('staffId');
       await sql`UPDATE staff SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id = ${staffId}`;
-      
-      const { rows } = await sql`SELECT * FROM staff WHERE id = ${staffId}`;
-      const s = rows[0];
-      await sql`
-        INSERT INTO candidates (id, name, email, branch, status, archive_category, archive_note, report)
-        VALUES (${s.id}, ${s.name}, ${s.email}, ${s.branch}, 'archived', 'STAFF_HISTORY', 'Kurumsal kadrodan arşive mühürlendi.', ${JSON.stringify(s.report || {})})
-        ON CONFLICT (email) DO UPDATE SET status = 'archived', archive_category = 'STAFF_HISTORY';
-      `;
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 3.1. BULK ARCHIVE (NEW)
+    // 3.1. BULK ARCHIVE
     if (method === 'POST' && action === 'bulk_archive') {
       const { ids } = await request.json();
-      if (!Array.isArray(ids) || ids.length === 0) return new Response(JSON.stringify({ error: 'No IDs provided' }), { status: 400 });
+      if (!Array.isArray(ids) || ids.length === 0) return new Response(JSON.stringify({ error: 'No IDs' }), { status: 400 });
 
-      // Transaction-like approach (Sequential for safety in Vercel Postgres)
       for (const id of ids) {
          await sql`UPDATE staff SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`;
-         // Arşiv kopyası oluştur
-         const { rows } = await sql`SELECT * FROM staff WHERE id = ${id}`;
-         if (rows.length > 0) {
-             const s = rows[0];
-             await sql`
-                INSERT INTO candidates (id, name, email, branch, status, archive_category, archive_note, report)
-                VALUES (${s.id}, ${s.name}, ${s.email}, ${s.branch}, 'archived', 'STAFF_HISTORY', 'Toplu işlem ile arşive mühürlendi.', ${JSON.stringify(s.report || {})})
-                ON CONFLICT (email) DO UPDATE SET status = 'archived', archive_category = 'STAFF_HISTORY';
-             `;
-         }
       }
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 3.2. UPDATE PROFILE (CRITICAL FIX: ONBOARDING & FIELDS)
+    // 3.2. UPDATE PROFILE
     if (method === 'POST' && action === 'update_profile') {
         const { id, name, branch, experience_years, university, department } = await request.json();
-        
-        // Validation
-        if (!id) return new Response(JSON.stringify({ error: 'Staff ID missing' }), { status: 400, headers });
+        if (!id) return new Response(JSON.stringify({ error: 'Staff ID missing' }), { status: 400 });
 
         await sql`
             UPDATE staff SET 
@@ -102,25 +102,21 @@ export default async function handler(request: Request) {
         return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 4. SAVE AI ANALYSIS (REPORT)
+    // 4. SAVE AI ANALYSIS
     if (method === 'POST' && action === 'save_analysis') {
       const { staffId, report } = await request.json();
-      await sql`
-        UPDATE staff SET 
-        report = ${JSON.stringify(report)},
-        updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${staffId}
-      `;
+      await sql`UPDATE staff SET report = ${JSON.stringify(report)}, updated_at = CURRENT_TIMESTAMP WHERE id = ${staffId}`;
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 5. STAFF AUTH (LOGIN) & REGISTER
+    // 5. LOGIN
     if (method === 'POST' && action === 'login') {
       const { email, password } = await request.json();
       const { rows } = await sql`SELECT * FROM staff WHERE email = ${email} AND password_hash = ${password} AND status = 'active'`;
       
       if (rows.length > 0) {
         const staff = rows[0];
+        // Tamamlanan bataryaları çek
         const { rows: completed } = await sql`SELECT battery_id FROM staff_assessments WHERE staff_id = ${staff.id}`;
         const completedBatteryIds = completed.map(c => c.battery_id);
         
@@ -132,6 +128,7 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: false, message: 'Kimlik doğrulanamadı.' }), { status: 401, headers });
     }
 
+    // 5.1 REGISTER (ADMIN)
     if (method === 'POST' && action === 'register') {
         const { name, email, branch, experience_years, role, password } = await request.json();
         const newId = `STF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
@@ -155,11 +152,30 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
-    // 7. SAVE IDP
+    // 7. SAVE IDP (MÜFREDAT) - REVİZE EDİLDİ
     if (method === 'POST' && action === 'save_idp') {
       const { staffId, data } = await request.json();
-      await sql`UPDATE staff_idp SET is_active = FALSE WHERE staff_id = ${staffId}`;
-      await sql`INSERT INTO staff_idp (staff_id, data, is_active) VALUES (${staffId}, ${JSON.stringify(data)}, TRUE)`;
+      
+      // IDP'nin ID'sini veriden al veya yeni üret
+      const idpId = data.id || `IDP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+      const focusArea = data.focusArea || 'Genel Gelişim';
+
+      // Transaction Mantığı:
+      // 1. Bu personel için varsa diğer 'active' planları 'archived' yap (Versiyonlama)
+      // 2. Yeni planı 'active' olarak kaydet/güncelle.
+      
+      await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active' AND id != ${idpId}`;
+      
+      await sql`
+        INSERT INTO staff_idp (id, staff_id, data, focus_area, status, updated_at)
+        VALUES (${idpId}, ${staffId}, ${JSON.stringify(data)}, ${focusArea}, 'active', CURRENT_TIMESTAMP)
+        ON CONFLICT (id) DO UPDATE SET 
+            data = EXCLUDED.data, 
+            focus_area = EXCLUDED.focus_area,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+      `;
+      
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
