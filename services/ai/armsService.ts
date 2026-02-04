@@ -11,15 +11,17 @@ export const armsService = {
       ROL: Yeni Gün Akademi "Nöral Eğitim Mimarı" ve "Klinik Süpervizör".
       GÖREV: Personelin değerlendirme geçmişindeki (assessmentHistory) düşük puanlı alanları ve "aiTags" verilerini analiz et.
       ÇIKTI: Kişiye özel, yüksek çözünürlüklü bir Hizmet İçi Eğitim Müfredatı (Curriculum) oluştur.
+      MODEL: Gemini 3 Flash Thinking Mode.
       
       PRENSİPLER:
       1. TANISAL EŞLEŞTİRME: Eğer personel "etik" konusunda düşük puan aldıysa, müfredata "Klinik Sınırlar ve Etik" modülü ekle.
       2. MODÜLER YAPI: Eğitimi 3-4 ana modüle böl. Her modülün altında somut görevler (üniteler) olsun.
-      3. ÇEŞİTLİLİK: Üniteler sadece "okuma" olmasın; "Vaka Analizi", "Süpervizyon", "Simülasyon" gibi aktif görevler içersin.
+      3. ÇEŞİTLİLİK: Üniteler sadece "okuma" olmasın; "Vaka Analizi", "Süpervizyon", "Simülasyon", "Makale Kritik" gibi aktif görevler içersin.
       4. NEDENSELLİK (RATIONALE): Her ünite için AI, neden bu görevi atadığını (hangi test hatasına dayandığını) "aiRationale" alanında belirtmeli.
+      5. KAYNAKLAR: Her ünite için gerçekçi kitap, makale veya video başlıkları öner.
     `;
 
-    // Schema Definition for Robust JSON
+    // Robust Schema for Curriculum
     const curriculumSchema = {
       type: Type.ARRAY,
       items: {
@@ -37,13 +39,25 @@ export const armsService = {
               properties: {
                 id: { type: Type.STRING },
                 title: { type: Type.STRING },
-                type: { type: Type.STRING, enum: ['video', 'reading', 'simulation', 'assignment', 'supervision'] },
+                type: { type: Type.STRING, enum: ['video', 'reading', 'simulation', 'assignment', 'supervision', 'workshop'] },
                 content: { type: Type.STRING },
                 durationMinutes: { type: Type.NUMBER },
-                aiRationale: { type: Type.STRING, description: "Bu görevin dayandığı eksiklik veya ihtiyaç." },
-                isCompleted: { type: Type.BOOLEAN }
+                aiRationale: { type: Type.STRING },
+                successCriteria: { type: Type.STRING },
+                isCompleted: { type: Type.BOOLEAN },
+                resources: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            type: { type: Type.STRING, enum: ['pdf', 'video', 'article', 'book'] },
+                            title: { type: Type.STRING },
+                            url: { type: Type.STRING }
+                        }
+                    }
+                }
               },
-              required: ["id", "title", "type", "content", "durationMinutes", "aiRationale", "isCompleted"]
+              required: ["id", "title", "type", "content", "durationMinutes", "aiRationale", "isCompleted", "successCriteria"]
             }
           }
         },
@@ -89,13 +103,14 @@ export const armsService = {
 
     const data = JSON.parse(response.text || '{}');
     
-    // Post-processing to ensure IDs are unique if AI hallucinates duplicates
+    // Post-processing to ensure IDs are unique
     if(data.curriculum) {
         data.curriculum.forEach((mod: any, i: number) => {
             mod.id = `MOD-${Date.now()}-${i}`;
             mod.units.forEach((u: any, j: number) => {
                 u.id = `UNIT-${Date.now()}-${i}-${j}`;
                 u.isCompleted = false;
+                u.status = 'pending';
             });
         });
     }
@@ -104,6 +119,8 @@ export const armsService = {
       id: `IDP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       staffId: staff.id,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
+      status: 'draft',
       ...data,
       milestones: data.milestones?.map((m: any) => ({ ...m, isCompleted: false })) || []
     };

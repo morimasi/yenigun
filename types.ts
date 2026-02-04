@@ -1,15 +1,24 @@
 
 // ... (Mevcut tipler korunur)
 
-// YENİ: EĞİTİM MÜFREDAT YAPISI
+// YENİ: EĞİTİM MÜFREDAT YAPISI (GELİŞMİŞ)
+export interface TrainingResource {
+  type: 'pdf' | 'video' | 'article' | 'book';
+  title: string;
+  url?: string;
+}
+
 export interface TrainingUnit {
   id: string;
   title: string;
-  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision';
+  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop';
   content: string; // Açıklama veya Link
   durationMinutes: number;
   isCompleted: boolean;
   aiRationale?: string; // AI bu üniteyi neden atadı?
+  resources?: TrainingResource[]; // Ek kaynaklar
+  successCriteria?: string; // Başarı ölçütü (Örn: %80 Quiz Puanı)
+  status: 'pending' | 'in_progress' | 'completed';
 }
 
 export interface TrainingModule {
@@ -20,12 +29,14 @@ export interface TrainingModule {
   units: TrainingUnit[];
   status: 'locked' | 'active' | 'completed';
   dueDate?: string;
+  instructor?: string; // Eğitmen adı (Opsiyonel)
 }
 
 export interface IDP {
   id: string;
   staffId: string;
   createdAt: number;
+  updatedAt: number;
   // Eski alanlar (Legacy Support)
   focusArea: string;
   identifiedGaps: string[];
@@ -43,6 +54,7 @@ export interface IDP {
   // YENİ: DETAYLI MÜFREDAT
   curriculum?: TrainingModule[];
   aiAnalysisSummary?: string;
+  status: 'draft' | 'published' | 'archived';
 }
 
 // ... (Diğer tipler aynı kalır)
@@ -73,7 +85,7 @@ export interface UniversalExportData {
   config?: Partial<ExportConfig>;
 }
 
-export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER';
+export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'TRAINING_CURRICULUM';
 
 export enum Branch {
   OzelEgitim = 'Özel Eğitim',
