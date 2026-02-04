@@ -1,4 +1,34 @@
 
+// ... (Mevcut tipler korunur)
+
+export interface ExportConfig {
+  title: string;
+  showWatermark: boolean;
+  signatureRequired: boolean;
+  theme: 'corporate' | 'modern' | 'minimal';
+  
+  // MODÜLER GÖRÜNÜRLÜK AYARLARI (YENİ)
+  sections: {
+    cover: boolean;              // Kapak Sayfası
+    executiveSummary: boolean;   // Yönetici Özeti & Kimlik
+    competencyMatrix: boolean;   // Yetkinlik Matrisi (Radar)
+    behavioralDNA: boolean;      // Davranışsal DNA & Nöral Analiz
+    swotAnalysis: boolean;       // SWOT
+    futureProjection: boolean;   // 24 Aylık Projeksiyon
+    interviewGuide: boolean;     // Mülakat Soruları
+    clinicalSimulation: boolean; // Simülasyon Sonuçları
+  };
+}
+
+export interface UniversalExportData {
+  type: ExportType;
+  entityName: string;
+  referenceId: string;
+  payload: any;
+  config?: Partial<ExportConfig>;
+}
+
+// ... (Kalan tipler aynı)
 export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER';
 
 export enum Branch {
@@ -203,31 +233,6 @@ export interface GlobalConfig {
   advancedAnalytics?: any;
 }
 
-export interface ExportConfig {
-  title: string;
-  showWatermark: boolean;
-  signatureRequired: boolean;
-  theme: 'corporate' | 'modern' | 'minimal';
-  sections: {
-    cover: boolean;
-    executiveSummary: boolean;
-    competencyMatrix: boolean;
-    behavioralDNA: boolean;
-    swotAnalysis: boolean;
-    futureProjection: boolean;
-    interviewGuide: boolean;
-    clinicalSimulation: boolean;
-  };
-}
-
-export interface UniversalExportData {
-  type: ExportType;
-  entityName: string;
-  referenceId: string;
-  payload: any;
-  config?: Partial<ExportConfig>;
-}
-
 export interface IDP {
   id: string;
   staffId: string;
@@ -362,4 +367,3 @@ export interface NotificationLog {
   timestamp: number;
   errorMessage?: string;
 }
-    

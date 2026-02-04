@@ -37,9 +37,8 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
     const token = localStorage.getItem('yeni_gun_admin_token');
     if (token) {
         try {
-            // Token yapısı: session_ID_TIME (Base64) -> Gerçek app'te decoded jwt kullanılır.
             // Simülasyon için localStorage'dan veya mock user'dan alıyoruz.
-            // Basitlik adına burada sabit veya cached user kullanabiliriz.
+            // Gerçek app'te decoded jwt kullanılır.
             setCurrentUser('Kurul Başkanı'); 
         } catch (e) {}
     }
@@ -51,6 +50,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
   const handleDownloadPDF = async () => {
     setIsProcessing(true);
     try {
+      // PDF Motoruna ID'yi (print-stage) ve datayı gönder
       await UniversalPdfService.generateHighResPdf('print-stage', data);
     } catch (e) {
       alert("PDF Motoru Hatası: Render işlemi tamamlanamadı.");
@@ -72,10 +72,12 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
     setIsProcessing(true);
     try {
       const candidate = data.payload as Candidate;
+      
+      // Arşivlenirken güncel rapor ve seçimleri de gömelim
       const archivePayload: Candidate = {
         ...candidate,
         status: 'archived',
-        archiveCategory: 'HIRED_CONTRACTED', // Veya duruma göre 'FUTURE_REFERENCE'
+        archiveCategory: 'HIRED_CONTRACTED', // Varsayılan olarak başarılı arşiv, duruma göre değiştirilebilir
         archiveNote: `RESMİ MÜHÜR: Bu dosya ${new Date().toLocaleDateString('tr-TR')} tarihinde ${currentUser} tarafından yayınlanmış ve arşive zimmetlenmiştir. Yayınlanan Modüller: ${Object.keys(config.sections).filter((k) => config.sections[k as keyof typeof config.sections]).join(', ')}.`,
         timestamp: Date.now()
       };
