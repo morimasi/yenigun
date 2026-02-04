@@ -8,17 +8,21 @@ export default async function handler(request: Request) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
   
+  // Cache-Control: No-Store (Verilerin her zaman taze kalmasını garanti eder)
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   };
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // 1. LIST ALL STAFF (ADMIN ONLY) - Uses the optimized VIEW
+    // 1. LIST ALL STAFF (ADMIN ONLY)
     if (method === 'GET' && action === 'list_all') {
       const { rows } = await sql`
         SELECT 
@@ -35,7 +39,6 @@ export default async function handler(request: Request) {
     if (method === 'GET' && action === 'get_details') {
       const staffId = searchParams.get('staffId');
       
-      // Paralel sorgu ile performans artışı
       const [profileRes, assessRes, idpRes] = await Promise.all([
           sql`SELECT * FROM staff WHERE id = ${staffId}`,
           sql`SELECT * FROM staff_assessments WHERE staff_id = ${staffId} ORDER BY timestamp DESC`,
@@ -45,7 +48,6 @@ export default async function handler(request: Request) {
       const profile = profileRes.rows[0];
       const activeIDPRecord = idpRes.rows[0];
       
-      // Veritabanındaki düz yapıyı Frontend tipine (IDP interface) dönüştür
       let activeIDP = null;
       if (activeIDPRecord) {
           activeIDP = {
@@ -54,7 +56,7 @@ export default async function handler(request: Request) {
               status: activeIDPRecord.status,
               createdAt: new Date(activeIDPRecord.created_at).getTime(),
               updatedAt: new Date(activeIDPRecord.updated_at).getTime(),
-              ...activeIDPRecord.data // JSONB içeriğini yay
+              ...activeIDPRecord.data
           };
       }
       
@@ -116,7 +118,6 @@ export default async function handler(request: Request) {
       
       if (rows.length > 0) {
         const staff = rows[0];
-        // Tamamlanan bataryaları çek
         const { rows: completed } = await sql`SELECT battery_id FROM staff_assessments WHERE staff_id = ${staff.id}`;
         const completedBatteryIds = completed.map(c => c.battery_id);
         
@@ -128,17 +129,31 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: false, message: 'Kimlik doğrulanamadı.' }), { status: 401, headers });
     }
 
-    // 5.1 REGISTER (ADMIN)
+    // 5.1 REGISTER (ADMIN) - KRİTİK GÜNCELLEME
     if (method === 'POST' && action === 'register') {
         const { name, email, branch, experience_years, role, password } = await request.json();
+        
+        // ID Üretimi
         const newId = `STF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
         
-        await sql`
-            INSERT INTO staff (id, name, email, password_hash, role, branch, experience_years, status)
-            VALUES (${newId}, ${name}, ${email}, ${password}, ${role || 'staff'}, ${branch}, ${experience_years || 0}, 'active')
-            ON CONFLICT (email) DO NOTHING
-        `;
-        return new Response(JSON.stringify({ success: true }), { status: 201, headers });
+        try {
+            // Strict Insert: Çakışma varsa hata fırlat (DO NOTHING kaldırıldı)
+            await sql`
+                INSERT INTO staff (id, name, email, password_hash, role, branch, experience_years, status)
+                VALUES (${newId}, ${name}, ${email}, ${password}, ${role || 'staff'}, ${branch}, ${experience_years || 0}, 'active')
+            `;
+            return new Response(JSON.stringify({ success: true, id: newId }), { status: 201, headers });
+        } catch (dbError: any) {
+            // PostgreSQL Unique Violation Code: 23505
+            if (dbError.code === '23505') {
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    error: 'DUPLICATE_EMAIL', 
+                    message: 'Bu e-posta adresi sistemde zaten kayıtlı (veya arşivde).' 
+                }), { status: 409, headers });
+            }
+            throw dbError; // Diğer hataları genel catch bloğuna fırlat
+        }
     }
 
     // 6. SAVE ASSESSMENT
@@ -152,18 +167,12 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true }), { status: 201, headers });
     }
 
-    // 7. SAVE IDP (MÜFREDAT) - REVİZE EDİLDİ
+    // 7. SAVE IDP
     if (method === 'POST' && action === 'save_idp') {
       const { staffId, data } = await request.json();
-      
-      // IDP'nin ID'sini veriden al veya yeni üret
       const idpId = data.id || `IDP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
       const focusArea = data.focusArea || 'Genel Gelişim';
 
-      // Transaction Mantığı:
-      // 1. Bu personel için varsa diğer 'active' planları 'archived' yap (Versiyonlama)
-      // 2. Yeni planı 'active' olarak kaydet/güncelle.
-      
       await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active' AND id != ${idpId}`;
       
       await sql`
@@ -181,7 +190,7 @@ export default async function handler(request: Request) {
 
   } catch (error: any) {
     console.error("Staff API Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ success: false, error: error.message || 'Veritabanı hatası' }), { status: 500, headers });
   }
   return new Response(null, { status: 405 });
 }

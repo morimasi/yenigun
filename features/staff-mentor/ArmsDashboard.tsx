@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { StaffMember, Branch, StaffRole, Candidate } from '../../types';
 import StaffProfileView from './StaffProfileView';
@@ -55,12 +56,24 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStaff)
       });
-      if (res.ok) {
-        alert("Personel kaydı mühürlendi.");
+      
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        alert(`Personel "${newStaff.name}" başarıyla sisteme mühürlendi.`);
+        // Formu sıfırla
+        setNewStaff({
+            name: '', email: '', role: StaffRole.Staff, branch: Branch.OzelEgitim, 
+            experience_years: 0, password: 'yg' + Math.floor(1000 + Math.random() * 9000)
+        });
         setActiveTab('dashboard');
-        fetchStaff();
+        await fetchStaff(); // Listeyi zorla yenile
+      } else {
+        alert(`Kayıt Başarısız: ${data.message || data.error || 'Bilinmeyen Hata'}`);
       }
-    } catch (e) { alert("Kayıt hatası."); }
+    } catch (e) { 
+      alert("Sunucu bağlantı hatası. Lütfen internet bağlantınızı kontrol edin."); 
+    }
   };
 
   const handleUpdateStaff = async (e: React.FormEvent) => {
