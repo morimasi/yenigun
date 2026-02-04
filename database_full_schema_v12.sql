@@ -1,3 +1,4 @@
+
 -- ============================================================================
 -- YENİ GÜN AKADEMİ | MIA & ARMS FULLSTACK VERİTABANI MİMARİSİ (v12.0 - AKADEMİ ÖZEL)
 -- ============================================================================
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     archive_category TEXT, -- TALENT_POOL, BLACK_LIST, HIRED_CONTRACTED vb.
     archive_note TEXT,
     admin_notes TEXT,
+    reminder_note TEXT,
     interview_schedule JSONB, -- {date, time, link}
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -84,6 +86,26 @@ CREATE TABLE IF NOT EXISTS staff (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Eski veritabanlarında kolon eksikse ekle (Migration Logic)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='university') THEN
+        ALTER TABLE staff ADD COLUMN university TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='department') THEN
+        ALTER TABLE staff ADD COLUMN department TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='experience_years') THEN
+        ALTER TABLE staff ADD COLUMN experience_years INTEGER DEFAULT 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='onboarding_complete') THEN
+        ALTER TABLE staff ADD COLUMN onboarding_complete BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='report') THEN
+        ALTER TABLE staff ADD COLUMN report JSONB DEFAULT NULL;
+    END IF;
+END $$;
 
 -- Tetikleyiciler
 DROP TRIGGER IF EXISTS trg_candidates_upd ON candidates;
