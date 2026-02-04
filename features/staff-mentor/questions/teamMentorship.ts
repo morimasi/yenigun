@@ -12,8 +12,18 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
       },
       { 
         label: 'Branş sınırlarını hatırlatırım; her uzmanın kendi teknik sahasında tam yetkiye sahip olması gerektiğini, müdahalenin benim alanımı sabote ettiğini net bir dille belirtirim.', 
-        clinicalValue: 80, 
+        clinicalValue: 75, 
         aiTag: 'expertise_border_patrol' 
+      },
+      { 
+        label: 'Çatışma çıkmasın diye sesimi çıkarmam, kendi seansımda bildiğimi okurum ama diğer uzmana karışmam.', 
+        clinicalValue: 50, 
+        aiTag: 'conflict_avoidant' 
+      },
+      { 
+        label: 'Durumu doğrudan arkadaşımla konuşmak yerine yönetime "yanlış tedavi uygulanıyor" diye rapor ederim.', 
+        clinicalValue: 40, 
+        aiTag: 'toxic_escalation' 
       }
     ]
   },
@@ -30,6 +40,16 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
         label: 'Bu formun benim kişisel liyakatimin ve emeğimin bir simgesi olduğunu düşünürüm. Sadece çok güvendiğim kısıtlı bir çevreyle paylaşmayı tercih ederim.', 
         clinicalValue: 60, 
         aiTag: 'competitive_gatekeeper' 
+      },
+      { 
+        label: 'Paylaşırım ama karşılığında ben de onlardan materyal veya imtiyaz beklerim. Bilgi alışverişi ticari olmalıdır.', 
+        clinicalValue: 70, 
+        aiTag: 'transactional_colleague' 
+      },
+      { 
+        label: 'Paylaşmış gibi yaparım ama formun en kritik (püf noktası) kısımlarını kendime saklarım.', 
+        clinicalValue: 40, 
+        aiTag: 'manipulative_hoarder' 
       }
     ]
   },
@@ -44,8 +64,18 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
       },
       { 
         label: 'Kendi vaka yükümün zaten ağır olduğunu belirtirim. Junior uzmanın sadece beni izleyerek (pasif gözlem) öğrenmesini isterim, aktif eğitim verecek vaktim yoktur.', 
-        clinicalValue: 50, 
+        clinicalValue: 60, 
         aiTag: 'individual_performer' 
+      },
+      { 
+        label: 'Mentorluğu kabul ederim ama ona sürekli yetersizliğini hissettirerek hiyerarşiyi dayatırım.', 
+        clinicalValue: 40, 
+        aiTag: 'hierarchical_bully' 
+      },
+      { 
+        label: '"Bunun için ekstra ücret alacak mıyım?" diye sorarım, yoksa görevi reddederim.', 
+        clinicalValue: 50, 
+        aiTag: 'mercenary_attitude' 
       }
     ]
   },
@@ -60,8 +90,18 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
       },
       { 
         label: 'Bilimsel doğruluğundan eminsem fikrimin arkasında sonuna kadar dururum. Yanlış karar uygulanıp başarısız olunduğunda "kayıtlara geçsin" tavrını takınırım.', 
-        clinicalValue: 85, 
+        clinicalValue: 80, 
         aiTag: 'intellectual_obstinacy' 
+      },
+      { 
+        label: 'Fikrim değer görmediği için motivasyonum düşer, toplantının geri kalanında sessiz kalırım ve katkı vermem.', 
+        clinicalValue: 40, 
+        aiTag: 'emotional_withdrawal' 
+      },
+      { 
+        label: 'Fikrimi hemen değiştirip çoğunluğun fikrini savunmaya başlarım, güçlünün yanında olmayı severim.', 
+        clinicalValue: 50, 
+        aiTag: 'political_chameleon' 
       }
     ]
   },
@@ -78,6 +118,16 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
         label: 'Kişiyi kenara çeker ve hatayı birlikte, sessizce düzeltmeyi teklif ederim. Durumu "öğrenme fırsatı" olarak kendi aramızda saklar, yönetime yansıtmam.', 
         clinicalValue: 70, 
         aiTag: 'protective_camaraderie' 
+      },
+      { 
+        label: 'Bana dokunmayan yılan bin yaşasın derim, başkasının hatası yüzünden başımı ağrıtmam.', 
+        clinicalValue: 40, 
+        aiTag: 'passive_negligence' 
+      },
+      { 
+        label: 'Hatayı düzeltmem veya raporlamam ama diğer arkadaşlara anlatarak kişinin itibarını zedelerim.', 
+        clinicalValue: 20, 
+        aiTag: 'toxic_gossip' 
       }
     ]
   },
@@ -86,14 +136,24 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
     text: 'Müdürünüz size tüm ekibin moralini yükseltmek için bir organizasyon yapmanızı söyledi. Liderlik tarzınız?',
     options: [
       { 
-        label: 'Kapsayıcı Liderlik; en sessiz personelin bile fikrini alarak demokratik bir plan yaparım, sürecin kendisi bile bağ kurmak için bir araçtır.', 
+        label: 'En sessiz personelin bile fikrini alarak demokratik bir plan yaparım, sürecin kendisi bile bağ kurmak için bir araçtır.', 
         clinicalValue: 100, 
         aiTag: 'democratic_facilitator' 
       },
       { 
-        label: 'Pragmatik Liderlik; hızlıca en verimli planı yapar ve görev dağılımı tebliğ ederim. Vaktimizi organizasyon tartışmalarıyla kaybetmeyiz.', 
-        clinicalValue: 80, 
+        label: 'Hızlıca en verimli planı yapar ve görev dağılımı tebliğ ederim. Vaktimizi organizasyon tartışmalarıyla kaybetmeyiz.', 
+        clinicalValue: 75, 
         aiTag: 'autocratic_efficiency' 
+      },
+      { 
+        label: 'Sadece popüler ve sesi çok çıkan grubun istediği bir etkinlik yaparım, diğerlerini önemsemem.', 
+        clinicalValue: 50, 
+        aiTag: 'populist_exclusion' 
+      },
+      { 
+        label: 'İşi başkasına yıkarım, "ben yoğunum siz halledin" diyerek sorumluluktan kaçarım.', 
+        clinicalValue: 30, 
+        aiTag: 'responsibility_avoidance' 
       }
     ]
   },
@@ -110,6 +170,16 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
         label: 'Tecrübemle fikrini nazikçe çürütürüm; vakanın "deneme tahtası" olmadığını ve sahada yılların getirdiği pratiğin kitabi bilgiden üstün olduğunu hatırlatırım.', 
         clinicalValue: 60, 
         aiTag: 'experience_hierarchy' 
+      },
+      { 
+        label: 'Topluluk içinde onu bozarak otoritemi sarsmasına izin vermem, "daha yolun başındasın" diyerek sustururum.', 
+        clinicalValue: 30, 
+        aiTag: 'ego_defense' 
+      },
+      { 
+        label: '"Kitapta öyle yazıyor olabilir ama burası gerçek dünya" diyerek alaycı bir tavırla fikri geçiştiririm.', 
+        clinicalValue: 40, 
+        aiTag: 'cynical_dismissal' 
       }
     ]
   },
@@ -118,14 +188,24 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
     text: 'Zorunlu bir ortak çalışma projesinde grubunuzdaki birinin hiç iş yapmadığını (Free-Rider) gördünüz. Tavrınız?',
     options: [
       { 
-        label: 'Sonuç odaklıyım; vaka/proje zarar görmesin diye onun açığını da kapatır, işi bitiririm. Başarıyı kişisel egolardan üstün tutarım.', 
+        label: 'Vaka/proje zarar görmesin diye onun açığını da kapatır, işi bitiririm. Başarıyı kişisel egolardan üstün tutarım.', 
         clinicalValue: 100, 
         aiTag: 'mission_focused_altruist' 
       },
       { 
-        label: 'Adalet odaklıyım; kişiyi gruptan izole eder veya yönetime raporlarım. Emek sömürüsüne göz yummak, profesyonelliğe hakarettir.', 
-        clinicalValue: 85, 
+        label: 'Kişiyi gruptan izole eder veya yönetime raporlarım. Emek sömürüsüne göz yummak, profesyonelliğe hakarettir.', 
+        clinicalValue: 80, 
         aiTag: 'justice_warrior' 
+      },
+      { 
+        label: 'Ben de işi bırakırım, proje batarsa batsın, kimse beni enayi yerine koyamaz.', 
+        clinicalValue: 30, 
+        aiTag: 'retaliatory_sabotage' 
+      },
+      { 
+        label: 'Sesimi çıkarmam, durumu idare ederim ama içten içe öfke biriktiririm.', 
+        clinicalValue: 50, 
+        aiTag: 'passive_resentment' 
       }
     ]
   },
@@ -134,14 +214,24 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
     text: 'Sizin için "İdeal Takım"ın tanımı nedir?',
     options: [
       { 
-        label: 'Herkesin kendi görev tanımını (Job Description) kusursuz yaptığı, duygusallıktan uzak, yüksek verimli profesyonel bir makine.', 
-        clinicalValue: 95, 
-        aiTag: 'functional_machinery' 
-      },
-      { 
         label: 'Birbirinin açığını kapatan, duygusal bağları kuvvetli, kriz anında kenetlenen "organik bir aile" yapısı.', 
         clinicalValue: 100, 
         aiTag: 'organic_solidarity' 
+      },
+      { 
+        label: 'Herkesin kendi görev tanımını (Job Description) kusursuz yaptığı, duygusallıktan uzak, yüksek verimli profesyonel bir makine.', 
+        clinicalValue: 90, 
+        aiTag: 'functional_machinery' 
+      },
+      { 
+        label: 'Kimsenin kimseye karışmadığı, herkesin kendi odasında özgür olduğu, hiyerarşisiz bir yapı.', 
+        clinicalValue: 60, 
+        aiTag: 'anarchic_autonomy' 
+      },
+      { 
+        label: 'Herkesin birbirini geçmeye çalıştığı, rekabetin performansı artırdığı bir yapı.', 
+        clinicalValue: 50, 
+        aiTag: 'competitive_toxicity' 
       }
     ]
   },
@@ -158,6 +248,16 @@ export const teamMentorshipQuestions: AssessmentQuestion[] = [
         label: 'Veli şikayet etmediği sürece karışmam; her uzmanın yoğurt yiyişi farklıdır, müdahale etmek dedikoduya girer.', 
         clinicalValue: 50, 
         aiTag: 'passive_observer' 
+      },
+      { 
+        label: 'Ben de velilerle samimi olmayı severim, arkadaşımı desteklerim, bu durumun müşteri sadakatini artırdığını düşünürüm.', 
+        clinicalValue: 40, 
+        aiTag: 'boundary_violator' 
+      },
+      { 
+        label: 'Bu durumu not ederim, ileride bir açık yakalamam gerekirse aleyhine kullanırım.', 
+        clinicalValue: 20, 
+        aiTag: 'machiavellian_opportunist' 
       }
     ]
   }
