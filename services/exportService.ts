@@ -2,10 +2,10 @@
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Candidate } from '../types';
+import { Candidate, ExportConfig } from '../types';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import CandidateReport, { ReportCustomizationOptions } from '../components/CandidateReport';
+import CandidateReport from '../components/CandidateReport';
 
 export const exportService = {
   async _generateMultiPagePDF(element: HTMLElement, fileName: string): Promise<Blob | void> {
@@ -46,7 +46,7 @@ export const exportService = {
     if (fileName.endsWith('.pdf')) { pdf.save(fileName); } else { return pdf.output('blob'); }
   },
 
-  async exportSingleCandidatePDF(candidate: Candidate, options: ReportCustomizationOptions): Promise<void> {
+  async exportSingleCandidatePDF(candidate: Candidate, options: ExportConfig): Promise<void> {
     const exportRoot = this._createTempContainer();
     const reactRoot = ReactDOM.createRoot(exportRoot);
     try {
@@ -69,10 +69,23 @@ export const exportService = {
 
     const exportRoot = this._createTempContainer();
     const reactRoot = ReactDOM.createRoot(exportRoot);
-    const fullOptions: ReportCustomizationOptions = {
-      showPersonalDetails: true, showAcademicBackground: true, showAIAnalysis: true,
-      showSWOT: true, showCompetencyMap: true, showInterviewNotes: true,
-      headerTitle: 'AKADEMIK KURUL: RESMI LIYAKAT DOSYASI'
+    
+    // Correctly structured ExportConfig object
+    const fullOptions: ExportConfig = {
+      title: 'AKADEMİK KURUL: RESMI LIYAKAT DOSYASI',
+      showWatermark: true,
+      signatureRequired: true,
+      theme: 'corporate',
+      sections: {
+        cover: true,
+        executiveSummary: true,
+        competencyMatrix: true,
+        behavioralDNA: true,
+        swotAnalysis: true,
+        futureProjection: true,
+        interviewGuide: true,
+        clinicalSimulation: true
+      }
     };
 
     try {
@@ -151,3 +164,4 @@ export const exportService = {
     if (document.body.contains(container)) { document.body.removeChild(container); }
   }
 };
+    

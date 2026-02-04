@@ -38,8 +38,41 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         @media print {
-            body { background: white !important; }
-            nav, aside, button, .no-print { display: none !important; }
+            body, html { 
+                background: white !important; 
+                margin: 0 !important; 
+                padding: 0 !important;
+                height: 100%; 
+                overflow: visible !important; 
+            }
+            
+            /* GİZLENECEK ELEMANLAR */
+            nav, aside, button, header, .no-print, #boot-loader { 
+                display: none !important; 
+            }
+
+            /* SAYFA YAPISI */
+            .pdf-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: always !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 297mm; /* A4 */
+                overflow: visible !important;
+                background: white !important;
+            }
+
+            /* Yazdırma aşamasında React root container'ın akışını bozma */
+            #root {
+                display: block !important;
+            }
+            
+            /* Canvas ve SVG Kalitesi */
+            svg, canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
         }
     </style>
     <script type="importmap">

@@ -88,7 +88,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
 
   // 5. AĞIRLIKLI SKOR HESABI (Weight Matrix)
   // Toplam ağırlığı dinamik hesapla (Config'den 100 gelmeyebilir, normalize et)
-  const totalConfigWeight = Object.values(weights).reduce((a, b) => a + b, 0) || 100;
+  const totalConfigWeight = (Object.values(weights) as number[]).reduce((a, b) => a + b, 0) || 100;
 
   let rawScore = (
     (clinicalScore * weights.clinicalExpertise) +
@@ -120,3 +120,4 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
     branchComplianceScore: Math.round((clinicalScore + pedagogyScore) / 2)
   };
 };
+    
