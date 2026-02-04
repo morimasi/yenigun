@@ -1,4 +1,3 @@
-
 export enum Branch {
   OzelEgitim = 'Özel Eğitim',
   DilKonusma = 'Dil ve Konuşma Terapisi',
@@ -32,7 +31,6 @@ export interface Question {
   }>;
 }
 
-// @fix: Added missing Certification interface to resolve export errors in multiple components.
 export interface Certification {
   id: string;
   label: string;
@@ -93,17 +91,19 @@ export interface AIReport {
       meritScore: number;
       burnoutRisk: number;
       competencyLevel: string;
+      strategicAdvice: string;
     }>;
   };
   deepAnalysis: Record<string, {
     score: number;
-    status: string;
+    status: 'OPTIMAL' | 'RISK' | 'BORDERLINE' | 'EXCEPTIONAL';
     reasoning: string;
-    behavioralIndicators: string[];
-    institutionalImpact: string;
+    clinicalNuances: string;
+    literatureReference: string;
+    teamImpact: string;
     pros: string[];
-    cons: string[];
     risks: string[];
+    behavioralIndicators: string[];
   }>;
   swot: {
     strengths: string[];
@@ -156,9 +156,9 @@ export interface IDP {
   focusArea: string;
   identifiedGaps: string[];
   roadmap: {
-    shortTerm: string; // 0-30 Gün
-    midTerm: string;   // 30-60 Gün
-    longTerm: string;  // 60-90 Gün
+    shortTerm: string;
+    midTerm: string;
+    longTerm: string;
   };
   recommendedTrainings: string[];
   milestones: Array<{

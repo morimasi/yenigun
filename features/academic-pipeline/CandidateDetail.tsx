@@ -16,13 +16,18 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [selectedMatrixId, setSelectedMatrixId] = useState<string>('workEthics');
   const [isExportStudioOpen, setIsExportStudioOpen] = useState(false);
   
-  const matrixSegments = [
-    { id: 'workEthics', label: 'ETİK & SINIRLAR', icon: '⚖️' },
-    { id: 'technicalExpertise', label: 'KLİNİK DERİNLİK', icon: '🧠' },
-    { id: 'pedagogicalAnalysis', label: 'PEDAGOJİ', icon: '📚' },
-    { id: 'institutionalLoyalty', label: 'SADAKAT & UYUM', icon: '🏛️' },
-    { id: 'sustainability', label: 'DİRENÇ & STRES', icon: '🔋' }
-  ];
+  const matrixSegments = useMemo(() => [
+    { id: 'workEthics', label: 'ETİK & SINIRLAR', icon: '⚖️', group: 'ETİK' },
+    { id: 'technicalExpertise', label: 'KLİNİK DERİNLİK', icon: '🧠', group: 'KLİNİK' },
+    { id: 'pedagogicalAgility', label: 'PEDAGOJİK ÇEVİKLİK', icon: '🏃', group: 'KLİNİK' },
+    { id: 'crisisResilience', label: 'KRİZ DİRENCİ', icon: '🔥', group: 'KLİNİK' },
+    { id: 'parentalDiplomacy', label: 'VELİ DİPLOMASİSİ', icon: '🤝', group: 'KLİNİK' },
+    { id: 'metacognitiveAwareness', label: 'ÖZ-DENETİM', icon: '🔍', group: 'ETİK' },
+    { id: 'clinicalDocumentation', label: 'BİLİMSEL KAYIT', icon: '📝', group: 'KLİNİK' },
+    { id: 'cognitiveAgility', label: 'BİLİŞSEL ADAPTASYON', icon: '🚀', group: 'KURUMSAL' },
+    { id: 'institutionalLoyalty', label: 'SADAKAT & UYUM', icon: '🏛️', group: 'KURUMSAL' },
+    { id: 'stabilityFactor', label: 'TÜKENMİŞLİK EŞİĞİ', icon: '🔋', group: 'KURUMSAL' }
+  ], []);
 
   const radarData = useMemo(() => {
     const da = candidate.report?.deepAnalysis;
@@ -31,7 +36,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
       subject: s.label, 
       value: (da as any)?.[s.id]?.score || 0 
     }));
-  }, [candidate.report]);
+  }, [candidate.report, matrixSegments]);
 
   const handleRunAnalysis = async () => {
     setIsAnalysing(true);
@@ -44,46 +49,110 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   };
 
   const renderMatrix = () => {
-    const data = (candidate.report?.deepAnalysis as any)?.[selectedMatrixId];
-    if (!data) return <div className="p-10 text-center opacity-30 uppercase font-black tracking-widest">Veri Analiz Edilmedi</div>;
+    const da = candidate.report?.deepAnalysis;
+    const data = (da as any)?.[selectedMatrixId];
+    if (!data) return <div className="p-10 text-center opacity-30 uppercase font-black tracking-widest">Analiz Verisi Bulunmuyor</div>;
+
+    const getStatusColor = (status: string) => {
+        switch(status) {
+            case 'OPTIMAL': return 'bg-emerald-500';
+            case 'EXCEPTIONAL': return 'bg-blue-600';
+            case 'RISK': return 'bg-rose-600';
+            case 'BORDERLINE': return 'bg-orange-500';
+            default: return 'bg-slate-400';
+        }
+    };
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in">
-        <div className="md:col-span-4 space-y-2">
-           {matrixSegments.map(s => (
-             <button 
-               key={s.id} 
-               onClick={() => setSelectedMatrixId(s.id)}
-               className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}
-             >
-                <div className="flex items-center gap-3">
-                   <span className="text-xl">{s.icon}</span>
-                   <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
-                </div>
-                <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>%{ (candidate.report?.deepAnalysis as any)?.[s.id]?.score || 0 }</span>
-             </button>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in h-full">
+        {/* SOL: KATEGORİ LİSTESİ */}
+        <div className="md:col-span-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-2 h-[600px]">
+           {['KLİNİK', 'ETİK', 'KURUMSAL'].map(groupName => (
+             <div key={groupName} className="space-y-1 mb-4">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">{groupName} BOYUTU</span>
+                {matrixSegments.filter(s => s.group === groupName).map(s => (
+                    <button 
+                    key={s.id} 
+                    onClick={() => setSelectedMatrixId(s.id)}
+                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}
+                    >
+                    <div className="flex items-center gap-3">
+                        <span className="text-xl">{s.icon}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor((da as any)?.[s.id]?.status)}`}></div>
+                        <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>%{ (da as any)?.[s.id]?.score || 0 }</span>
+                    </div>
+                    </button>
+                ))}
+             </div>
            ))}
         </div>
-        <div className="md:col-span-8 space-y-6">
-           <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-orange-600"></div>
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Klinik Gerekçelendirme</h4>
-              <p className="text-sm font-bold text-slate-800 leading-relaxed italic text-justify">"{data.reasoning}"</p>
+
+        {/* SAĞ: DERİN ANALİZ KANVASI */}
+        <div className="md:col-span-8 space-y-6 overflow-y-auto custom-scrollbar h-[600px] pr-2">
+           <div className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${getStatusColor(data.status)}`}></div>
               
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
-                    <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest block mb-4">GÜÇLÜ YÖNLER (PROS)</span>
-                    <ul className="space-y-2">
-                       {(data.pros || []).map((p:string,i:number) => <li key={i} className="text-[11px] font-bold text-emerald-800 flex gap-2"><span className="text-emerald-500">+</span> {p}</li>)}
-                    </ul>
+              <div className="flex justify-between items-start mb-8">
+                 <div>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-2">Klinik Gerekçelendirme</h4>
+                    <p className="text-xl font-black text-slate-900 uppercase tracking-tighter">{matrixSegments.find(s => s.id === selectedMatrixId)?.label}</p>
                  </div>
-                 <div className="bg-rose-50/50 p-6 rounded-3xl border border-rose-100">
-                    <span className="text-[9px] font-black text-rose-700 uppercase tracking-widest block mb-4">RİSK ANALİZİ (CONS)</span>
-                    <ul className="space-y-2">
-                       {(data.risks || []).map((r:string,i:number) => <li key={i} className="text-[11px] font-bold text-rose-800 flex gap-2"><span className="text-rose-500">!</span> {r}</li>)}
-                    </ul>
+                 <div className="text-right">
+                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest ${getStatusColor(data.status)}`}>
+                        {data.status}
+                    </span>
                  </div>
               </div>
+
+              <p className="text-base font-bold text-slate-800 leading-relaxed italic text-justify mb-10">"{data.reasoning}"</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-6">
+                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-3">KLİNİK NÜANSLAR (SATIR ARASI)</span>
+                        <p className="text-[11px] font-medium text-slate-600 leading-relaxed italic">"{data.clinicalNuances}"</p>
+                    </div>
+                    <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
+                        <span className="text-[9px] font-black text-blue-700 uppercase tracking-widest block mb-3">LİTERATÜR KORELASYONU</span>
+                        <p className="text-[11px] font-bold text-blue-900 leading-relaxed">"{data.literatureReference}"</p>
+                    </div>
+                 </div>
+
+                 <div className="space-y-6">
+                    <div className="bg-slate-900 p-6 rounded-3xl text-white shadow-xl">
+                        <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-3">EKİP ÜZERİNDEKİ ETKİSİ</span>
+                        <p className="text-[11px] font-bold text-slate-300 leading-relaxed italic">"{data.teamImpact}"</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                       <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
+                          <span className="text-[8px] font-black text-emerald-700 uppercase block mb-2">KRİTİK AVANTAJLAR</span>
+                          <ul className="space-y-1">
+                             {(data.pros || []).slice(0,3).map((p:string,i:number) => <li key={i} className="text-[10px] font-bold text-emerald-800 flex gap-2"><span>+</span> {p}</li>)}
+                          </ul>
+                       </div>
+                       <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-100">
+                          <span className="text-[8px] font-black text-rose-700 uppercase block mb-2">TESPİT EDİLEN RİSKLER</span>
+                          <ul className="space-y-1">
+                             {(data.risks || []).slice(0,3).map((r:string,i:number) => <li key={i} className="text-[10px] font-bold text-rose-800 flex gap-2"><span>!</span> {r}</li>)}
+                          </ul>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              {data.behavioralIndicators && data.behavioralIndicators.length > 0 && (
+                <div className="mt-8 pt-8 border-t border-slate-100">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">GÖZLEMLENEBİLİR MİKRO-DAVRANIŞLAR</span>
+                    <div className="flex flex-wrap gap-2">
+                        {data.behavioralIndicators.map((ind: string, i: number) => (
+                            <span key={i} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 uppercase tracking-tight"># {ind}</span>
+                        ))}
+                    </div>
+                </div>
+              )}
            </div>
         </div>
       </div>
@@ -98,7 +167,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
              <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
                    <PolarGrid stroke="#e2e8f0" />
-                   <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fontWeight: 900, fill: '#64748b' }} />
+                   <PolarAngleAxis dataKey="subject" tick={{ fontSize: 7, fontWeight: 900, fill: '#64748b' }} />
                    <Radar dataKey="value" stroke="#ea580c" fill="#ea580c" fillOpacity={0.2} strokeWidth={3} />
                    <Tooltip />
                 </RadarChart>
@@ -286,7 +355,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                <h3 className="text-2xl font-black text-slate-400 uppercase tracking-[0.4em]">Analiz Bekleniyor</h3>
             </div>
          ) : (
-            <div className="max-w-6xl mx-auto pb-20">
+            <div className="max-w-7xl mx-auto pb-20">
                {activeTab === 'matrix' && renderMatrix()}
                {activeTab === 'dna' && renderDNA()}
                {activeTab === 'predictions' && renderPredictions()}

@@ -12,30 +12,35 @@ const extractPureJSON = (text: string): any => {
     let jsonStr = lastBrace > firstBrace ? cleanText.substring(firstBrace, lastBrace + 1) : cleanText.substring(firstBrace);
     const parsed = JSON.parse(jsonStr);
     
-    // Fail-safe default objects
     if (!parsed.deepAnalysis) parsed.deepAnalysis = {};
-    if (!parsed.predictiveMetrics) parsed.predictiveMetrics = {};
-    if (!parsed.interviewGuidance) parsed.interviewGuidance = {};
-    
     return parsed;
   } catch (e) { 
-    console.error("JSON Extraction Error:", e);
+    console.error("MIA Matrix Engine Error:", e);
     return null; 
   }
 };
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
   const systemInstruction = `
-    ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Strateji Uzmanı.
-    GÖREV: Adayın 80+ soruluk mülakat verilerini 4 ana boyutta (MATRIX, DNA, PREDICTIONS, STRATEGY) derinlemesine analiz et.
+    ROL: Yeni Gün Akademi Baş Klinik Denetçi ve Stratejik İK Simülasyon Uzmanı.
+    GÖREV: Adayın liyakat matrisini "Klinik Otopsi" derinliğinde analiz et.
     
-    ANALİZ PROTOKOLLERİ:
-    1. MATRIX: Her klinik boyutu (Etik, ABA, Pedagoji vb.) "Nedensellik" ilkesiyle açıkla. Adayın hangi cevabı neden kritik bir risk veya artı değer taşıyor?
-    2. DNA: Sosyal Maskeleme skoru yüksekse (her şeye "ideal" cevap vermişse), dürüstlük endeksini düşür ve karakterindeki "pasif-agresif" veya "otorite bağımlısı" emareleri yakala.
-    3. PREDICTIONS: 24 aylık bir simülasyon yap. İlk 6 ay (Adaptasyon), 12. ay (Plato), 24. ay (Kıdem). Burnout riski nerede yükseliyor?
-    4. STRATEGY: Mülakatta adayı terletecek 5 "Taktik Soru" üret. Bu sorular adayın en zayıf bulduğun noktasına (örn: etik esneklik) odaklanmalı.
-    
-    DİL: Akademik, sert, direkt ve sonuç odaklı.
+    ANALİZ MATRİSİ KATEGORİLERİ:
+    1. workEthics: Profesyonel sınırlar ve kurumsal sadakat.
+    2. technicalExpertise: Branş hakimiyeti ve metodolojik tutarlılık.
+    3. pedagogicalAgility: Öğretim stratejilerini vaka anında değiştirme hızı.
+    4. crisisResilience: Beklenmedik krizlerdeki nöral stabilite.
+    5. parentalDiplomacy: Manipülatif veli profillerine karşı direnç.
+    6. metacognitiveAwareness: Kendi klinik hatalarını fark etme ve düzeltme yetisi.
+    7. clinicalDocumentation: Veri tutma disiplini ve bilimsel raporlama dili.
+    8. cognitiveAgility: Yeni bilimsel metodolojilere adaptasyon kapasitesi.
+    9. institutionalLoyalty: Kurum vizyonuyla uzun vadeli simetrik uyum.
+    10. stabilityFactor: Psikolojik tükenmişlik eşiği ve mesleki dayanıklılık.
+
+    HER KATEGORİ İÇİN:
+    - 'clinicalNuances': Adayın cevaplarındaki satır aralarını oku. Gizli tutumları deşifre et.
+    - 'literatureReference': Adayın yaklaşımını hangi klinik ekol (ABA, DIR, PASS vb.) destekliyor veya yalanlıyor?
+    - 'teamImpact': Bu özelliğin ekip dinamiklerine pozitif/negatif etkisi nedir?
   `;
 
   const responseSchema = {
@@ -75,22 +80,16 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
       deepAnalysis: {
         type: Type.OBJECT,
         properties: {
-          workEthics: { 
-            type: Type.OBJECT, 
-            properties: { 
-              score: { type: Type.NUMBER }, 
-              status: { type: Type.STRING },
-              reasoning: { type: Type.STRING },
-              pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-              risks: { type: Type.ARRAY, items: { type: Type.STRING } },
-              behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ["score", "status", "reasoning", "pros", "risks", "behavioralIndicators"]
-          },
-          technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-          pedagogicalAnalysis: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-          institutionalLoyalty: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
-          sustainability: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, reasoning: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } }
+          workEthics: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } }, behavioralIndicators: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["score", "status", "reasoning", "clinicalNuances", "literatureReference", "teamImpact"] },
+          technicalExpertise: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING }, pros: { type: Type.ARRAY, items: { type: Type.STRING } }, risks: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+          pedagogicalAgility: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          crisisResilience: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          parentalDiplomacy: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          metacognitiveAwareness: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          clinicalDocumentation: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          cognitiveAgility: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          institutionalLoyalty: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } },
+          stabilityFactor: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, status: { type: Type.STRING }, reasoning: { type: Type.STRING }, clinicalNuances: { type: Type.STRING }, literatureReference: { type: Type.STRING }, teamImpact: { type: Type.STRING } } }
         }
       },
       swot: {
@@ -111,12 +110,12 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
         }
       }
     },
-    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "predictiveMetrics"]
+    required: ["score", "integrityIndex", "socialMaskingScore", "summary", "predictiveMetrics", "deepAnalysis"]
   };
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ text: `ADAY ANALİZ DOSYASI: ${JSON.stringify(candidate)}` }],
+    contents: [{ text: `AKADEMİK ADAY DOSYASI: ${JSON.stringify(candidate)}` }],
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -126,6 +125,6 @@ export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfi
   });
 
   const parsed = extractPureJSON(response.text);
-  if (!parsed) throw new Error("AI_JSON_PARSE_FAILED");
+  if (!parsed) throw new Error("MIA_AI_SCHEMA_FAILURE");
   return parsed;
 };
