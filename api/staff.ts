@@ -22,15 +22,28 @@ export default async function handler(request: Request) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // 1. LIST ALL STAFF (ADMIN ONLY)
+    // 1. LIST ALL STAFF (ADMIN ONLY) - REFACTORED (VIEW BYPASS)
+    // Kritik listeleme işlemi artık View'a bağımlı değil. Doğrudan ve optimize sorgu.
     if (method === 'GET' && action === 'list_all') {
       const { rows } = await sql`
         SELECT 
-            id, name, branch, role, email, phone, experience_years, 
-            global_merit_score as last_score, 
-            report 
-        FROM view_staff_performance_matrix
-        ORDER BY last_activity_date DESC NULLS LAST
+            s.id, 
+            s.name, 
+            s.branch, 
+            s.role, 
+            s.email, 
+            s.phone, 
+            s.experience_years, 
+            s.university,
+            s.department,
+            s.report,
+            -- Performans metrikleri Subquery ile hesaplanır (GROUP BY karmaşasını önler)
+            (SELECT ROUND(AVG(COALESCE(sa.score, 0))) FROM staff_assessments sa WHERE sa.staff_id = s.id) as last_score,
+            (SELECT MAX(sa.timestamp) FROM staff_assessments sa WHERE sa.staff_id = s.id) as last_activity_date,
+            (SELECT COUNT(*) FROM staff_idp idp WHERE idp.staff_id = s.id AND idp.status = 'active') as has_active_idp
+        FROM staff s
+        WHERE s.status = 'active'
+        ORDER BY last_activity_date DESC NULLS LAST;
       `;
       return new Response(JSON.stringify(rows), { status: 200, headers });
     }
@@ -129,7 +142,7 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: false, message: 'Kimlik doğrulanamadı.' }), { status: 401, headers });
     }
 
-    // 5.1 REGISTER (ADMIN) - KRİTİK GÜNCELLEME
+    // 5.1 REGISTER (ADMIN)
     if (method === 'POST' && action === 'register') {
         const { name, email, branch, experience_years, role, password } = await request.json();
         
@@ -137,7 +150,7 @@ export default async function handler(request: Request) {
         const newId = `STF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
         
         try {
-            // Strict Insert: Çakışma varsa hata fırlat (DO NOTHING kaldırıldı)
+            // Strict Insert
             await sql`
                 INSERT INTO staff (id, name, email, password_hash, role, branch, experience_years, status)
                 VALUES (${newId}, ${name}, ${email}, ${password}, ${role || 'staff'}, ${branch}, ${experience_years || 0}, 'active')
@@ -152,7 +165,7 @@ export default async function handler(request: Request) {
                     message: 'Bu e-posta adresi sistemde zaten kayıtlı (veya arşivde).' 
                 }), { status: 409, headers });
             }
-            throw dbError; // Diğer hataları genel catch bloğuna fırlat
+            throw dbError; 
         }
     }
 

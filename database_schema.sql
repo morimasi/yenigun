@@ -1,6 +1,6 @@
 
 -- ============================================================================
--- YENİ GÜN AKADEMİ | KURUMSAL ERP VE NÖRAL MÜFREDAT VERİTABANI (v15.1 - FINAL)
+-- YENİ GÜN AKADEMİ | KURUMSAL ERP VE NÖRAL MÜFREDAT VERİTABANI (v15.2 - FINAL)
 -- ============================================================================
 -- BU ŞEMA, "NEURAL CURRICULUM STUDIO" VE "CLINICAL LAB" MODÜLLERİNİ DESTEKLER.
 -- Idempotent yapıdadır: Hata vermeden defalarca çalıştırılabilir.
