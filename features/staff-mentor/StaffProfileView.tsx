@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StaffMember, IDP, AIReport, UniversalExportData, Branch, Candidate } from '../../types';
 import ExportStudio from '../../components/shared/ExportStudio';
@@ -58,13 +57,13 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
         experienceYears: data.profile.experience_years,
         university: data.profile.university,
         department: data.profile.department,
-        answers: data.assessments.reduce((acc, curr) => ({ ...acc, ...curr.answers }), {}),
+        answers: (data.assessments || []).reduce((acc, curr) => ({ ...acc, ...curr.answers }), {}),
         timestamp: Date.now(),
         status: 'hired'
       };
 
       // @ts-ignore
-      deepSnapshot.assessmentHistory = data.assessments.map(a => ({
+      deepSnapshot.assessmentHistory = (data.assessments || []).map(a => ({
         score: a.score,
         timestamp: a.timestamp,
         battery: a.battery_id,
@@ -111,17 +110,18 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   const radarData = useMemo(() => {
     const da = data?.profile?.report?.deepAnalysis;
     if (!da) return [];
-    return Object.entries(da).map(([k, v]) => ({ 
+    // HATA FİLTRESİ: da'nın entries metoduna güvenli erişim sağla
+    return Object.entries(da || {}).map(([k, v]) => ({ 
       subject: k.replace(/([A-Z])/g, ' $1').toUpperCase(), 
-      value: (v as any).score 
+      value: (v as any)?.score || 0
     }));
   }, [data]);
 
   const learningCurve = useMemo(() => {
-     if (!data?.assessments) return [];
+     if (!data?.assessments || !Array.isArray(data.assessments)) return [];
      return data.assessments.map((a, i) => ({ 
         name: `T${i+1}`, 
-        score: a.score, 
+        score: a.score || 0, 
         date: new Date(a.timestamp).toLocaleDateString('tr-TR') 
      })).reverse();
   }, [data]);

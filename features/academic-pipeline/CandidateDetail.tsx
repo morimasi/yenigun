@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Candidate, GlobalConfig, Branch } from '../../types';
 import { generateCandidateAnalysis } from '../../geminiService';
@@ -33,7 +32,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const radarData = useMemo(() => {
     const da = candidate.report?.deepAnalysis;
     if (!da) return [];
-    return segments.map(s => ({ subject: s.label, value: da[s.key]?.score || 0 }));
+    return segments.map(s => ({ 
+      subject: s.label, 
+      value: (da as any)?.[s.key]?.score || 0 
+    }));
   }, [candidate, segments]);
 
   const handleRunAnalysis = async () => {
@@ -62,8 +64,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     setIsExportStudioOpen(true);
   };
 
-  const currentData = selectedSegment ? candidate.report?.deepAnalysis?.[selectedSegment] : null;
-  const strategicQuestions = candidate.report?.interviewGuidance?.phases?.flatMap(p => p.questions.map(q => q.text)) || [];
+  const currentData = selectedSegment ? (candidate.report?.deepAnalysis as any)?.[selectedSegment] : null;
+  const strategicQuestions = candidate.report?.interviewGuidance?.phases?.flatMap(p => p.questions?.map(q => q.text) || []) || [];
 
   return (
     <div className="flex flex-col h-full bg-white relative text-xs">
@@ -129,7 +131,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                            <button key={s.key} onClick={() => setSelectedSegment(s.key)} className={`w-full p-3 rounded-lg border text-left transition-all ${selectedSegment === s.key ? 'bg-slate-900 border-slate-900 text-white shadow-md' : 'bg-white border-slate-200 hover:border-orange-300'}`}>
                               <div className="flex justify-between items-center">
                                  <span className="text-[10px] font-bold uppercase">{s.label}</span>
-                                 <span className={`text-sm font-black ${selectedSegment === s.key ? 'text-orange-500' : 'text-slate-900'}`}>%{candidate.report?.deepAnalysis?.[s.key]?.score || 0}</span>
+                                 <span className={`text-sm font-black ${selectedSegment === s.key ? 'text-orange-500' : 'text-slate-900'}`}>%{ (candidate.report?.deepAnalysis as any)?.[s.key]?.score || 0 }</span>
                               </div>
                            </button>
                         ))}
@@ -138,18 +140,18 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         {currentData && (
                            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                               <h4 className="text-[9px] font-black text-slate-900 uppercase tracking-widest mb-2">KLİNİK GEREKÇE</h4>
-                              <p className="text-[11px] font-medium text-slate-700 leading-relaxed italic">"{currentData.reasoning}"</p>
+                              <p className="text-[11px] font-medium text-slate-700 leading-relaxed italic">"{currentData.reasoning || "Analiz verisi bulunamadı."}"</p>
                               <div className="mt-4 grid grid-cols-2 gap-4">
                                  <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                                     <h5 className="text-[8px] font-black text-emerald-700 uppercase mb-1">PROS</h5>
                                     <ul className="text-[9px] text-emerald-800 list-disc pl-3">
-                                       {currentData.pros.map((p,i) => <li key={i}>{p}</li>)}
+                                       {(currentData.pros || []).map((p:string,i:number) => <li key={i}>{p}</li>)}
                                     </ul>
                                  </div>
                                  <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
                                     <h5 className="text-[8px] font-black text-rose-700 uppercase mb-1">RISKS</h5>
                                     <ul className="text-[9px] text-rose-800 list-disc pl-3">
-                                       {currentData.risks.map((r,i) => <li key={i}>{r}</li>)}
+                                       {(currentData.risks || []).map((r:string,i:number) => <li key={i}>{r}</li>)}
                                     </ul>
                                  </div>
                               </div>
@@ -175,31 +177,31 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                         <div className="bg-slate-900 p-6 rounded-xl text-white">
                            <div className="flex justify-between items-end mb-4">
                               <div>
-                                 <p className="text-3xl font-black">%{candidate.report.integrityIndex}</p>
+                                 <p className="text-3xl font-black">%{candidate.report?.integrityIndex || 0}</p>
                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">DÜRÜSTLÜK ENDEKSİ</p>
                               </div>
                               <div className="text-right">
-                                 <p className="text-3xl font-black text-orange-500">%{candidate.report.socialMaskingScore}</p>
+                                 <p className="text-3xl font-black text-orange-500">%{candidate.report?.socialMaskingScore || 0}</p>
                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SOSYAL MASKELEME</p>
                               </div>
                            </div>
                            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                              <div className="h-full bg-orange-600" style={{ width: `${candidate.report.integrityIndex}%` }}></div>
+                              <div className="h-full bg-orange-600" style={{ width: `${candidate.report?.integrityIndex || 0}%` }}></div>
                            </div>
                         </div>
                         <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
                            <h4 className="text-[9px] font-black text-slate-900 uppercase tracking-widest mb-3">KARAKTER ANALİZİ</h4>
-                           <p className="text-[11px] font-medium text-slate-600 leading-relaxed text-justify">{candidate.report.detailedAnalysisNarrative}</p>
+                           <p className="text-[11px] font-medium text-slate-600 leading-relaxed text-justify">{candidate.report?.detailedAnalysisNarrative || "Analiz sentezleniyor..."}</p>
                         </div>
                      </div>
                   </div>
                )}
 
-               {activeTab === 'predictions' && (
+               {activeTab === 'predictions' && candidate.report?.predictiveMetrics && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      <PredictBar label="SADAKAT" value={candidate.report.predictiveMetrics.retentionProbability} color="text-emerald-600" />
                      <PredictBar label="ÖĞRENME" value={candidate.report.predictiveMetrics.learningVelocity} color="text-blue-600" />
-                     <PredictBar label="DİRENÇ" value={100 - candidate.report.predictiveMetrics.burnoutRisk} color="text-rose-600" />
+                     <PredictBar label="DİRENÇ" value={100 - (candidate.report.predictiveMetrics.burnoutRisk || 0)} color="text-rose-600" />
                      <PredictBar label="LİDERLİK" value={candidate.report.predictiveMetrics.leadershipPotential} color="text-orange-600" />
                   </div>
                )}
@@ -208,7 +210,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                   <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-md space-y-4">
                      <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-4 border-l-2 border-orange-600 pl-3">STRATEJİK SORGULAMA KILAVUZU</h4>
                      <div className="space-y-3">
-                        {strategicQuestions.map((q, i) => (
+                        {(strategicQuestions || []).map((q, i) => (
                            <div key={i} className="flex gap-4 items-start p-2 hover:bg-slate-50 rounded">
                               <span className="w-6 h-6 bg-slate-900 text-white rounded flex items-center justify-center text-[9px] font-black shrink-0">{i+1}</span>
                               <p className="text-[11px] font-bold text-slate-800 italic leading-snug">"{q}"</p>

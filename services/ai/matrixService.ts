@@ -10,7 +10,18 @@ const extractPureJSON = (text: string): any => {
     const lastBrace = cleanText.lastIndexOf('}');
     if (firstBrace === -1) return null;
     let jsonStr = lastBrace > firstBrace ? cleanText.substring(firstBrace, lastBrace + 1) : cleanText.substring(firstBrace);
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    
+    // FAIL-SAFE: Gerekli alanların varlığını kontrol et ve boş yapıyla tamamla
+    if (!parsed.deepAnalysis) {
+      parsed.deepAnalysis = {
+        workEthics: { score: 0, reasoning: "Veri sentezlenemedi." },
+        technicalExpertise: { score: 0, reasoning: "Veri sentezlenemedi." },
+        pedagogicalAnalysis: { score: 0, reasoning: "Veri sentezlenemedi." },
+        leadership: { score: 0, reasoning: "Veri sentezlenemedi." }
+      };
+    }
+    return parsed;
   } catch (e) { return null; }
 };
 
