@@ -31,7 +31,8 @@ const StaffAssessmentPortal: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [shuffledQuestions, setShuffledQuestions] = useState<AssessmentQuestion[]>([]);
 
-  // Profile State (Onboarding)
+  // Profile State (Onboarding & Editing)
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({
     name: '',
     branch: Branch.OzelEgitim,
@@ -104,7 +105,7 @@ const StaffAssessmentPortal: React.FC = () => {
       if (data.success) {
         alert("Kayıt başarılı. Şimdi giriş yapabilirsiniz.");
         setAuthMode('login');
-        setLoginForm({ email: registerForm.email, password: '' }); // Email'i taşı
+        setLoginForm({ email: registerForm.email, password: '' });
       } else {
         alert(data.message || "Kayıt başarısız.");
       }
@@ -124,7 +125,15 @@ const StaffAssessmentPortal: React.FC = () => {
         body: JSON.stringify({ ...profileData, id: staff.id })
       });
       if (res.ok) {
-        setStep('dashboard');
+        // Update local staff state with new info
+        setStaff(prev => ({ ...prev, ...profileData }));
+        
+        if (step === 'onboarding') {
+            setStep('dashboard');
+        } else {
+            setIsEditingProfile(false);
+            alert("Profil başarıyla güncellendi.");
+        }
       }
     } finally {
       setIsSaving(false);
@@ -136,10 +145,7 @@ const StaffAssessmentPortal: React.FC = () => {
   };
 
   const handleSubmitExam = async () => {
-    if (!isExamComplete) {
-      alert("Lütfen tüm soruları yanıtlayınız.");
-      return;
-    }
+    if (!isExamComplete) { alert("Lütfen tüm soruları yanıtlayınız."); return; }
     if (!confirm("DİKKAT: Bu işlem sonrası cevaplarınız 'Klinik Veri' olarak mühürlenecek ve değiştirilemeyecektir. Onaylıyor musunuz?")) return;
 
     setIsSaving(true);
@@ -177,6 +183,7 @@ const StaffAssessmentPortal: React.FC = () => {
     }
   };
 
+  // 1. AUTH SCREEN
   if (step === 'auth') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
@@ -233,105 +240,104 @@ const StaffAssessmentPortal: React.FC = () => {
             <form onSubmit={handleRegister} className="space-y-4 animate-fade-in">
                <div className="space-y-1">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">AD SOYAD</label>
-                 <input 
-                   type="text" 
-                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
-                   value={registerForm.name}
-                   onChange={e => setRegisterForm({...registerForm, name: e.target.value})}
-                 />
+                 <input type="text" className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" value={registerForm.name} onChange={e => setRegisterForm({...registerForm, name: e.target.value})} />
                </div>
                <div className="space-y-1">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">BRANŞ</label>
-                 <select 
-                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all"
-                   value={registerForm.branch}
-                   onChange={e => setRegisterForm({...registerForm, branch: e.target.value as Branch})}
-                 >
+                 <select className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" value={registerForm.branch} onChange={e => setRegisterForm({...registerForm, branch: e.target.value as Branch})}>
                     {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                  </select>
                </div>
                <div className="space-y-1">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">E-POSTA</label>
-                 <input 
-                   type="email" 
-                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
-                   value={registerForm.email}
-                   onChange={e => setRegisterForm({...registerForm, email: e.target.value})}
-                 />
+                 <input type="email" className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" value={registerForm.email} onChange={e => setRegisterForm({...registerForm, email: e.target.value})} />
                </div>
                <div className="space-y-1">
                  <label className="text-[9px] font-black text-slate-400 uppercase ml-2">ŞİFRE BELİRLE</label>
-                 <input 
-                   type="password" 
-                   className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" 
-                   value={registerForm.password}
-                   onChange={e => setRegisterForm({...registerForm, password: e.target.value})}
-                 />
+                 <input type="password" className="w-full p-4 rounded-2xl bg-slate-50 font-bold border-2 border-transparent focus:border-orange-600 outline-none transition-all" value={registerForm.password} onChange={e => setRegisterForm({...registerForm, password: e.target.value})} />
                </div>
                <button type="submit" disabled={isSaving} className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl active:scale-95">
                  {isSaving ? 'KAYDEDİLİYOR...' : 'KAYDI OLUŞTUR'}
                </button>
             </form>
           )}
-          
-          <p className="text-[9px] font-bold text-slate-300 text-center mt-8 uppercase tracking-widest">
-             Tekil Kimlik Protokolü v5.4
-          </p>
+          <p className="text-[9px] font-bold text-slate-300 text-center mt-8 uppercase tracking-widest">Tekil Kimlik Protokolü v5.4</p>
         </div>
       </div>
     );
   }
 
-  // ... (Other steps: onboarding, dashboard, exam - remain unchanged)
-  // [Kodun geri kalanı aynı şekilde devam eder, sadece Auth ekranı değişti]
-  
-  if (step === 'onboarding') {
-     return (
-        <div className="max-w-4xl mx-auto mt-10 p-10 bg-white rounded-[3rem] shadow-2xl border border-slate-100">
-           <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8 border-b border-slate-100 pb-6">Profil Aktivasyonu</h3>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">İsim Soyisim</label>
-                 <input type="text" className="w-full p-4 bg-slate-50 rounded-2xl font-bold" value={profileData.name} onChange={e => setProfileData({...profileData, name: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Branş</label>
-                 <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold" value={profileData.branch} onChange={e => setProfileData({...profileData, branch: e.target.value as Branch})}>
-                    {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
-                 </select>
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Deneyim (Yıl)</label>
-                 <input type="number" className="w-full p-4 bg-slate-50 rounded-2xl font-bold" value={profileData.experienceYears} onChange={e => setProfileData({...profileData, experienceYears: parseInt(e.target.value)})} />
-              </div>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <SearchableSelect label="Üniversite" options={TURKISH_UNIVERSITIES} value={profileData.university} onChange={v => setProfileData({...profileData, university: v})} />
-              <SearchableSelect label="Bölüm" options={TURKISH_DEPARTMENTS} value={profileData.department} onChange={v => setProfileData({...profileData, department: v})} />
-           </div>
-           <button onClick={handleProfileSave} disabled={isSaving} className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-slate-900 transition-all">
-              {isSaving ? 'KAYDEDİLİYOR...' : 'PROFİLİ MÜHÜRLE VE BAŞLA'}
-           </button>
-        </div>
-     );
-  }
+  // 2. ONBOARDING & EDIT PROFILE FORM (REUSABLE)
+  const ProfileForm = ({ isModal = false }) => (
+    <div className={isModal ? "" : "max-w-4xl mx-auto mt-10 p-10 bg-white rounded-[3rem] shadow-2xl border border-slate-100"}>
+       <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8 border-b border-slate-100 pb-6">
+          {isModal ? 'Profilini Güncelle' : 'Profil Aktivasyonu'}
+       </h3>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-2">
+             <label className="text-[10px] font-black text-slate-400 uppercase ml-2">İsim Soyisim</label>
+             <input type="text" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={profileData.name} onChange={e => setProfileData({...profileData, name: e.target.value})} />
+          </div>
+          <div className="space-y-2">
+             <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Branş</label>
+             <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={profileData.branch} onChange={e => setProfileData({...profileData, branch: e.target.value as Branch})}>
+                {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+             </select>
+          </div>
+          <div className="space-y-2">
+             <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Deneyim (Yıl)</label>
+             <input type="number" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={profileData.experienceYears} onChange={e => setProfileData({...profileData, experienceYears: parseInt(e.target.value)})} />
+          </div>
+       </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <SearchableSelect label="Üniversite" options={TURKISH_UNIVERSITIES} value={profileData.university} onChange={v => setProfileData({...profileData, university: v})} />
+          <SearchableSelect label="Bölüm" options={TURKISH_DEPARTMENTS} value={profileData.department} onChange={v => setProfileData({...profileData, department: v})} />
+       </div>
+       <div className="flex gap-4">
+          {isModal && (
+              <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest">İPTAL</button>
+          )}
+          <button onClick={handleProfileSave} disabled={isSaving} className="flex-1 py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-slate-900 transition-all">
+              {isSaving ? 'KAYDEDİLİYOR...' : (isModal ? 'GÜNCELLE' : 'PROFİLİ MÜHÜRLE VE BAŞLA')}
+          </button>
+       </div>
+    </div>
+  );
 
+  if (step === 'onboarding') return <ProfileForm />;
+
+  // 3. DASHBOARD
   if (step === 'dashboard') {
     return (
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+         {/* EDIT PROFILE MODAL */}
+         {isEditingProfile && (
+            <div className="fixed inset-0 z-[2000] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-6">
+                <div className="w-full max-w-2xl bg-white rounded-[3rem] p-10 animate-scale-in">
+                    <ProfileForm isModal={true} />
+                </div>
+            </div>
+         )}
+
          {/* HEADER */}
          <div className="flex flex-col md:flex-row justify-between items-end bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
             <div className="relative z-10">
                <div className="flex items-center gap-4 mb-4">
-                  <span className="px-4 py-1.5 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10">PERSONEL ID: {staff.id}</span>
+                  <span className="px-4 py-1.5 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10">PERSONEL ID: {staff.id.substring(0,8)}</span>
                   <span className="px-4 py-1.5 bg-orange-600 rounded-lg text-[10px] font-black uppercase tracking-widest">AKTİF</span>
                </div>
                <h2 className="text-5xl font-black tracking-tighter uppercase leading-none">{staff.name}</h2>
                <p className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-4">{staff.branch} • {staff.experience_years} YIL DENEYİM</p>
             </div>
-            <button onClick={() => setStep('auth')} className="relative z-10 px-8 py-4 bg-white/5 hover:bg-rose-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10">
-               GÜVENLİ ÇIKIŞ
-            </button>
+            <div className="relative z-10 flex gap-4">
+                <button onClick={() => setIsEditingProfile(true)} className="px-8 py-4 bg-white/10 hover:bg-white hover:text-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2">
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                   PROFİLİ DÜZENLE
+                </button>
+                <button onClick={() => setStep('auth')} className="px-8 py-4 bg-white/5 hover:bg-rose-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10">
+                   GÜVENLİ ÇIKIŞ
+                </button>
+            </div>
             <div className="absolute -right-20 -bottom-40 w-96 h-96 bg-orange-600/20 rounded-full blur-[100px]"></div>
          </div>
 
@@ -384,7 +390,7 @@ const StaffAssessmentPortal: React.FC = () => {
     );
   }
 
-  // --- EXAM MODE (PANORAMIC VIEW) ---
+  // 4. EXAM MODE
   if (step === 'exam' && activeModule && shuffledQuestions.length > 0) {
     return (
       <div className="fixed inset-0 z-[200] bg-slate-50 overflow-y-auto custom-scrollbar">
