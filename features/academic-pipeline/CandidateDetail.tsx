@@ -19,7 +19,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   const [isExportStudioOpen, setIsExportStudioOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   
-  // EDIT MODE STATE
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: candidate.name,
@@ -29,7 +28,6 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     department: candidate.department
   });
 
-  // ... (Matrix Segments definition remains same)
   const matrixSegments = useMemo(() => [
     { id: 'technicalExpertise', label: 'KLİNİK DERİNLİK', icon: '🧠', group: 'KLİNİK', deepDesc: 'Kanıta dayalı yöntemlerin (ABA, Floortime, ETEÇOM) uygulama sadakati ve vaka formülasyon yeteneği.', clinicalFocus: 'Metodolojik hakimiyet, veri analizi, program hazırlama kapasitesi.' },
     { id: 'pedagogicalAnalysis', label: 'PEDAGOJİK ÇEVİKLİK', icon: '🏃', group: 'KLİNİK', deepDesc: 'Anlık gelişen durumlara göre öğretim stratejisini esnetebilme ve B planına geçebilme hızı.', clinicalFocus: 'Kognitif esneklik, öğretimsel adaptasyon, fırsat öğretimi.' },
@@ -68,21 +66,15 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         experienceYears: editForm.experienceYears,
         university: editForm.university,
         department: editForm.department,
-        timestamp: Date.now() // Timestmap güncelle ki sıralamada yukarı çıksın
+        timestamp: Date.now()
     });
     setIsEditing(false);
   };
 
-  const handlePermanentDelete = () => {
-    if (isDeleteConfirmOpen) { onDelete(); } else { setIsDeleteConfirmOpen(true); setTimeout(() => setIsDeleteConfirmOpen(false), 5000); }
-  };
-
-  // ... (renderMatrix function remains similar, skipping for brevity but logic is preserved in component flow)
   const renderMatrix = () => {
     const da = candidate.report?.deepAnalysis;
     const data = (da as any)?.[selectedMatrixId];
     
-    // ... (helper functions inside)
     const getStatusColor = (status: string) => {
         switch(status) {
             case 'OPTIMAL': return 'bg-emerald-500';
@@ -94,51 +86,59 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in h-full">
-            <div className="md:col-span-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-2 h-[650px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in h-full">
+            <div className="lg:col-span-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar lg:pr-2 lg:h-[calc(100vh-20rem)]">
                 {['KLİNİK', 'ETİK', 'KURUMSAL'].map(groupName => (
                     <div key={groupName} className="space-y-1 mb-4">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">{groupName} BOYUTU</span>
-                        {matrixSegments.filter(s => s.group === groupName).map(s => (
-                            <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}>
-                                <div className="flex items-center justify-between w-full">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                           {matrixSegments.filter(s => s.group === groupName).map(s => (
+                              <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300 text-slate-600'}`}>
+                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-xl">{s.icon}</span>
-                                        <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
+                                          <span className="text-xl">{s.icon}</span>
+                                          <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {da?.[s.id] && <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(da[s.id]?.status)}`}></div>}
-                                        <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>{da?.[s.id] ? `%${da[s.id].score}` : '-'}</span>
+                                          {da?.[s.id] && <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(da[s.id]?.status)}`}></div>}
+                                          <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>{da?.[s.id] ? `%${da[s.id].score}` : '-'}</span>
                                     </div>
-                                </div>
-                            </button>
-                        ))}
+                                 </div>
+                              </button>
+                           ))}
+                        </div>
                     </div>
                 ))}
             </div>
-            <div className="md:col-span-8 space-y-6 overflow-y-auto custom-scrollbar h-[650px] pr-2">
+            <div className="lg:col-span-8 space-y-6 lg:overflow-y-auto custom-scrollbar lg:h-[calc(100vh-20rem)] lg:pr-2">
                 {!data ? (
-                    <div className="bg-white p-20 rounded-[4rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center text-center opacity-40">
-                        <p className="text-sm font-black uppercase tracking-widest text-slate-400">Bu boyut için nöral sentez henüz tamamlanmadı.</p>
+                    <div className="bg-white p-12 rounded-[2.5rem] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center opacity-40">
+                        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Bu boyut için nöral sentez henüz tamamlanmadı.</p>
                     </div>
                 ) : (
-                    <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                    <div className="bg-white p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden group">
                         <div className={`absolute top-0 left-0 w-1.5 h-full ${getStatusColor(data.status)}`}></div>
-                        <div className="flex justify-between items-start mb-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
                             <div>
                                 <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.5em] mb-2">KLİNİK OTOPSİ RAPORU</h4>
-                                <p className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{activeSegmentDef?.label}</p>
-                                <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-lg">{activeSegmentDef?.clinicalFocus}</p>
+                                <p className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{activeSegmentDef?.label}</p>
+                                <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-lg leading-relaxed">{activeSegmentDef?.clinicalFocus}</p>
                             </div>
-                            <span className={`px-5 py-2 rounded-xl text-[10px] font-black text-white uppercase tracking-widest shadow-lg ${getStatusColor(data.status)}`}>{data.status}</span>
+                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black text-white uppercase tracking-widest shadow-lg ${getStatusColor(data.status)}`}>{data.status}</span>
                         </div>
-                        <div className="space-y-10">
-                            <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 relative">
-                                <p className="text-lg font-bold text-slate-800 leading-relaxed text-justify italic">"{data.reasoning}"</p>
+                        <div className="space-y-6 md:space-y-10">
+                            <div className="bg-slate-50 p-6 md:p-10 rounded-2xl md:rounded-[3rem] border border-slate-100 relative">
+                                <p className="text-base md:text-lg font-bold text-slate-800 leading-relaxed text-justify italic">"{data.reasoning}"</p>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="bg-blue-50/50 p-8 rounded-[2.5rem] border border-blue-100"><p className="text-[11px] font-bold text-blue-900 leading-relaxed italic">"{data.clinicalNuances}"</p></div>
-                                <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100"><p className="text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                                <div className="bg-blue-50/50 p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-blue-100">
+                                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-2">KLİNİK NÜANS</span>
+                                   <p className="text-xs md:text-[11px] font-bold text-blue-900 leading-relaxed italic">"{data.clinicalNuances}"</p>
+                                </div>
+                                <div className="bg-emerald-50/50 p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-emerald-100">
+                                   <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest block mb-2">LİTERATÜR ATFI</span>
+                                   <p className="text-xs md:text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -150,8 +150,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const renderDNA = () => (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-scale-in">
-       <div className="lg:col-span-5 bg-white p-10 rounded-[4rem] border border-slate-200 shadow-sm flex flex-col items-center relative overflow-hidden">
-          <div className="w-full h-[400px] relative z-10">
+       <div className="lg:col-span-5 bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[4rem] border border-slate-200 shadow-sm flex flex-col items-center relative overflow-hidden h-[400px] md:h-auto">
+          <div className="w-full h-full relative z-10">
              <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
                    <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -163,57 +163,14 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           </div>
        </div>
        <div className="lg:col-span-7 space-y-6">
-          <div className="bg-slate-900 p-10 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
-             <div className="flex justify-between items-end mb-10 relative z-10">
-                <div><p className="text-6xl font-black">%{candidate.report?.integrityIndex || 0}</p><p className="text-[11px] font-black text-orange-500 uppercase tracking-widest mt-4">Dürüstlük Endeksi</p></div>
-                <div className="text-right"><p className="text-6xl font-black">%{candidate.report?.socialMaskingScore || 0}</p><p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mt-4">Sosyal Maskeleme</p></div>
+          <div className="bg-slate-900 p-8 md:p-10 rounded-2xl md:rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
+             <div className="flex flex-col md:flex-row justify-between items-end md:items-end mb-8 relative z-10 gap-6">
+                <div><p className="text-5xl md:text-6xl font-black">%{candidate.report?.integrityIndex || 0}</p><p className="text-[10px] md:text-[11px] font-black text-orange-500 uppercase tracking-widest mt-2 md:mt-4">Dürüstlük Endeksi</p></div>
+                <div className="text-left md:text-right"><p className="text-5xl md:text-6xl font-black">%{candidate.report?.socialMaskingScore || 0}</p><p className="text-[10px] md:text-[11px] font-black text-slate-500 uppercase tracking-widest mt-2 md:mt-4">Sosyal Maskeleme</p></div>
              </div>
              <div className="h-2 bg-white/10 rounded-full overflow-hidden relative z-10 border border-white/5"><div className="h-full bg-gradient-to-r from-rose-500 via-orange-500 to-emerald-500" style={{ width: `${candidate.report?.integrityIndex}%` }}></div></div>
           </div>
-          <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-sm"><p className="text-xl font-bold text-slate-700 leading-relaxed text-justify italic">"{candidate.report?.detailedAnalysisNarrative || "Nöral sentez bekleniyor..."}"</p></div>
-       </div>
-    </div>
-  );
-
-  const renderPredictions = () => {
-    const trajectory = candidate.report?.predictiveMetrics?.trajectory || [];
-    return (
-      <div className="space-y-6 animate-slide-up">
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PredictBar label="SADAKAT" value={candidate.report?.predictiveMetrics?.retentionProbability || 0} color="text-emerald-600" />
-            <PredictBar label="ÖĞRENME" value={candidate.report?.predictiveMetrics?.learningVelocity || 0} color="text-blue-600" />
-            <PredictBar label="DİRENÇ" value={100 - (candidate.report?.predictiveMetrics?.burnoutRisk || 0)} color="text-rose-600" />
-            <PredictBar label="LİDERLİK" value={candidate.report?.predictiveMetrics?.leadershipPotential || 0} color="text-orange-600" />
-         </div>
-         <div className="bg-white p-12 rounded-[5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="h-[350px] w-full relative z-10">
-               <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trajectory}>
-                     <defs><linearGradient id="colorScore" x1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ea580c" stopOpacity={0.15}/><stop offset="95%" stopColor="#ea580c" stopOpacity={0}/></linearGradient></defs>
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} />
-                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} domain={[0, 100]} />
-                     <Tooltip contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 'bold' }} />
-                     <Area type="monotone" dataKey="meritScore" stroke="#ea580c" strokeWidth={5} fillOpacity={1} fill="url(#colorScore)" />
-                  </AreaChart>
-               </ResponsiveContainer>
-            </div>
-         </div>
-      </div>
-    );
-  };
-
-  const renderStrategy = () => (
-    <div className="space-y-6 animate-fade-in">
-       <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-md">
-          <div className="space-y-6">
-             {candidate.report?.interviewGuidance?.strategicQuestions?.map((q, i) => (
-                <div key={i} className="flex gap-8 items-start group p-8 hover:bg-slate-50 rounded-[3rem] transition-all border border-transparent hover:border-slate-100">
-                   <div className="w-14 h-14 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center font-black text-xl shrink-0 shadow-2xl">{i + 1}</div>
-                   <div className="space-y-3"><p className="text-xl font-bold text-slate-800 leading-tight italic">"{q}"</p></div>
-                </div>
-             ))}
-          </div>
+          <div className="bg-white p-8 md:p-12 rounded-2xl md:rounded-[4rem] border border-slate-200 shadow-sm"><p className="text-base md:text-xl font-bold text-slate-700 leading-relaxed text-justify italic">"{candidate.report?.detailedAnalysisNarrative || "Nöral sentez bekleniyor..."}"</p></div>
        </div>
     </div>
   );
@@ -221,120 +178,107 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] relative">
       
-      {/* EDIT MODAL */}
-      {isEditing && (
-        <div className="fixed inset-0 z-[2000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-8">
-            <div className="bg-white w-full max-w-2xl rounded-[3rem] p-12 shadow-2xl animate-scale-in">
-                <div className="flex justify-between items-center mb-10">
-                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Profil Düzenle</h3>
-                    <div className="px-4 py-2 bg-orange-100 text-orange-700 rounded-xl text-[10px] font-black uppercase tracking-widest">ID: {candidate.id.substring(0,8)}</div>
-                </div>
-                <div className="space-y-6">
-                    <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Ad Soyad</label>
-                        <input type="text" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Branş</label>
-                            {/* @fix: Cast e.target.value as Branch to satisfy enum type check. */}
-                            <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value as Branch})}>
-                                {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Deneyim (Yıl)</label>
-                            <input type="number" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.experienceYears} onChange={e => setEditForm({...editForm, experienceYears: parseInt(e.target.value)})} />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Üniversite</label>
-                        <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 text-sm" value={editForm.university} onChange={e => setEditForm({...editForm, university: e.target.value})}>
-                            <option value="">Seçiniz</option>
-                            {TURKISH_UNIVERSITIES.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex gap-4 pt-6">
-                        <button onClick={() => setIsEditing(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase">İPTAL</button>
-                        <button onClick={handleSaveEdit} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-orange-600 transition-all">DEĞİŞİKLİKLERİ KAYDET</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )}
-
-      {/* EXPORT OVERLAY */}
-      {isExportStudioOpen && candidate.report && (
-        <ExportStudio 
-          onClose={() => setIsExportStudioOpen(false)}
-          data={{ type: 'CANDIDATE_REPORT', entityName: candidate.name, referenceId: candidate.id.toUpperCase(), payload: candidate }}
-        >
-          {/* @fix: Removed explicit CandidateReport child to use ExportStudio's robust internal rendering which includes studio config options. */}
-        </ExportStudio>
-      )}
-
-      {/* HEADER COCKPIT */}
-      <div className="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white shrink-0 shadow-sm z-10">
-         <div className="flex items-center gap-6">
-            <div className={`w-4 h-4 rounded-full ${candidate.status === 'interview_scheduled' ? 'bg-blue-500' : 'bg-orange-500'} animate-pulse shadow-[0_0_15px_rgba(234,88,12,0.4)]`}></div>
-            <div>
+      {/* HEADER COCKPIT - RESPONSIVE OPTIMIZED */}
+      <div className="bg-white border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between px-6 md:px-8 py-4 md:py-0 md:h-20 shrink-0 shadow-sm z-10 gap-4">
+         <div className="flex items-center gap-4 md:gap-6">
+            <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full ${candidate.status === 'interview_scheduled' ? 'bg-blue-500' : 'bg-orange-500'} animate-pulse shrink-0`}></div>
+            <div className="min-w-0">
                <div className="flex items-center gap-3">
-                   <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">{candidate.name}</h2>
-                   <button onClick={() => setIsEditing(true)} className="p-1.5 bg-slate-100 hover:bg-orange-100 text-slate-400 hover:text-orange-600 rounded-lg transition-all" title="Profili Düzenle">
-                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                   <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none truncate">{candidate.name}</h2>
+                   <button onClick={() => setIsEditing(true)} className="p-2 bg-slate-50 hover:bg-orange-100 text-slate-400 hover:text-orange-600 rounded-lg transition-all shrink-0">
+                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                    </button>
                </div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">{candidate.branch} • {candidate.experienceYears} YIL SAHA TECRÜBESİ</p>
+               <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5 truncate">{candidate.branch}</p>
             </div>
          </div>
 
-         <div className="flex items-center gap-4">
-            {candidate.report && (
-               <button onClick={() => setIsExportStudioOpen(true)} className="px-6 py-3 bg-slate-100 text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm">DOSYAYI YAYINLA</button>
-            )}
-            
-            <button 
-              onClick={handlePermanentDelete} 
-              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md ${isDeleteConfirmOpen ? 'bg-rose-600 text-white animate-pulse' : 'bg-rose-50 text-rose-600 hover:bg-rose-100'}`}
-            >
-              {isDeleteConfirmOpen ? 'EMİN MİSİNİZ? (TIKLA)' : 'KAYDI İMHA ET'}
-            </button>
-
-            <div className="flex bg-slate-50 p-1.5 rounded-[1.2rem] border border-slate-200 shadow-inner">
-               <button onClick={() => setActiveTab('matrix')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-700'}`}>MATRIX</button>
-               <button onClick={() => setActiveTab('dna')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'dna' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-700'}`}>DNA</button>
-               <button onClick={() => setActiveTab('predictions')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'predictions' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-700'}`}>PREDICTIONS</button>
-               <button onClick={() => setActiveTab('strategy')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'strategy' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-700'}`}>STRATEGY</button>
+         <div className="flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+            <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200 shadow-inner shrink-0">
+               {['matrix', 'dna', 'predictions', 'strategy'].map(tab => (
+                 <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-4 py-2 md:px-6 md:py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400'}`}>
+                   {tab === 'predictions' ? 'GELECEK' : tab === 'strategy' ? 'SORULAR' : tab === 'matrix' ? 'MATRİS' : 'MİZAÇ'}
+                 </button>
+               ))}
             </div>
             <button 
                onClick={handleRunAnalysis} 
                disabled={isAnalysing}
-               className={`px-10 py-3 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-2xl active:scale-95 ${isAnalysing ? 'opacity-50' : ''}`}
+               className={`shrink-0 px-6 py-2.5 md:px-10 md:py-3 bg-slate-950 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-[0.1em] hover:bg-orange-600 transition-all ${isAnalysing ? 'opacity-50' : ''}`}
             >
-               {isAnalysing ? 'İŞLENİYOR...' : 'YENİDEN ANALİZ ET'}
+               {isAnalysing ? '...' : 'ANALİZ'}
             </button>
          </div>
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto p-12 bg-[#F8FAFC]">
+      <div className="flex-1 overflow-y-auto p-4 md:p-12 bg-[#F8FAFC] custom-scrollbar">
          {!candidate.report ? (
-            <div className="h-full flex flex-col items-center justify-center opacity-30 text-center">
-               <div className="w-40 h-40 bg-slate-100 rounded-[4rem] flex items-center justify-center mb-10 border-4 border-dashed border-slate-200">
-                  <svg className="w-20 h-20 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <div className="h-full flex flex-col items-center justify-center opacity-30 text-center p-6">
+               <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-100 rounded-[3rem] md:rounded-[4rem] flex items-center justify-center mb-10 border-4 border-dashed border-slate-200">
+                  <svg className="w-16 h-16 md:w-20 md:h-20 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                </div>
-               <h3 className="text-3xl font-black text-slate-400 uppercase tracking-[0.5em]">Liyakat Analizi Bekleniyor</h3>
-               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-4">Adayın verilerini işlemek için sağ üstteki butonu kullanın.</p>
+               <h3 className="text-2xl md:text-3xl font-black text-slate-400 uppercase tracking-[0.5em]">Liyakat Bekleniyor</h3>
+               <button onClick={handleRunAnalysis} className="mt-8 px-10 py-4 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-orange-600 transition-all">Sistemi Başlat</button>
             </div>
          ) : (
-            <div className="max-w-[1600px] mx-auto pb-32">
+            <div className="max-w-[1600px] mx-auto pb-20">
                {activeTab === 'matrix' && renderMatrix()}
                {activeTab === 'dna' && renderDNA()}
-               {activeTab === 'predictions' && renderPredictions()}
-               {activeTab === 'strategy' && renderStrategy()}
+               {activeTab === 'predictions' && (
+                  <div className="space-y-6 animate-slide-up">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <PredictBar label="SADAKAT" value={candidate.report?.predictiveMetrics?.retentionProbability || 0} color="text-emerald-600" />
+                        <PredictBar label="ÖĞRENME" value={candidate.report?.predictiveMetrics?.learningVelocity || 0} color="text-blue-600" />
+                        <PredictBar label="DİRENÇ" value={100 - (candidate.report?.predictiveMetrics?.burnoutRisk || 0)} color="text-rose-600" />
+                        <PredictBar label="LİDERLİK" value={candidate.report?.predictiveMetrics?.leadershipPotential || 0} color="text-orange-600" />
+                    </div>
+                    <div className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[5rem] border border-slate-200 shadow-sm">
+                        <div className="h-[300px] md:h-[350px] w-full">
+                           <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={candidate.report?.predictiveMetrics?.trajectory || []}>
+                                 <XAxis dataKey="month" tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} hide={true} />
+                                 <YAxis domain={[0, 100]} hide={true} />
+                                 <Area type="monotone" dataKey="meritScore" stroke="#ea580c" strokeWidth={5} fill="#ea580c20" />
+                              </AreaChart>
+                           </ResponsiveContainer>
+                        </div>
+                    </div>
+                  </div>
+               )}
+               {activeTab === 'strategy' && (
+                  <div className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[4rem] border border-slate-200 shadow-md space-y-4">
+                     {candidate.report?.interviewGuidance?.strategicQuestions?.map((q, i) => (
+                        <div key={i} className="flex gap-4 md:gap-8 items-start p-4 md:p-8 hover:bg-slate-50 rounded-2xl transition-all border-b border-slate-50 last:border-0">
+                           <div className="w-10 h-10 md:w-14 md:h-14 bg-slate-950 text-white rounded-xl md:rounded-[1.5rem] flex items-center justify-center font-black text-sm md:text-xl shrink-0 shadow-lg">{i + 1}</div>
+                           <p className="text-base md:text-xl font-bold text-slate-800 leading-tight italic">"{q}"</p>
+                        </div>
+                     ))}
+                  </div>
+               )}
             </div>
          )}
       </div>
+
+      {/* EDIT MODAL - STYLED FOR MOBILE */}
+      {isEditing && (
+        <div className="fixed inset-0 z-[2000] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 md:p-10 shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-8">Kimlik Güncelle</h3>
+                <div className="space-y-5">
+                    <input type="text" className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-transparent focus:border-orange-500 outline-none transition-all" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} placeholder="Ad Soyad" />
+                    <select className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-transparent focus:border-orange-500 outline-none" value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value as Branch})}>
+                        {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <input type="number" className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-transparent focus:border-orange-500 outline-none" value={editForm.experienceYears} onChange={e => setEditForm({...editForm, experienceYears: parseInt(e.target.value)})} placeholder="Deneyim" />
+                    <div className="flex gap-3 pt-4">
+                        <button onClick={() => setIsEditing(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest">İptal</button>
+                        <button onClick={handleSaveEdit} className="flex-1 py-4 bg-slate-950 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-orange-600 transition-all">Mühürle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };
