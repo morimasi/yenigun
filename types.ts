@@ -1,5 +1,4 @@
 
-
 export type SlideLayout = 
   | 'cover'           // Başlık ve Büyük Görsel
   | 'section_header'  // Bölüm Geçişi (Renkli)
@@ -29,7 +28,7 @@ export interface PresentationTheme {
   backgroundColor: string;
   textColor: string;
   accentColor: string;
-  backgroundImageStyle: string; // CSS Filter / Style
+  backgroundImageStyle: string;
 }
 
 export interface TrainingSlide {
@@ -42,15 +41,13 @@ export interface TrainingSlide {
   visualPrompt?: string;  
   imageKeyword?: string;  
   generatedImageUrl?: string; 
-  animation?: 'fade' | 'slide_up' | 'zoom_in' | 'none';
+  type?: 'title' | 'content';
   interactiveElement?: {
     type: 'quiz' | 'reflection' | 'poll';
     question: string;
     options?: string[];
     correctAnswer?: string;
   };
-  // @fix: Added type property for presentation slide discrimination (title vs content)
-  type?: 'title' | 'content';
 }
 
 export interface PresentationConfig {
@@ -98,7 +95,6 @@ export interface StaffMember {
   id: string;
   name: string;
   email: string;
-  // @fix: Added phone property to StaffMember interface
   phone?: string;
   role: StaffRole;
   branch: Branch;
@@ -109,6 +105,7 @@ export interface StaffMember {
   status?: string;
   report?: any;
   last_score?: number;
+  all_trainings?: string[];
 }
 
 export interface TrainingUnit {
@@ -121,7 +118,6 @@ export interface TrainingUnit {
   aiRationale?: string; 
   successCriteria?: string; 
   status: 'pending' | 'in_progress' | 'completed';
-  // @fix: Added resources property to TrainingUnit interface
   resources?: { title: string; type: string }[];
 }
 
@@ -156,33 +152,21 @@ export interface IDP {
   status: 'draft' | 'published' | 'archived';
 }
 
-// --- MISSING TYPES ADDED BELOW ---
+// @fix: Exported additional types and interfaces required by components and services.
 
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli';
 
-export interface Question {
-  id: string;
-  text: string;
-  category: string;
-  type: 'radio' | 'text';
-  options?: string[];
-  weightedOptions?: {
-    label: string;
-    weights: Record<string, number>;
-    analysisInsight?: string;
-    branchOverrides?: Record<string, Record<string, number>>;
-  }[];
-  requiredBranch?: Branch[];
-}
-
-export interface Certification {
-  id: string;
-  label: string;
-  description: string;
-  category: string;
-  verificationQuestions: Question[];
-}
+export type ArchiveCategory = 
+  | 'TALENT_POOL' 
+  | 'FUTURE_REFERENCE' 
+  | 'DISQUALIFIED' 
+  | 'BLACK_LIST' 
+  | 'HIRED_CONTRACTED' 
+  | 'PRESENTATION_LIBRARY'
+  | 'STAFF_HISTORY'
+  | 'PERFORMANCE_SNAPSHOT'
+  | 'TALENT_POOL_ANALYTICS';
 
 export interface AIReport {
   score: number;
@@ -197,9 +181,27 @@ export interface AIReport {
     learningVelocity: number;
     leadershipPotential: number;
     evolutionPath: string;
-    trajectory?: { month: number; meritScore: number }[];
+    trajectory?: {
+      month: number;
+      meritScore: number;
+      burnoutRisk: number;
+      competencyLevel: string;
+      strategicAdvice: string;
+    }[];
   };
-  deepAnalysis: Record<string, any>;
+  deepAnalysis: Record<string, {
+    score: number;
+    status: string;
+    reasoning: string;
+    behavioralIndicators: string[];
+    institutionalImpact?: string;
+    teamImpact?: string;
+    clinicalNuances?: string;
+    literatureReference?: string;
+    pros: string[];
+    cons?: string[];
+    risks: string[];
+  }>;
   swot: {
     strengths: string[];
     weaknesses: string[];
@@ -210,25 +212,56 @@ export interface AIReport {
     strategicQuestions: string[];
     criticalObservations: string[];
     simulationTasks: string[];
-    phases?: { title: string; questions: { text: string }[] }[];
+    phases?: {
+      questions: { text: string }[];
+    }[];
   };
-  presentationSlides?: any[];
+  presentationSlides?: TrainingSlide[];
 }
 
-export interface ExportConfig {
-  title: string;
-  showWatermark: boolean;
-  signatureRequired: boolean;
-  theme: VisualStyle;
-  sections: {
-    cover: boolean;
-    executiveSummary: boolean;
-    competencyMatrix: boolean;
-    behavioralDNA: boolean;
-    swotAnalysis: boolean;
-    futureProjection: boolean;
-    interviewGuide: boolean;
-    clinicalSimulation: boolean;
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number;
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
+  fitScore: number;
+  riskFlags: string[];
+  branchComplianceScore: number;
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  age: number;
+  gender: Gender;
+  maritalStatus?: MaritalStatus;
+  branch: Branch;
+  university: string;
+  department: string;
+  experienceYears: number;
+  previousInstitutions?: string;
+  allTrainings: string[];
+  cvData?: {
+    base64: string;
+    mimeType: string;
+    fileName: string;
+  };
+  answers: Record<string, string | string[]>;
+  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
+  report?: AIReport;
+  algoReport?: AlgorithmicReport;
+  timestamp: number;
+  archiveCategory?: ArchiveCategory;
+  archiveNote?: string;
+  adminNotes?: string;
+  reminderNote?: string;
+  interviewSchedule?: {
+    date: string;
+    time: string;
   };
 }
 
@@ -269,72 +302,11 @@ export interface GlobalConfig {
   advancedAnalytics?: any;
 }
 
-export interface AlgorithmicReport {
-  overallScore: number;
-  reliabilityIndex: number;
-  ethicsScore: number;
-  experienceWeight: number;
-  retentionScore: number;
-  burnoutResistance: number;
-  fitScore: number;
-  riskFlags: string[];
-  branchComplianceScore: number;
-}
-
-export type ArchiveCategory = 
-  | 'TALENT_POOL' 
-  | 'FUTURE_REFERENCE' 
-  | 'DISQUALIFIED' 
-  | 'BLACK_LIST' 
-  | 'HIRED_CONTRACTED' 
-  | 'PRESENTATION_LIBRARY'
-  | 'STAFF_HISTORY'
-  | 'PERFORMANCE_SNAPSHOT'
-  | 'TALENT_POOL_ANALYTICS';
-
-export interface Candidate {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  age: number;
-  gender: Gender;
-  maritalStatus?: MaritalStatus;
-  branch: Branch;
-  university: string;
-  department: string;
-  experienceYears: number;
-  previousInstitutions?: string;
-  allTrainings: string[];
-  cvData?: {
-    base64: string;
-    mimeType: string;
-    fileName: string;
-  };
-  answers: Record<string, string | string[]>;
-  status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
-  report?: AIReport;
-  algoReport?: AlgorithmicReport;
-  timestamp: number;
-  archiveCategory?: ArchiveCategory;
-  archiveNote?: string;
-  admin_notes?: string;
-  reminder_note?: string;
-  interview_schedule?: {
-    date: string;
-    time: string;
-  };
-  interviewSchedule?: { // for compatibility
-    date: string;
-    time: string;
-  };
-}
-
 export enum ClinicalTestType {
   DMP_STRESS = 'DMP_STRESS',
   ETHICAL_DILEMMA = 'ETHICAL_DILEMMA',
-  PARENT_MANIPULATION = 'PARENT_MANIPULATION',
-  CLINICAL_EMERGENCY = 'CLINICAL_EMERGENCY'
+  PARENT_CONFRONTATION = 'PARENT_CONFRONTATION',
+  CLINICAL_ADAPTATION = 'CLINICAL_ADAPTATION'
 }
 
 export interface SimulationResult {
@@ -382,7 +354,7 @@ export interface AssessmentBattery {
   questions: AssessmentQuestion[];
 }
 
-export type CommChannel = 'email' | 'whatsapp' | 'sms';
+export type CommChannel = 'email' | 'sms' | 'whatsapp';
 
 export interface CommTemplate {
   id: string;
@@ -397,7 +369,7 @@ export interface NotificationLog {
   targetId: string;
   targetName: string;
   channel: CommChannel;
-  status: 'sent' | 'failed';
+  status: 'sent' | 'failed' | 'pending';
   timestamp: number;
   errorMessage?: string;
 }
@@ -406,4 +378,45 @@ export interface FormStep {
   id: string;
   title: string;
   description: string;
+}
+
+export interface Question {
+  id: string;
+  category: string;
+  type: 'radio' | 'checkbox' | 'text';
+  text: string;
+  options?: string[];
+  requiredBranch?: Branch[];
+  weightedOptions?: {
+    label: string;
+    weights: Record<string, number>;
+    analysisInsight?: string;
+    branchOverrides?: Record<string, Record<string, number>>;
+  }[];
+  uniqueKey?: string;
+}
+
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestions: Question[];
+}
+
+export interface ExportConfig {
+  title: string;
+  showWatermark: boolean;
+  signatureRequired: boolean;
+  theme: VisualStyle;
+  sections: {
+    cover: boolean;
+    executiveSummary: boolean;
+    competencyMatrix: boolean;
+    behavioralDNA: boolean;
+    swotAnalysis: boolean;
+    futureProjection: boolean;
+    interviewGuide: boolean;
+    clinicalSimulation: boolean;
+  };
 }

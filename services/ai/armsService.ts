@@ -15,6 +15,7 @@ export const armsService = {
       1. Her ana slaytı bir 'TrainingModule' olarak kurgula.
       2. Slayt içerisindeki maddeleri 'TrainingUnit' görevlerine (Vaka Analizi, Okuma, Simülasyon) çevir.
       3. Her görev için personelin test edileceği 'successCriteria' belirle.
+      ÇIKTI: Saf JSON olmalı.
     `;
 
     const response = await ai.models.generateContent({
@@ -43,7 +44,6 @@ export const armsService = {
     };
   },
 
-  // @fix: Added generateIDP method to handle both Candidate and StaffMember targets for IDP generation.
   async generateIDP(subject: StaffMember | Candidate, history?: any[]): Promise<IDP> {
     const aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
@@ -76,7 +76,6 @@ export const armsService = {
     };
   },
 
-  // @fix: Added generateTrainingSlides method to create an 8-slide presentation based on an IDP.
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     const aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
@@ -108,7 +107,8 @@ export const armsService = {
       STİL KURALLARI:
       - 'layout': [cover, section_header, split_left, split_right, full_visual, bullet_list, quote_center, data_grid, process_flow]
       - 'imageKeyword': İngilizce, Unsplash uyumlu tekil kelime.
-      - 'visualPrompt': Görselin ruhunu anlatan sanatsal tasvir.
+      - 'visualPrompt': Görselin ruhunu anlatan detaylı sanatsal tasvir.
+      ÇIKTI: Saf JSON dizi.
     `;
 
     const response = await ai.models.generateContent({
@@ -130,7 +130,7 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `SLAYT: ${JSON.stringify(slide)} | NİYET: ${intent}`,
       config: {
-        systemInstruction: "Slaytı belirtilen niyetle yeniden kurgula (Saf JSON).",
+        systemInstruction: "Slaytı belirtilen niyetle yeniden kurgula. Sadece JSON döndür.",
         responseMimeType: "application/json"
       }
     });
