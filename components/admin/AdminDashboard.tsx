@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Candidate, GlobalConfig, StaffMember, StaffRole, Branch } from '../../types';
+import { Candidate, GlobalConfig, StaffMember, StaffRole, Branch, ArchiveCategory } from '../../types';
 
 interface AdminDashboardProps {
   candidates: Candidate[];
@@ -20,10 +20,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ candidates, onUpdateCan
     setIsHiring(candidate.id);
     
     // 1. ADIMI: ADAYI ARŞİVE MÜHÜRLE
+    // @fix: Changed string literal to ArchiveCategory enum member for type safety.
     const updatedCandidate: Candidate = {
       ...candidate,
       status: 'archived',
-      archiveCategory: 'HIRED_CONTRACTED',
+      archiveCategory: ArchiveCategory.HIRED_CONTRACTED,
       archiveNote: `ATAMA: ${new Date().toLocaleDateString('tr-TR')} tarihinde personel kadrosuna dahil edildi.`,
       timestamp: Date.now()
     };
