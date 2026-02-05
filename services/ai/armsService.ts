@@ -5,15 +5,24 @@ import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule } f
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
-  // 1. MÜFREDAT OLUŞTURMA (IDP)
+  // ... (Existing generateIDP function remains unchanged)
   async generateIDP(staff: StaffMember, assessmentHistory: any[] = []): Promise<IDP> {
+    
     const systemInstruction = `
-      ROL: Yeni Gün Akademi "Nöral Eğitim Mimarı".
-      GÖREV: Personelin eksiklerini (assessmentHistory) analiz et ve "Kişiye Özel Gelişim Müfredatı" (Curriculum) oluştur.
-      MODEL: Gemini 3 Flash Thinking.
-      PRENSİPLER: Tanısal, Modüler, Çeşitli ve Kaynak Destekli.
+      ROL: Yeni Gün Akademi "Nöral Eğitim Mimarı" ve "Klinik Süpervizör".
+      GÖREV: Personelin değerlendirme geçmişindeki (assessmentHistory) düşük puanlı alanları ve "aiTags" verilerini analiz et.
+      ÇIKTI: Kişiye özel, yüksek çözünürlüklü bir Hizmet İçi Eğitim Müfredatı (Curriculum) oluştur.
+      MODEL: Gemini 3 Flash Thinking Mode.
+      
+      PRENSİPLER:
+      1. TANISAL EŞLEŞTİRME: Eğer personel "etik" konusunda düşük puan aldıysa, müfredata "Klinik Sınırlar ve Etik" modülü ekle.
+      2. MODÜLER YAPI: Eğitimi 3-4 ana modüle böl. Her modülün altında somut görevler (üniteler) olsun.
+      3. ÇEŞİTLİLİK: Üniteler sadece "okuma" olmasın; "Vaka Analizi", "Süpervizyon", "Simülasyon", "Makale Kritik" gibi aktif görevler içersin.
+      4. NEDENSELLİK (RATIONALE): Her ünite için AI, neden bu görevi atadığını (hangi test hatasına dayandığını) "aiRationale" alanında belirtmeli.
+      5. KAYNAKLAR: Her ünite için gerçekçi kitap, makale veya video başlıkları öner.
     `;
 
+    // Robust Schema for Curriculum
     const curriculumSchema = {
       type: Type.ARRAY,
       items: {
@@ -59,7 +68,7 @@ export const armsService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `STAFF: ${JSON.stringify({ name: staff.name, branch: staff.branch, exp: staff.experience_years })} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
+      contents: `STAFF PROFILE: ${JSON.stringify({ name: staff.name, branch: staff.branch, exp: staff.experience_years })} | ASSESSMENT DATA: ${JSON.stringify(assessmentHistory)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -73,12 +82,19 @@ export const armsService = {
             curriculum: curriculumSchema,
             roadmap: {
                 type: Type.OBJECT,
-                properties: { shortTerm: {type:Type.STRING}, midTerm: {type:Type.STRING}, longTerm: {type:Type.STRING} }
+                properties: {
+                  shortTerm: { type: Type.STRING },
+                  midTerm: { type: Type.STRING },
+                  longTerm: { type: Type.STRING }
+                }
             },
             recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } },
             milestones: {
                 type: Type.ARRAY,
-                items: { type: Type.OBJECT, properties: { title: {type: Type.STRING}, dueDate: {type: Type.STRING} } }
+                items: {
+                  type: Type.OBJECT,
+                  properties: { title: {type: Type.STRING}, dueDate: {type: Type.STRING} }
+                }
             }
           },
           required: ["focusArea", "identifiedGaps", "aiAnalysisSummary", "curriculum", "roadmap", "recommendedTrainings", "milestones"]
@@ -88,7 +104,7 @@ export const armsService = {
 
     const data = JSON.parse(response.text || '{}');
     
-    // ID Sanitization
+    // Post-processing to ensure IDs are unique
     if(data.curriculum) {
         data.curriculum.forEach((mod: any, i: number) => {
             mod.id = `MOD-${Date.now()}-${i}`;
@@ -111,39 +127,46 @@ export const armsService = {
     };
   },
 
-  // 2. SUNUM OLUŞTURMA (GELİŞMİŞ)
-  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi "Kreatif Direktörü" ve "Öğretim Tasarımcısı".
-      GÖREV: Verilen konuyu, belirtilen hedef kitle ve ton için ultra profesyonel bir sunuma dönüştür.
-      MODEL: Gemini 3 Flash Multimodal.
-      
-      TASARIM FELSEFESİ:
-      1. AKIŞ (FLOW): Sunum bir hikaye gibi akmalı. Giriş (Hook), Gelişme (Konsept), Örnek (Case), Sonuç (Call to Action).
-      2. GÖRSEL ZEKA: 'imageKeyword' alanı için Unsplash'ten en çarpıcı sonucu getirecek TEK KELİMELİK, İNGİLİZCE ve SEMANTİK bir terim seç. (Örn: "chaos" yerine "storm", "teamwork" yerine "rowing").
-      3. PEDAGOJİ: Slaytlar sadece bilgi vermesin, soru sorsun (Interactive) ve düşündürsün.
-      
-      LAYOUT KURALLARI:
-      - 'cover': Sadece başlık ve çok güçlü bir görsel.
-      - 'split_left/right': Konsept ve görsel dengesi.
-      - 'full_visual': Duygusal etki için.
-      - 'quote_center': Otorite vurgusu için.
-      - 'data_grid': Kanıt sunmak için.
-    `;
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    // Basic legacy generator wrapper
+    return this.generateCustomPresentation({
+        topic: `Gelişim Planı: ${idp.focusArea}`,
+        targetAudience: 'individual',
+        tone: 'academic',
+        depth: 'intermediate',
+        slideCount: 5,
+        visualStyle: 'corporate',
+        includeAnimations: true
+    });
+  },
 
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `
-        KONU: ${config.topic}
-        BAĞLAM (NEDEN BU EĞİTİM?): ${config.contextData || 'Genel yetkinlik artırımı.'}
+        SUNUM KONUSU: ${config.topic}
         HEDEF KİTLE: ${config.targetAudience}
         TON: ${config.tone}
         DERİNLİK: ${config.depth}
         SLAYT SAYISI: ${config.slideCount}
-        STİL: ${config.visualStyle}
+        GÖRSEL STİL: ${config.visualStyle}
+        ANİMASYON: ${config.includeAnimations ? 'EVET' : 'HAYIR'}
       `,
       config: {
-        systemInstruction,
+        systemInstruction: `
+          ROL: Yeni Gün Akademi Baş Tasarım Direktörü ve İçerik Küratörü.
+          GÖREV: Verilen konfigürasyona göre profesyonel, görsel açıdan zengin ve akademik derinliği olan bir sunum tasarla.
+          
+          GÖRSEL TASARIM KURALLARI:
+          1. 'layout' alanı için 'cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center' tiplerinden en uygununu seç.
+          2. 'imageKeyword' alanı için, slaytın içeriğini en iyi özetleyen, Unsplash'te bulunabilecek İNGİLİZCE tek bir anahtar kelime seç (örn: 'brain', 'classroom', 'teamwork', 'microscope').
+          3. 'visualPrompt' alanına, eğer bir AI görsel oluşturacak olsaydı nasıl bir prompt yazılması gerektiğini detaylıca tasvir et.
+          4. 'animation' alanı için 'fade', 'slide_up', 'zoom_in', 'pan_right' seçeneklerinden sinematik bir akış oluşturacak olanı seç.
+          
+          İÇERİK KURALLARI:
+          1. Metinler kısa, vurucu ve akademik dilde olsun.
+          2. Speaker Notes, sunumu yapacak kişiye "gizli ipuçları" ve "anekdotlar" versin.
+        `,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
@@ -152,24 +175,25 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center', 'data_grid'] },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] }, // Legacy
+              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
-              speakerNotes: { type: Type.STRING, description: "Sunumu yapacak kişi için 'gizli' ipuçları ve anekdotlar." },
-              visualPrompt: { type: Type.STRING, description: "AI'ın bu görseli neden seçtiğinin gerekçesi." },
-              imageKeyword: { type: Type.STRING, description: "Unsplash için İngilizce arama terimi." },
+              speakerNotes: { type: Type.STRING },
+              visualPrompt: { type: Type.STRING },
+              imageKeyword: { type: Type.STRING },
+              animation: { type: Type.STRING, enum: ['fade', 'slide_up', 'zoom_in', 'pan_right', 'none'] },
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
-                  type: { type: Type.STRING, enum: ['quiz', 'reflection', 'poll'] },
                   question: { type: Type.STRING },
-                  options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  correctAnswer: { type: Type.STRING }
+                  expectedAnswer: { type: Type.STRING },
+                  misconception: { type: Type.STRING }
                 }
               }
             },
-            required: ["id", "layout", "title", "content", "speakerNotes", "visualPrompt", "imageKeyword"]
+            required: ["id", "layout", "title", "content", "speakerNotes", "visualPrompt", "imageKeyword", "animation"]
           }
         }
       }
@@ -177,25 +201,10 @@ export const armsService = {
 
     const slides = JSON.parse(response.text || '[]');
     
-    // Post-Process: Unique IDs
+    // Post-process to ensure unique IDs
     return slides.map((s: any, i: number) => ({
         ...s,
         id: `SLIDE-${Date.now()}-${i}`
     }));
-  },
-
-  // 3. GENERATE TRAINING SLIDES
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    const config: PresentationConfig = {
-      topic: `Gelişim Planı: ${idp.focusArea}`,
-      contextData: `Bu sunum, ${branch} branşındaki bir uzman için hazırlanan IDP (Bireysel Gelişim Planı) özetidir. Eksik alanlar: ${idp.identifiedGaps?.join(', ') || 'Genel yetkinlik'}.`,
-      targetAudience: 'individual',
-      tone: 'motivational',
-      depth: 'intermediate',
-      slideCount: 5,
-      visualStyle: 'minimalist',
-      includeAnimations: true
-    };
-    return this.generateCustomPresentation(config);
   }
 };
