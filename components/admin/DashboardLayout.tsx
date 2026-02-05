@@ -11,6 +11,7 @@ import MethodologyInventoryView from './MethodologyInventoryView';
 import ArchiveView from './ArchiveView';
 import ArmsDashboard from '../../features/staff-mentor/ArmsDashboard';
 import CommunicationCenter from '../../features/communication/CommunicationCenter';
+import TrainingHub from '../../features/training/TrainingHub';
 
 interface DashboardLayoutProps {
   candidates: Candidate[];
@@ -25,7 +26,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'methodology' | 'archive' | 'arms' | 'comm'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics' | 'calendar' | 'decision' | 'settings' | 'methodology' | 'archive' | 'arms' | 'comm' | 'training'>('pipeline');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -38,6 +39,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
       case 'arms': return <ArmsDashboard refreshTrigger={props.staffRefreshKey} onRefresh={() => props.setStaffRefreshKey(Date.now())} />;
       case 'comm': return <CommunicationCenter candidates={props.candidates} />;
+      case 'training': return <TrainingHub />;
       default: return <PipelineView {...props} />;
     }
   };
