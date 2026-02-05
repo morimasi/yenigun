@@ -73,8 +73,8 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   ];
 
   return (
-    <div className="flex items-center justify-between h-full px-4 md:px-6 bg-white text-slate-600 font-sans" ref={navRef}>
-      <div className="flex items-center gap-3 shrink-0 mr-4 md:mr-8">
+    <div className="flex items-center justify-between h-full px-4 md:px-6 bg-white text-slate-600 font-sans relative z-[1001]" ref={navRef}>
+      <div className="flex items-center gap-3 shrink-0 mr-4 md:mr-8 relative z-[1002]">
         <div className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xs md:text-sm shadow-md border border-slate-700">YG</div>
         <div className="hidden sm:block">
            <h1 className="text-slate-900 text-[10px] md:text-[12px] font-black uppercase tracking-tight leading-none truncate max-w-[120px] md:max-w-none">{institutionName}</h1>
@@ -85,13 +85,14 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 flex items-center gap-1 md:gap-2 h-full overflow-x-auto no-scrollbar scroll-smooth">
+      {/* NAV ITEMS CONTAINER: overflow-x-auto KALDIRILDI, overflow-visible YAPILDI */}
+      <div className="flex-1 flex items-center gap-1 md:gap-2 h-full overflow-visible">
         {GROUPS.map((group) => {
           const isGroupActive = group.items.some(i => i.id === activeTab);
           const isOpen = openCategory === group.id;
 
           return (
-            <div key={group.id} className="relative h-full flex items-center shrink-0">
+            <div key={group.id} className="relative h-full flex items-center shrink-0 overflow-visible">
               <button
                 onClick={() => setOpenCategory(isOpen ? null : group.id)}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all text-[10px] md:text-[11px] font-black uppercase tracking-wide select-none group/btn whitespace-nowrap ${
@@ -109,8 +110,9 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
                 </svg>
               </button>
 
+              {/* DROPDOWN: z-index artırıldı ve kapsayıcı dışına taşması garantilendi */}
               {isOpen && (
-                <div className="absolute top-[calc(100%-4px)] left-0 w-56 md:w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-[999] animate-scale-in origin-top-left flex flex-col gap-1">
+                <div className="absolute top-[calc(100%-4px)] left-0 w-56 md:w-64 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 p-2 z-[9999] animate-scale-in origin-top-left flex flex-col gap-1 ring-1 ring-black/5">
                    {group.items.map(item => (
                        <button
                          key={item.id}
@@ -128,7 +130,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
         })}
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3 pl-4 md:pl-6 border-l border-slate-200 ml-2 md:ml-6 shrink-0 h-8">
+      <div className="flex items-center gap-2 md:gap-3 pl-4 md:pl-6 border-l border-slate-200 ml-2 md:ml-6 shrink-0 h-8 relative z-[1002]">
         <NotificationCenter />
         <button onClick={onRefresh} className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-orange-600 transition-all ${isProcessing ? 'animate-spin' : ''}`}>
            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" /></svg>

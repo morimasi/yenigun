@@ -48,7 +48,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
 
   return (
     <div className="flex flex-col h-screen bg-[#F1F5F9] font-sans text-slate-900 overflow-hidden text-sm">
-      <header className="shrink-0 z-[100] h-14 bg-white border-b border-slate-200 shadow-sm relative">
+      {/* HEADER: Z-index ve Overflow düzeltildi */}
+      <header className="shrink-0 z-[1000] h-14 bg-white border-b border-slate-200 shadow-sm relative">
         <AdminTopNav 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -70,7 +71,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
            </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 scroll-smooth bg-[#F1F5F9]">
+        <div className="flex-1 overflow-y-auto p-3 scroll-smooth bg-[#F1F5F9] relative z-0">
            {renderContent()}
         </div>
       </main>
