@@ -5,12 +5,15 @@ import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule } f
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
-  // 1. MÜFREDAT OLUŞTURMA (Aynen kalır)
+  // 1. MÜFREDAT OLUŞTURMA (IDP)
   async generateIDP(staff: StaffMember, assessmentHistory: any[] = []): Promise<IDP> {
     const systemInstruction = `
       ROL: Yeni Gün Akademi "Nöral Eğitim Mimarı".
-      GÖREV: Personelin eksiklerini (assessmentHistory) analiz et ve "Kişiye Özel Gelişim Müfredatı" oluştur.
+      GÖREV: Personelin eksiklerini (assessmentHistory) analiz et ve "Kişiye Özel Gelişim Müfredatı" (Curriculum) oluştur.
+      MODEL: Gemini 3 Flash Thinking.
+      PRENSİPLER: Tanısal, Modüler, Çeşitli ve Kaynak Destekli.
     `;
+
     const curriculumSchema = {
       type: Type.ARRAY,
       items: {
@@ -33,61 +36,112 @@ export const armsService = {
                 durationMinutes: { type: Type.NUMBER },
                 aiRationale: { type: Type.STRING },
                 successCriteria: { type: Type.STRING },
-                isCompleted: { type: Type.BOOLEAN }
-              }
+                isCompleted: { type: Type.BOOLEAN },
+                resources: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            type: { type: Type.STRING, enum: ['pdf', 'video', 'article', 'book'] },
+                            title: { type: Type.STRING },
+                            url: { type: Type.STRING }
+                        }
+                    }
+                }
+              },
+              required: ["id", "title", "type", "content", "durationMinutes", "aiRationale", "isCompleted", "successCriteria"]
             }
           }
-        }
+        },
+        required: ["id", "title", "focusArea", "difficulty", "status", "units"]
       }
     };
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `STAFF: ${JSON.stringify(staff)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
+      contents: `STAFF: ${JSON.stringify({ name: staff.name, branch: staff.branch, exp: staff.experience_years })} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             focusArea: { type: Type.STRING },
             identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
+            aiAnalysisSummary: { type: Type.STRING },
             curriculum: curriculumSchema,
-            roadmap: { type: Type.OBJECT, properties: { shortTerm: {type:Type.STRING}, midTerm: {type:Type.STRING}, longTerm: {type:Type.STRING} } },
-            milestones: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: {type: Type.STRING}, dueDate: {type: Type.STRING} } } }
-          }
+            roadmap: {
+                type: Type.OBJECT,
+                properties: { shortTerm: {type:Type.STRING}, midTerm: {type:Type.STRING}, longTerm: {type:Type.STRING} }
+            },
+            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } },
+            milestones: {
+                type: Type.ARRAY,
+                items: { type: Type.OBJECT, properties: { title: {type: Type.STRING}, dueDate: {type: Type.STRING} } }
+            }
+          },
+          required: ["focusArea", "identifiedGaps", "aiAnalysisSummary", "curriculum", "roadmap", "recommendedTrainings", "milestones"]
         }
       }
     });
 
     const data = JSON.parse(response.text || '{}');
+    
+    // ID Sanitization
+    if(data.curriculum) {
+        data.curriculum.forEach((mod: any, i: number) => {
+            mod.id = `MOD-${Date.now()}-${i}`;
+            mod.units.forEach((u: any, j: number) => {
+                u.id = `UNIT-${Date.now()}-${i}-${j}`;
+                u.isCompleted = false;
+                u.status = 'pending';
+            });
+        });
+    }
+
     return {
-      id: `IDP-${Date.now()}`,
+      id: `IDP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       staffId: staff.id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       status: 'draft',
-      ...data
+      ...data,
+      milestones: data.milestones?.map((m: any) => ({ ...m, isCompleted: false })) || []
     };
   },
 
-  // 2. ULTRA-PRO SUNUM OLUŞTURMA
+  // 2. SUNUM OLUŞTURMA (GELİŞMİŞ)
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const systemInstruction = `
-      ROL: Yeni Gün Akademi "Kreatif Yönetmen".
-      GÖREV: Akademik bir konuyu, görsel olarak zengin ve pedagojik olarak etkili bir slayt setine dönüştür.
+      ROL: Yeni Gün Akademi "Kreatif Direktörü" ve "Öğretim Tasarımcısı".
+      GÖREV: Verilen konuyu, belirtilen hedef kitle ve ton için ultra profesyonel bir sunuma dönüştür.
+      MODEL: Gemini 3 Flash Multimodal.
       
-      KRİTİK KURALLAR:
-      1. STORYTELLING: Sunum bir giriş, gelişme ve etkileşimli finalden oluşmalı.
-      2. LAYOUT ZEKA: Her slaytın içeriğine göre en iyi yerleşimi (layout) seç. 
-         - Örn: Karşılaştırma için 'split_left', büyük bir vaka görseli için 'full_visual'.
-      3. GÖRSEL SEMANTİK: 'imageKeyword' alanı için, slaytın RUHUNU simgeleyen detaylı bir İngilizce prompt yaz. (Örn: "High-contrast cinematic shot of a neural network glowing with blue energy").
-      4. ETKİLEŞİM: En az bir slaytta 'interactiveElement' (soru veya tartışma) ekle.
+      TASARIM FELSEFESİ:
+      1. AKIŞ (FLOW): Sunum bir hikaye gibi akmalı. Giriş (Hook), Gelişme (Konsept), Örnek (Case), Sonuç (Call to Action).
+      2. GÖRSEL ZEKA: 'imageKeyword' alanı için Unsplash'ten en çarpıcı sonucu getirecek TEK KELİMELİK, İNGİLİZCE ve SEMANTİK bir terim seç. (Örn: "chaos" yerine "storm", "teamwork" yerine "rowing").
+      3. PEDAGOJİ: Slaytlar sadece bilgi vermesin, soru sorsun (Interactive) ve düşündürsün.
+      
+      LAYOUT KURALLARI:
+      - 'cover': Sadece başlık ve çok güçlü bir görsel.
+      - 'split_left/right': Konsept ve görsel dengesi.
+      - 'full_visual': Duygusal etki için.
+      - 'quote_center': Otorite vurgusu için.
+      - 'data_grid': Kanıt sunmak için.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `KONU: ${config.topic} | KİTLE: ${config.targetAudience} | TON: ${config.tone} | SLAYT: ${config.slideCount}`,
+      contents: `
+        KONU: ${config.topic}
+        BAĞLAM (NEDEN BU EĞİTİM?): ${config.contextData || 'Genel yetkinlik artırımı.'}
+        HEDEF KİTLE: ${config.targetAudience}
+        TON: ${config.tone}
+        DERİNLİK: ${config.depth}
+        SLAYT SAYISI: ${config.slideCount}
+        STİL: ${config.visualStyle}
+      `,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -97,12 +151,14 @@ export const armsService = {
           items: {
             type: Type.OBJECT,
             properties: {
-              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center', 'process_flow'] },
+              id: { type: Type.STRING },
+              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center', 'data_grid'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
-              speakerNotes: { type: Type.STRING },
-              imageKeyword: { type: Type.STRING },
+              speakerNotes: { type: Type.STRING, description: "Sunumu yapacak kişi için 'gizli' ipuçları ve anekdotlar." },
+              visualPrompt: { type: Type.STRING, description: "AI'ın bu görseli neden seçtiğinin gerekçesi." },
+              imageKeyword: { type: Type.STRING, description: "Unsplash için İngilizce arama terimi." },
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
@@ -113,26 +169,33 @@ export const armsService = {
                 }
               }
             },
-            required: ["layout", "title", "content", "imageKeyword"]
+            required: ["id", "layout", "title", "content", "speakerNotes", "visualPrompt", "imageKeyword"]
           }
         }
       }
     });
 
     const slides = JSON.parse(response.text || '[]');
-    return slides.map((s: any, i: number) => ({ ...s, id: `S-${Date.now()}-${i}` }));
+    
+    // Post-Process: Unique IDs
+    return slides.map((s: any, i: number) => ({
+        ...s,
+        id: `SLIDE-${Date.now()}-${i}`
+    }));
   },
 
-  // 3. SLAYT RAFİNE ETME (REWRITE)
-  async refineSlideContent(slide: TrainingSlide, intent: string): Promise<TrainingSlide> {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `MEVCUT SLAYT: ${JSON.stringify(slide)} | NİYET: ${intent}`,
-      config: {
-        systemInstruction: "Verilen slaytı belirtilen niyet (örn: 'daha sade yap', 'veli diline çevir', 'akademik jargon ekle') doğrultusunda yeniden kurgula. Sadece güncellenmiş JSON döndür.",
-        responseMimeType: "application/json"
-      }
-    });
-    return { ...slide, ...JSON.parse(response.text || '{}') };
+  // 3. GENERATE TRAINING SLIDES
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    const config: PresentationConfig = {
+      topic: `Gelişim Planı: ${idp.focusArea}`,
+      contextData: `Bu sunum, ${branch} branşındaki bir uzman için hazırlanan IDP (Bireysel Gelişim Planı) özetidir. Eksik alanlar: ${idp.identifiedGaps?.join(', ') || 'Genel yetkinlik'}.`,
+      targetAudience: 'individual',
+      tone: 'motivational',
+      depth: 'intermediate',
+      slideCount: 5,
+      visualStyle: 'minimalist',
+      includeAnimations: true
+    };
+    return this.generateCustomPresentation(config);
   }
 };

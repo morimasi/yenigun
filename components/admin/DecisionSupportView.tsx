@@ -61,17 +61,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
     try {
       const primaryCandidate = selectedCandidates[0];
       const idp = await armsService.generateIDP(primaryCandidate);
-      // @fix: Changed non-existent generateTrainingSlides to generateCustomPresentation with a valid config to resolve property missing error.
-      const slides = await armsService.generateCustomPresentation({
-        topic: `Adaptasyon Planı: ${primaryCandidate.name}`,
-        contextData: `Odak Alanı: ${idp.focusArea}. Tespit Edilen Gelişim Alanları: ${idp.identifiedGaps?.join(', ')}`,
-        targetAudience: 'team',
-        tone: 'academic',
-        depth: 'intermediate',
-        slideCount: 8,
-        visualStyle: 'corporate',
-        includeAnimations: true
-      });
+      const slides = await armsService.generateTrainingSlides(idp, primaryCandidate.branch);
       setCustomIDP(idp);
       setCustomSlides(slides);
       setActiveWorkspace('onboarding');
