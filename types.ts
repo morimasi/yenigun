@@ -1,4 +1,6 @@
 
+// ... (Mevcut tipler korunur)
+
 // GELİŞMİŞ SUNUM MİMARİSİ
 export type SlideLayout = 
   | 'cover'           // Başlık ve Büyük Görsel
@@ -9,9 +11,8 @@ export type SlideLayout =
   | 'bullet_list'     // Klasik Maddeler
   | 'quote_center'    // Çarpıcı Alıntı
   | 'data_grid'       // İstatistiksel Veri
-  | 'process_flow';   // Süreç Akışı
+  | 'process_flow';   // Süreç Akışı (Yeni)
 
-export type AnimationType = 'fade' | 'slide_up' | 'zoom_in' | 'pan_right' | 'blur_reveal' | 'none';
 export type VisualStyle = 'minimalist' | 'corporate' | 'playful' | 'dark_mode' | 'academic' | 'warm_serenity' | 'neuro_divergent';
 
 export interface PresentationTheme {
@@ -61,6 +62,7 @@ export interface PresentationConfig {
   institutionName?: string;
 }
 
+// ... (ExportConfig, UniversalExportData ve diğer tüm tipler korunur)
 export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'TRAINING_CURRICULUM';
 
 export interface ExportConfig {
