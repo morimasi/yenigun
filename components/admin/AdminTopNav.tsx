@@ -4,12 +4,12 @@ import { UserSession, StaffRole } from '../../types';
 
 interface AdminTopNavProps {
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: string) => void;
   institutionName: string;
   onRefresh: () => void;
   isProcessing: boolean;
   user: UserSession | null;
-  onLogout?: () => void;
+  onLogout: () => void;
 }
 
 const AdminTopNav: React.FC<AdminTopNavProps> = ({ 
@@ -42,7 +42,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       icon: 'M4 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM14 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM4 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
       items: [
         { id: 'pipeline', label: 'Başvuru Havuzu', roles: [StaffRole.Admin, StaffRole.Mentor], icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-        { id: 'calendar', label: 'Mülakat Takvimi', roles: [StaffRole.Admin, StaffRole.Mentor], icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z' },
+        { id: 'calendar', label: 'Mülakat Takvimi', roles: [StaffRole.Admin, StaffRole.Mentor], icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v7a2 2 0 002 2z' },
         { id: 'comm', label: 'İletişim Merkezi', roles: [StaffRole.Admin], icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
       ]
     },
@@ -74,9 +74,9 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
       roles: [StaffRole.Admin],
       icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
       items: [
-        { id: 'admin_dashboard', label: 'Admin Paneli', roles: [StaffRole.Admin], icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+        { id: 'admin_dashboard', label: 'Admin Kokpit', roles: [StaffRole.Admin], icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
         { id: 'methodology', label: 'Envanter Editörü', roles: [StaffRole.Admin], icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2' },
-        { id: 'settings', label: 'Sistem Ayarları', roles: [StaffRole.Admin], icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066c-1.543.94-3.31.826-4.74 0a1.724 1.724 0 00-2.573-1.066c.426 1.756 2.924 1.756 3.35 0' }
+        { id: 'settings', label: 'Sistem Parametreleri', roles: [StaffRole.Admin], icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066c-1.543.94-3.31.826-4.74 0a1.724 1.724 0 00-2.573-1.066c.426 1.756 2.924 1.756 3.35 0' }
       ]
     }
   ];
@@ -85,14 +85,14 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
   const filteredGroups = ALL_GROUPS.filter(g => g.roles.includes(userRole));
 
   return (
-    <div className="flex items-center justify-between h-full px-6 bg-white text-slate-600 font-sans border-b border-slate-100" ref={navRef}>
+    <div className="flex items-center justify-between h-full px-6 bg-white text-slate-600 font-sans border-b border-slate-100 shadow-sm" ref={navRef}>
       <div className="flex items-center gap-4 shrink-0 mr-8">
         <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md border border-slate-700 select-none">YG</div>
         <div className="hidden xl:block">
            <h1 className="text-slate-900 text-[12px] font-black uppercase tracking-tight leading-none">{institutionName}</h1>
            <div className="flex items-center gap-1.5 mt-0.5">
              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{userRole.toUpperCase()} MODU AKTİF</span>
+             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{userRole.toUpperCase()} MODU</span>
            </div>
         </div>
       </div>
@@ -104,12 +104,12 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
           const isOpen = openCategory === group.id;
 
           return (
-            <div key={group.id} className="relative h-full flex items-center group/cat">
+            <div key={group.id} className="relative h-full flex items-center">
               <button
                 onClick={() => setOpenCategory(isOpen ? null : group.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[11px] font-black uppercase tracking-wide select-none ${
                   isGroupActive 
-                  ? 'bg-orange-50 text-orange-700' 
+                  ? 'bg-orange-50 text-orange-700 shadow-sm' 
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
@@ -126,13 +126,13 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
                      <button
                        key={item.id}
                        onClick={() => { setActiveTab(item.id); setOpenCategory(null); }}
-                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group/item w-full ${
+                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left w-full group ${
                          isActive 
                          ? 'bg-slate-900 text-white shadow-lg' 
                          : 'hover:bg-slate-50 text-slate-500 hover:text-slate-900'
                        }`}
                      >
-                        <svg className={`w-4 h-4 shrink-0 ${isActive ? 'text-orange-500' : 'text-slate-400 group-hover/item:text-slate-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className={`w-4 h-4 shrink-0 ${isActive ? 'text-orange-500' : 'text-slate-400 group-hover:text-orange-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                         </svg>
                         <span className="text-[11px] font-bold uppercase tracking-tight">{item.label}</span>
@@ -150,6 +150,7 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
           onClick={onRefresh}
           disabled={isProcessing}
           className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-50 text-slate-400 hover:text-orange-600 transition-all disabled:opacity-50"
+          title="Verileri Tazele"
         >
           <svg className={`w-4 h-4 ${isProcessing ? 'animate-spin text-orange-600' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" />
@@ -157,9 +158,9 @@ const AdminTopNav: React.FC<AdminTopNavProps> = ({
         </button>
         <button
           onClick={onLogout}
-          className="px-4 py-2 bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black uppercase hover:bg-rose-600 hover:text-white transition-all"
+          className="px-4 py-2 bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black uppercase hover:bg-rose-600 hover:text-white transition-all shadow-sm"
         >
-          ÇIKIŞ
+          GÜVENLİ ÇIKIŞ
         </button>
       </div>
     </div>

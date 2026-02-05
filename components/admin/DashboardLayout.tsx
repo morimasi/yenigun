@@ -46,22 +46,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      // OPERASYON
+      // --- OPERASYON ---
       case 'pipeline': return <PipelineView {...props} />;
       case 'calendar': return <CalendarView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} />;
       case 'comm': return <CommunicationCenter candidates={props.candidates} />;
       
-      // KLİNİK & ANALİZ
+      // --- KLİNİK & ANALİZ ---
       case 'clinical_lab': return <ClinicalLabView candidates={props.candidates} />;
       case 'decision': return <DecisionSupportView candidates={props.candidates} config={props.config} />;
       case 'analytics': return <AnalyticsView candidates={props.candidates} config={props.config} />;
       
-      // AKADEMİ & KADRO
+      // --- AKADEMİ & KADRO ---
       case 'arms': return <ArmsDashboard refreshTrigger={props.staffRefreshKey} onRefresh={() => props.setStaffRefreshKey(Date.now())} />;
       case 'training': return <TrainingHub />;
       case 'archive': return <ArchiveView candidates={props.candidates} onUpdateCandidate={props.onUpdateCandidate} onDeleteCandidate={props.onDeleteCandidate} />;
       
-      // YÖNETİM & SİSTEM
+      // --- YÖNETİM & SİSTEM ---
       case 'admin_dashboard': return <AdminDashboard {...props} />;
       case 'methodology': return <MethodologyInventoryView />;
       case 'settings': return <SettingsView config={props.config} onUpdateConfig={props.onUpdateConfig} />;
@@ -85,15 +85,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
       </header>
       
       <main className="flex-1 flex flex-col min-h-0 relative z-0">
-        <div className="h-10 bg-slate-900 flex items-center justify-between px-6 shrink-0 z-40">
+        <div className="h-10 bg-slate-900 flex items-center justify-between px-6 shrink-0 z-40 shadow-inner">
            <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] shrink-0">MODÜL: {activeTab.toUpperCase().replace('_', ' ')}</span>
+              <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] shrink-0">AKTİF MODÜL: {activeTab.toUpperCase().replace('_', ' ')}</span>
               <div className="h-3 w-px bg-white/10"></div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">AKTİF OTURUM: {props.user?.name.toUpperCase()}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">DOSYA SAHİBİ: {props.user?.name.toUpperCase()}</span>
            </div>
            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[9px] font-black text-white uppercase tracking-widest hidden sm:inline">SİSTEM ÇEVRİMİÇİ</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[9px] font-black text-white uppercase tracking-widest hidden sm:inline">KURUMSAL ERİŞİM ŞİFRELİ</span>
            </div>
         </div>
 
