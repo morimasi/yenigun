@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
@@ -43,14 +44,7 @@ const DEFAULT_CONFIG: GlobalConfig = {
     interviewDurationMinutes: 45,
     autoRejectBelowScore: 40,
     defaultMeetingLink: 'https://meet.google.com/new'
-  },
-
-  // Legacy fields mapped or kept for compatibility if allowed by type
-  aiTone: 'balanced',
-  aiWeights: { ethics: 40, clinical: 30, experience: 15, fit: 15 },
-  automation: { autoEmailOnSchedule: true, requireCvUpload: true, allowMultipleApplications: false },
-  interviewSettings: { defaultDuration: 45, bufferTime: 15, autoStatusAfterInterview: false, defaultMeetingLink: 'https://meet.google.com/new' },
-  advancedAnalytics: {}
+  }
 };
 
 const App: React.FC = () => {

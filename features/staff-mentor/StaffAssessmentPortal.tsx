@@ -86,7 +86,7 @@ const StaffAssessmentPortal: React.FC = () => {
   const handleProfileSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/staff?action=update_profile`, {
+      const res = await fetch('/api/staff?action=update_profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...profileData, id: staff.id })
@@ -100,7 +100,8 @@ const StaffAssessmentPortal: React.FC = () => {
   };
 
   const handleSubmitExam = async () => {
-    const sum = Object.values(answers).reduce((a, b) => a + b, 0);
+    // @fix: Explicitly type reduce parameters to resolve unknown operator error.
+    const sum = Object.values(answers).reduce((a: number, b: number) => a + b, 0);
     const score = Math.round(sum / (activeModule?.questions.length || 1));
     setIsSaving(true);
     try {
