@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import PresentationStudio from '../staff-mentor/PresentationStudio';
+import CurriculumManager from './CurriculumManager';
 import { StaffMember, IDP } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -43,6 +44,11 @@ const TrainingHub: React.FC = () => {
   );
 
   if (activeView === 'studio') return <PresentationStudio onClose={() => setActiveView('dashboard')} />;
+  if (activeView === 'curriculum') return (
+    <div className="h-[calc(100vh-6rem)] overflow-hidden">
+       <CurriculumManager />
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in h-[calc(100vh-6rem)] relative pb-10">
@@ -66,7 +72,7 @@ const TrainingHub: React.FC = () => {
          <div className="relative z-10 flex gap-4">
             <div className="bg-white/5 border border-white/10 p-1 rounded-2xl flex">
                <button onClick={() => setActiveView('dashboard')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'dashboard' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Kontrol</button>
-               <button onClick={() => setActiveView('curriculum')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'curriculum' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Programlar</button>
+               <button onClick={() => setActiveView('curriculum')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'curriculum' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Katalog</button>
                <button onClick={() => setActiveView('analytics')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'analytics' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Metrikler</button>
             </div>
          </div>
@@ -96,37 +102,6 @@ const TrainingHub: React.FC = () => {
                   desc="Personelin sınav başarıları, gelişim deltalari ve kurumsal yetkinlik ısı haritası." 
                   icon="📊" color="emerald" 
                />
-            </div>
-         )}
-
-         {/* CURRICULUM VIEW (MOCKUP) */}
-         {activeView === 'curriculum' && (
-            <div className="space-y-8 animate-scale-in">
-               <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-xl">
-                  <div className="flex justify-between items-center mb-12">
-                     <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Akademik Program Yönetimi</h3>
-                     <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-orange-600 transition-all">+ YENİ PROGRAM</button>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                     {[
-                       { t: 'Yeni Uzman Oryantasyonu', b: 'Tüm Branşlar', s: 'AKTİF', c: 'orange' },
-                       { t: 'ABA Uygulama Sadakati', b: 'Özel Eğitim', s: 'AKTİF', c: 'blue' },
-                       { t: 'Klinik Etik ve Sınırlar', b: 'Tüm Branşlar', s: 'ZORUNLU', c: 'emerald' },
-                       { t: 'İleri Floortime Stratejileri', b: 'Psikoloji / Ergoterapi', s: 'TASLAK', c: 'slate' }
-                     ].map((p, i) => (
-                        <div key={i} className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all">
-                           <div>
-                              <span className={`px-3 py-1 bg-${p.c}-100 text-${p.c}-700 rounded-lg text-[9px] font-black uppercase mb-3 inline-block`}>{p.s}</span>
-                              <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight">{p.t}</h4>
-                              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">{p.b}</p>
-                           </div>
-                           <button className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-                           </button>
-                        </div>
-                     ))}
-                  </div>
-               </div>
             </div>
          )}
 
