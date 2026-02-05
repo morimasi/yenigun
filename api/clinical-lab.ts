@@ -3,6 +3,21 @@ import { sql } from '@vercel/postgres';
 
 export const config = { runtime: 'edge' };
 
+async function ensureLabSchema() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS clinical_simulations (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      candidate_id TEXT REFERENCES candidates(id) ON DELETE CASCADE,
+      test_type TEXT NOT NULL,
+      scenario TEXT NOT NULL,
+      result_data JSONB NOT NULL,
+      stress_level INTEGER NOT NULL,
+      is_sealed BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+}
+
 export default async function handler(request: Request) {
   const method = request.method;
   const { searchParams } = new URL(request.url);
@@ -13,12 +28,14 @@ export default async function handler(request: Request) {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
   };
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // 1. SAVE NEW SIMULATION
+    await ensureLabSchema();
+
     if (method === 'POST' && action === 'save') {
       const { candidateId, testType, scenario, resultData, stressLevel } = await request.json();
       const { rows } = await sql`
@@ -29,7 +46,6 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true, id: rows[0].id }), { status: 201, headers });
     }
 
-    // 2. GET HISTORY FOR CANDIDATE
     if (method === 'GET' && action === 'history') {
       const candidateId = searchParams.get('candidateId');
       const { rows } = await sql`
@@ -38,13 +54,6 @@ export default async function handler(request: Request) {
         ORDER BY created_at DESC;
       `;
       return new Response(JSON.stringify(rows), { status: 200, headers });
-    }
-
-    // 3. SEAL SIMULATION (MAKE READ-ONLY)
-    if (method === 'POST' && action === 'seal') {
-      const { simId } = await request.json();
-      await sql`UPDATE clinical_simulations SET is_sealed = TRUE WHERE id = ${simId}`;
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
   } catch (error: any) {

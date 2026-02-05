@@ -1,12 +1,12 @@
 
-import { Candidate, GlobalConfig } from '../types';
+import { Candidate, GlobalConfig, StaffMember, IDP } from '../types';
+import { MOCK_DATA } from './seedService';
 
 export interface StorageResult {
   success: boolean;
   error?: string;
 }
 
-// YEREL YEDEKLEME ANAHTARLARI
 const STORAGE_KEYS = {
   TOKEN: 'yeni_gun_admin_token',
   CANDIDATES: 'yeni_gun_candidates',
@@ -18,6 +18,58 @@ export const storageService = {
   getAuthHeader() {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     return token ? { 'Authorization': `Bearer ${token}` } : {};
+  },
+
+  // --- SEEDING ENGINE (NEW) ---
+  async seedDatabase(): Promise<StorageResult> {
+    try {
+      // 1. Seed Candidates
+      for (const cand of MOCK_DATA.candidates) {
+        await this.saveCandidate(cand as Candidate);
+      }
+      // 2. Seed Staff
+      for (const s of MOCK_DATA.staff) {
+          await fetch('/api/staff?action=register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({...s, password: 'demo123'})
+          });
+          // Update staff profile to be complete
+          await fetch('/api/staff?action=update_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(s)
+          });
+          // Save analysis report to staff
+          await fetch('/api/staff?action=save_analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ staffId: s.id, report: s.report })
+          });
+      }
+      // 3. Seed IDP
+      await fetch('/api/staff?action=save_idp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ staffId: MOCK_DATA.idp.staffId, data: MOCK_DATA.idp })
+      });
+      // 4. Seed Simulation
+      await fetch('/api/clinical-lab?action=save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              candidateId: MOCK_DATA.candidates[0].id,
+              testType: MOCK_DATA.simulation.test_type,
+              scenario: MOCK_DATA.simulation.scenario,
+              stressLevel: MOCK_DATA.simulation.stress_level,
+              resultData: MOCK_DATA.simulation.result_data
+          })
+      });
+
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
   },
 
   async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
@@ -37,15 +89,12 @@ export const storageService = {
       }
       throw new Error("API_FAIL");
     } catch (e) {
-      console.warn("Sunucu bağlantısı yok.");
       return { success: false, error: 'Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.' };
     }
   },
 
-  // CRITICAL UPDATE: NETWORK-FIRST STRATEGY
   async getCandidates(forceRefresh = true): Promise<Candidate[]> {
     try {
-      // Her zaman sunucudan taze veri çekmeyi dene (Cache-Busting: _t parametresi)
       const response = await fetch(`/api/candidates?_t=${Date.now()}`, { 
         headers: { 
           'Pragma': 'no-cache',
@@ -53,25 +102,20 @@ export const storageService = {
           ...this.getAuthHeader() 
         }
       });
-
       if (response.ok) {
         const remoteData: Candidate[] = await response.json();
-        // Sunucudan veri geldiyse yerel yedeği güncelle
         localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(remoteData));
         return remoteData.sort((a, b) => b.timestamp - a.timestamp);
       } else {
         throw new Error(`API Error: ${response.status}`);
       }
     } catch (e: any) {
-      console.error("Veri Senkronizasyon Hatası:", e);
-      // Sadece sunucu hatasında yerel veriyi göster, ama kullanıcı bilsin.
       const localStr = localStorage.getItem(STORAGE_KEYS.CANDIDATES);
       const localData: Candidate[] = localStr ? JSON.parse(localStr) : [];
       return localData.sort((a, b) => b.timestamp - a.timestamp);
     }
   },
 
-  // CRITICAL UPDATE: WRITE-THROUGH STRATEGY
   async saveCandidate(candidate: Candidate): Promise<StorageResult> {
     try {
       const res = await fetch('/api/candidates', {
@@ -79,19 +123,11 @@ export const storageService = {
         headers: { 'Content-Type': 'application/json', ...this.getAuthHeader() },
         body: JSON.stringify(candidate)
       });
-      
       const data = await res.json();
-
-      if (!res.ok) {
-        // Sunucudan dönen özel hata mesajını yakala
-        const serverError = data.details || data.message || "Sunucu tarafında bilinmeyen hata";
-        throw new Error(serverError);
-      }
-      
+      if (!res.ok) throw new Error(data.details || data.message || "Sunucu hatası");
       return { success: true };
     } catch (e: any) {
-      console.error("Kayıt Hatası:", e);
-      return { success: false, error: e.message || "Sunucuya bağlanılamadı. Kayıt MERKEZİ SİSTEME iletilemedi." };
+      return { success: false, error: e.message };
     }
   },
 
@@ -101,32 +137,16 @@ export const storageService = {
 
   async deleteCandidate(id: string): Promise<boolean> {
     try { 
-      const res = await fetch(`/api/candidates?id=${id}`, { 
-        method: 'DELETE',
-        headers: this.getAuthHeader()
-      }); 
-      if (!res.ok) throw new Error("API_FAIL");
-      return true;
-    } catch (e) {
-      return false; // Silme işlemi sunucuda olmazsa başarısız say.
-    }
-  },
-
-  async deleteMultipleCandidates(ids: string[]): Promise<boolean> {
-    // Toplu silme henüz API tarafında yoksa tek tek sil
-    try {
-        await Promise.all(ids.map(id => this.deleteCandidate(id)));
-        return true;
-    } catch (e) {
-        return false;
-    }
+      const res = await fetch(`/api/candidates?id=${id}`, { method: 'DELETE', headers: this.getAuthHeader() }); 
+      return res.ok;
+    } catch (e) { return false; }
   },
 
   async getConfig(): Promise<GlobalConfig | null> {
     try {
       const res = await fetch(`/api/config?_t=${Date.now()}`, { headers: this.getAuthHeader() });
       if (res.ok) return await res.json();
-      throw new Error("API_FAIL");
+      return null;
     } catch (e) {
       const local = localStorage.getItem(STORAGE_KEYS.CONFIG);
       return local ? JSON.parse(local) : null;
@@ -140,13 +160,8 @@ export const storageService = {
         headers: { 'Content-Type': 'application/json', ...this.getAuthHeader() },
         body: JSON.stringify(config)
       });
-      if (res.ok) {
-        localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+      if (res.ok) localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
+      return res.ok;
+    } catch (e) { return false; }
   }
 };
