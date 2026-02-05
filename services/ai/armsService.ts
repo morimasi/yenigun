@@ -5,6 +5,7 @@ import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule } f
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
+  // ... (Existing generateIDP function remains unchanged)
   async generateIDP(staff: StaffMember, assessmentHistory: any[] = []): Promise<IDP> {
     
     const systemInstruction = `
@@ -127,51 +128,45 @@ export const armsService = {
   },
 
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    // Existing function logic maintained
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
-      config: {
-        systemInstruction: `ROL: Akademik Müfredat Tasarımcısı. GÖREV: Vaka temelli interaktif bir eğitim seti tasarla.`,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.STRING },
-              type: { type: Type.STRING },
-              title: { type: Type.STRING },
-              subtitle: { type: Type.STRING },
-              content: { type: Type.ARRAY, items: { type: Type.STRING } },
-              speakerNotes: { type: Type.STRING },
-              visualPrompt: { type: Type.STRING },
-              interactiveElement: {
-                type: Type.OBJECT,
-                properties: {
-                  question: { type: Type.STRING },
-                  expectedAnswer: { type: Type.STRING },
-                  misconception: { type: Type.STRING }
-                }
-              }
-            },
-            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
-          }
-        }
-      }
+    // Basic legacy generator wrapper
+    return this.generateCustomPresentation({
+        topic: `Gelişim Planı: ${idp.focusArea}`,
+        targetAudience: 'individual',
+        tone: 'academic',
+        depth: 'intermediate',
+        slideCount: 5,
+        visualStyle: 'corporate',
+        includeAnimations: true
     });
-
-    return JSON.parse(response.text || '[]');
   },
 
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    // Existing function logic maintained
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
+      contents: `
+        SUNUM KONUSU: ${config.topic}
+        HEDEF KİTLE: ${config.targetAudience}
+        TON: ${config.tone}
+        DERİNLİK: ${config.depth}
+        SLAYT SAYISI: ${config.slideCount}
+        GÖRSEL STİL: ${config.visualStyle}
+        ANİMASYON: ${config.includeAnimations ? 'EVET' : 'HAYIR'}
+      `,
       config: {
-        systemInstruction: `ROL: Kıdemli Akademik Müfredat Tasarımcısı. GÖREV: Akademik derinliği olan bir eğitim sunumu tasarla.`,
+        systemInstruction: `
+          ROL: Yeni Gün Akademi Baş Tasarım Direktörü ve İçerik Küratörü.
+          GÖREV: Verilen konfigürasyona göre profesyonel, görsel açıdan zengin ve akademik derinliği olan bir sunum tasarla.
+          
+          GÖRSEL TASARIM KURALLARI:
+          1. 'layout' alanı için 'cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center' tiplerinden en uygununu seç.
+          2. 'imageKeyword' alanı için, slaytın içeriğini en iyi özetleyen, Unsplash'te bulunabilecek İNGİLİZCE tek bir anahtar kelime seç (örn: 'brain', 'classroom', 'teamwork', 'microscope').
+          3. 'visualPrompt' alanına, eğer bir AI görsel oluşturacak olsaydı nasıl bir prompt yazılması gerektiğini detaylıca tasvir et.
+          4. 'animation' alanı için 'fade', 'slide_up', 'zoom_in', 'pan_right' seçeneklerinden sinematik bir akış oluşturacak olanı seç.
+          
+          İÇERİK KURALLARI:
+          1. Metinler kısa, vurucu ve akademik dilde olsun.
+          2. Speaker Notes, sunumu yapacak kişiye "gizli ipuçları" ve "anekdotlar" versin.
+        `,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
@@ -180,12 +175,15 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] }, // Legacy
+              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
               speakerNotes: { type: Type.STRING },
               visualPrompt: { type: Type.STRING },
+              imageKeyword: { type: Type.STRING },
+              animation: { type: Type.STRING, enum: ['fade', 'slide_up', 'zoom_in', 'pan_right', 'none'] },
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
@@ -195,12 +193,18 @@ export const armsService = {
                 }
               }
             },
-            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+            required: ["id", "layout", "title", "content", "speakerNotes", "visualPrompt", "imageKeyword", "animation"]
           }
         }
       }
     });
 
-    return JSON.parse(response.text || '[]');
+    const slides = JSON.parse(response.text || '[]');
+    
+    // Post-process to ensure unique IDs
+    return slides.map((s: any, i: number) => ({
+        ...s,
+        id: `SLIDE-${Date.now()}-${i}`
+    }));
   }
 };

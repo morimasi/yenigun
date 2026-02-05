@@ -1,60 +1,42 @@
 
 // ... (Mevcut tipler korunur)
 
-// YENİ: EĞİTİM MÜFREDAT YAPISI (GELİŞMİŞ)
-export interface TrainingResource {
-  type: 'pdf' | 'video' | 'article' | 'book';
-  title: string;
-  url?: string;
-}
+// GELİŞMİŞ SUNUM TİPLERİ
+export type SlideLayout = 'cover' | 'section_header' | 'split_left' | 'split_right' | 'full_visual' | 'bullet_list' | 'quote_center';
+export type AnimationType = 'fade' | 'slide_up' | 'zoom_in' | 'pan_right' | 'none';
+export type VisualStyle = 'minimalist' | 'corporate' | 'playful' | 'dark_mode' | 'academic';
 
-export interface TrainingUnit {
+export interface TrainingSlide {
   id: string;
+  type: 'title' | 'content' | 'interactive'; // Legacy support
+  layout: SlideLayout; // YENİ: Slayt yerleşimi
   title: string;
-  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop';
-  content: string; // Açıklama veya Link
-  durationMinutes: number;
-  isCompleted: boolean;
-  aiRationale?: string; // AI bu üniteyi neden atadı?
-  resources?: TrainingResource[]; // Ek kaynaklar
-  successCriteria?: string; // Başarı ölçütü (Örn: %80 Quiz Puanı)
-  status: 'pending' | 'in_progress' | 'completed';
-}
-
-export interface TrainingModule {
-  id: string;
-  title: string;
-  focusArea: string; // Hangi yetkinliği hedefliyor? (Örn: Etik, Klinik)
-  difficulty: 'basic' | 'intermediate' | 'advanced';
-  units: TrainingUnit[];
-  status: 'locked' | 'active' | 'completed';
-  dueDate?: string;
-  instructor?: string; // Eğitmen adı (Opsiyonel)
-}
-
-export interface IDP {
-  id: string;
-  staffId: string;
-  createdAt: number;
-  updatedAt: number;
-  // Eski alanlar (Legacy Support)
-  focusArea: string;
-  identifiedGaps: string[];
-  roadmap: {
-    shortTerm: string;
-    midTerm: string;
-    longTerm: string;
+  subtitle?: string;
+  content?: string[];
+  speakerNotes?: string;
+  
+  // GÖRSEL & ESTETİK
+  visualPrompt?: string; // AI'ın görsel tasviri
+  imageKeyword?: string; // Görsel API'leri için anahtar kelime
+  backgroundTheme?: string; // CSS class (örn: bg-slate-900)
+  
+  // ETKİLEŞİM
+  animation?: AnimationType;
+  interactiveElement?: {
+    question: string;
+    expectedAnswer: string;
+    misconception: string;
   };
-  recommendedTrainings: string[];
-  milestones: {
-    title: string;
-    dueDate: string;
-    isCompleted: boolean;
-  }[];
-  // YENİ: DETAYLI MÜFREDAT
-  curriculum?: TrainingModule[];
-  aiAnalysisSummary?: string;
-  status: 'draft' | 'published' | 'archived';
+}
+
+export interface PresentationConfig {
+  topic: string;
+  targetAudience: 'individual' | 'team' | 'parents' | 'management';
+  tone: 'academic' | 'motivational' | 'strict' | 'workshop';
+  depth: 'beginner' | 'intermediate' | 'expert';
+  slideCount: number;
+  visualStyle: VisualStyle; // YENİ
+  includeAnimations: boolean; // YENİ
 }
 
 // ... (Diğer tipler aynı kalır)
@@ -289,29 +271,6 @@ export interface GlobalConfig {
   advancedAnalytics?: any;
 }
 
-export interface TrainingSlide {
-  id: string;
-  type: 'title' | 'content' | 'interactive';
-  title: string;
-  subtitle?: string;
-  content?: string[];
-  speakerNotes?: string;
-  visualPrompt?: string;
-  interactiveElement?: {
-    question: string;
-    expectedAnswer: string;
-    misconception: string;
-  };
-}
-
-export interface PresentationConfig {
-  topic: string;
-  targetAudience: 'individual' | 'team' | 'parents' | 'management';
-  tone: 'academic' | 'motivational' | 'strict' | 'workshop';
-  depth: 'beginner' | 'intermediate' | 'expert';
-  slideCount: number;
-}
-
 export enum ClinicalTestType {
   DMP_STRESS = 'DMP_STRESS',
 }
@@ -403,4 +362,59 @@ export interface NotificationLog {
   status: 'sent' | 'failed' | 'pending';
   timestamp: number;
   errorMessage?: string;
+}
+
+export interface TrainingResource {
+  type: 'pdf' | 'video' | 'article' | 'book';
+  title: string;
+  url?: string;
+}
+
+export interface TrainingUnit {
+  id: string;
+  title: string;
+  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop';
+  content: string; // Açıklama veya Link
+  durationMinutes: number;
+  isCompleted: boolean;
+  aiRationale?: string; // AI bu üniteyi neden atadı?
+  resources?: TrainingResource[]; // Ek kaynaklar
+  successCriteria?: string; // Başarı ölçütü (Örn: %80 Quiz Puanı)
+  status: 'pending' | 'in_progress' | 'completed';
+}
+
+export interface TrainingModule {
+  id: string;
+  title: string;
+  focusArea: string; // Hangi yetkinliği hedefliyor? (Örn: Etik, Klinik)
+  difficulty: 'basic' | 'intermediate' | 'advanced';
+  units: TrainingUnit[];
+  status: 'locked' | 'active' | 'completed';
+  dueDate?: string;
+  instructor?: string; // Eğitmen adı (Opsiyonel)
+}
+
+export interface IDP {
+  id: string;
+  staffId: string;
+  createdAt: number;
+  updatedAt: number;
+  // Eski alanlar (Legacy Support)
+  focusArea: string;
+  identifiedGaps: string[];
+  roadmap: {
+    shortTerm: string;
+    midTerm: string;
+    longTerm: string;
+  };
+  recommendedTrainings: string[];
+  milestones: {
+    title: string;
+    dueDate: string;
+    isCompleted: boolean;
+  }[];
+  // YENİ: DETAYLI MÜFREDAT
+  curriculum?: TrainingModule[];
+  aiAnalysisSummary?: string;
+  status: 'draft' | 'published' | 'archived';
 }
