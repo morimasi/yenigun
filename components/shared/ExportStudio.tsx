@@ -5,12 +5,14 @@ import { UniversalPdfService } from '../../services/export/UniversalPdfService';
 import CandidateReport from '../CandidateReport';
 import { storageService } from '../../services/storageService';
 
+// @fix: Added children property to ExportStudioProps to support custom content injection in export views.
 interface ExportStudioProps {
   data: UniversalExportData;
   onClose: () => void;
+  children?: React.ReactNode;
 }
 
-const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
+const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<string>('Sistem Yöneticisi');
@@ -207,15 +209,18 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose }) => {
       <div className="flex-1 bg-slate-800/50 overflow-y-auto custom-scrollbar flex justify-center p-8 md:p-16 relative print:p-0 print:bg-white print:overflow-visible">
          {/* 
             Bu ID (print-stage) PDF servisi tarafından hedeflenir.
-            Ancak PDF motoru v6.0 ile bu içerik "Ghost Container"a kopyalanarak işlenir.
+            v6.0 ile bu içerik "Ghost Container"a kopyalanarak işlenir.
             Böylece ekrandaki kaydırma veya modal durumu PDF çıktısını bozmaz.
          */}
          <div id="print-stage" className="flex flex-col gap-8 items-center print:block print:w-full print:gap-0">
-            <CandidateReport 
-               candidate={data.payload as any} 
-               report={data.payload.report} 
-               options={config} // Config ayarlarını rapora pasla
-            />
+            {/* @fix: Prioritize children if provided for custom exports, otherwise render the default CandidateReport with studio config. */}
+            {children ? children : (
+               <CandidateReport 
+                  candidate={data.payload as any} 
+                  report={data.payload.report} 
+                  options={config} // Config ayarlarını rapora pasla
+               />
+            )}
          </div>
       </div>
 

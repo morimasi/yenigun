@@ -10,12 +10,21 @@ export interface MultimodalElement {
   };
 }
 
+export interface TrainingQuiz {
+  questions: {
+    id: string;
+    text: string;
+    options: { label: string; isCorrect: boolean; feedback: string }[];
+  }[];
+}
+
 export interface CustomTrainingSlide {
   id: string;
   title: string;
   elements: MultimodalElement[];
   speakerNotes: string;
   aiAdvice?: string;
+  quiz?: TrainingQuiz; // Slayt bazlı veya final quiz
 }
 
 export interface CustomTrainingPlan {
@@ -28,8 +37,21 @@ export interface CustomTrainingPlan {
   slides: CustomTrainingSlide[];
   createdBy: string;
   createdAt: number;
+  finalQuiz?: TrainingQuiz;
 }
 
+export interface TrainingAssignment {
+  id: string;
+  planId: string;
+  staffId: string;
+  assignedAt: number;
+  status: 'assigned' | 'in_progress' | 'completed';
+  progress: number; // 0-100
+  score?: number;
+  completedAt?: number;
+}
+
+// ... (Existing types preserved)
 export interface TrainingResource {
   type: 'pdf' | 'video' | 'article' | 'book';
   title: string;
@@ -102,9 +124,6 @@ export enum StaffRole {
   Mentor = 'mentor'
 }
 
-/**
- * @fix: Added missing type definitions required by several components.
- */
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
 

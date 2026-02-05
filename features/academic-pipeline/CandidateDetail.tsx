@@ -189,7 +189,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
             <div className="h-[350px] w-full relative z-10">
                <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trajectory}>
-                     <defs><linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ea580c" stopOpacity={0.15}/><stop offset="95%" stopColor="#ea580c" stopOpacity={0}/></linearGradient></defs>
+                     <defs><linearGradient id="colorScore" x1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ea580c" stopOpacity={0.15}/><stop offset="95%" stopColor="#ea580c" stopOpacity={0}/></linearGradient></defs>
                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} />
                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} domain={[0, 100]} />
@@ -237,7 +237,8 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Branş</label>
-                            <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value})}>
+                            {/* @fix: Cast e.target.value as Branch to satisfy enum type check. */}
+                            <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value as Branch})}>
                                 {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                             </select>
                         </div>
@@ -268,7 +269,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
           onClose={() => setIsExportStudioOpen(false)}
           data={{ type: 'CANDIDATE_REPORT', entityName: candidate.name, referenceId: candidate.id.toUpperCase(), payload: candidate }}
         >
-          <CandidateReport candidate={candidate} report={candidate.report} />
+          {/* @fix: Removed explicit CandidateReport child to use ExportStudio's robust internal rendering which includes studio config options. */}
         </ExportStudio>
       )}
 
