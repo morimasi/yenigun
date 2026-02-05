@@ -89,12 +89,12 @@ export const GLOBAL_CURRICULA: TrainingPlan[] = [
   { id: 'eth_14', title: 'Raporlarda Şiddet İçermeyen Dil', category: 'ETHICS', targetBranches: 'ALL', level: 'Intermediate', badge: 'HAYSİYET-14', description: 'Pedagojik üslup disiplini.', modules: [] },
   { id: 'eth_15', title: 'Ayrılan Personelin Etik Sorumluluğu', category: 'ETHICS', targetBranches: 'ALL', level: 'Advanced', badge: 'HAYSİYET-15', description: 'Bilgi çalma ve vaka taşıma.', modules: [] },
   { id: 'eth_16', title: 'Süpervizyon Almanın Etik Boyutu', category: 'ETHICS', targetBranches: 'ALL', level: 'Intermediate', badge: 'HAYSİYET-16', description: 'Denetime açıklık ve dürüstlük.', modules: [] },
-  { id: 'eth_17', title: 'Yapay Zeka Kullanım Etiği', category: 'ETHICS', targetBranches: 'ALL', level: 'Advanced', badge: 'HAYSİYET-17', description: 'Algoritmik vicdan.', modules: [] },
+  { id: 'eth_17', title: 'Yapay Zeka ve Otomasyon Etiği', category: 'ETHICS', targetBranches: 'ALL', level: 'Advanced', badge: 'HAYSİYET-17', description: 'Algoritmik vicdan.', modules: [] },
   { id: 'eth_18', title: 'Kurum İtibarı ve PR Etiği', category: 'ETHICS', targetBranches: 'ALL', level: 'Intermediate', badge: 'HAYSİYET-18', description: 'Bilginin doğru pazarlanması.', modules: [] },
   { id: 'eth_19', title: 'Vaka Sırrı ve Üçüncü Şahıslar', category: 'ETHICS', targetBranches: 'ALL', level: 'Advanced', badge: 'HAYSİYET-19', description: 'Okul ve aile dışı sızıntılar.', modules: [] },
   { id: 'eth_20', title: 'Etik Tahkim Kurulu Başvurusu', category: 'ETHICS', targetBranches: 'ALL', level: 'Advanced', badge: 'HAYSİYET-20', description: 'İhlal bildirim mekanizması.', modules: [] },
 
-  // --- 4. YÖNETİM (20 İÇERİK) ---
+  // --- 4. YÖNETİM (21 İÇERİK) ---
   { id: 'man_01', title: 'Stratejik İK ve Liyakat Yönetimi', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Advanced', badge: 'KOMUTA-01', description: 'Ekip seçme ve yerleştirme.', modules: [] },
   { id: 'man_02', title: 'Finansal Verimlilik ve Burs Kontenjanı', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Advanced', badge: 'KOMUTA-02', description: 'Rehabilitasyon işletme mantığı.', modules: [] },
   { id: 'man_03', title: 'Kriz Diplomasisi ve PR Yönetimi', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Advanced', badge: 'KOMUTA-03', description: 'Skandal ve kaza yönetimi.', modules: [] },
@@ -115,4 +115,5 @@ export const GLOBAL_CURRICULA: TrainingPlan[] = [
   { id: 'man_18', title: 'Veri Madenciliği ve İstatistiksel Tahmin', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Advanced', badge: 'KOMUTA-18', description: 'Gelecek öngörüleri.', modules: [] },
   { id: 'man_19', title: 'Zorlu Personel Yönetimi', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Advanced', badge: 'KOMUTA-19', description: 'Disiplin ve geri bildirim.', modules: [] },
   { id: 'man_20', title: 'Kurumsal Hafıza ve Arşivleme', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Intermediate', badge: 'KOMUTA-20', description: 'Bilgi sürekliliği.', modules: [] },
+  { id: 'man_21', title: 'Liderlik ve Yönetim Becerileri', category: 'MANAGEMENT', targetBranches: 'ALL', level: 'Intermediate', badge: 'KOMUTA-21', description: 'Ekip yönetimi ve performans optimizasyonu.', modules: [] },
 ];
