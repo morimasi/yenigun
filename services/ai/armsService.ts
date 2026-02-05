@@ -1,191 +1,230 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, TrainingUnit, Candidate } from "../../types";
+import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, TrainingUnit, Candidate, PersonaType } from "../../types";
 
+const safeParseArray = (raw: string, fallback: any[] = []): any[] => {
+    try {
+        const clean = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        if (Array.isArray(parsed)) return parsed;
+        if (typeof parsed === 'object') {
+            const key = Object.keys(parsed).find(k => Array.isArray(parsed[k]));
+            if (key) return parsed[key];
+        }
+        return fallback;
+    } catch (e) {
+        console.warn("AI JSON Parse Warning:", e);
+        return fallback;
+    }
+};
+
+/**
+ * Yeni Gün Akademi ARMS AI Service
+ * @fix: Implemented missing methods generateIDP, generateTrainingSlides, and generateCustomPresentation to resolve compilation errors.
+ */
 export const armsService = {
-  // SUNUMDAN IDP/MÜFREDAT ÜRETME (Bridge Function)
-  async convertPresentationToIDP(staff: StaffMember, slides: TrainingSlide[], topic: string): Promise<IDP> {
+  // FAZ 2: ATOMIC REFINEMENT ENGINE
+  async refineAtomicContent(
+    slide: TrainingSlide, 
+    targetField: 'title' | 'content' | 'subtitle', 
+    intent: string,
+    itemIndex?: number
+  ): Promise<TrainingSlide> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
-      ROL: Yeni Gün Akademi "Eğitim Teknolojisi Mimarı".
-      GÖREV: Verilen sunum slaytlarını analiz et ve bu slaytlardaki akademik derinliği bir "Personel Gelişim Müfredatına" (IDP) dönüştür.
+      ROL: Yeni Gün Akademi "Hassas İçerik Editörü".
+      GÖREV: Verilen slaytın SADECE belirtilen '${targetField}' alanını, kullanıcının '${intent}' niyetiyle yeniden kurgula.
       
       KRİTERLER:
-      1. Her ana slaytı bir 'TrainingModule' olarak kurgula.
-      2. Slayt içerisindeki maddeleri 'TrainingUnit' görevlerine (Vaka Analizi, Okuma, Simülasyon) çevir.
-      3. Her görev için personelin test edileceği 'successCriteria' belirle.
-      ÇIKTI: Saf JSON olmalı.
-    `;
-
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `PERSONEL: ${staff.name} | BRANŞ: ${staff.branch} | KONU: ${topic} | SLAYTLAR: ${JSON.stringify(slides)}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
-      }
-    });
-
-    const data = JSON.parse(response.text || '{}');
-    return {
-      id: `IDP-AUTO-${Date.now()}`,
-      staffId: staff.id,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      status: 'draft',
-      focusArea: topic,
-      identifiedGaps: data.identifiedGaps || [],
-      roadmap: data.roadmap || { shortTerm: '', midTerm: '', longTerm: '' },
-      recommendedTrainings: data.recommendedTrainings || [],
-      milestones: data.milestones || [],
-      curriculum: data.curriculum || []
-    };
-  },
-
-  async generateIDP(subject: StaffMember | Candidate, history?: any[]): Promise<IDP> {
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Baş Mentorluk Motoru.
-      GÖREV: Verilen personel/aday verilerini ve sınav geçmişini analiz ederek kişiselleştirilmiş 90 günlük gelişim rotası (IDP) oluştur.
-      ÇIKTI: Saf JSON olmalı.
-    `;
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `VERİ: ${JSON.stringify(subject)} | GEÇMİŞ: ${JSON.stringify(history)}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 12000 }
-      }
-    });
-    const data = JSON.parse(response.text || '{}');
-    return {
-      id: `IDP-${Date.now()}`,
-      staffId: subject.id,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      status: 'draft',
-      focusArea: data.focusArea || 'Klinik Gelişim',
-      identifiedGaps: data.identifiedGaps || [],
-      roadmap: data.roadmap || { shortTerm: '', midTerm: '', longTerm: '' },
-      recommendedTrainings: data.recommendedTrainings || [],
-      milestones: data.milestones || [],
-      curriculum: data.curriculum || []
-    };
-  },
-
-  // @fix: Added missing generateTrainingSlides method to resolve property missing error in DecisionSupportView.tsx.
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Eğitim Tasarımcısı.
-      GÖREV: Oluşturulan Bireysel Gelişim Planını (IDP) profesyonel bir eğitim sunumuna dönüştür.
+      1. Diğer alanlara ASLA DOKUNMA.
+      2. Eğer hedef 'content' ve bir 'itemIndex' verilmişse, sadece o dizindeki maddeyi değiştir.
+      3. Anlamsal bütünlüğü (context) koru.
       
-      KRİTERLER:
-      1. Her modülü en az 2 slayt olarak kurgula.
-      2. 'imageKeyword' alanı Unsplash uyumlu İngilizce kelime olmalı.
-      3. Çıktı saf JSON dizi olmalı.
+      ÇIKTI: Sadece güncellenmiş alanın değerini içeren bir JSON objesi döndür.
     `;
 
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `IDP: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
+      contents: `SLAYT: ${JSON.stringify(slide)} | HEDEF: ${targetField} | İNDİS: ${itemIndex ?? 'n/a'} | NİYET: ${intent}`,
       config: {
         systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        responseMimeType: "application/json"
       }
     });
 
-    const slides = JSON.parse(response.text || '[]');
-    return slides.map((s: any, i: number) => ({
-      ...s,
-      id: `SLIDE-IDP-${Date.now()}-${i}`,
-      generatedImageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(s.visualPrompt || s.title)}?width=1280&height=720&nologo=true`
-    }));
+    try {
+        const delta = JSON.parse(response.text || '{}');
+        const nextSlide = { ...slide };
+        
+        if (targetField === 'content' && typeof itemIndex === 'number' && nextSlide.content) {
+            const newContent = [...nextSlide.content];
+            newContent[itemIndex] = delta.value || delta.content || delta;
+            nextSlide.content = newContent;
+        } else {
+            (nextSlide as any)[targetField] = delta.value || delta[targetField] || delta;
+        }
+        
+        return nextSlide;
+    } catch (e) {
+        return slide;
+    }
   },
 
-  // KATALOG ŞABLONUNDAN SUNUM ÜRETME
+  async morphPresentation(slides: TrainingSlide[], targetPersona: PersonaType): Promise<TrainingSlide[]> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi "Adaptif İçerik Mimarı".
+      GÖREV: Slaytları ${targetPersona.toUpperCase()} personasına göre yeniden sentezle.
+      ÇIKTI: JSON dizisi.
+    `;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `SLAYTLAR: ${JSON.stringify(slides)}`,
+      config: { systemInstruction, responseMimeType: "application/json" }
+    });
+    const morphedBase = safeParseArray(response.text || '[]');
+    return slides.map(original => {
+        const morphed = morphedBase.find(m => m.id === original.id);
+        return morphed ? { ...original, ...morphed } : original;
+    });
+  },
+
   async generateFromCatalogTemplate(template: any, config: PresentationConfig): Promise<TrainingSlide[]> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Akademik Direktörü.
-      GÖREV: Seçilen "${template.title}" şablonunu, kurumun ihtiyaçlarına göre profesyonel bir akademik sunuma dönüştür.
-      
-      BAĞLAM:
-      - Şablon Birimleri: ${JSON.stringify(template.coreUnits)}
-      - Hedef Kitle: ${config.targetAudience}
-      - Ton: ${config.tone}
-      
-      KRALLAR:
-      1. Her birimi derinlemesine analiz et.
-      2. 'imageKeyword' alanı Unsplash için İngilizce tekil kelime olmalı.
-      3. 'visualPrompt' alanı AI görsel sentezi için detaylı tasvir içermeli.
-      4. Slaytlar akademik liyakat standartlarında olmalı.
-    `;
-
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `KONU: ${template.title} | SLAYT SAYISI: ${config.slideCount} | STİL: ${config.visualStyle}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+      contents: `KONU: ${template.title} | ŞABLON: ${JSON.stringify(template.coreUnits)}`,
+      config: { 
+          systemInstruction: "Akademik Eğitim Tasarımcısı olarak sunum üret. Çıktı JSON dizisi.",
+          responseMimeType: "application/json" 
       }
     });
-
-    const slides = JSON.parse(response.text || '[]');
-    return slides.map((s: any, i: number) => ({
-      ...s,
-      id: `SLIDE-${Date.now()}-${i}`,
-      generatedImageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(s.visualPrompt || s.title)}?width=1280&height=720&nologo=true`
-    }));
-  },
-
-  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi "Kreatif Direktör".
-      GÖREV: Akademik liyakat sunumu tasarla.
-      
-      STİL KURALLARI:
-      - 'layout': [cover, section_header, split_left, split_right, full_visual, bullet_list, quote_center, data_grid, process_flow]
-      - 'imageKeyword': İngilizce, Unsplash uyumlu tekil kelime.
-      - 'visualPrompt': Görselin ruhunu anlatan detaylı sanatsal tasvir.
-      ÇIKTI: Saf JSON dizi.
-    `;
-
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `KONU: ${config.topic} | KİTLE: ${config.targetAudience} | DERİNLİK: ${config.depth} | SLAYT: ${config.slideCount}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
-      }
-    });
-
-    const slides = JSON.parse(response.text || '[]');
+    const slides = safeParseArray(response.text || '[]');
     return slides.map((s: any, i: number) => ({ ...s, id: `SLIDE-${Date.now()}-${i}` }));
   },
 
   async refineSlideContent(slide: TrainingSlide, intent: string): Promise<TrainingSlide> {
-    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `SLAYT: ${JSON.stringify(slide)} | NİYET: ${intent}`,
+      config: { systemInstruction: "Slaytı geliştir. Çıktı JSON.", responseMimeType: "application/json" }
+    });
+    return { ...slide, ...JSON.parse(response.text || '{}') };
+  },
+
+  // @fix: Implemented generateIDP method to resolve errors in DevelopmentRouteView and DecisionSupportView.
+  async generateIDP(subject: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: `SUBJECT: ${JSON.stringify(subject)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
-        systemInstruction: "Slaytı belirtilen niyetle yeniden kurgula. Sadece JSON döndür.",
+        systemInstruction: "Yeni Gün Akademi Klinik Mentorluk Sistemi. Personelin yetkinlik açıklarını analiz et ve 90 günlük gelişim planı (IDP) üret. Saf JSON döndür.",
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            staffId: { type: Type.STRING },
+            createdAt: { type: Type.NUMBER },
+            updatedAt: { type: Type.NUMBER },
+            focusArea: { type: Type.STRING },
+            identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
+            roadmap: {
+              type: Type.OBJECT,
+              properties: {
+                shortTerm: { type: Type.STRING },
+                midTerm: { type: Type.STRING },
+                longTerm: { type: Type.STRING }
+              },
+              required: ["shortTerm", "midTerm", "longTerm"]
+            },
+            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } },
+            milestones: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  dueDate: { type: Type.STRING },
+                  isCompleted: { type: Type.BOOLEAN }
+                }
+              }
+            },
+            curriculum: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  focusArea: { type: Type.STRING },
+                  difficulty: { type: Type.STRING },
+                  status: { type: Type.STRING },
+                  units: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        id: { type: Type.STRING },
+                        title: { type: Type.STRING },
+                        type: { type: Type.STRING },
+                        content: { type: Type.STRING },
+                        durationMinutes: { type: Type.NUMBER },
+                        isCompleted: { type: Type.BOOLEAN },
+                        aiRationale: { type: Type.STRING },
+                        successCriteria: { type: Type.STRING },
+                        status: { type: Type.STRING }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            status: { type: Type.STRING }
+          },
+          required: ["focusArea", "identifiedGaps", "roadmap", "curriculum"]
+        }
+      }
+    });
+    return JSON.parse(response.text || '{}');
+  },
+
+  // @fix: Implemented generateTrainingSlides method to resolve error in DecisionSupportView.
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi Eğitim Tasarımcısı. Verilen IDP ve branş bilgisine göre 8-12 slaytlık bir eğitim destesi oluştur. Saf JSON dizisi döndür. Her nesne TrainingSlide yapısında olmalı.",
         responseMimeType: "application/json"
       }
     });
-    return { ...slide, ...JSON.parse(response.text || '{}') };
+    const slides = safeParseArray(response.text || '[]');
+    return slides.map((s: any, i: number) => ({ 
+      ...s, 
+      id: s.id || `SLD-${Date.now()}-${i}`,
+      layout: s.layout || 'bullet_list'
+    }));
+  },
+
+  // @fix: Implemented generateCustomPresentation method to resolve error in PresentationStudio.
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: `CONFIG: ${JSON.stringify(config)}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi Eğitim Tasarımcısı. Belirtilen konuya ve hedef kitleye uygun profesyonel slaytlar üret. Saf JSON dizisi döndür. Her nesne TrainingSlide yapısında olmalı.",
+        responseMimeType: "application/json"
+      }
+    });
+    const slides = safeParseArray(response.text || '[]');
+    return slides.map((s: any, i: number) => ({ 
+      ...s, 
+      id: s.id || `CSP-${Date.now()}-${i}`,
+      layout: s.layout || 'bullet_list'
+    }));
   }
 };

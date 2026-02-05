@@ -19,6 +19,8 @@ export type VisualStyle =
   | 'warm_serenity' 
   | 'neuro_divergent';
 
+export type PersonaType = 'academic' | 'operational' | 'parent';
+
 export interface PresentationTheme {
   id: string;
   name: string;
@@ -42,6 +44,7 @@ export interface TrainingSlide {
   imageKeyword?: string;  
   generatedImageUrl?: string; 
   type?: 'title' | 'content';
+  internalReasoning?: string; // AI'nın bu içeriği neden bu şekilde kurduğunun gerekçesi
   interactiveElement?: {
     type: 'quiz' | 'reflection' | 'poll';
     question: string;
@@ -60,6 +63,12 @@ export interface PresentationConfig {
   visualStyle: VisualStyle;
   includeAnimations: boolean;
   institutionName?: string;
+}
+
+export interface HistoryState {
+  past: TrainingSlide[][];
+  present: TrainingSlide[];
+  future: TrainingSlide[][];
 }
 
 export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'TRAINING_CURRICULUM' | 'PRESENTATION_DOSSIER';
@@ -151,8 +160,6 @@ export interface IDP {
   curriculum?: TrainingModule[];
   status: 'draft' | 'published' | 'archived';
 }
-
-// @fix: Exported additional types and interfaces required by components and services.
 
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli';
