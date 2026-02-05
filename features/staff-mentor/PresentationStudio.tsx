@@ -5,7 +5,7 @@ import { armsService } from '../../services/ai/armsService';
 import PptxGenJS from 'pptxgenjs';
 
 interface PresentationStudioProps {
-  initialConfig?: PresentationConfig; // Opsiyonel başlangıç ayarları (Müfredattan gelirse)
+  initialConfig?: PresentationConfig;
   onClose?: () => void;
 }
 
@@ -13,7 +13,6 @@ interface PresentationStudioProps {
 const getVisualUrl = (keyword: string, style: VisualStyle) => {
   const cleanKeyword = keyword?.split(' ')[0] || 'abstract';
   const mood = style === 'dark_mode' ? 'dark,moody' : style === 'playful' ? 'colorful,fun' : 'minimal,clean';
-  // Cache busting için random ekle
   return `https://source.unsplash.com/1600x900/?${cleanKeyword},${mood}&sig=${Math.random()}`;
 };
 
@@ -40,7 +39,42 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
 
   // LIVE PLAYER STATES
   const [showNotes, setShowNotes] = useState(false);
+  const [isBlackout, setIsBlackout] = useState(false);
   const [laserPointer, setLaserPointer] = useState<{x:number, y:number} | null>(null);
+
+  // --- GLOBAL KEYBOARD LISTENER (MOVED TO TOP LEVEL) ---
+  useEffect(() => {
+    if (mode !== 'live') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        // Navigation
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+            setActiveSlideIdx(prev => Math.min(prev + 1, slides.length - 1));
+        }
+        if (e.key === 'ArrowLeft') {
+            setActiveSlideIdx(prev => Math.max(0, prev - 1));
+        }
+        
+        // Tools
+        if (e.key === 'l') {
+            setLaserPointer(prev => prev ? null : {x: window.innerWidth/2, y: window.innerHeight/2});
+        }
+        if (e.key === 'b') {
+            setIsBlackout(prev => !prev);
+        }
+        if (e.key === 'n') {
+            setShowNotes(prev => !prev);
+        }
+        
+        // Exit
+        if (e.key === 'Escape') {
+            setMode('editor');
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mode, slides.length]); // Dependencies ensure fresh state access
 
   // --- ACTIONS ---
 
@@ -348,20 +382,10 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
   if (mode === 'live') {
      const slide = slides[activeSlideIdx];
      
-     const nextSlide = () => setActiveSlideIdx(prev => Math.min(prev + 1, slides.length - 1));
-     const prevSlide = () => setActiveSlideIdx(prev => Math.max(prev - 1, 0));
-
      return (
         <div 
           className={`fixed inset-0 z-[5000] bg-black cursor-none ${laserPointer ? 'cursor-crosshair' : ''}`}
           tabIndex={0}
-          onKeyDown={(e) => {
-             if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
-             if(e.key === 'ArrowLeft') prevSlide();
-             if(e.key === 'Escape') setMode('editor');
-             if(e.key === 'n') setShowNotes(!showNotes);
-             if(e.key === 'l') setLaserPointer(laserPointer ? null : {x:0, y:0});
-          }}
           onMouseMove={(e) => laserPointer && setLaserPointer({x: e.clientX, y: e.clientY})}
           autoFocus
         >
@@ -371,6 +395,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                 className="fixed w-4 h-4 bg-red-600 rounded-full pointer-events-none z-[6000] shadow-[0_0_20px_rgba(255,0,0,0.8)]"
                 style={{ left: laserPointer.x - 8, top: laserPointer.y - 8 }}
               />
+           )}
+
+           {/* BLACKOUT CURTAIN */}
+           {isBlackout && (
+              <div className="absolute inset-0 bg-black z-[5500] flex items-center justify-center">
+                 <p className="text-white/20 font-black text-xs uppercase tracking-[0.5em]">GİZLİLİK MODU</p>
+              </div>
            )}
 
            {/* CANVAS (CLEAN) */}
