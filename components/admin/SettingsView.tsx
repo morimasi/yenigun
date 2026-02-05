@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { GlobalConfig } from '../../types';
 
@@ -65,12 +66,13 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
             systemSettings: { ...DEFAULT_CONFIG.systemSettings, ...(config.systemSettings || {}) }
         } as GlobalConfig);
     }
-  }, [config]);
+  }, [config, isDirty]);
 
   // Ağırlık toplamını hesapla (Matematiksel tutarlılık için)
+  // @fix: Explicitly cast values to number[] to ensure mathematical compatibility in reduce.
   const totalWeight = useMemo(() => {
     const w = draftConfig.weightMatrix;
-    return Object.values(w).reduce((a: number, b: number) => a + b, 0);
+    return (Object.values(w) as number[]).reduce((a: number, b: number) => a + b, 0);
   }, [draftConfig.weightMatrix]);
 
   // Generic Update Handler
@@ -132,9 +134,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
             </div>
             
             {/* Total Weight Indicator */}
-            <div className={`relative z-10 px-6 py-3 rounded-2xl border-2 flex flex-col items-center ${Math.abs(totalWeight - 100) <= 1 ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-rose-500 bg-rose-500/10 text-rose-400 animate-pulse'}`}>
+            {/* @fix: Ensuring totalWeight subtraction is valid and wrapping numeric display in React-safe nodes. */}
+            <div className={`relative z-10 px-6 py-3 rounded-2xl border-2 flex flex-col items-center ${Math.abs((totalWeight as number) - 100) <= 1 ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-rose-500 bg-rose-500/10 text-rose-400 animate-pulse'}`}>
                 <span className="text-[8px] font-black uppercase tracking-widest">MATRİS TOPLAMI</span>
-                <span className="text-3xl font-black">%{totalWeight}</span>
+                <span className="text-3xl font-black">%{(totalWeight as React.ReactNode)}</span>
             </div>
             
             <div className="absolute -right-20 -top-20 w-80 h-80 bg-orange-600/10 rounded-full blur-[80px]"></div>

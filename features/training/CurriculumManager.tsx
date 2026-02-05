@@ -174,7 +174,6 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
                      <div>
                         <span className={`px-3 py-1 ${getCategoryTheme(selectedPlan.category).bg} ${getCategoryTheme(selectedPlan.category).color} rounded-lg text-[9px] font-black uppercase tracking-widest mb-2 inline-block`}>
                            {selectedPlan.category}
-                        {/* @fix: Changed incorrectly closed div to span on line 235 */}
                         </span>
                         <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedPlan.title}</h3>
                      </div>

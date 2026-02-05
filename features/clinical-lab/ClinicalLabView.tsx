@@ -192,17 +192,18 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                  <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">TEST PROTOKOLÜ</label>
                     <div className="flex flex-col gap-2">
-                       {/* @fix: Cast Object.values(ClinicalTestType) to ClinicalTestType[] to fix unknown mapping error. */}
+                       {/* @fix: Explicitly cast Object.values(ClinicalTestType) to ClinicalTestType[] to fix unknown mapping error. */}
                        {(Object.values(ClinicalTestType) as ClinicalTestType[]).map(t => (
                           <button
-                            key={t}
+                            key={t as string}
                             onClick={() => setSelectedTest(t)}
                             disabled={isSimulating}
                             className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase text-left transition-all flex items-center justify-between border ${
                               selectedTest === t ? 'bg-orange-600 border-orange-500 text-white shadow-xl' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
                             }`}
                           >
-                             <span>{(t as string).replace('_', ' ')}</span>
+                             {/* @fix: Explicitly cast enum value to string/ReactNode for rendering. */}
+                             <span>{(t as React.ReactNode)}</span>
                              <div className={`w-2 h-2 rounded-full ${selectedTest === t ? 'bg-white animate-pulse' : 'bg-slate-700'}`}></div>
                           </button>
                        ))}
@@ -468,7 +469,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                              <div className="w-full md:w-auto relative z-10">
                                 <button className="w-full px-16 py-7 bg-white text-slate-900 rounded-[2.5rem] text-[12px] font-black uppercase tracking-widest shadow-2xl hover:bg-orange-600 hover:text-white transition-all">Müdahale Planını Mühürle</button>
                              </div>
-                             <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-white/5 rounded-full blur-[120px]"></div>
+                             <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-white/5 rounded-full blur-120px"></div>
                           </div>
                        </div>
                     )}

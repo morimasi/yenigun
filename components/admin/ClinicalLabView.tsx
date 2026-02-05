@@ -85,13 +85,14 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                     {/* @fix: Explicitly cast Object.values(ClinicalTestType) to ClinicalTestType[] to avoid unknown type error in JSX. */}
                     {(Object.values(ClinicalTestType) as ClinicalTestType[]).map(t => (
                       <button
-                        key={t}
+                        key={t as string}
                         onClick={() => { setSelectedTest(t); setResult(null); }}
                         className={`px-8 py-5 rounded-[2.5rem] text-[11px] font-black uppercase text-left transition-all flex items-center justify-between group ${
                           selectedTest === t ? 'bg-orange-600 text-white shadow-xl scale-[1.02]' : 'bg-white/5 text-slate-400 hover:bg-white/10'
                         }`}
                       >
-                        <span>{t as React.ReactNode}</span>
+                        {/* @fix: Explicitly cast enum value to string/ReactNode for rendering. */}
+                        <span>{(t as React.ReactNode)}</span>
                         <div className={`w-3 h-3 rounded-full ${selectedTest === t ? 'bg-white animate-pulse' : 'bg-slate-700'}`}></div>
                       </button>
                     ))}
@@ -272,7 +273,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d={m.icon} /></svg>
                             </div>
                             <h6 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-4">{m.t}</h6>
-                            <p className="text-[14px] font-bold text-slate-500 leading-relaxed italic">"{m.v}"</p>
+                            <p className="text-[14px] font-bold text-slate-500 italic leading-relaxed italic">"{m.v}"</p>
                          </div>
                        ))}
                     </div>
