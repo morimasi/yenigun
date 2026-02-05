@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Candidate, GlobalConfig, ArchiveCategory } from '../../types';
+import { Candidate, GlobalConfig } from '../../types';
 import StatusBadge from './StatusBadge';
 
 interface CalendarViewProps {
@@ -50,11 +50,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
   const handleStatusUpdate = (candidate: Candidate, newStatus: 'hired' | 'rejected') => {
     const label = newStatus === 'hired' ? 'İşe Alındı' : 'Reddedildi';
     if (confirm(`Aday '${label}' olarak işaretlenecek ve otomatik olarak akademik arşive taşınacaktır. Onaylıyor musunuz?`)) {
-      // @fix: Changed string literals to ArchiveCategory enum members for type safety.
       onUpdateCandidate({ 
         ...candidate, 
         status: 'archived', 
-        archiveCategory: newStatus === 'hired' ? ArchiveCategory.HIRED_CONTRACTED : ArchiveCategory.DISQUALIFIED,
+        archiveCategory: newStatus === 'hired' ? 'HIRED_CONTRACTED' : 'DISQUALIFIED',
         archiveNote: `OTOMATİK KARAR: Mülakat sonucu '${label}' olarak sisteme işlendi. İşlem Tarihi: ${new Date().toLocaleString('tr-TR')}`,
         timestamp: Date.now() 
       });
@@ -78,7 +77,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ candidates, onUpdateCandida
             </button>
             <button onClick={() => setCurrentDate(new Date())} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">BUGÜN</button>
             <button onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 7)))} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+              <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
           <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{formatMonth}</h3>

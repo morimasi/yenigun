@@ -47,11 +47,10 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   const handleDecision = async (decision: 'hired' | 'rejected') => {
     if (!confirm(decision === 'hired' ? "Personel olarak atanacak?" : "Arşive kaldırılacak?")) return;
-    // @fix: Changed string literals to ArchiveCategory enum members for type safety.
     await onUpdate({
       ...candidate,
       status: 'archived',
-      archiveCategory: decision === 'hired' ? ArchiveCategory.HIRED_CONTRACTED : ArchiveCategory.DISQUALIFIED,
+      archiveCategory: decision === 'hired' ? 'HIRED_CONTRACTED' : 'DISQUALIFIED',
       archiveNote: `Hızlı Karar: ${decision.toUpperCase()}`,
       timestamp: Date.now()
     });

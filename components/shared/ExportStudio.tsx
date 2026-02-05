@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UniversalExportData, ExportConfig, Candidate, ArchiveCategory } from '../../types';
+import { UniversalExportData, ExportConfig, Candidate } from '../../types';
 import { UniversalPdfService } from '../../services/export/UniversalPdfService';
 import CandidateReport from '../CandidateReport';
 import { storageService } from '../../services/storageService';
@@ -81,11 +81,10 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
       const candidate = data.payload as Candidate;
       const activeSections = Object.keys(config.sections).filter((k) => config.sections[k as keyof typeof config.sections]);
       
-      // @fix: Changed string literal to ArchiveCategory enum member for type safety.
       const archivePayload: Candidate = {
         ...candidate,
         status: 'archived',
-        archiveCategory: ArchiveCategory.HIRED_CONTRACTED, 
+        archiveCategory: 'HIRED_CONTRACTED', 
         archiveNote: `RESMİ MÜHÜR: ${new Date().toLocaleDateString('tr-TR')} - ${currentUser}. Kapsam: ${activeSections.join(', ')}.`,
         timestamp: Date.now()
       };

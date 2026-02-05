@@ -164,8 +164,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit }) => {
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Akademik Branş</label>
                 <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-bold outline-none cursor-pointer" value={formData.branch} onChange={(e) => setFormData({...formData, branch: e.target.value as Branch})}>
-                  {/* @fix: Explicitly cast branch value to string for compatibility with React option keys and values. */}
-                  {Object.values(Branch).map(b => <option key={b as string} value={b as string}>{(b as React.ReactNode)}</option>)}
+                  {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="space-y-1">

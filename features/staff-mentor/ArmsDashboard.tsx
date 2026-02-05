@@ -158,7 +158,6 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
     setIsEditModalOpen(true);
   };
 
-  // @fix: Updated stats logic to account for last_score property in StaffMember.
   const filteredStaff = useMemo(() => {
     return staffList.filter(s => 
       s.name.toLocaleLowerCase('tr-TR').includes(searchTerm.toLocaleLowerCase('tr-TR')) ||
@@ -211,7 +210,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
       {/* EDIT MODAL */}
       {isEditModalOpen && editingStaff && (
         <div className="fixed inset-0 z-[2000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-           <div className="bg-white w-full max-lg rounded-[2.5rem] p-10 animate-scale-in shadow-2xl">
+           <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 animate-scale-in shadow-2xl">
               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-8">Personel Düzenle</h3>
               <form onSubmit={handleUpdateStaff} className="space-y-6">
                  <div className="space-y-2">
@@ -226,7 +225,7 @@ const ArmsDashboard: React.FC<ArmsDashboardProps> = ({ refreshTrigger, onRefresh
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Branş</label>
                        <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editingStaff.branch} onChange={e => setEditingStaff({...editingStaff, branch: e.target.value as Branch})}>
-                          {Object.values(Branch).map(b => <option key={b as string} value={b as string}>{(b as React.ReactNode)}</option>)}
+                          {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                        </select>
                     </div>
                     <div className="space-y-2">

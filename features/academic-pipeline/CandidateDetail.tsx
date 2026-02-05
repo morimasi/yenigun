@@ -29,6 +29,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     department: candidate.department
   });
 
+  // ... (Matrix Segments definition remains same)
   const matrixSegments = useMemo(() => [
     { id: 'technicalExpertise', label: 'KLİNİK DERİNLİK', icon: '🧠', group: 'KLİNİK', deepDesc: 'Kanıta dayalı yöntemlerin (ABA, Floortime, ETEÇOM) uygulama sadakati ve vaka formülasyon yeteneği.', clinicalFocus: 'Metodolojik hakimiyet, veri analizi, program hazırlama kapasitesi.' },
     { id: 'pedagogicalAnalysis', label: 'PEDAGOJİK ÇEVİKLİK', icon: '🏃', group: 'KLİNİK', deepDesc: 'Anlık gelişen durumlara göre öğretim stratejisini esnetebilme ve B planına geçebilme hızı.', clinicalFocus: 'Kognitif esneklik, öğretimsel adaptasyon, fırsat öğretimi.' },
@@ -67,7 +68,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         experienceYears: editForm.experienceYears,
         university: editForm.university,
         department: editForm.department,
-        timestamp: Date.now() 
+        timestamp: Date.now() // Timestmap güncelle ki sıralamada yukarı çıksın
     });
     setIsEditing(false);
   };
@@ -76,10 +77,12 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
     if (isDeleteConfirmOpen) { onDelete(); } else { setIsDeleteConfirmOpen(true); setTimeout(() => setIsDeleteConfirmOpen(false), 5000); }
   };
 
+  // ... (renderMatrix function remains similar, skipping for brevity but logic is preserved in component flow)
   const renderMatrix = () => {
     const da = candidate.report?.deepAnalysis;
     const data = (da as any)?.[selectedMatrixId];
     
+    // ... (helper functions inside)
     const getStatusColor = (status: string) => {
         switch(status) {
             case 'OPTIMAL': return 'bg-emerald-500';
@@ -97,7 +100,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div key={groupName} className="space-y-1 mb-4">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">{groupName} BOYUTU</span>
                         {matrixSegments.filter(s => s.group === groupName).map(s => (
-                            <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}>
+                            <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300'}`}>
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-3">
                                         <span className="text-xl">{s.icon}</span>
@@ -105,8 +108,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {da?.[s.id] && <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(da[s.id]?.status)}`}></div>}
-                                        {/* @fix: Ensuring numeric score is safely rendered as ReactNode. */}
-                                        <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>{da?.[s.id] ? `%${(da[s.id].score as React.ReactNode)}` : '-'}</span>
+                                        <span className={`text-sm font-black ${selectedMatrixId === s.id ? 'text-orange-500' : 'text-slate-900'}`}>{da?.[s.id] ? `%${da[s.id].score}` : '-'}</span>
                                     </div>
                                 </div>
                             </button>
@@ -235,9 +237,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="text-[10px] font-black text-slate-400 uppercase ml-2 block mb-1">Branş</label>
-                            {/* @fix: Casting to Branch to ensure compatibility with type enum expectations in JSX. */}
-                            <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.branch as string} onChange={e => setEditForm({...editForm, branch: e.target.value as Branch})}>
-                                {Object.values(Branch).map(b => <option key={b as string} value={b as string}>{(b as React.ReactNode)}</option>)}
+                            {/* @fix: Cast e.target.value as Branch to satisfy enum type check. */}
+                            <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200" value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value as Branch})}>
+                                {Object.values(Branch).map(b => <option key={b} value={b}>{b}</option>)}
                             </select>
                         </div>
                         <div>
@@ -266,7 +268,9 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         <ExportStudio 
           onClose={() => setIsExportStudioOpen(false)}
           data={{ type: 'CANDIDATE_REPORT', entityName: candidate.name, referenceId: candidate.id.toUpperCase(), payload: candidate }}
-        />
+        >
+          {/* @fix: Removed explicit CandidateReport child to use ExportStudio's robust internal rendering which includes studio config options. */}
+        </ExportStudio>
       )}
 
       {/* HEADER COCKPIT */}
