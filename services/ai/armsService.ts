@@ -120,7 +120,8 @@ export const armsService = {
       
       TASARIM FELSEFESİ:
       1. AKIŞ (FLOW): Sunum bir hikaye gibi akmalı. Giriş (Hook), Gelişme (Konsept), Örnek (Case), Sonuç (Call to Action).
-      2. GÖRSEL ZEKA: 'imageKeyword' alanı için Unsplash'ten en çarpıcı sonucu getirecek TEK KELİMELİK, İNGİLİZCE ve SEMANTİK bir terim seç. (Örn: "chaos" yerine "storm", "teamwork" yerine "rowing").
+      2. GÖRSEL ZEKA: 'imageKeyword' alanı için, slaytın içeriğini en iyi simgeleyen, soyut ve sanatsal bir İngilizce "Prompt" oluştur. Bu prompt, AI Image Generator için kullanılacak.
+         Örnek: "Cinematic shot of a glowing brain neural network, blue and orange lighting, high detail, 8k" veya "Minimalist vector art of a teacher helping a child, warm colors".
       3. PEDAGOJİ: Slaytlar sadece bilgi vermesin, soru sorsun (Interactive) ve düşündürsün.
       
       LAYOUT KURALLARI:
@@ -152,13 +153,13 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center', 'data_grid'] },
+              layout: { type: Type.STRING, enum: ['cover', 'section_header', 'split_left', 'split_right', 'full_visual', 'bullet_list', 'quote_center', 'data_grid', 'process_flow'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
               speakerNotes: { type: Type.STRING, description: "Sunumu yapacak kişi için 'gizli' ipuçları ve anekdotlar." },
-              visualPrompt: { type: Type.STRING, description: "AI'ın bu görseli neden seçtiğinin gerekçesi." },
-              imageKeyword: { type: Type.STRING, description: "Unsplash için İngilizce arama terimi." },
+              visualPrompt: { type: Type.STRING, description: "Görselin konsept açıklaması." },
+              imageKeyword: { type: Type.STRING, description: "AI Image Gen için detaylı İngilizce Prompt." },
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
@@ -197,5 +198,20 @@ export const armsService = {
       includeAnimations: true
     };
     return this.generateCustomPresentation(config);
+  },
+
+  // 4. SLAYT RAFİNE ETME (REWRITE)
+  async refineSlideContent(slide: TrainingSlide, intent: string): Promise<TrainingSlide> {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `MEVCUT SLAYT: ${JSON.stringify(slide)} | NİYET (INTENT): ${intent}`,
+      config: {
+        systemInstruction: "Sen bir 'Slayt Doktoru'sun. Verilen slayt içeriğini, belirtilen niyete (örn: 'daha basit yap', 'daha akademik yap', 'veli diline çevir') göre yeniden yaz. Sadece güncellenmiş slayt objesini JSON olarak döndür.",
+        responseMimeType: "application/json"
+      }
+    });
+    
+    const refined = JSON.parse(response.text || '{}');
+    return { ...slide, ...refined }; // ID ve diğerlerini koru, gelenleri üzerine yaz
   }
 };
