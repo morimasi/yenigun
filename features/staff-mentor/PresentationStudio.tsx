@@ -5,7 +5,7 @@ import { armsService } from '../../services/ai/armsService';
 import PptxGenJS from 'pptxgenjs';
 
 interface PresentationStudioProps {
-  initialConfig?: PresentationConfig;
+  initialConfig?: PresentationConfig; // Opsiyonel başlangıç ayarları (Müfredattan gelirse)
   onClose?: () => void;
 }
 
@@ -13,6 +13,7 @@ interface PresentationStudioProps {
 const getVisualUrl = (keyword: string, style: VisualStyle) => {
   const cleanKeyword = keyword?.split(' ')[0] || 'abstract';
   const mood = style === 'dark_mode' ? 'dark,moody' : style === 'playful' ? 'colorful,fun' : 'minimal,clean';
+  // Cache busting için random ekle
   return `https://source.unsplash.com/1600x900/?${cleanKeyword},${mood}&sig=${Math.random()}`;
 };
 
