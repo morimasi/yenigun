@@ -1,4 +1,3 @@
-// ... (Mevcut tipler korunur)
 
 // GELİŞMİŞ SUNUM MİMARİSİ
 export type SlideLayout = 
@@ -10,7 +9,7 @@ export type SlideLayout =
   | 'bullet_list'     // Klasik Maddeler
   | 'quote_center'    // Çarpıcı Alıntı
   | 'data_grid'       // İstatistiksel Veri
-  | 'process_flow';   // Süreç Akışı (Yeni)
+  | 'process_flow';   // Süreç Akışı
 
 export type AnimationType = 'fade' | 'slide_up' | 'zoom_in' | 'pan_right' | 'blur_reveal' | 'none';
 export type VisualStyle = 'minimalist' | 'corporate' | 'playful' | 'dark_mode' | 'academic' | 'warm_serenity' | 'neuro_divergent';
@@ -37,7 +36,7 @@ export interface TrainingSlide {
   // NÖRAL GÖRSEL KATMANI
   visualPrompt?: string;  
   imageKeyword?: string;  
-  generatedImageUrl?: string; // AI tarafından üretilen görselin sabitlenmesi için
+  generatedImageUrl?: string; 
   
   // ETKİLEŞİM KATMANI
   interactiveElement?: {
@@ -59,10 +58,8 @@ export interface PresentationConfig {
   slideCount: number;
   visualStyle: VisualStyle;
   includeAnimations: boolean;
-  institutionName?: string; // Markalama için
+  institutionName?: string;
 }
-
-// ... (Diğer tüm tipler korunur)
 
 export type ExportType = 'CANDIDATE_REPORT' | 'TALENT_POOL_ANALYTICS' | 'CLINICAL_SIMULATION' | 'STAFF_PERFORMANCE_DOSSIER' | 'TRAINING_CURRICULUM';
 
@@ -70,22 +67,22 @@ export interface ExportConfig {
   title: string;
   showWatermark: boolean;
   signatureRequired: boolean;
-  theme: VisualStyle | string;
+  theme: string;
   sections: {
-    cover?: boolean;
-    executiveSummary?: boolean;
-    competencyMatrix?: boolean;
-    behavioralDNA?: boolean;
-    swotAnalysis?: boolean;
-    futureProjection?: boolean;
-    interviewGuide?: boolean;
-    clinicalSimulation?: boolean;
-    [key: string]: boolean | undefined;
+    cover: boolean;
+    executiveSummary: boolean;
+    competencyMatrix: boolean;
+    behavioralDNA: boolean;
+    swotAnalysis: boolean;
+    futureProjection: boolean;
+    interviewGuide: boolean;
+    clinicalSimulation: boolean;
+    [key: string]: boolean;
   };
 }
 
 export interface UniversalExportData {
-  type: ExportType;
+  type: ExportType | string;
   entityName: string;
   referenceId: string;
   payload: any;
@@ -149,6 +146,7 @@ export interface DeepAnalysisSegment {
   cons?: string[];
   risks?: string[];
   behavioralIndicators?: string[];
+  institutionalImpact?: string;
 }
 
 export interface AIReport {
@@ -188,6 +186,8 @@ export interface AIReport {
     parentalDiplomacy?: DeepAnalysisSegment;
     cognitiveAgility?: DeepAnalysisSegment;
     stabilityFactor?: DeepAnalysisSegment;
+    crisisResilience?: DeepAnalysisSegment;
+    metacognitiveAwareness?: DeepAnalysisSegment;
   };
   swot?: {
     strengths: string[];
@@ -397,27 +397,25 @@ export interface TrainingUnit {
   id: string;
   title: string;
   type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop';
-  content: string; // Açıklama veya Link
+  content: string; 
   durationMinutes: number;
   isCompleted: boolean;
-  aiRationale?: string; // AI bu üniteyi neden atadı?
-  resources?: TrainingResource[]; // Ek kaynaklar
-  successCriteria?: string; // Başarı ölçütü (Örn: %80 Quiz Puanı)
+  aiRationale?: string; 
+  resources?: TrainingResource[]; 
+  successCriteria?: string; 
   status: 'pending' | 'in_progress' | 'completed';
-  
-  // YENİ: Her ünitenin kendi sunumu olabilir
   generatedPresentation?: TrainingSlide[]; 
 }
 
 export interface TrainingModule {
   id: string;
   title: string;
-  focusArea: string; // Hangi yetkinliği hedefliyor? (Örn: Etik, Klinik)
+  focusArea: string; 
   difficulty: 'basic' | 'intermediate' | 'advanced';
   units: TrainingUnit[];
   status: 'locked' | 'active' | 'completed';
   dueDate?: string;
-  instructor?: string; // Eğitmen adı (Opsiyonel)
+  instructor?: string; 
 }
 
 export interface IDP {
@@ -425,7 +423,6 @@ export interface IDP {
   staffId: string;
   createdAt: number;
   updatedAt: number;
-  // Eski alanlar (Legacy Support)
   focusArea: string;
   identifiedGaps: string[];
   roadmap: {
