@@ -1,60 +1,24 @@
+
 import React, { useState, useEffect } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
 import StaffAssessmentPortal from './features/staff-mentor/StaffAssessmentPortal';
-import { GlobalConfig, Candidate } from './types';
+import { GlobalConfig, Candidate, UserSession, StaffRole } from './types';
 import { useAcademicEngine } from './hooks/useAcademicEngine';
 import { storageService } from './services/storageService';
 
 const DEFAULT_CONFIG: GlobalConfig = {
   institutionName: 'Yeni Gün Akademi',
   lastUpdated: Date.now(),
-  
-  // MODÜL 1: AĞIRLIK MATRİSİ
-  weightMatrix: {
-    clinicalExpertise: 30,
-    ethicalIntegrity: 30,
-    emotionalResilience: 15,
-    institutionalLoyalty: 10,
-    learningAgility: 10,
-    academicPedagogy: 5
-  },
-
-  // MODÜL 2: RİSK MOTORU
-  riskEngine: {
-    criticalEthicalViolationPenalty: 40,
-    inconsistentAnswerPenalty: 20,
-    lowExperienceDiscountFactor: 0.85,
-    jobHoppingPenalty: 15
-  },
-
-  // MODÜL 3: AI PERSONALITY
-  aiPersona: { 
-    skepticismLevel: 50, 
-    innovationBias: 50, 
-    stressTestIntensity: 50, 
-    detailedReporting: true 
-  },
-
-  // MODÜL 4: SİSTEM AYARLARI
-  systemSettings: {
-    minHiringScore: 70,
-    highPotentialCutoff: 85,
-    interviewDurationMinutes: 45,
-    autoRejectBelowScore: 40,
-    defaultMeetingLink: 'https://meet.google.com/new'
-  },
-
-  // Legacy fields mapped or kept for compatibility if allowed by type
-  aiTone: 'balanced',
-  aiWeights: { ethics: 40, clinical: 30, experience: 15, fit: 15 },
-  automation: { autoEmailOnSchedule: true, requireCvUpload: true, allowMultipleApplications: false },
-  interviewSettings: { defaultDuration: 45, bufferTime: 15, autoStatusAfterInterview: false, defaultMeetingLink: 'https://meet.google.com/new' },
-  advancedAnalytics: {}
+  weightMatrix: { clinicalExpertise: 30, ethicalIntegrity: 30, emotionalResilience: 15, institutionalLoyalty: 10, learningAgility: 10, academicPedagogy: 5 },
+  riskEngine: { criticalEthicalViolationPenalty: 40, inconsistentAnswerPenalty: 20, lowExperienceDiscountFactor: 0.85, jobHoppingPenalty: 15 },
+  aiPersona: { skepticismLevel: 50, innovationBias: 50, stressTestIntensity: 50, detailedReporting: true },
+  systemSettings: { minHiringScore: 70, highPotentialCutoff: 85, interviewDurationMinutes: 45, autoRejectBelowScore: 40, defaultMeetingLink: 'https://meet.google.com/new' }
 };
 
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin' | 'staff'>('candidate');
+  const [user, setUser] = useState<UserSession | null>(null);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -68,8 +32,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (view === 'admin' && isLoggedIn) {
       loadData();
-      const interval = setInterval(() => loadData(false), 45000);
-      return () => clearInterval(interval);
     }
   }, [view, isLoggedIn, loadData]);
 
@@ -86,6 +48,16 @@ const App: React.FC = () => {
     try {
       const result = await storageService.login(loginForm.username, loginForm.password);
       if (result.success) {
+        // storageService.login artık user bilgisini de dönmeli.
+        // Şimdilik token'dan veya API'den gelen veriyi simüle ediyoruz.
+        const mockUser: UserSession = {
+           id: 'USR-ROOT',
+           name: result.user?.name || 'Sistem Yöneticisi',
+           email: loginForm.username,
+           role: (result.user?.role as StaffRole) || StaffRole.Admin,
+           branch: result.user?.branch || 'Yönetim' as any
+        };
+        setUser(mockUser);
         setIsLoggedIn(true);
         loadData();
       } else alert(result.error || "Giriş başarısız.");
@@ -143,7 +115,7 @@ const App: React.FC = () => {
     );
   }
 
-  // PUBLIC/STAFF NAVIGATION (Simple Header)
+  // PUBLIC/STAFF NAVIGATION
   if (view === 'candidate' || view === 'staff') {
     return (
       <div className="min-h-screen bg-[#F1F5F9]">
@@ -184,11 +156,12 @@ const App: React.FC = () => {
     );
   }
 
-  // ADMIN DASHBOARD MODE (Full Screen)
+  // ADMIN DASHBOARD MODE
   return (
     <DashboardLayout 
       candidates={candidates} 
       config={config} 
+      user={user}
       isProcessing={isProcessing}
       staffRefreshKey={staffRefreshKey}
       setStaffRefreshKey={setStaffRefreshKey}
@@ -196,6 +169,7 @@ const App: React.FC = () => {
       onDeleteCandidate={async (id) => await storageService.deleteCandidate(id)}
       onUpdateConfig={async (conf) => await storageService.saveConfig(conf)}
       onRefresh={() => loadData(true)}
+      onLogout={() => { logout(); setUser(null); }}
     />
   );
 };

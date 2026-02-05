@@ -1,4 +1,14 @@
 
+// ... (Mevcut tipler korunur)
+
+export interface UserSession {
+  id: string;
+  name: string;
+  email: string;
+  role: StaffRole;
+  branch: Branch;
+}
+
 export interface MultimodalElement {
   id: string;
   type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case';
@@ -24,7 +34,7 @@ export interface CustomTrainingSlide {
   elements: MultimodalElement[];
   speakerNotes: string;
   aiAdvice?: string;
-  quiz?: TrainingQuiz; // Slayt bazlı veya final quiz
+  quiz?: TrainingQuiz; 
 }
 
 export interface CustomTrainingPlan {
@@ -46,12 +56,11 @@ export interface TrainingAssignment {
   staffId: string;
   assignedAt: number;
   status: 'assigned' | 'in_progress' | 'completed';
-  progress: number; // 0-100
+  progress: number; 
   score?: number;
   completedAt?: number;
 }
 
-// ... (Existing types preserved)
 export interface TrainingResource {
   type: 'pdf' | 'video' | 'article' | 'book';
   title: string;

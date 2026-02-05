@@ -25,8 +25,9 @@ export default async function handler(request: Request) {
       // Not: username parametresini email veya name ile eşleştirebiliriz.
       // Basitlik adına, 'admin' kullanıcısı özel bir username gibi davranır veya email ile kontrol edilir.
       
+      // @fix: Included 'branch' in the SQL selection to provide comprehensive user session data.
       const { rows } = await sql`
-        SELECT id, name, role FROM staff 
+        SELECT id, name, role, branch FROM staff 
         WHERE (email = ${username} OR name = 'Sistem Yöneticisi') -- 'admin' girişi için name veya email
         AND password_hash = ${password}
         AND role = 'admin'
@@ -37,10 +38,11 @@ export default async function handler(request: Request) {
         const user = rows[0];
         const sessionToken = btoa(`session_${user.id}_${Date.now()}`);
         
+        // @fix: Returning user object with name, role, and branch for frontend session consistency.
         return new Response(JSON.stringify({ 
           success: true, 
           token: sessionToken,
-          user: { name: user.name, role: user.role },
+          user: { name: user.name, role: user.role, branch: user.branch },
           expires: Date.now() + (24 * 60 * 60 * 1000)
         }), { status: 200, headers });
       }

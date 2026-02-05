@@ -20,7 +20,8 @@ export const storageService = {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   },
 
-  async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+  // @fix: Explicitly added 'user' to the return type to allow App.tsx to access session data correctly.
+  async login(username: string, password: string): Promise<{ success: boolean; error?: string; user?: any }> {
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -31,7 +32,8 @@ export const storageService = {
         const data = await res.json();
         if (data.success) {
           localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
-          return { success: true };
+          // @fix: Return the user object received from the backend auth API.
+          return { success: true, user: data.user };
         }
         return { success: false, error: data.message };
       }
