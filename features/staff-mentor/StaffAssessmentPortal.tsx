@@ -100,8 +100,8 @@ const StaffAssessmentPortal: React.FC = () => {
   };
 
   const handleSubmitExam = async () => {
-    // @fix: Explicitly type reduce parameters to resolve unknown operator error.
-    const sum = Object.values(answers).reduce((a: number, b: number) => a + b, 0);
+    // @fix: Explicitly typed 'sum' and reduce return type to satisfy arithmetic operation requirements and avoid 'unknown' or 'any' type issues.
+    const sum: number = Object.values(answers).reduce((a: number, b: number): number => a + b, 0);
     const score = Math.round(sum / (activeModule?.questions.length || 1));
     setIsSaving(true);
     try {
