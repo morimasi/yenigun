@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { PresentationConfig, TrainingSlide, VisualStyle, SlideLayout, PresentationTheme, StaffMember } from '../../types';
 import { armsService } from '../../services/ai/armsService';
 import { storageService } from '../../services/storageService';
+import { TRAINING_CATALOG, TrainingTemplate } from '../../constants/trainingPlans';
 import PptxGenJS from 'pptxgenjs';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -29,7 +30,8 @@ const getNeuralImageUrl = (prompt: string) => {
 };
 
 const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, onClose }) => {
-  const [mode, setMode] = useState<'config' | 'editor' | 'live'>('config');
+  const [mode, setMode] = useState<'catalog' | 'config' | 'editor' | 'live'>('catalog');
+  const [selectedTemplate, setSelectedTemplate] = useState<TrainingTemplate | null>(null);
   const [slides, setSlides] = useState<TrainingSlide[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -58,19 +60,31 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
 
   // --- ENGINE ACTIONS ---
 
+  const handleSelectTemplate = (temp: TrainingTemplate) => {
+    setSelectedTemplate(temp);
+    setConfig({ ...config, topic: temp.title, slideCount: temp.suggestedSlides });
+    setMode('config');
+  };
+
   const handleGenerate = async () => {
     if (!config.topic) return;
     setIsGenerating(true);
-    setLoadingMsg("Nöral Strateji Kurgulanıyor...");
+    setLoadingMsg("Nöral Sentez Başlatıldı...");
     try {
-      const result = await armsService.generateCustomPresentation(config);
+      let result;
+      if (selectedTemplate) {
+        result = await armsService.generateFromCatalogTemplate(selectedTemplate, config);
+      } else {
+        result = await armsService.generateCustomPresentation(config);
+      }
+      
       const withImages = result.map(s => ({
           ...s,
-          generatedImageUrl: getNeuralImageUrl(s.visualPrompt || s.imageKeyword || config.topic)
+          generatedImageUrl: s.generatedImageUrl || getNeuralImageUrl(s.visualPrompt || s.imageKeyword || config.topic)
       }));
       setSlides(withImages);
       setMode('editor');
-    } catch (e) { alert("AI Hatası: Bağlantı koptu."); }
+    } catch (e) { alert("AI Bağlantı Hatası."); }
     finally { setIsGenerating(false); }
   };
 
@@ -133,7 +147,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
               email: `lib.${Date.now()}@yenigun.local`,
               status: 'archived',
               archiveCategory: 'PRESENTATION_LIBRARY',
-              archiveNote: `${slides.length} Slaytlık Nöral Materyal.`,
+              archiveNote: `${slides.length} Slaytlık Nöral Materyal. Şablon: ${selectedTemplate?.id || 'Custom'}`,
               report: { presentationSlides: slides, score: 100 }
           };
           await storageService.saveCandidate(archivePayload as any);
@@ -152,11 +166,82 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ staffId, data: idp })
           });
-          alert(`Bu sunum baz alınarak ${target.name} için kişisel bir gelişim rotası oluşturuldu.`);
+          alert(`Bu sunum baz alınarak ${target.name} için gelişim rotası oluşturuldu.`);
       } finally { setIsProcessing(false); }
   };
 
   // --- VIEWS ---
+
+  if (mode === 'catalog') {
+    return (
+      <div className="fixed inset-0 z-[3000] bg-slate-950 flex flex-col items-center p-12 overflow-y-auto no-scrollbar animate-fade-in">
+        <div className="max-w-7xl w-full">
+           <div className="flex justify-between items-end mb-16 border-b border-white/5 pb-10">
+              <div>
+                 <div className="flex items-center gap-4 mb-4">
+                    <span className="px-4 py-1 bg-orange-600 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-xl">STUDIO v7.0</span>
+                    <span className="text-slate-500 font-bold text-xs uppercase tracking-[0.4em]">Hizmet İçi Eğitim Katalogu</span>
+                 </div>
+                 <h2 className="text-5xl font-black text-white uppercase tracking-tighter">Akademik Müfredat Kütüphanesi</h2>
+              </div>
+              <button onClick={onClose} className="px-10 py-4 bg-white/5 hover:bg-white/10 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">İptal</button>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {TRAINING_CATALOG.map(temp => (
+                <div 
+                   key={temp.id} 
+                   onClick={() => handleSelectTemplate(temp)}
+                   className="bg-slate-900 border border-white/5 p-10 rounded-[3.5rem] hover:border-orange-500 hover:shadow-[0_0_80px_rgba(234,88,12,0.1)] transition-all cursor-pointer group flex flex-col justify-between"
+                >
+                   <div>
+                      <div className="flex justify-between items-start mb-10">
+                         <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest ${
+                            temp.category === 'clinical' ? 'bg-blue-600 text-white' :
+                            temp.category === 'parent' ? 'bg-emerald-600 text-white' :
+                            temp.category === 'ethics' ? 'bg-rose-600 text-white' : 'bg-slate-700 text-white'
+                         }`}>
+                            {temp.category}
+                         </span>
+                         <span className="text-[10px] font-bold text-slate-500 uppercase">{temp.suggestedSlides} Slayt</span>
+                      </div>
+                      <h4 className="text-2xl font-black text-white uppercase tracking-tight leading-tight mb-6 group-hover:text-orange-500 transition-colors">{temp.title}</h4>
+                      <p className="text-[12px] font-medium text-slate-400 leading-relaxed mb-10 italic">"{temp.description}"</p>
+                      
+                      <div className="space-y-3">
+                         <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Temel Odak Noktaları:</span>
+                         {temp.coreUnits.map((u, i) => (
+                            <div key={i} className="flex gap-3 items-start">
+                               <div className="w-1.5 h-1.5 bg-orange-600 rounded-full mt-1.5 shrink-0"></div>
+                               <span className="text-[11px] font-bold text-slate-300">{u.title}</span>
+                            </div>
+                         ))}
+                      </div>
+                   </div>
+                   <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kitle: {temp.targetAudience}</span>
+                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
+                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                      </div>
+                   </div>
+                </div>
+              ))}
+
+              <div 
+                 onClick={() => setMode('config')}
+                 className="bg-transparent border-4 border-dashed border-white/5 p-10 rounded-[3.5rem] flex flex-col items-center justify-center text-center hover:border-orange-500/50 hover:bg-white/[0.02] transition-all cursor-pointer group"
+              >
+                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
+                    <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                 </div>
+                 <h4 className="text-xl font-black text-slate-500 uppercase tracking-widest">Özel Konu Tanımla</h4>
+                 <p className="text-[10px] font-bold text-slate-600 uppercase mt-4">Katalog dışı, kurumunuza özel bir eğitim başlığı oluşturun.</p>
+              </div>
+           </div>
+        </div>
+      </div>
+    );
+  }
 
   if (mode === 'config') {
     return (
@@ -166,22 +251,25 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
              <div className="relative z-10">
                 <div className="w-16 h-16 bg-orange-600 rounded-2xl flex items-center justify-center text-3xl font-black mb-10 rotate-6 shadow-2xl">YG</div>
                 <h2 className="text-5xl font-black uppercase tracking-tighter leading-[0.85]">Neural<br/>Presentation<br/>Studio</h2>
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.5em] mt-8 border-l-2 border-orange-600 pl-4">v6.0 Director Mode</p>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.5em] mt-8 border-l-2 border-orange-600 pl-4">v7.0 AI Expansion</p>
              </div>
-             <div className="relative z-10 p-8 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md">
-                <p className="text-sm font-medium italic text-slate-300">"Tasarım kısıtlarını aşın. Akademik veriyi görsel bir hikayeye dönüştürmek için AI yönetmeninizi başlatın."</p>
-             </div>
+             {selectedTemplate && (
+                <div className="relative z-10 p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+                   <p className="text-[10px] font-black text-orange-500 uppercase mb-2">Seçili Şablon</p>
+                   <p className="text-sm font-bold text-slate-300">{selectedTemplate.title}</p>
+                </div>
+             )}
              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/10 rounded-full blur-[100px]"></div>
           </div>
 
           <div className="flex-1 p-20 flex flex-col justify-center bg-slate-50">
              <div className="max-w-md mx-auto w-full space-y-12">
                 <div className="space-y-4">
-                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">EĞİTİM / SUNUM KONUSU</label>
+                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">EĞİTİM BAŞLIĞI</label>
                    <input 
                      type="text" 
                      className="w-full p-8 bg-white rounded-[2.5rem] text-3xl font-black text-slate-900 border-4 border-transparent focus:border-orange-500 outline-none transition-all placeholder:text-slate-200 shadow-xl"
-                     placeholder="Örn: Otizmde Öz-Regülasyon..."
+                     placeholder="Konu giriniz..."
                      value={config.topic}
                      onChange={e => setConfig({...config, topic: e.target.value})}
                    />
@@ -195,11 +283,11 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                       </select>
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[9px] font-black text-slate-400 uppercase ml-1">HEDEF KİTLE</label>
-                      <select className="w-full p-5 bg-white rounded-2xl font-bold text-xs shadow-md" value={config.targetAudience} onChange={e => setConfig({...config, targetAudience: e.target.value as any})}>
-                         <option value="team">Akademik Ekip</option>
-                         <option value="parents">Veliler</option>
-                         <option value="management">Yönetim Kurulu</option>
+                      <label className="text-[9px] font-black text-slate-400 uppercase ml-1">KİTLE TONU</label>
+                      <select className="w-full p-5 bg-white rounded-2xl font-bold text-xs shadow-md" value={config.tone} onChange={e => setConfig({...config, tone: e.target.value as any})}>
+                         <option value="academic">Akademik / Resmi</option>
+                         <option value="motivational">Motivasyonel</option>
+                         <option value="strict">Disiplin Odaklı</option>
                       </select>
                    </div>
                 </div>
@@ -209,9 +297,9 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                   disabled={isGenerating || !config.topic}
                   className="w-full py-8 bg-slate-900 text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-3xl hover:bg-orange-600 transition-all active:scale-95 disabled:opacity-50"
                 >
-                   {isGenerating ? <span className="flex items-center justify-center gap-3"><div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> {loadingMsg}</span> : 'SENTEZİ BAŞLAT'}
+                   {isGenerating ? <span className="flex items-center justify-center gap-3 animate-pulse">{loadingMsg}</span> : 'MATERYALİ SENTEZLE'}
                 </button>
-                <button onClick={onClose} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500">İptal Et ve Çık</button>
+                <button onClick={() => setMode('catalog')} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600">Katalog Seçimine Dön</button>
              </div>
           </div>
         </div>
@@ -225,12 +313,12 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
         {/* TOP TOOLBAR */}
         <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-50 shadow-sm">
            <div className="flex items-center gap-6">
-              <button onClick={() => setMode('config')} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all">
+              <button onClick={() => setMode('catalog')} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all">
                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               </button>
               <div className="flex flex-col">
                  <h3 className="font-black text-sm uppercase tracking-widest text-slate-800 leading-none">{config.topic}</h3>
-                 <span className="text-[10px] font-bold text-orange-600 mt-1 uppercase tracking-wide">{activeTheme.name} Teması Aktif</span>
+                 <span className="text-[10px] font-bold text-orange-600 mt-1 uppercase tracking-wide">{activeTheme.name} Tasarım Modu</span>
               </div>
            </div>
 
@@ -239,7 +327,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                  <button onClick={handleDownloadPPTX} className="px-5 py-2 hover:bg-white rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all">PPTX</button>
                  <button onClick={handleDownloadPDF} className="px-5 py-2 hover:bg-white rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all">PDF</button>
               </div>
-              <button onClick={handleArchive} disabled={isProcessing} className="px-6 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-sm">KÜTÜPHANEYE ARŞİVLE</button>
+              <button onClick={handleArchive} disabled={isProcessing} className="px-6 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-sm">ARŞİVE MÜHÜRLE</button>
               <button onClick={() => setMode('live')} className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl flex items-center gap-2">
                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span> SUNUMU OYNAT
               </button>
@@ -273,12 +361,12 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
               </div>
            </div>
 
-           {/* MAIN CANVAS (PREVIEW) */}
+           {/* MAIN CANVAS */}
            <div className="flex-1 bg-slate-200 flex items-center justify-center p-12 overflow-hidden relative">
               {isProcessing && (
                   <div className="absolute inset-0 z-[100] bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center">
                       <div className="w-16 h-16 border-4 border-slate-900 border-t-orange-600 rounded-full animate-spin mb-4"></div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Nöral Sentez Devam Ediyor...</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">İşlem Gerçekleştiriliyor...</p>
                   </div>
               )}
               <div 
@@ -332,14 +420,14 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
               </div>
            </div>
 
-           {/* ATOMIC INSPECTOR PANEL */}
+           {/* ATOMIC INSPECTOR */}
            <div className={`w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 transition-all duration-500 ${isInspectorOpen ? '' : '-mr-96'}`}>
-              <div className="flex border-b border-slate-100 bg-slate-50/50">
+              <div className="flex border-b border-slate-100">
                  {['design', 'content', 'assign', 'ai'].map(t => (
                    <button 
                      key={t} 
                      onClick={() => setActiveTab(t as any)} 
-                     className={`flex-1 py-5 text-[10px] font-black uppercase tracking-widest border-b-4 transition-all ${activeTab === t ? 'border-orange-600 text-orange-600 bg-white' : 'border-transparent text-slate-400 hover:text-slate-900'}`}
+                     className={`flex-1 py-5 text-[10px] font-black uppercase tracking-widest border-b-4 transition-all ${activeTab === t ? 'border-orange-600 text-orange-600 bg-orange-50/30' : 'border-transparent text-slate-400 hover:text-slate-900'}`}
                    >
                       {t === 'ai' ? 'Nöral' : t === 'assign' ? 'Atama' : t === 'design' ? 'Dizayn' : 'İçerik'}
                    </button>
@@ -350,7 +438,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                  {activeTab === 'design' && (
                    <>
                       <div className="space-y-6">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SLAYT YERLEŞİMİ</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SAHNE DÜZENİ</label>
                          <div className="grid grid-cols-2 gap-3">
                             {['cover', 'split_left', 'split_right', 'bullet_list', 'full_visual', 'quote_center', 'data_grid', 'process_flow'].map(l => (
                               <button key={l} onClick={() => updateSlide('layout', l as SlideLayout)} className={`p-4 rounded-xl text-[9px] font-black uppercase border-2 transition-all ${slide?.layout === l ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-orange-300'}`}>
@@ -363,7 +451,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">NÖRAL GÖRSEL</label>
                          <div className="aspect-video bg-slate-100 rounded-[2.5rem] overflow-hidden relative group border-4 border-slate-200">
                             <img src={slide?.generatedImageUrl} className="w-full h-full object-cover" />
-                            <button onClick={() => updateSlide('generatedImageUrl', getNeuralImageUrl(`${slide.imageKeyword || config.topic} ${Math.random()}`))} className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-4 backdrop-blur-sm">
+                            <button onClick={() => updateSlide('generatedImageUrl', getNeuralImageUrl(`${slide.visualPrompt || config.topic} ${Math.random()}`))} className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-4 backdrop-blur-sm">
                                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" /></svg>
                                <span className="text-[10px] font-black uppercase tracking-widest">YENİDEN SENTEZLE</span>
                             </button>
@@ -382,21 +470,17 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                          <label className="text-[10px] font-black text-slate-400 uppercase">İÇERİK MADDELERİ</label>
                          <textarea className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-xs h-64 leading-relaxed" value={slide?.content?.join('\n')} onChange={e => updateSlide('content', e.target.value.split('\n'))} />
                       </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase">YÖNETİCİ NOTLARI</label>
-                         <textarea className="w-full p-5 bg-yellow-50 border-2 border-yellow-100 rounded-2xl font-medium text-xs h-32 italic text-yellow-900 shadow-inner" value={slide?.speakerNotes} onChange={e => updateSlide('speakerNotes', e.target.value)} />
-                      </div>
                    </div>
                  )}
 
                  {activeTab === 'assign' && (
                    <div className="space-y-8 animate-slide-up">
-                      <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl">
-                         <h4 className="text-[11px] font-black uppercase tracking-widest text-orange-500 mb-4">Müfredat Dönüşümü</h4>
-                         <p className="text-xs font-bold leading-relaxed opacity-90">Bu akademik materyali, seçilen personelin gelişim planına "Yeni Müfredat Modülü" olarak ekleyin.</p>
+                      <div className="bg-orange-600 p-8 rounded-[2.5rem] text-white shadow-xl">
+                         <h4 className="text-[11px] font-black uppercase tracking-widest mb-4">Müfredat Dönüşümü</h4>
+                         <p className="text-xs font-bold leading-relaxed opacity-90">Bu sunumu bir eğitim planına dönüştürüp personelin paneline atayın. Personel bu konuyu tamamladığında liyakat skoru güncellenecektir.</p>
                       </div>
-                      <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">PERSONEL LİSTESİ</label>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">PERSONEL SEÇİN</label>
                          <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                             {staffList.map(s => (
                                <button key={s.id} onClick={() => handleAssignToStaff(s.id)} className="w-full p-5 bg-white border-2 border-slate-100 rounded-2xl hover:border-orange-500 hover:shadow-xl transition-all text-left group">
@@ -414,22 +498,17 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ initialConfig, 
                         <div className="p-8 bg-indigo-50 rounded-[2.5rem] border-2 border-indigo-100 shadow-sm">
                             <h5 className="text-[11px] font-black text-indigo-700 uppercase tracking-widest mb-6 flex items-center gap-3">
                                 <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div>
-                                NÖRAL RAFİNE MODU
+                                Nöral Dönüşüm
                             </h5>
                             <div className="space-y-2">
-                                {[
-                                    { t: 'Akademik Derinlik Ekle', i: 'Daha bilimsel ve jargon ağırlıklı bir dile çevir.' },
-                                    { t: 'Veli Dilinde Sadeleştir', i: 'Ebeveynlerin anlayacağı kognitif basitliğe çek.' },
-                                    { t: 'Etkileşimli Soru Üret', i: 'Slayt sonuna personeli mülakata alacak bir soru ekle.' },
-                                    { t: 'Vaka Örneği Enjekte Et', i: 'İçeriğe hayali ama gerçekçi bir vaka analizi ekle.' }
-                                ].map(opt => (
+                                {['Daha Akademik Sentezle', 'Veli Dilinde Basitleştir', 'Maddeleri Vurucu Hale Getir', 'İstatistiksel Veri Ekle', 'Etkileşimli Soru Üret'].map(opt => (
                                     <button 
-                                      key={opt.t} 
-                                      onClick={() => handleRefine(opt.i)}
+                                      key={opt} 
+                                      onClick={() => handleRefine(opt)}
                                       disabled={isProcessing}
                                       className="w-full text-left p-4 bg-white border-2 border-indigo-100 rounded-xl text-[10px] font-black text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 uppercase tracking-widest"
                                     >
-                                        {opt.t}
+                                        {opt}
                                     </button>
                                 ))}
                             </div>

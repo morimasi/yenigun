@@ -2,8 +2,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, TrainingUnit, Candidate } from "../../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const armsService = {
   // SUNUMDAN IDP/MÜFREDAT ÜRETME (Bridge Function)
   async convertPresentationToIDP(staff: StaffMember, slides: TrainingSlide[], topic: string): Promise<IDP> {
@@ -18,6 +16,8 @@ export const armsService = {
       ÇIKTI: Saf JSON olmalı.
     `;
 
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `PERSONEL: ${staff.name} | BRANŞ: ${staff.branch} | KONU: ${topic} | SLAYTLAR: ${JSON.stringify(slides)}`,
@@ -45,13 +45,14 @@ export const armsService = {
   },
 
   async generateIDP(subject: StaffMember | Candidate, history?: any[]): Promise<IDP> {
-    const aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Mentorluk Motoru.
       GÖREV: Verilen personel/aday verilerini ve sınav geçmişini analiz ederek kişiselleştirilmiş 90 günlük gelişim rotası (IDP) oluştur.
       ÇIKTI: Saf JSON olmalı.
     `;
-    const response = await aiClient.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `VERİ: ${JSON.stringify(subject)} | GEÇMİŞ: ${JSON.stringify(history)}`,
       config: {
@@ -76,26 +77,73 @@ export const armsService = {
     };
   },
 
+  // @fix: Added missing generateTrainingSlides method to resolve property missing error in DecisionSupportView.tsx.
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    const aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
       ROL: Yeni Gün Akademi Eğitim Tasarımcısı.
-      GÖREV: Verilen Gelişim Planını (IDP) temel alarak 8 slaytlık bir akademik sunum tasarla.
-      ÇIKTI: Saf JSON olmalı (TrainingSlide dizisi).
+      GÖREV: Oluşturulan Bireysel Gelişim Planını (IDP) profesyonel bir eğitim sunumuna dönüştür.
+      
+      KRİTERLER:
+      1. Her modülü en az 2 slayt olarak kurgula.
+      2. 'imageKeyword' alanı Unsplash uyumlu İngilizce kelime olmalı.
+      3. Çıktı saf JSON dizi olmalı.
     `;
-    const response = await aiClient.models.generateContent({
+
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `IDP: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
       config: {
         systemInstruction,
-        responseMimeType: "application/json"
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 }
       }
     });
+
+    const slides = JSON.parse(response.text || '[]');
+    return slides.map((s: any, i: number) => ({
+      ...s,
+      id: `SLIDE-IDP-${Date.now()}-${i}`,
+      generatedImageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(s.visualPrompt || s.title)}?width=1280&height=720&nologo=true`
+    }));
+  },
+
+  // KATALOG ŞABLONUNDAN SUNUM ÜRETME
+  async generateFromCatalogTemplate(template: any, config: PresentationConfig): Promise<TrainingSlide[]> {
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Akademik Direktörü.
+      GÖREV: Seçilen "${template.title}" şablonunu, kurumun ihtiyaçlarına göre profesyonel bir akademik sunuma dönüştür.
+      
+      BAĞLAM:
+      - Şablon Birimleri: ${JSON.stringify(template.coreUnits)}
+      - Hedef Kitle: ${config.targetAudience}
+      - Ton: ${config.tone}
+      
+      KRALLAR:
+      1. Her birimi derinlemesine analiz et.
+      2. 'imageKeyword' alanı Unsplash için İngilizce tekil kelime olmalı.
+      3. 'visualPrompt' alanı AI görsel sentezi için detaylı tasvir içermeli.
+      4. Slaytlar akademik liyakat standartlarında olmalı.
+    `;
+
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `KONU: ${template.title} | SLAYT SAYISI: ${config.slideCount} | STİL: ${config.visualStyle}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 }
+      }
+    });
+
     const slides = JSON.parse(response.text || '[]');
     return slides.map((s: any, i: number) => ({
       ...s,
       id: `SLIDE-${Date.now()}-${i}`,
-      generatedImageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(s.visualPrompt || s.title || 'education')}?width=1280&height=720&nologo=true`
+      generatedImageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(s.visualPrompt || s.title)}?width=1280&height=720&nologo=true`
     }));
   },
 
@@ -111,6 +159,8 @@ export const armsService = {
       ÇIKTI: Saf JSON dizi.
     `;
 
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `KONU: ${config.topic} | KİTLE: ${config.targetAudience} | DERİNLİK: ${config.depth} | SLAYT: ${config.slideCount}`,
@@ -126,6 +176,8 @@ export const armsService = {
   },
 
   async refineSlideContent(slide: TrainingSlide, intent: string): Promise<TrainingSlide> {
+    // @fix: Initialized GoogleGenAI right before the API call as per guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `SLAYT: ${JSON.stringify(slide)} | NİYET: ${intent}`,
