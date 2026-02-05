@@ -2,16 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import PresentationStudio from '../staff-mentor/PresentationStudio';
 import CurriculumManager from './CurriculumManager';
-import { StaffMember, IDP, TrainingSlide } from '../../types';
+import MultimodalStudio from './MultimodalStudio';
+import { StaffMember, IDP, TrainingSlide, CustomTrainingPlan } from '../../types';
 import { TrainingPlan } from './curriculumData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-type TrainingView = 'dashboard' | 'curriculum' | 'studio' | 'analytics' | 'generated_studio';
+type TrainingView = 'dashboard' | 'curriculum' | 'studio' | 'analytics' | 'generated_studio' | 'multimodal_studio';
 
 const TrainingHub: React.FC = () => {
   const [activeView, setActiveView] = useState<TrainingView>('dashboard');
   const [staffStats, setStaffStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [customPlans, setCustomPlans] = useState<CustomTrainingPlan[]>([]);
   
   // AI Generated Content State
   const [generatedSlides, setGeneratedSlides] = useState<TrainingSlide[]>([]);
@@ -26,11 +28,16 @@ const TrainingHub: React.FC = () => {
           const data = await res.json();
           setStaffStats(data);
         }
+        
+        const customRes = await fetch('/api/training?action=list');
+        if (customRes.ok) {
+           setCustomPlans(await customRes.json());
+        }
       } catch (e) { console.error(e); }
       finally { setIsLoading(false); }
     };
     fetchStats();
-  }, []);
+  }, [activeView]);
 
   const handleLaunchGeneratedStudio = (slides: TrainingSlide[], plan: TrainingPlan) => {
      setGeneratedSlides(slides);
@@ -54,10 +61,10 @@ const TrainingHub: React.FC = () => {
     </button>
   );
 
-  // --- RENDERING ---
-
   if (activeView === 'studio') return <PresentationStudio onClose={() => setActiveView('dashboard')} />;
   
+  if (activeView === 'multimodal_studio') return <MultimodalStudio onClose={() => setActiveView('dashboard')} />;
+
   if (activeView === 'generated_studio' && activePlan) {
      return (
         <div className="h-[calc(100vh-6rem)] flex flex-col animate-fade-in relative">
@@ -65,10 +72,9 @@ const TrainingHub: React.FC = () => {
               initialSlides={generatedSlides} 
               onClose={() => { setActiveView('curriculum'); setGeneratedSlides([]); setActivePlan(null); }} 
            />
-           {/* Assignment & Action Bar */}
            <div className="absolute top-24 right-12 z-[1500] flex flex-col gap-4 no-print">
-              <button onClick={() => alert("Personel atama ünitesi yakında aktif edilecek.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-orange-600 hover:text-white transition-all">PERSONELE ATA</button>
-              <button onClick={() => alert("Sunum otomatik olarak kütüphaneye mühürlendi.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-emerald-600 hover:text-white transition-all">KÜTÜPHANEYE MÜHÜRLE</button>
+              <button onClick={() => alert("Personel atama ünitesi aktif edilecek.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-orange-600 hover:text-white transition-all">PERSONELE ATA</button>
+              <button onClick={() => alert("Mühürlendi.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-emerald-600 hover:text-white transition-all">KÜTÜPHANEYE MÜHÜRLE</button>
            </div>
         </div>
      );
@@ -83,7 +89,7 @@ const TrainingHub: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 animate-fade-in h-[calc(100vh-6rem)] relative pb-10">
       
-      {/* HEADER: ACADEMY CONTROL */}
+      {/* COMMAND HEADER */}
       <div className="bg-slate-950 p-10 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border border-white/5 flex flex-col lg:flex-row justify-between items-center gap-8 shrink-0">
          <div className="relative z-10 flex items-center gap-8">
             <div className="w-24 h-24 bg-orange-600 rounded-[3rem] flex items-center justify-center font-black text-4xl shadow-[0_0_50px_rgba(234,88,12,0.3)] rotate-3">
@@ -100,18 +106,19 @@ const TrainingHub: React.FC = () => {
          </div>
          
          <div className="relative z-10 flex gap-4">
-            <div className="bg-white/5 border border-white/10 p-1 rounded-2xl flex">
-               <button onClick={() => setActiveView('dashboard')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'dashboard' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Kontrol</button>
-               <button onClick={() => setActiveView('curriculum')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'curriculum' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Katalog</button>
-               <button onClick={() => setActiveView('analytics')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'analytics' ? 'bg-white text-slate-950 shadow-xl' : 'text-slate-500 hover:text-white'}`}>Metrikler</button>
-            </div>
+            <button 
+              onClick={() => setActiveView('multimodal_studio')}
+              className="px-8 py-4 bg-white text-slate-900 rounded-[2rem] text-[11px] font-black uppercase tracking-widest shadow-2xl hover:bg-orange-600 hover:text-white transition-all flex items-center gap-3"
+            >
+               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+               ÖZEL EĞİTİM TASARLA
+            </button>
          </div>
          <div className="absolute -right-20 -bottom-40 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[150px]"></div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-8">
          
-         {/* DASHBOARD VIEW */}
          {activeView === 'dashboard' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-slide-up">
                <MenuCard 
@@ -121,10 +128,10 @@ const TrainingHub: React.FC = () => {
                   icon="📚" color="blue" 
                />
                <MenuCard 
-                  id="studio" 
-                  title="Sunum Atölyesi" 
-                  desc="Sıfırdan akademik sunum tasarlama, vaka analizleri ve interaktif eğitim üretim merkezi." 
-                  icon="🚀" color="orange" 
+                  id="multimodal_studio" 
+                  title="Multimodal Tasarım" 
+                  desc="Görsel, sembol ve AI destekli interaktif hizmet içi eğitim üretim stüdyosu." 
+                  icon="🎨" color="orange" 
                />
                <MenuCard 
                   id="analytics" 
@@ -135,31 +142,52 @@ const TrainingHub: React.FC = () => {
             </div>
          )}
 
-         {/* ANALYTICS VIEW */}
-         {activeView === 'analytics' && (
-            <div className="space-y-8 animate-slide-up">
-               <div className="bg-white p-12 rounded-[4.5rem] border border-slate-200 shadow-2xl overflow-hidden relative group">
-                  <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-12 border-l-8 border-orange-600 pl-8">Kurumsal Yetkinlik Matrisi</h4>
-                  <div className="h-[500px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={staffStats.slice(0, 10)}>
-                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
-                           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} domain={[0, 100]} />
-                           <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 30px 60px rgba(0,0,0,0.15)', fontSize: '12px', fontWeight: 'bold' }} />
-                           <Bar dataKey="last_score" radius={[15, 15, 0, 0]} barSize={40}>
-                              {staffStats.map((entry, index) => (
-                                 <Cell key={`cell-${index}`} fill={entry.last_score > 85 ? '#10b981' : entry.last_score > 65 ? '#ea580c' : '#ef4444'} />
-                              ))}
-                           </Bar>
-                        </BarChart>
-                     </ResponsiveContainer>
-                  </div>
-                  <div className="absolute -right-40 -top-40 w-[600px] h-[600px] bg-slate-50 rounded-full blur-[120px] -z-0 opacity-50 group-hover:bg-orange-50 transition-colors"></div>
+         {/* Kurumsal Özel Eğitimler Bölümü */}
+         {activeView === 'dashboard' && customPlans.length > 0 && (
+            <div className="space-y-6">
+               <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
+                  <div className="w-2 h-8 bg-orange-600 rounded-full"></div>
+                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Kurum Özel Müfredatlar</h3>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {customPlans.map(plan => (
+                     <div key={plan.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+                        <div className="flex justify-between items-start mb-6">
+                           <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[8px] font-black uppercase tracking-widest">{plan.category}</span>
+                           <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        </div>
+                        <h4 className="text-lg font-black text-slate-900 uppercase leading-tight mb-4">{plan.title}</h4>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-8 line-clamp-2">{plan.description}</p>
+                        <div className="flex justify-between items-center mt-auto border-t border-slate-50 pt-4">
+                           <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{plan.slides.length} SLAYT</span>
+                           <button className="text-[10px] font-black text-orange-600 hover:text-slate-900 transition-colors">İNCELE →</button>
+                        </div>
+                     </div>
+                  ))}
                </div>
             </div>
          )}
 
+         {activeView === 'analytics' && (
+            <div className="bg-white p-12 rounded-[4.5rem] border border-slate-200 shadow-2xl overflow-hidden">
+               <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-12 border-l-8 border-orange-600 pl-8">Kurumsal Yetkinlik Matrisi</h4>
+               <div className="h-[500px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                     <BarChart data={staffStats.slice(0, 10)}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} domain={[0, 100]} />
+                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 30px 60px rgba(0,0,0,0.15)', fontSize: '12px', fontWeight: 'bold' }} />
+                        <Bar dataKey="last_score" radius={[15, 15, 0, 0]} barSize={40}>
+                           {staffStats.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.last_score > 85 ? '#10b981' : entry.last_score > 65 ? '#ea580c' : '#ef4444'} />
+                           ))}
+                        </Bar>
+                     </BarChart>
+                  </ResponsiveContainer>
+               </div>
+            </div>
+         )}
       </div>
     </div>
   );
