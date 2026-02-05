@@ -12,6 +12,16 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('yeni_gun_admin_token'));
 
+  const logNotification = async (notif: { type: string, severity: string, title: string, message: string }) => {
+    try {
+      await fetch('/api/admin-notifications?action=create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notif)
+      });
+    } catch (e) { console.error("Notification logging failed", e); }
+  };
+
   const loadData = useCallback(async (isManual = true) => {
     if (isManual) setIsLoading(true);
     try {
@@ -31,12 +41,10 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
   const analyzeCandidate = async (candidateId: string) => {
     setIsProcessing(true);
     try {
-      // Önce veritabanından adayın full verisini çek (CV vb. için)
       const freshCandidates = await storageService.getCandidates(true);
       const candidate = freshCandidates.find(c => c.id === candidateId);
       if (!candidate) throw new Error("Aday dosyası bulunamadı.");
 
-      // AI ve Algoritmik analizleri çalıştır
       const aiReport = await generateCandidateAnalysis(candidate, config);
       const algoReport = calculateAlgorithmicAnalysis(candidate, config);
       
@@ -47,17 +55,22 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
         timestamp: Date.now() 
       };
       
-      // Veritabanına kaydet
       const saveResult = await storageService.updateCandidate(updatedCandidate);
       if (!saveResult.success) throw new Error("Veritabanı kayıt hatası");
 
-      // Local state güncelle
       setCandidates(prev => prev.map(c => c.id === candidateId ? updatedCandidate : c));
       
+      logNotification({
+        type: 'STAFF_ACTION',
+        severity: 'SUCCESS',
+        title: 'Nöral Analiz Tamamlandı',
+        message: `${candidate.name} için derin liyakat sentezi başarıyla mühürlendi.`
+      });
+
       return { success: true };
     } catch (e) {
       console.error("Analiz Motoru Çökmesi:", e);
-      return { success: false, error: "AI Analizi başarısız oldu. Teknik detay: JSON Truncation or DB Lock." };
+      return { success: false, error: "AI Analizi başarısız oldu." };
     } finally {
       setIsProcessing(false);
     }
@@ -68,7 +81,17 @@ export const useAcademicEngine = (initialConfig: GlobalConfig) => {
     const candidateId = Math.random().toString(36).substr(2, 9);
     const newCandidate: Candidate = { ...formData, id: candidateId, timestamp: Date.now(), status: 'pending' };
     const result = await storageService.saveCandidate(newCandidate);
-    if (result.success && isLoggedIn) await loadData(false);
+    
+    if (result.success) {
+      logNotification({
+        type: 'NEW_CANDIDATE',
+        severity: 'INFO',
+        title: 'Yeni Başvuru Alındı',
+        message: `${newCandidate.name} (${newCandidate.branch}) kuruma yeni başvuruda bulundu.`
+      });
+      if (isLoggedIn) await loadData(false);
+    }
+    
     setIsProcessing(false);
     return result;
   };

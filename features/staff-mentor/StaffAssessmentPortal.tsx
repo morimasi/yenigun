@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { MODULAR_BATTERIES } from './assessmentData';
 import { AssessmentBattery, Branch, AssessmentQuestion, StaffMember } from '../../types';
@@ -100,8 +99,8 @@ const StaffAssessmentPortal: React.FC = () => {
   };
 
   const handleSubmitExam = async () => {
-    // @fix: Explicitly typed 'sum' and reduce return type to satisfy arithmetic operation requirements and avoid 'unknown' or 'any' type issues.
-    const sum: number = Object.values(answers).reduce((a: number, b: number): number => a + b, 0);
+    // @fix: Cast Object.values(answers) to number[] to ensure type safety during summation and avoid arithmetic errors on unknown types.
+    const sum: number = (Object.values(answers) as number[]).reduce((a, b) => a + b, 0);
     const score = Math.round(sum / (activeModule?.questions.length || 1));
     setIsSaving(true);
     try {

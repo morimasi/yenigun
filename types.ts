@@ -1,4 +1,18 @@
 
+export type NotificationType = 'NEW_CANDIDATE' | 'INTERVIEW_DUE' | 'CONFIG_CHANGE' | 'SYSTEM_ALERT' | 'STAFF_ACTION';
+export type NotificationSeverity = 'INFO' | 'SUCCESS' | 'WARNING' | 'CRITICAL';
+
+export interface SystemNotification {
+  id: string;
+  type: NotificationType;
+  severity: NotificationSeverity;
+  title: string;
+  message: string;
+  isRead: boolean;
+  metadata?: any;
+  createdAt: number;
+}
+
 export interface MultimodalElement {
   id: string;
   type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case';
@@ -117,7 +131,6 @@ export interface AIReport {
     simulationTasks?: string[];
     phases?: { questions: { text: string }[] }[];
   };
-  // @fix: Added presentationSlides to AIReport for ArchiveView compatibility.
   presentationSlides?: TrainingSlide[];
 }
 
@@ -143,13 +156,11 @@ export interface Candidate {
   answers: Record<string, string | string[]>;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
   report?: AIReport;
-  // @fix: Added algoReport to Candidate type for components/admin/CandidateDetail.tsx usage.
   algoReport?: AlgorithmicReport;
   timestamp: number;
   archiveCategory?: ArchiveCategory;
   archiveNote?: string;
   admin_notes?: string;
-  // @fix: Added interviewSchedule for CalendarView/PipelineView consistency.
   interviewSchedule?: { date: string; time: string };
 }
 
@@ -232,8 +243,6 @@ export interface StaffMember {
   report?: any;
   last_score?: number;
 }
-
-// @fix: Added missing types to resolve import errors across multiple components and services.
 
 export interface Certification {
   id: string;

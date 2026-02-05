@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { GlobalConfig } from '../../types';
 
@@ -19,7 +18,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdateConfig }) =
   }, [config]);
 
   const totalWeight = useMemo(() => {
-    return Object.values(draft.weightMatrix).reduce((a, b) => a + b, 0);
+    // @fix: Cast Object.values to number[] to resolve '+' operator error on unknown types in reduce function.
+    return (Object.values(draft.weightMatrix) as number[]).reduce((a, b) => a + b, 0);
   }, [draft.weightMatrix]);
 
   const updateModule = (module: keyof GlobalConfig, key: string, value: any) => {
