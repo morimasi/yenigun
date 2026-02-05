@@ -2,15 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import PresentationStudio from '../staff-mentor/PresentationStudio';
 import CurriculumManager from './CurriculumManager';
-import { StaffMember, IDP } from '../../types';
+import { StaffMember, IDP, TrainingSlide } from '../../types';
+import { TrainingPlan } from './curriculumData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-type TrainingView = 'dashboard' | 'curriculum' | 'studio' | 'analytics';
+type TrainingView = 'dashboard' | 'curriculum' | 'studio' | 'analytics' | 'generated_studio';
 
 const TrainingHub: React.FC = () => {
   const [activeView, setActiveView] = useState<TrainingView>('dashboard');
   const [staffStats, setStaffStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // AI Generated Content State
+  const [generatedSlides, setGeneratedSlides] = useState<TrainingSlide[]>([]);
+  const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -26,6 +31,12 @@ const TrainingHub: React.FC = () => {
     };
     fetchStats();
   }, []);
+
+  const handleLaunchGeneratedStudio = (slides: TrainingSlide[], plan: TrainingPlan) => {
+     setGeneratedSlides(slides);
+     setActivePlan(plan);
+     setActiveView('generated_studio');
+  };
 
   const MenuCard = ({ id, title, desc, icon, color }: any) => (
     <button 
@@ -43,10 +54,29 @@ const TrainingHub: React.FC = () => {
     </button>
   );
 
+  // --- RENDERING ---
+
   if (activeView === 'studio') return <PresentationStudio onClose={() => setActiveView('dashboard')} />;
+  
+  if (activeView === 'generated_studio' && activePlan) {
+     return (
+        <div className="h-[calc(100vh-6rem)] flex flex-col animate-fade-in relative">
+           <PresentationStudio 
+              initialSlides={generatedSlides} 
+              onClose={() => { setActiveView('curriculum'); setGeneratedSlides([]); setActivePlan(null); }} 
+           />
+           {/* Assignment & Action Bar */}
+           <div className="absolute top-24 right-12 z-[1500] flex flex-col gap-4 no-print">
+              <button onClick={() => alert("Personel atama ünitesi yakında aktif edilecek.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-orange-600 hover:text-white transition-all">PERSONELE ATA</button>
+              <button onClick={() => alert("Sunum otomatik olarak kütüphaneye mühürlendi.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-emerald-600 hover:text-white transition-all">KÜTÜPHANEYE MÜHÜRLE</button>
+           </div>
+        </div>
+     );
+  }
+
   if (activeView === 'curriculum') return (
     <div className="h-[calc(100vh-6rem)] overflow-hidden">
-       <CurriculumManager />
+       <CurriculumManager onLaunchStudio={handleLaunchGeneratedStudio} />
     </div>
   );
 
@@ -86,14 +116,14 @@ const TrainingHub: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-slide-up">
                <MenuCard 
                   id="curriculum" 
-                  title="Müfredat Stüdyosu" 
-                  desc="Kurumsal eğitim rotaları, oryantasyon planları ve branş bazlı akademik müfredatlar." 
+                  title="Akademik Katalog" 
+                  desc="80+ kurumsal eğitim rotası, oryantasyon planları ve branş bazlı akademik müfredatlar." 
                   icon="📚" color="blue" 
                />
                <MenuCard 
                   id="studio" 
-                  title="AI Sunum Atölyesi" 
-                  desc="Tek tıkla akademik kalitede eğitim slaytları, vaka analizleri ve interaktif sunumlar üretin." 
+                  title="Sunum Atölyesi" 
+                  desc="Sıfırdan akademik sunum tasarlama, vaka analizleri ve interaktif eğitim üretim merkezi." 
                   icon="🚀" color="orange" 
                />
                <MenuCard 

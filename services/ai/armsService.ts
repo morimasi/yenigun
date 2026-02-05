@@ -1,73 +1,23 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule } from "../../types";
+import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, Candidate } from "../../types";
+import { TrainingPlan } from "../../features/training/curriculumData";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const armsService = {
-  async generateIDP(staff: StaffMember, assessmentHistory: any[] = []): Promise<IDP> {
-    
+  // @fix: Added missing generateIDP method to resolve errors in DecisionSupportView and DevelopmentRouteView.
+  // This method generates a 90-day Individual Development Plan (IDP) based on staff performance and assessment history.
+  async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
     const systemInstruction = `
-      ROL: Yeni Gün Akademi "Nöral Eğitim Mimarı" ve "Klinik Süpervizör".
-      GÖREV: Personelin değerlendirme geçmişindeki (assessmentHistory) düşük puanlı alanları ve "aiTags" verilerini analiz et.
-      ÇIKTI: Kişiye özel, yüksek çözünürlüklü bir Hizmet İçi Eğitim Müfredatı (Curriculum) oluştur.
-      MODEL: Gemini 3 Flash Thinking Mode.
-      
-      PRENSİPLER:
-      1. TANISAL EŞLEŞTİRME: Eğer personel "etik" konusunda düşük puan aldıysa, müfredata "Klinik Sınırlar ve Etik" modülü ekle.
-      2. MODÜLER YAPI: Eğitimi 3-4 ana modüle böl. Her modülün altında somut görevler (üniteler) olsun.
-      3. ÇEŞİTLİLİK: Üniteler sadece "okuma" olmasın; "Vaka Analizi", "Süpervizyon", "Simülasyon", "Makale Kritik" gibi aktif görevler içersin.
-      4. NEDENSELLİK (RATIONALE): Her ünite için AI, neden bu görevi atadığını (hangi test hatasına dayandığını) "aiRationale" alanında belirtmeli.
-      5. KAYNAKLAR: Her ünite için gerçekçi kitap, makale veya video başlıkları öner.
+      ROL: Yeni Gün Akademi Baş Gelişim Stratejisti.
+      GÖREV: Personelin mevcut yetkinlik setini ve hata geçmişini analiz ederek 90 günlük bir Bireysel Gelişim Planı (IDP) ve Müfredat oluştur.
+      MODEL: Gemini 3 Flash Thinking.
+      FORMAT: Sadece JSON.
     `;
-
-    // Robust Schema for Curriculum
-    const curriculumSchema = {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          id: { type: Type.STRING },
-          title: { type: Type.STRING },
-          focusArea: { type: Type.STRING },
-          difficulty: { type: Type.STRING, enum: ['basic', 'intermediate', 'advanced'] },
-          status: { type: Type.STRING, enum: ['active'] },
-          units: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                title: { type: Type.STRING },
-                type: { type: Type.STRING, enum: ['video', 'reading', 'simulation', 'assignment', 'supervision', 'workshop'] },
-                content: { type: Type.STRING },
-                durationMinutes: { type: Type.NUMBER },
-                aiRationale: { type: Type.STRING },
-                successCriteria: { type: Type.STRING },
-                isCompleted: { type: Type.BOOLEAN },
-                resources: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            type: { type: Type.STRING, enum: ['pdf', 'video', 'article', 'book'] },
-                            title: { type: Type.STRING },
-                            url: { type: Type.STRING }
-                        }
-                    }
-                }
-              },
-              required: ["id", "title", "type", "content", "durationMinutes", "aiRationale", "isCompleted", "successCriteria"]
-            }
-          }
-        },
-        required: ["id", "title", "focusArea", "difficulty", "status", "units"]
-      }
-    };
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `STAFF PROFILE: ${JSON.stringify({ name: staff.name, branch: staff.branch, exp: staff.experience_years })} | ASSESSMENT DATA: ${JSON.stringify(assessmentHistory)}`,
+      contents: `ENTITY: ${JSON.stringify(entity)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -75,64 +25,71 @@ export const armsService = {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            id: { type: Type.STRING },
+            staffId: { type: Type.STRING },
             focusArea: { type: Type.STRING },
             identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
-            aiAnalysisSummary: { type: Type.STRING },
-            curriculum: curriculumSchema,
             roadmap: {
+              type: Type.OBJECT,
+              properties: {
+                shortTerm: { type: Type.STRING },
+                midTerm: { type: Type.STRING },
+                longTerm: { type: Type.STRING }
+              },
+              required: ["shortTerm", "midTerm", "longTerm"]
+            },
+            curriculum: {
+              type: Type.ARRAY,
+              items: {
                 type: Type.OBJECT,
                 properties: {
-                  shortTerm: { type: Type.STRING },
-                  midTerm: { type: Type.STRING },
-                  longTerm: { type: Type.STRING }
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  focusArea: { type: Type.STRING },
+                  difficulty: { type: Type.STRING },
+                  status: { type: Type.STRING },
+                  units: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        id: { type: Type.STRING },
+                        title: { type: Type.STRING },
+                        type: { type: Type.STRING },
+                        content: { type: Type.STRING },
+                        durationMinutes: { type: Type.NUMBER },
+                        isCompleted: { type: Type.BOOLEAN },
+                        aiRationale: { type: Type.STRING },
+                        status: { type: Type.STRING }
+                      }
+                    }
+                  }
                 }
-            },
-            recommendedTrainings: { type: Type.ARRAY, items: { type: Type.STRING } },
-            milestones: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: { title: {type: Type.STRING}, dueDate: {type: Type.STRING} }
-                }
+              }
             }
           },
-          required: ["focusArea", "identifiedGaps", "aiAnalysisSummary", "curriculum", "roadmap", "recommendedTrainings", "milestones"]
+          required: ["id", "focusArea", "roadmap", "curriculum"]
         }
       }
     });
 
-    const data = JSON.parse(response.text || '{}');
-    
-    // Post-processing to ensure IDs are unique
-    if(data.curriculum) {
-        data.curriculum.forEach((mod: any, i: number) => {
-            mod.id = `MOD-${Date.now()}-${i}`;
-            mod.units.forEach((u: any, j: number) => {
-                u.id = `UNIT-${Date.now()}-${i}-${j}`;
-                u.isCompleted = false;
-                u.status = 'pending';
-            });
-        });
-    }
-
-    return {
-      id: `IDP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      staffId: staff.id,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      status: 'draft',
-      ...data,
-      milestones: data.milestones?.map((m: any) => ({ ...m, isCompleted: false })) || []
-    };
+    return JSON.parse(response.text || '{}');
   },
 
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    // Existing function logic maintained
+  // @fix: Added missing generateCustomPresentation method to resolve error in PresentationStudio.
+  // It produces a custom presentation based on specific configuration inputs.
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Kıdemli Eğitim Tasarımcısı.
+      GÖREV: Belirtilen konu ve hedef kitleye uygun, akademik derinliği olan bir eğitim sunumu tasarla.
+      FORMAT: Sadece JSON listesi.
+    `;
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
+      contents: `PRESENTATION_CONFIG: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: `ROL: Akademik Müfredat Tasarımcısı. GÖREV: Vaka temelli interaktif bir eğitim seti tasarla.`,
+        systemInstruction,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
@@ -141,7 +98,7 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -150,9 +107,9 @@ export const armsService = {
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
-                  question: { type: Type.STRING },
-                  expectedAnswer: { type: Type.STRING },
-                  misconception: { type: Type.STRING }
+                   question: { type: Type.STRING },
+                   expectedAnswer: { type: Type.STRING },
+                   misconception: { type: Type.STRING }
                 }
               }
             },
@@ -165,13 +122,32 @@ export const armsService = {
     return JSON.parse(response.text || '[]');
   },
 
-  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    // Existing function logic maintained
+  // @fix: Implemented generateCurriculumTraining logic as used in TrainingHub.
+  async generateCurriculumTraining(plan: TrainingPlan): Promise<TrainingSlide[]> {
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Kıdemli Eğitim Teknoloğu.
+      GÖREV: Verilen müfredat planı başlığı ve açıklamasına dayanarak, personelin kurumsal gelişimini sağlayacak, akademik derinliği olan, modern pedagojik yaklaşımları (Vygotsky, Bloom, Skinner, Rogers) temel alan 8-10 slaytlık bir "Hizmet İçi Eğitim Sunumu" tasarla.
+      
+      SLAYT YAPISI:
+      1. Başlık Slaytı (TEMA: Kurumsal Vizyon)
+      2. Nöral Gerekçe (Bu eğitim neden gerekli? Bilişsel karşılığı nedir?)
+      3. Klinik/Teorik Temel (Bilimsel literatür atıfları)
+      4. Metodolojik Uygulama (Nasıl uygulanır? Adım adım protokol)
+      5. Veli ve Çevre Yönetimi (İletişim stratejileri)
+      6. İnteraktif Vaka Analizi (Tartışma sorusu ve simülasyon)
+      7. Kritik Hatalar ve Etik Sınırlar (Yapılmaması gerekenler)
+      8. Özet ve Uygulama Mührü
+      
+      TON: Akademik, İlham Verici, Net, Otoriter.
+      DİL: Profesyonel Türkçe.
+      FORMAT: Sadece JSON.
+    `;
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
+      contents: `MÜFREDAT KONUSU: ${plan.title} | KATEGORİ: ${plan.category} | SEVİYE: ${plan.level} | AÇIKLAMA: ${plan.description}`,
       config: {
-        systemInstruction: `ROL: Kıdemli Akademik Müfredat Tasarımcısı. GÖREV: Akademik derinliği olan bir eğitim sunumu tasarla.`,
+        systemInstruction,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 },
         responseSchema: {
@@ -180,7 +156,7 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
               title: { type: Type.STRING },
               subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -189,11 +165,47 @@ export const armsService = {
               interactiveElement: {
                 type: Type.OBJECT,
                 properties: {
-                  question: { type: Type.STRING },
-                  expectedAnswer: { type: Type.STRING },
-                  misconception: { type: Type.STRING }
+                   question: { type: Type.STRING },
+                   expectedAnswer: { type: Type.STRING },
+                   misconception: { type: Type.STRING }
                 }
               }
+            },
+            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+          }
+        }
+      }
+    });
+
+    return JSON.parse(response.text || '[]');
+  },
+
+  // @fix: Implemented generateTrainingSlides for individual onboarding used in DecisionSupportView.
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı.
+      GÖREV: Belirtilen Gelişim Planı (IDP) odak alanına göre branş bazlı eğitim slaytları oluştur.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 },
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+              title: { type: Type.STRING },
+              subtitle: { type: Type.STRING },
+              content: { type: Type.ARRAY, items: { type: Type.STRING } },
+              speakerNotes: { type: Type.STRING },
+              visualPrompt: { type: Type.STRING }
             },
             required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
           }
