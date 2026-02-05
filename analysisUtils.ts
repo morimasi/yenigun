@@ -7,7 +7,6 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
   const branch = candidate.branch as Branch;
   const multipliers = BRANCH_CATEGORY_MULTIPLIERS[branch] || {};
   
-  // Ham skorların toplanacağı havuz
   const scores: Record<string, number[]> = {
     ethics: [], pedagogy: [], clinical: [], resilience: [], fit: [], loyalty: [], agility: []
   };
@@ -16,7 +15,7 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
   const riskFlags: string[] = [];
   const answers = candidate.answers || {};
 
-  // 1. CONFIG MODÜLLERİNİ YÜKLE (Default değerler yerine config'den gelenler)
+  // 1. SİSTEM KONFİGÜRASYONUNU YÜKLE
   const weights = config.weightMatrix || { 
     clinicalExpertise: 30, ethicalIntegrity: 30, emotionalResilience: 15, 
     institutionalLoyalty: 10, learningAgility: 10, academicPedagogy: 5 
@@ -24,16 +23,15 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
   
   const penalties = config.riskEngine || { 
     criticalEthicalViolationPenalty: 40, inconsistentAnswerPenalty: 20, 
-    lowExperienceDiscountFactor: 0.85 
+    lowExperienceDiscountFactor: 0.85, jobHoppingPenalty: 15
   };
 
-  // 2. CEVAP ANALİZİ
+  // 2. CEVAP ANALİZİ VE AĞIRLIKLANDIRMA
   Object.values(BRANCH_QUESTIONS).flat().forEach(q => {
     const answer = answers[q.id];
     if (q.type === 'radio' && q.weightedOptions && typeof answer === 'string') {
       const selectedOption = q.weightedOptions.find(o => o.label === answer);
       if (selectedOption) {
-        // Branş override kontrolü
         const activeWeights = (selectedOption.branchOverrides && selectedOption.branchOverrides[branch]) 
           ? selectedOption.branchOverrides[branch] 
           : selectedOption.weights;
@@ -42,7 +40,6 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
           const numericWeight = Number(weight);
           const multiplier = multipliers[cat] || 1.0;
           
-          // Kategori Eşleştirme (Taxonomy -> Score Pool)
           if (cat === 'workEthics' || cat === 'integrity') scores.ethics.push(numericWeight * 100 * multiplier);
           else if (cat === 'clinical' || cat === 'technicalExpertise') scores.clinical.push(numericWeight * 100 * multiplier);
           else if (cat === 'pedagogicalAnalysis' || cat === 'academicSkills') scores.pedagogy.push(numericWeight * 100 * multiplier);
@@ -51,17 +48,16 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
           else if (cat === 'developmentOpenness' || cat === 'learningAgility') scores.agility.push(numericWeight * 100 * multiplier);
         });
 
-        // Etik İhlal Kontrolü (Risk Engine)
+        // Etik İhlal Kontrolü (Dinamik Ceza)
         if (activeWeights.workEthics && Number(activeWeights.workEthics) < 0.3) {
-          riskFlags.push(`Kritik Etik İhlal: ${q.text.substring(0, 30)}...`);
+          riskFlags.push(`KRİTİK ETİK İHLAL: ${q.text.substring(0, 40)}...`);
           reliabilityPoints -= penalties.criticalEthicalViolationPenalty;
         }
       }
     }
   });
 
-  // 3. ORTALAMALAR
-  const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 50; // Nötr başlangıç
+  const getAvg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 50;
 
   const ethicsScore = getAvg(scores.ethics);
   const clinicalScore = getAvg(scores.clinical);
@@ -70,24 +66,22 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
   const agilityScore = getAvg(scores.agility);
   const pedagogyScore = getAvg(scores.pedagogy);
 
-  // 4. TUTARLILIK KONTROLLERİ (Risk Engine)
+  // 3. TUTARLILIK VE DENEYİM KONTROLLERİ (Risk Engine)
   const exp = candidate.experienceYears || 0;
   
-  // Deneyimli ama klinik skoru düşükse -> Tutarsızlık cezası
   if (exp > 5 && clinicalScore < 50) {
     reliabilityPoints -= penalties.inconsistentAnswerPenalty;
-    riskFlags.push("Deneyim/Yetkinlik Tutarsızlığı");
+    riskFlags.push("DENEYİM-YETKİNLİK TUTARSIZLIĞI");
   }
 
-  // Junior indirimi
+  // Junior Çarpanı (Dinamik)
   let finalMultiplier = 1;
   if (exp < 2) {
       finalMultiplier = penalties.lowExperienceDiscountFactor; 
-      riskFlags.push("Junior Deneyim İndirimi Uygulandı");
+      riskFlags.push(`JUNIOR KATSAYISI UYGULANDI (${finalMultiplier}x)`);
   }
 
-  // 5. AĞIRLIKLI SKOR HESABI (Weight Matrix)
-  // Toplam ağırlığı dinamik hesapla (Config'den 100 gelmeyebilir, normalize et)
+  // 4. PARAMETRİK SKOR HESABI (Weight Matrix Integration)
   const totalConfigWeight = (Object.values(weights) as number[]).reduce((a, b) => a + b, 0) || 100;
 
   let rawScore = (
@@ -99,13 +93,13 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
     (pedagogyScore * weights.academicPedagogy)
   ) / totalConfigWeight;
 
-  // 6. FİNAL KALİBRASYON
   rawScore = rawScore * finalMultiplier;
 
-  // Güvenilirlik puanı çok düştüyse genel skoru aşağı çek
+  // Güvenilirlik Bazlı Skor Bastırma
   if (reliabilityPoints < 70) {
-      rawScore = rawScore * (reliabilityPoints / 100);
-      riskFlags.push("Düşük Güvenilirlik Endeksi Nedeniyle Skor Bastırıldı");
+      const suppressionFactor = reliabilityPoints / 100;
+      rawScore = rawScore * suppressionFactor;
+      riskFlags.push(`DÜŞÜK GÜVENİLİRLİK ENDEKSİ (%${reliabilityPoints})`);
   }
 
   return {
@@ -120,4 +114,3 @@ export const calculateAlgorithmicAnalysis = (candidate: Candidate, config: Globa
     branchComplianceScore: Math.round((clinicalScore + pedagogyScore) / 2)
   };
 };
-    

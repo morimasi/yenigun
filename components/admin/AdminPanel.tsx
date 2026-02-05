@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Candidate, StaffMember, GlobalConfig, StaffRole, Branch } from '../../types';
 import MethodologyInventoryView from './MethodologyInventoryView';
+import SettingsView from './SettingsView';
 import { storageService } from '../../services/storageService';
 
 interface AdminPanelProps {
@@ -32,7 +33,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
   };
 
   const handleDeleteUser = async (id: string, type: 'candidate' | 'staff') => {
-    if (!confirm("Bu kullanıcı kalıcı olarak silinecektir. Onaylıyor musunuz?")) return;
+    if (!confirm("BU İŞLEM GERİ ALINAMAZ: Seçili kayıt veri tabanından tamamen imha edilecektir. Onaylıyor musunuz?")) return;
     setIsProcessing(true);
     try {
       if (type === 'candidate') {
@@ -46,7 +47,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
   };
 
   const handlePromote = async (candidate: Candidate) => {
-    if (!confirm(`${candidate.name} personel olarak atanacak. Devam edilsin mi?`)) return;
+    if (!confirm(`${candidate.name} için personel atama süreci başlatılacak. Onaylıyor musunuz?`)) return;
     setIsProcessing(true);
     try {
       const res = await fetch('/api/staff?action=register', {
@@ -62,14 +63,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
         })
       });
       if (res.ok) {
-        // Adayı arşivle
         await storageService.updateCandidate({
           ...candidate,
           status: 'archived',
           archiveCategory: 'HIRED_CONTRACTED',
-          archiveNote: 'Personel olarak atandı.'
+          archiveNote: 'Akademik mülakat sonrası personel olarak atandı.'
         });
-        alert("Personel ataması başarılı. Şifre adaya iletilmelidir.");
+        alert("Atama başarılı. Aday dosyası 'Dijital Arşiv' modülüne mühürlendi.");
         onRefresh();
       }
     } finally { setIsProcessing(false); }
@@ -77,62 +77,103 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
 
   return (
     <div className="flex flex-col h-full bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
-      {/* Admin Sub Nav */}
-      <div className="bg-slate-900 p-4 flex gap-4 shrink-0">
-        <button onClick={() => setActiveSubTab('users')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'users' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Kullanıcı Yönetimi</button>
-        <button onClick={() => setActiveSubTab('inventory')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'inventory' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Metodoloji Stüdyosu</button>
-        <button onClick={() => setActiveSubTab('system')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'system' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Sistem Parametreleri</button>
+      
+      {/* GLOBAL ADMIN NAV */}
+      <div className="bg-slate-950 p-4 flex justify-between items-center shrink-0 border-b border-white/5">
+        <div className="flex gap-2">
+           {[
+             { id: 'users', label: 'KULLANICI YÖNETİMİ', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
+             { id: 'inventory', label: 'METODOLOJİ STÜDYOSU', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2' },
+             { id: 'system', label: 'SİSTEM PARAMETRELERİ', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 00-2.573 1.066' }
+           ].map(tab => (
+             <button 
+               key={tab.id}
+               onClick={() => setActiveSubTab(tab.id as any)} 
+               className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === tab.id ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+             >
+               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tab.icon} /></svg>
+               {tab.label}
+             </button>
+           ))}
+        </div>
+        <div className="flex items-center gap-4 pr-4">
+           <div className="flex items-center gap-2">
+             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Çekirdek Aktif</span>
+           </div>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-hidden flex flex-col relative z-0">
         {activeSubTab === 'users' && (
           <div className="flex-1 flex flex-col p-8 space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <button onClick={() => setUserType('candidate')} className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${userType === 'candidate' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'}`}>Adaylar</button>
-                <button onClick={() => setUserType('staff')} className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${userType === 'staff' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'}`}>Personel</button>
+            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-3xl border border-slate-100">
+              <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+                <button onClick={() => setUserType('candidate')} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${userType === 'candidate' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Başvuru Havuzu</button>
+                <button onClick={() => setUserType('staff')} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${userType === 'staff' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Akademik Kadro</button>
               </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{userType === 'candidate' ? candidates.length : staffList.length} KAYIT LİSTELENİYOR</p>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toplam Kayıt</p>
+                   <p className="text-xl font-black text-slate-900 leading-none mt-1">{userType === 'candidate' ? candidates.length : staffList.length}</p>
+                </div>
+                <button onClick={onRefresh} className={`p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all ${isProcessing ? 'animate-spin' : ''}`}>
+                   <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" /></svg>
+                </button>
+              </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar border border-slate-100 rounded-[2rem]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar border border-slate-200 rounded-[3rem] bg-white shadow-inner">
               <table className="w-full text-left border-collapse">
-                <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
+                <thead className="sticky top-0 bg-slate-50/90 backdrop-blur-md border-b border-slate-200 z-10">
                   <tr>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase">İsim / Branş</th>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase">E-Posta / Tel</th>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase">Durum / Rol</th>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase text-right">İşlemler</th>
+                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Klinik Kimlik & Branş</th>
+                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">E-Posta & İletişim</th>
+                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Sistem Statüsü</th>
+                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">MIA Aksiyonları</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {(userType === 'candidate' ? candidates : staffList).map(u => (
-                    <tr key={u.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="p-4">
-                        <p className="text-[11px] font-black text-slate-900 uppercase">{u.name}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase">{u.branch}</p>
+                    <tr key={u.id} className="hover:bg-slate-50/50 transition-all group">
+                      <td className="p-6">
+                        <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center font-black text-slate-400 text-sm shadow-inner group-hover:bg-orange-600 group-hover:text-white transition-all">{u.name.charAt(0)}</div>
+                           <div>
+                              <p className="text-[13px] font-black text-slate-900 uppercase leading-none mb-1.5">{u.name}</p>
+                              <p className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">{u.branch}</p>
+                           </div>
+                        </div>
                       </td>
-                      <td className="p-4">
-                        <p className="text-[10px] font-bold text-slate-600">{u.email}</p>
-                        <p className="text-[10px] font-medium text-slate-400">{u.phone || '-'}</p>
+                      <td className="p-6">
+                        <p className="text-[11px] font-bold text-slate-600 lowercase">{u.email}</p>
+                        <p className="text-[10px] font-medium text-slate-400 mt-1">{u.phone || 'Girilmemiş'}</p>
                       </td>
-                      <td className="p-4">
+                      <td className="p-6">
                         {userType === 'candidate' ? (
-                          <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-lg text-[9px] font-black uppercase">{(u as Candidate).status}</span>
+                          <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${
+                            (u as Candidate).status === 'pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'
+                          }`}>{(u as Candidate).status}</span>
                         ) : (
-                          <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-[9px] font-black uppercase">{(u as StaffMember).role}</span>
+                          <span className="px-4 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl text-[9px] font-black uppercase tracking-widest">{(u as StaffMember).role}</span>
                         )}
                       </td>
-                      <td className="p-4 text-right space-x-2">
+                      <td className="p-6 text-right space-x-2">
                         {userType === 'candidate' && (u as Candidate).status !== 'archived' && (
-                          <button onClick={() => handlePromote(u as Candidate)} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[9px] font-black uppercase hover:bg-emerald-600">ATA</button>
+                          <button onClick={() => handlePromote(u as Candidate)} className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">KADROYA KAT</button>
                         )}
-                        <button onClick={() => handleDeleteUser(u.id, userType)} className="px-3 py-1.5 bg-rose-50 text-rose-500 rounded-lg text-[9px] font-black uppercase hover:bg-rose-500 hover:text-white">SİL</button>
+                        <button onClick={() => handleDeleteUser(u.id, userType)} className="px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">İmha Et</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {(userType === 'candidate' ? candidates : staffList).length === 0 && (
+                <div className="p-32 text-center opacity-20 grayscale">
+                   <svg className="w-16 h-16 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                   <p className="text-[12px] font-black uppercase tracking-[0.5em]">Veri Kaydı Yok</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -140,53 +181,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
         {activeSubTab === 'inventory' && <MethodologyInventoryView />}
 
         {activeSubTab === 'system' && (
-          <div className="p-12 max-w-4xl mx-auto space-y-12">
-            <div className="bg-orange-50 border border-orange-100 p-8 rounded-[3rem] relative overflow-hidden">
-               <h3 className="text-xl font-black text-orange-900 uppercase mb-4">Küresel Ağırlık Matrisi</h3>
-               <p className="text-xs font-bold text-orange-700 uppercase mb-8">AI Karar Destek motorunun liyakat puanlama yüzdelerini buradan ayarlayın.</p>
-               <div className="grid grid-cols-2 gap-8">
-                  {Object.entries(config.weightMatrix).map(([key, val]) => (
-                    <div key={key} className="space-y-2">
-                       <div className="flex justify-between items-center">
-                          <label className="text-[10px] font-black text-slate-500 uppercase">{key}</label>
-                          <span className="text-sm font-black text-orange-600">%{val}</span>
-                       </div>
-                       <input 
-                         type="range" min="0" max="100" 
-                         value={val} 
-                         onChange={e => onUpdateConfig({...config, weightMatrix: {...config.weightMatrix, [key]: parseInt(e.target.value)}})}
-                         className="w-full h-1.5 bg-orange-200 rounded-full appearance-none cursor-pointer accent-orange-600"
-                       />
-                    </div>
-                  ))}
-               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-8">
-               <div className="bg-slate-900 p-8 rounded-[3rem] text-white">
-                  <h4 className="text-[11px] font-black text-orange-500 uppercase mb-6">Risk Motoru Ayarları</h4>
-                  <div className="space-y-4">
-                     <div className="flex justify-between items-center py-3 border-b border-white/5">
-                        <span className="text-[10px] font-bold uppercase">Etik İhlal Cezası</span>
-                        <input type="number" className="bg-white/5 border border-white/10 w-16 p-1 text-center rounded" value={config.riskEngine.criticalEthicalViolationPenalty} />
-                     </div>
-                     <div className="flex justify-between items-center py-3 border-b border-white/5">
-                        <span className="text-[10px] font-bold uppercase">Auto-Reject Eşiği</span>
-                        <input type="number" className="bg-white/5 border border-white/10 w-16 p-1 text-center rounded" value={config.systemSettings.autoRejectBelowScore} />
-                     </div>
-                  </div>
-               </div>
-               <div className="bg-slate-50 border border-slate-200 p-8 rounded-[3rem]">
-                  <h4 className="text-[11px] font-black text-slate-400 uppercase mb-6">Kurumsal Kimlik</h4>
-                  <input 
-                    type="text" 
-                    className="w-full p-4 bg-white border border-slate-200 rounded-2xl font-black text-sm uppercase tracking-widest"
-                    value={config.institutionName}
-                    onChange={e => onUpdateConfig({...config, institutionName: e.target.value})}
-                  />
-                  <p className="mt-4 text-[9px] font-bold text-slate-400 uppercase">Bu isim tüm raporlarda ve iletişim şablonlarında kullanılır.</p>
-               </div>
-            </div>
+          <div className="flex-1 overflow-hidden">
+            <SettingsView config={config} onUpdateConfig={onUpdateConfig} />
           </div>
         )}
       </div>
