@@ -1,52 +1,60 @@
 
 // ... (Mevcut tipler korunur)
 
-// GELİŞMİŞ SUNUM TİPLERİ
-export type SlideLayout = 'cover' | 'section_header' | 'split_left' | 'split_right' | 'full_visual' | 'bullet_list' | 'quote_center';
-export type AnimationType = 'fade' | 'slide_up' | 'zoom_in' | 'pan_right' | 'none';
-export type VisualStyle = 'minimalist' | 'corporate' | 'playful' | 'dark_mode' | 'academic';
+// GELİŞMİŞ SUNUM MİMARİSİ
+export type SlideLayout = 
+  | 'cover'           // Başlık ve Büyük Görsel
+  | 'section_header'  // Bölüm Geçişi (Renkli)
+  | 'split_left'      // Sol Metin, Sağ Görsel
+  | 'split_right'     // Sağ Metin, Sol Görsel
+  | 'full_visual'     // Tam Ekran Görsel + Overlay Metin
+  | 'bullet_list'     // Klasik Maddeler
+  | 'quote_center'    // Çarpıcı Alıntı
+  | 'data_grid';      // İstatistiksel Veri
+
+export type AnimationType = 'fade' | 'slide_up' | 'zoom_in' | 'pan_right' | 'blur_reveal' | 'none';
+export type VisualStyle = 'minimalist' | 'corporate' | 'playful' | 'dark_mode' | 'academic' | 'warm_serenity';
 
 export interface TrainingSlide {
   id: string;
-  type: 'title' | 'content' | 'interactive'; // Legacy support
-  layout: SlideLayout; // YENİ: Slayt yerleşimi
+  layout: SlideLayout;
   title: string;
   subtitle?: string;
-  content?: string[];
-  speakerNotes?: string;
+  content?: string[];     // Bullet points veya paragraf
+  speakerNotes?: string;  // Sunumu yapacak kişiye özel notlar
   
-  // GÖRSEL & ESTETİK
-  visualPrompt?: string; // AI'ın görsel tasviri
-  imageKeyword?: string; // Görsel API'leri için anahtar kelime
-  backgroundTheme?: string; // CSS class (örn: bg-slate-900)
+  // NÖRAL GÖRSEL KATMANI
+  visualPrompt?: string;  // AI'ın görseli neden seçtiğine dair açıklaması
+  imageKeyword?: string;  // Unsplash vb. için arama terimi (İngilizce)
   
-  // ETKİLEŞİM
-  animation?: AnimationType;
+  // ETKİLEŞİM KATMANI
   interactiveElement?: {
+    type: 'quiz' | 'reflection' | 'poll';
     question: string;
-    expectedAnswer: string;
-    misconception: string;
+    options?: string[];
+    correctAnswer?: string;
   };
+  
+  durationSeconds?: number; // Otomatik oynatma için
 }
 
 export interface PresentationConfig {
   topic: string;
+  contextData?: string; // Personelin eksik olduğu alanlar
   targetAudience: 'individual' | 'team' | 'parents' | 'management';
   tone: 'academic' | 'motivational' | 'strict' | 'workshop';
   depth: 'beginner' | 'intermediate' | 'expert';
   slideCount: number;
-  visualStyle: VisualStyle; // YENİ
-  includeAnimations: boolean; // YENİ
+  visualStyle: VisualStyle;
+  includeAnimations: boolean;
 }
 
-// ... (Diğer tipler aynı kalır)
+// Added missing ExportConfig interface
 export interface ExportConfig {
   title: string;
   showWatermark: boolean;
   signatureRequired: boolean;
-  theme: 'corporate' | 'modern' | 'minimal';
-  
-  // MODÜLER GÖRÜNÜRLÜK AYARLARI
+  theme: 'corporate' | 'modern' | 'minimalist';
   sections: {
     cover: boolean;
     executiveSummary: boolean;
@@ -59,8 +67,9 @@ export interface ExportConfig {
   };
 }
 
+// Added missing UniversalExportData interface
 export interface UniversalExportData {
-  type: ExportType;
+  type: string;
   entityName: string;
   referenceId: string;
   payload: any;
@@ -381,6 +390,9 @@ export interface TrainingUnit {
   resources?: TrainingResource[]; // Ek kaynaklar
   successCriteria?: string; // Başarı ölçütü (Örn: %80 Quiz Puanı)
   status: 'pending' | 'in_progress' | 'completed';
+  
+  // YENİ: Her ünitenin kendi sunumu olabilir
+  generatedPresentation?: TrainingSlide[]; 
 }
 
 export interface TrainingModule {
@@ -413,7 +425,6 @@ export interface IDP {
     dueDate: string;
     isCompleted: boolean;
   }[];
-  // YENİ: DETAYLI MÜFREDAT
   curriculum?: TrainingModule[];
   aiAnalysisSummary?: string;
   status: 'draft' | 'published' | 'archived';
