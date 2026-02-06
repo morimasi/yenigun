@@ -370,6 +370,7 @@ export interface TrainingSlide {
   title: string;
   subtitle?: string;
   content: string[];
+  elements?: MultimodalElement[];
   speakerNotes: string;
   visualPrompt: string;
   interactiveElement?: {
