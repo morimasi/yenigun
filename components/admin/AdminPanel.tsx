@@ -32,17 +32,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
     } finally { setIsProcessing(false); }
   };
 
-  const handleDeleteUser = async (id: string, type: 'candidate' | 'staff') => {
-    if (!confirm("BU İŞLEM GERİ ALINAMAZ: Seçili kayıt veri tabanından tamamen imha edilecektir. Onaylıyor musunuz?")) return;
+  const handleArchiveStaff = async (id: string) => {
+    if (!confirm("BU İŞLEM PERSONELİ PASİF KILACAKTIR: Kayıt kurumsal arşive taşınacak ve erişim yetkileri sonlandırılacaktır. Onaylıyor musunuz?")) return;
     setIsProcessing(true);
     try {
-      if (type === 'candidate') {
+        await fetch(`/api/staff?action=archive&staffId=${id}`, { method: 'POST' });
+        fetchStaff();
+        alert("Personel dosyası 'Dijital Arşiv' ünitesine mühürlendi.");
+    } finally { setIsProcessing(false); }
+  };
+
+  const handleDeleteCandidate = async (id: string) => {
+    if (!confirm("BU İŞLEM GERİ ALINAMAZ: Aday kaydı veri tabanından tamamen imha edilecektir. Onaylıyor musunuz?")) return;
+    setIsProcessing(true);
+    try {
         await storageService.deleteCandidate(id);
         onRefresh();
-      } else {
-        await fetch(`/api/staff?action=delete&id=${id}`, { method: 'DELETE' });
-        fetchStaff();
-      }
     } finally { setIsProcessing(false); }
   };
 
@@ -66,7 +71,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
         await storageService.updateCandidate({
           ...candidate,
           status: 'archived',
-          archiveCategory: 'HIRED_CONTRACTED',
+          archiveCategory: 'CANDIDATE_POOL',
           archiveNote: 'Akademik mülakat sonrası personel olarak atandı.'
         });
         alert("Atama başarılı. Aday dosyası 'Dijital Arşiv' modülüne mühürlendi.");
@@ -95,12 +100,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
                {tab.label}
              </button>
            ))}
-        </div>
-        <div className="flex items-center gap-4 pr-4">
-           <div className="flex items-center gap-2">
-             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Çekirdek Aktif</span>
-           </div>
         </div>
       </div>
 
@@ -162,18 +161,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ candidates, onRefresh, config, 
                         {userType === 'candidate' && (u as Candidate).status !== 'archived' && (
                           <button onClick={() => handlePromote(u as Candidate)} className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">KADROYA KAT</button>
                         )}
-                        <button onClick={() => handleDeleteUser(u.id, userType)} className="px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">İmha Et</button>
+                        <button onClick={() => userType === 'staff' ? handleArchiveStaff(u.id) : handleDeleteCandidate(u.id)} className="px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">{userType === 'staff' ? 'Arşivle' : 'İmha Et'}</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {(userType === 'candidate' ? candidates : staffList).length === 0 && (
-                <div className="p-32 text-center opacity-20 grayscale">
-                   <svg className="w-16 h-16 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                   <p className="text-[12px] font-black uppercase tracking-[0.5em]">Veri Kaydı Yok</p>
-                </div>
-              )}
             </div>
           </div>
         )}
