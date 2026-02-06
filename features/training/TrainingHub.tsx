@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import PresentationStudio from '../staff-mentor/PresentationStudio';
+import PresentationStudio from './PresentationStudio'; // YENİ: Doğru modül yolu (Training klasörü)
 import CurriculumManager from './CurriculumManager';
 import MultimodalStudio from './MultimodalStudio';
 import { StaffMember, IDP, TrainingSlide, CustomTrainingPlan } from '../../types';
@@ -66,16 +66,23 @@ const TrainingHub: React.FC = () => {
   if (activeView === 'multimodal_studio') return <MultimodalStudio onClose={() => setActiveView('dashboard')} />;
 
   if (activeView === 'generated_studio' && activePlan) {
+     // PresentationStudio'nun toolbar'ını tetiklemek için uyumlu bir plan objesi oluşturuyoruz.
+     const compatiblePlan: any = {
+        ...activePlan,
+        slides: generatedSlides,
+        // Tip uyumluluğu için gerekli alanlar
+        id: activePlan.id,
+        title: activePlan.title,
+        description: activePlan.description,
+     };
+
      return (
         <div className="h-[calc(100vh-6rem)] flex flex-col animate-fade-in relative">
            <PresentationStudio 
               initialSlides={generatedSlides} 
+              customPlan={compatiblePlan}
               onClose={() => { setActiveView('curriculum'); setGeneratedSlides([]); setActivePlan(null); }} 
            />
-           <div className="absolute top-24 right-12 z-[1500] flex flex-col gap-4 no-print">
-              <button onClick={() => alert("Personel atama ünitesi aktif edilecek.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-orange-600 hover:text-white transition-all">PERSONELE ATA</button>
-              <button onClick={() => alert("Mühürlendi.")} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border border-slate-100 hover:bg-emerald-600 hover:text-white transition-all">KÜTÜPHANEYE MÜHÜRLE</button>
-           </div>
         </div>
      );
   }
@@ -159,7 +166,6 @@ const TrainingHub: React.FC = () => {
                         <h4 className="text-lg font-black text-slate-900 uppercase leading-tight mb-4">{plan.title}</h4>
                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-8 line-clamp-2">{plan.description}</p>
                         <div className="flex justify-between items-center mt-auto border-t border-slate-50 pt-4">
-                           {/* @fix: Added safe navigation for slides property */}
                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{(plan.slides?.length || 0)} SLAYT</span>
                            <button className="text-[10px] font-black text-orange-600 hover:text-slate-900 transition-colors">İNCELE →</button>
                         </div>
