@@ -15,7 +15,7 @@ export interface SystemNotification {
 
 export interface MultimodalElement {
   id: string;
-  type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case';
+  type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case' | 'quiz_block';
   content: any;
   metadata?: {
     animation?: 'fade' | 'slide' | 'zoom';
@@ -32,15 +32,6 @@ export interface TrainingQuiz {
   }[];
 }
 
-export interface CustomTrainingSlide {
-  id: string;
-  title: string;
-  elements: MultimodalElement[];
-  speakerNotes: string;
-  aiAdvice?: string;
-  quiz?: TrainingQuiz; 
-}
-
 export interface CustomTrainingPlan {
   id: string;
   title: string;
@@ -48,10 +39,13 @@ export interface CustomTrainingPlan {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   description: string;
   targetBranches: Branch[] | 'ALL';
-  slides: CustomTrainingSlide[];
+  curriculum: TrainingModule[]; // Hierarchy: Modules -> Units
+  // @fix: Added slides and finalQuiz for presentation studio and dashboard compatibility
+  slides?: TrainingSlide[];
+  finalQuiz?: TrainingQuiz;
   createdBy: string;
   createdAt: number;
-  finalQuiz?: TrainingQuiz;
+  updatedAt?: number;
 }
 
 export enum Branch {
@@ -131,7 +125,7 @@ export interface AIReport {
     simulationTasks?: string[];
     phases?: { questions: { text: string }[] }[];
   };
-  presentationSlides?: TrainingSlide[];
+  presentationSlides?: any[];
 }
 
 export interface Candidate {
@@ -351,13 +345,14 @@ export interface TrainingModule {
 export interface TrainingUnit {
   id: string;
   title: string;
-  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop';
+  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop' | 'quiz_v2';
   content: string;
   durationMinutes: number;
   isCompleted: boolean;
   status: 'pending' | 'in_progress' | 'completed';
   aiRationale?: string;
   successCriteria?: string;
+  multimodalElements?: MultimodalElement[];
   resources?: { title: string; type: string }[];
 }
 

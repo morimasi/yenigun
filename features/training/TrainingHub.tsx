@@ -159,7 +159,8 @@ const TrainingHub: React.FC = () => {
                         <h4 className="text-lg font-black text-slate-900 uppercase leading-tight mb-4">{plan.title}</h4>
                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-8 line-clamp-2">{plan.description}</p>
                         <div className="flex justify-between items-center mt-auto border-t border-slate-50 pt-4">
-                           <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{plan.slides.length} SLAYT</span>
+                           {/* @fix: Added safe navigation for slides property */}
+                           <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{(plan.slides?.length || 0)} SLAYT</span>
                            <button className="text-[10px] font-black text-orange-600 hover:text-slate-900 transition-colors">İNCELE →</button>
                         </div>
                      </div>

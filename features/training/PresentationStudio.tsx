@@ -12,7 +12,8 @@ interface PresentationStudioProps {
 
 const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, initialSlides, customPlan, assignmentId }) => {
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
-  const [slides, setSlides] = useState<any[]>(customPlan ? customPlan.slides : (initialSlides || []));
+  // @fix: Added safe access to customPlan slides with fallback
+  const [slides, setSlides] = useState<any[]>(customPlan?.slides || initialSlides || []);
   const [view, setView] = useState<'presentation' | 'quiz' | 'completed'>('presentation');
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -47,6 +48,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, initia
     if (activeSlideIdx < slides.length - 1) {
       setActiveSlideIdx(p => p + 1);
     } else {
+      // @fix: Added safe navigation for finalQuiz questions check
       if (customPlan?.finalQuiz?.questions && customPlan.finalQuiz.questions.length > 0) {
         setView('quiz');
       } else {
@@ -58,8 +60,10 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, initia
 
   const handleFinishQuiz = async () => {
     let correct = 0;
-    const total = customPlan?.finalQuiz?.questions.length || 1;
-    customPlan?.finalQuiz?.questions.forEach(q => {
+    // @fix: Added safe navigation for finalQuiz questions length
+    const total = customPlan?.finalQuiz?.questions?.length || 1;
+    // @fix: Added safe navigation for questions iteration
+    customPlan?.finalQuiz?.questions?.forEach(q => {
       const selectedIdx = quizAnswers[q.id];
       if (selectedIdx !== undefined && q.options[selectedIdx].isCorrect) correct++;
     });
@@ -131,6 +135,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, initia
                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Kazanım Ölçümü</h2>
             </div>
             
+            {/* @fix: Added safe check for questions existence */}
             {(customPlan?.finalQuiz?.questions || []).map((q, qIdx) => (
                <div key={q.id} className="bg-white p-10 rounded-[3rem] shadow-xl space-y-8">
                   <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight leading-snug">{qIdx + 1}. {q.text}</h4>
@@ -150,7 +155,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, initia
 
             <button 
               onClick={handleFinishQuiz}
-              disabled={isSaving || (customPlan?.finalQuiz?.questions.length !== Object.keys(quizAnswers).length)}
+              // @fix: Added safe navigation for finalQuiz questions length check
+              disabled={isSaving || (customPlan?.finalQuiz?.questions?.length !== Object.keys(quizAnswers).length)}
               className="w-full py-8 bg-slate-900 text-white rounded-[3rem] font-black uppercase tracking-widest shadow-2xl hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-30"
             >
                {isSaving ? 'İŞLENİYOR...' : 'SINAVI BİTİR VE MÜHÜRLE'}
