@@ -2,15 +2,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, Candidate, TrainingUnit, CustomTrainingPlan, TrainingGenerationConfig, TrainingQuiz } from "../../types";
 
-// @fix: Removed global instance and moved to per-method initialization for latest API key injection adherence.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
+    // 1. Markdown bloklarını ve gereksiz boşlukları temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    // 2. JSON başlangıç ve bitişini bul
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
     
     if (firstBrace === -1 || lastBrace === -1) {
+       // Array kontrolü
        const firstBracket = cleanText.indexOf('[');
        const lastBracket = cleanText.lastIndexOf(']');
        if (firstBracket !== -1 && lastBracket !== -1) {
@@ -21,53 +26,32 @@ const extractPureJSON = (text: string): any => {
     } else {
       cleanText = cleanText.substring(firstBrace, lastBrace + 1);
     }
+
+    // 3. Kontrol karakterlerini (line breaks inside strings vb.) temizle
+    // Bu adım AI'nın bazen string içine eklediği enter tuşu hatalarını onarır
     cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+
     return JSON.parse(cleanText);
   } catch (e) { 
-    console.error("MIA Engine: JSON Parse Crash ->", e);
+    console.error("MIA Engine: JSON Parse Crash ->", e, "Raw Segment:", text.substring(0, 100) + "...");
     return null; 
   }
 };
 
-// @fix: Defining reusable slide schema for consistent AI generation.
-const SLIDE_SCHEMA = {
-  type: Type.OBJECT,
-  properties: {
-    id: { type: Type.STRING },
-    type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
-    title: { type: Type.STRING },
-    subtitle: { type: Type.STRING },
-    content: { type: Type.ARRAY, items: { type: Type.STRING } },
-    speakerNotes: { type: Type.STRING },
-    visualPrompt: { type: Type.STRING },
-    interactiveElement: {
-      type: Type.OBJECT,
-      properties: {
-        question: { type: Type.STRING },
-        expectedAnswer: { type: Type.STRING },
-        misconception: { type: Type.STRING }
-      },
-      required: ["question", "expectedAnswer", "misconception"]
-    }
-  },
-  required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
-};
-
 export const armsService = {
+  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI (v4.3 - Strict Format) ---
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz: TrainingQuiz }> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Multimodal İçerik Üreticisi.
-      GÖREV: "${plan.title}" konulu akademik düzeyi yüksek bir sunum ve sınav seti üret.
+    const systemInstruction = config.customSystemPrompt || `
+      ROL: Yeni Gün Akademi Kıdemli Müfredat Mimarı.
+      HEDEF: "${plan.title}" konulu profesyonel materyal üret.
       
-      STİL KURALLARI:
-      1. Sadece saf JSON döndür.
-      2. Slaytlar MULTIMODAL olmalı. 'elements' dizisini mutlaka doldur.
-      3. Her slaytta farklı tipte multimodal elementler (image_prompt, symbol, interactive_case, graph_logic) kullan.
-      4. 'image_prompt' alanına Gemini/DALL-E için yüksek detaylı, pedagojik ve sanatsal görsel tarifleri yaz.
-      5. 'symbol' alanına o slaytın ana temasını anlatan emoji ve kısa etiket ekle.
-      6. 'interactive_case' alanına sınıf içi bir kriz veya tartışma sorusu ekle.
-      7. Dil: Akademik, keskin ve profesyonel Türkçe.
+      KRİTİK FORMAT KURALLARI:
+      1. Sadece saf JSON döndür. 
+      2. JSON alanlarının (title, content, speakerNotes, text vb.) içine asla "Şöyle düşündüm", "Lütfen şıkları düzenle" gibi meta-konuşmalar ekleme. 
+      3. Her alan sadece hedef bilgiyi içermeli.
+      4. Quiz soruları kısa, net ve akademik olmalı.
+      5. Slayt içerikleri (content) liste şeklinde olmalı.
+      6. Cevap şıklarında "A)", "B)" gibi harfler kullanma, sadece label içeriğini yaz.
     `;
 
     const responseSchema = {
@@ -82,21 +66,10 @@ export const armsService = {
               type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
               title: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
-              elements: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    id: { type: Type.STRING },
-                    type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol', 'graph_logic', 'interactive_case'] },
-                    content: { type: Type.OBJECT, description: "Element tipine göre veri (örn: prompt stringi veya {icon, label} objesi)" }
-                  }
-                }
-              },
               speakerNotes: { type: Type.STRING },
               visualPrompt: { type: Type.STRING }
             },
-            required: ["id", "type", "title", "elements", "speakerNotes"]
+            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
           }
         },
         quiz: {
@@ -121,10 +94,12 @@ export const armsService = {
                       required: ["label", "isCorrect", "feedback"]
                     }
                   }
-                }
+                },
+                required: ["id", "text", "options"]
               }
             }
-          }
+          },
+          required: ["questions"]
         }
       },
       required: ["slides", "quiz"]
@@ -132,37 +107,146 @@ export const armsService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `PLAN: ${plan.description} | HEDEF: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
+      contents: `MÜFREDAT TANIMI: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
-        temperature: 0.4,
+        thinkingConfig: { thinkingBudget: config.thinkingBudget > 0 ? config.thinkingBudget : 12000 },
+        temperature: 0.4, // Daha tutarlı çıktı için düşürüldü
         responseSchema
       }
     });
 
-    return extractPureJSON(response.text);
+    const parsed = extractPureJSON(response.text);
+    if (!parsed || !parsed.slides || !parsed.quiz) {
+       console.error("AI Output Format Mismatch:", response.text);
+       throw new Error("AI_ENGINE_FORMAT_ERROR");
+    }
+    return parsed;
+  },
+
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi. 5-7 slaytlık sunum üret. Sadece saf JSON döndür.",
+        responseMimeType: "application/json",
+        temperature: 0.4,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            slides: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  type: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  speakerNotes: { type: Type.STRING },
+                  visualPrompt: { type: Type.STRING }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    const parsed = extractPureJSON(response.text);
+    return parsed?.slides || [];
+  },
+
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `CONFIG: ${JSON.stringify(config)}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. Sadece saf JSON 'slides' döndür.",
+        responseMimeType: "application/json",
+        temperature: 0.5,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            slides: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  type: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  speakerNotes: { type: Type.STRING },
+                  visualPrompt: { type: Type.STRING }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    const parsed = extractPureJSON(response.text);
+    return parsed?.slides || [];
+  },
+
+  async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `PLAN: ${JSON.stringify(plan)}`,
+      config: {
+        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Sadece saf JSON 'slides' döndür.",
+        responseMimeType: "application/json",
+        temperature: 0.4,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            slides: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  type: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  speakerNotes: { type: Type.STRING },
+                  visualPrompt: { type: Type.STRING }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    const parsed = extractPureJSON(response.text);
+    return parsed?.slides || [];
   },
 
   async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `ENTITY: ${JSON.stringify(entity)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Gelişim Stratejisti. Personel için 90 günlük IDP oluştur. Sadece saf JSON.",
+        systemInstruction: "Yeni Gün Akademi Baş Gelişim Stratejisti. Personel için 90 günlük IDP oluştur. Sadece saf JSON.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 12000 },
+        temperature: 0.4,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             id: { type: Type.STRING },
             staffId: { type: Type.STRING },
             focusArea: { type: Type.STRING },
+            identifiedGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
             roadmap: {
               type: Type.OBJECT,
-              properties: { shortTerm: { type: Type.STRING }, midTerm: { type: Type.STRING }, longTerm: { type: Type.STRING } }
+              properties: {
+                shortTerm: { type: Type.STRING },
+                midTerm: { type: Type.STRING },
+                longTerm: { type: Type.STRING }
+              }
             },
             curriculum: {
               type: Type.ARRAY,
@@ -171,6 +255,9 @@ export const armsService = {
                 properties: {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
+                  focusArea: { type: Type.STRING },
+                  difficulty: { type: Type.STRING },
+                  status: { type: Type.STRING },
                   units: {
                     type: Type.ARRAY,
                     items: {
@@ -180,7 +267,10 @@ export const armsService = {
                         title: { type: Type.STRING },
                         type: { type: Type.STRING },
                         content: { type: Type.STRING },
-                        aiRationale: { type: Type.STRING }
+                        durationMinutes: { type: Type.NUMBER },
+                        isCompleted: { type: Type.BOOLEAN },
+                        aiRationale: { type: Type.STRING },
+                        status: { type: Type.STRING }
                       }
                     }
                   }
@@ -191,63 +281,7 @@ export const armsService = {
         }
       }
     });
-    return extractPureJSON(response.text);
-  },
 
-  // @fix: Implemented missing method generateTrainingSlides for DecisionSupportView compatibility.
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `IDP: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
-      config: {
-        systemInstruction: "IDP (Kişisel Gelişim Planı) bazlı, personelin eksiklerini kapatmaya yönelik 8-10 slaytlık profesyonel bir eğitim sunumu üret. Saf JSON.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
-        responseSchema: {
-          type: Type.ARRAY,
-          items: SLIDE_SCHEMA
-        }
-      }
-    });
-    return extractPureJSON(response.text) || [];
-  },
-
-  // @fix: Implemented missing method generateCustomPresentation for PresentationStudio compatibility.
-  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `KONFİGÜRASYON: ${JSON.stringify(config)}`,
-      config: {
-        systemInstruction: `Konu: ${config.topic}. Hedef Kitle: ${config.targetAudience}. Ton: ${config.tone}. Slayt Sayısı: ${config.slideCount}. Bu parametrelere göre üst düzey akademik bir sunum üret. Saf JSON.`,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
-        responseSchema: {
-          type: Type.ARRAY,
-          items: SLIDE_SCHEMA
-        }
-      }
-    });
-    return extractPureJSON(response.text) || [];
-  },
-
-  // @fix: Implemented missing method generateCurriculumTraining for CurriculumManager compatibility.
-  async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `EĞİTİM PLANI: ${JSON.stringify(plan)}`,
-      config: {
-        systemInstruction: "Katalogdaki sabit bir eğitim planını canlandıracak, klinik derinliği olan bir sunum seti üret. Saf JSON.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24000 },
-        responseSchema: {
-          type: Type.ARRAY,
-          items: SLIDE_SCHEMA
-        }
-      }
-    });
-    return extractPureJSON(response.text) || [];
+    return extractPureJSON(response.text) || {};
   }
 };
