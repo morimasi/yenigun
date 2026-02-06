@@ -17,11 +17,6 @@ export interface MultimodalElement {
   id: string;
   type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case' | 'quiz_block';
   content: any;
-  metadata?: {
-    animation?: 'fade' | 'slide' | 'zoom';
-    importance?: 'normal' | 'critical';
-    layout?: 'full' | 'half' | 'quarter';
-  };
 }
 
 export interface TrainingQuiz {
@@ -92,6 +87,30 @@ export interface Question {
     branchOverrides?: Record<string, Record<string, number>>;
   }[];
   options?: string[];
+}
+
+// @fix: Added AssessmentOption for staff performance tracking.
+export interface AssessmentOption {
+  label: string;
+  clinicalValue: number;
+  aiTag: string;
+}
+
+// @fix: Added AssessmentQuestion for ARMS modular batteries.
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+  options: AssessmentOption[];
+}
+
+// @fix: Added AssessmentBattery to support the MethodologyInventory module.
+export interface AssessmentBattery {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+  questions: AssessmentQuestion[];
 }
 
 export interface AIReport {
@@ -196,27 +215,6 @@ export interface GlobalConfig {
     autoRejectBelowScore: number;
     defaultMeetingLink: string;
   };
-}
-
-export interface AssessmentOption {
-  label: string;
-  clinicalValue: number;
-  aiTag: string;
-}
-
-export interface AssessmentQuestion {
-  id: string;
-  text: string;
-  options: AssessmentOption[];
-}
-
-export interface AssessmentBattery {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  category: string;
-  questions: AssessmentQuestion[];
 }
 
 export type ArchiveCategory = 
@@ -360,19 +358,16 @@ export interface TrainingUnit {
   status: 'pending' | 'in_progress' | 'completed';
   aiRationale?: string;
   successCriteria?: string;
-  multimodalElements?: MultimodalElement[];
-  resources?: { title: string; type: string }[];
 }
 
 export interface TrainingSlide {
   id: string;
   type: 'title' | 'content' | 'interactive' | 'visual_split';
   title: string;
-  subtitle?: string;
-  content: string[]; // For legacy compatibility
-  elements?: MultimodalElement[]; // NEW: For rich media
+  content: string[];
+  elements?: MultimodalElement[];
   speakerNotes: string;
-  visualPrompt: string; // AI Image Generation Prompt
+  visualPrompt: string;
   interactiveElement?: {
     question: string;
     expectedAnswer: string;
