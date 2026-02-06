@@ -1,11 +1,107 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, Candidate, TrainingUnit } from "../../types";
+import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, Candidate, TrainingUnit, CustomTrainingPlan, TrainingGenerationConfig, TrainingQuiz } from "../../types";
 import { TrainingPlan } from "../../features/training/curriculumData";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+const extractPureJSON = (text: string): any => {
+  try {
+    let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const firstBrace = cleanText.indexOf('{');
+    const lastBrace = cleanText.lastIndexOf('}');
+    if (firstBrace === -1) return JSON.parse(cleanText);
+    let jsonStr = cleanText.substring(firstBrace, lastBrace + 1);
+    return JSON.parse(jsonStr);
+  } catch (e) { return null; }
+};
+
 export const armsService = {
+  // Ultra-Özelleştirilebilir Müfredat Üreticisi
+  async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz: TrainingQuiz }> {
+    const systemInstruction = config.customSystemPrompt || `
+      ROL: Yeni Gün Akademi Kıdemli Eğitim Teknoloğu ve Müfredat Mimarı.
+      HEDEF: "${plan.title}" konulu, ultra-profesyonel bir hizmet içi eğitim materyali tasarla.
+      PEDAGOJİK ODAK: ${config.pedagogicalBias} ekolü prensipleri %100 baskın olmalı.
+      BİLİŞSEL YÜK: ${config.cognitiveLoad} seviyesinde bir uzman kitlesi hedefleniyor.
+      ÜSLUP: ${config.tone} ve akademik.
+      FORMAT: Kesinlikle JSON.
+    `;
+
+    const responseSchema = {
+      type: Type.OBJECT,
+      properties: {
+        slides: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+              title: { type: Type.STRING },
+              subtitle: { type: Type.STRING },
+              content: { type: Type.ARRAY, items: { type: Type.STRING } },
+              speakerNotes: { type: Type.STRING, description: "Eğitmenin sunumda söylemesi gereken profesyonel detaylar." },
+              visualPrompt: { type: Type.STRING, description: "Bu slayt için AI görsel üretim komutu." },
+              interactiveElement: {
+                type: Type.OBJECT,
+                properties: {
+                  question: { type: Type.STRING },
+                  expectedAnswer: { type: Type.STRING },
+                  misconception: { type: Type.STRING }
+                }
+              }
+            },
+            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+          }
+        },
+        quiz: {
+          type: Type.OBJECT,
+          properties: {
+            questions: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  text: { type: Type.STRING },
+                  options: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        label: { type: Type.STRING },
+                        isCorrect: { type: Type.BOOLEAN },
+                        feedback: { type: Type.STRING }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      required: ["slides", "quiz"]
+    };
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview', // Karmaşık görev için Pro model
+      contents: `MÜFREDAT TANIMI: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: config.thinkingBudget },
+        temperature: config.temperature,
+        responseSchema
+      }
+    });
+
+    const parsed = extractPureJSON(response.text);
+    if (!parsed) throw new Error("AI_ENGINE_FORMAT_ERROR");
+    return parsed;
+  },
+
   async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Gelişim Stratejisti.

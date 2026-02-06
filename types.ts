@@ -32,6 +32,15 @@ export interface TrainingQuiz {
   }[];
 }
 
+export interface TrainingGenerationConfig {
+  pedagogicalBias: 'ABA' | 'FLOORTIME' | 'ECSE' | 'NEURAL' | 'TRADITIONAL';
+  cognitiveLoad: 'JUNIOR' | 'PRO' | 'SUPERVISOR';
+  tone: 'academic' | 'inspirational' | 'warning';
+  customSystemPrompt?: string;
+  temperature: number;
+  thinkingBudget: number;
+}
+
 export interface CustomTrainingPlan {
   id: string;
   title: string;
@@ -39,10 +48,10 @@ export interface CustomTrainingPlan {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   description: string;
   targetBranches: Branch[] | 'ALL';
-  curriculum: TrainingModule[]; // Hierarchy: Modules -> Units
-  // @fix: Added slides and finalQuiz for presentation studio and dashboard compatibility
+  curriculum: TrainingModule[];
   slides?: TrainingSlide[];
   finalQuiz?: TrainingQuiz;
+  aiConfig?: TrainingGenerationConfig;
   createdBy: string;
   createdAt: number;
   updatedAt?: number;
@@ -125,7 +134,6 @@ export interface AIReport {
     simulationTasks?: string[];
     phases?: { questions: { text: string }[] }[];
   };
-  presentationSlides?: any[];
 }
 
 export interface Candidate {
