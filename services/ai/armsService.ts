@@ -7,33 +7,51 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
+    // 1. Markdown bloklarını ve gereksiz boşlukları temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    // 2. JSON başlangıç ve bitişini bul
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
-    if (firstBrace === -1) return JSON.parse(cleanText);
-    let jsonStr = cleanText.substring(firstBrace, lastBrace + 1);
-    return JSON.parse(jsonStr);
+    
+    if (firstBrace === -1 || lastBrace === -1) {
+       // Array kontrolü
+       const firstBracket = cleanText.indexOf('[');
+       const lastBracket = cleanText.lastIndexOf(']');
+       if (firstBracket !== -1 && lastBracket !== -1) {
+         cleanText = cleanText.substring(firstBracket, lastBracket + 1);
+       } else {
+         return null;
+       }
+    } else {
+      cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+    }
+
+    // 3. Kontrol karakterlerini (line breaks inside strings vb.) temizle
+    // Bu adım AI'nın bazen string içine eklediği enter tuşu hatalarını onarır
+    cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+
+    return JSON.parse(cleanText);
   } catch (e) { 
-    console.error("JSON Extraction Error:", e, text);
+    console.error("MIA Engine: JSON Parse Crash ->", e, "Raw Segment:", text.substring(0, 100) + "...");
     return null; 
   }
 };
 
 export const armsService = {
-  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI (v4.2) ---
+  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI (v4.3 - Strict Format) ---
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz: TrainingQuiz }> {
     const systemInstruction = config.customSystemPrompt || `
-      ROL: Yeni Gün Akademi Kıdemli Eğitim Teknoloğu ve Müfredat Mimarı.
-      HEDEF: "${plan.title}" konulu, profesyonel bir hizmet içi eğitim materyali tasarla.
-      PEDAGOJİK ODAK: ${config.pedagogicalBias} ekolü prensipleri baskın olmalı.
-      BİLİŞSEL YÜK: ${config.cognitiveLoad} seviyesi.
-      ÜSLUP: ${config.tone} ve akademik.
+      ROL: Yeni Gün Akademi Kıdemli Müfredat Mimarı.
+      HEDEF: "${plan.title}" konulu profesyonel materyal üret.
       
-      FORMAT KURALLARI:
-      1. Slaytlar "Speaker Notes" (Eğitmen notları) içermeli.
-      2. Her slayt için "Visual Prompt" üret.
-      3. Sonunda 5 soruluk bir "Liyakat Sınavı" oluştur.
-      FORMAT: Kesinlikle JSON.
+      KRİTİK FORMAT KURALLARI:
+      1. Sadece saf JSON döndür. 
+      2. JSON alanlarının (title, content, speakerNotes, text vb.) içine asla "Şöyle düşündüm", "Lütfen şıkları düzenle" gibi meta-konuşmalar ekleme. 
+      3. Her alan sadece hedef bilgiyi içermeli.
+      4. Quiz soruları kısa, net ve akademik olmalı.
+      5. Slayt içerikleri (content) liste şeklinde olmalı.
+      6. Cevap şıklarında "A)", "B)" gibi harfler kullanma, sadece label içeriğini yaz.
     `;
 
     const responseSchema = {
@@ -72,32 +90,38 @@ export const armsService = {
                         label: { type: Type.STRING },
                         isCorrect: { type: Type.BOOLEAN },
                         feedback: { type: Type.STRING }
-                      }
+                      },
+                      required: ["label", "isCorrect", "feedback"]
                     }
                   }
-                }
+                },
+                required: ["id", "text", "options"]
               }
             }
-          }
+          },
+          required: ["questions"]
         }
       },
       required: ["slides", "quiz"]
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview', // Daha hızlı ve kararlı üretim
+      model: 'gemini-3-flash-preview',
       contents: `MÜFREDAT TANIMI: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: config.thinkingBudget > 0 ? config.thinkingBudget : 12000 },
-        temperature: config.temperature,
+        temperature: 0.4, // Daha tutarlı çıktı için düşürüldü
         responseSchema
       }
     });
 
     const parsed = extractPureJSON(response.text);
-    if (!parsed) throw new Error("AI_ENGINE_FORMAT_ERROR");
+    if (!parsed || !parsed.slides || !parsed.quiz) {
+       console.error("AI Output Format Mismatch:", response.text);
+       throw new Error("AI_ENGINE_FORMAT_ERROR");
+    }
     return parsed;
   },
 
@@ -106,8 +130,9 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Eğitim Geliştirme. 5-7 slaytlık sunum üret. JSON döndür.",
+        systemInstruction: "Yeni Gün Akademi. 5-7 slaytlık sunum üret. Sadece saf JSON döndür.",
         responseMimeType: "application/json",
+        temperature: 0.4,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -138,8 +163,9 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `CONFIG: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. JSON formatında 'slides' döndür.",
+        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. Sadece saf JSON 'slides' döndür.",
         responseMimeType: "application/json",
+        temperature: 0.5,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -170,8 +196,9 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `PLAN: ${JSON.stringify(plan)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Sunum slaytları üret. JSON formatında 'slides' döndür.",
+        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Sadece saf JSON 'slides' döndür.",
         responseMimeType: "application/json",
+        temperature: 0.4,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -198,19 +225,14 @@ export const armsService = {
   },
 
   async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
-    const systemInstruction = `
-      ROL: Yeni Gün Akademi Baş Gelişim Stratejisti.
-      GÖREV: Personelin mevcut yetkinlik setini analiz ederek 90 günlük IDP oluştur.
-      FORMAT: Sadece JSON.
-    `;
-
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `ENTITY: ${JSON.stringify(entity)} | HISTORY: ${JSON.stringify(assessmentHistory)}`,
       config: {
-        systemInstruction,
+        systemInstruction: "Yeni Gün Akademi Baş Gelişim Stratejisti. Personel için 90 günlük IDP oluştur. Sadece saf JSON.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: 12000 },
+        temperature: 0.4,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -260,6 +282,6 @@ export const armsService = {
       }
     });
 
-    return JSON.parse(response.text || '{}');
+    return extractPureJSON(response.text) || {};
   }
 };
