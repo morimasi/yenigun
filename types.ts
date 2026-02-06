@@ -366,12 +366,13 @@ export interface TrainingUnit {
 
 export interface TrainingSlide {
   id: string;
-  type: 'title' | 'content' | 'interactive';
+  type: 'title' | 'content' | 'interactive' | 'visual_split';
   title: string;
   subtitle?: string;
-  content: string[];
+  content: string[]; // For legacy compatibility
+  elements?: MultimodalElement[]; // NEW: For rich media
   speakerNotes: string;
-  visualPrompt: string;
+  visualPrompt: string; // AI Image Generation Prompt
   interactiveElement?: {
     question: string;
     expectedAnswer: string;
@@ -411,4 +412,5 @@ export interface FormStep {
   id: string;
   title: string;
   description: string;
+  icon?: string;
 }

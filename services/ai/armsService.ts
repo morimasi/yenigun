@@ -7,30 +7,18 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
-    // 1. Markdown bloklarını ve gereksiz boşlukları temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    // 2. JSON başlangıç ve bitişini bul
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
-    
     if (firstBrace === -1 || lastBrace === -1) {
-       // Array kontrolü
        const firstBracket = cleanText.indexOf('[');
        const lastBracket = cleanText.lastIndexOf(']');
-       if (firstBracket !== -1 && lastBracket !== -1) {
-         cleanText = cleanText.substring(firstBracket, lastBracket + 1);
-       } else {
-         return null;
-       }
+       if (firstBracket !== -1 && lastBracket !== -1) cleanText = cleanText.substring(firstBracket, lastBracket + 1);
+       else return null;
     } else {
       cleanText = cleanText.substring(firstBrace, lastBrace + 1);
     }
-
-    // 3. Kontrol karakterlerini (line breaks inside strings vb.) temizle
-    // Bu adım AI'nın bazen string içine eklediği enter tuşu hatalarını onarır
     cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
-
     return JSON.parse(cleanText);
   } catch (e) { 
     console.error("MIA Engine: JSON Parse Crash ->", e, "Raw Segment:", text.substring(0, 100) + "...");
@@ -39,19 +27,15 @@ const extractPureJSON = (text: string): any => {
 };
 
 export const armsService = {
-  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI (v4.3 - Strict Format) ---
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz: TrainingQuiz }> {
     const systemInstruction = config.customSystemPrompt || `
-      ROL: Yeni Gün Akademi Kıdemli Müfredat Mimarı.
-      HEDEF: "${plan.title}" konulu profesyonel materyal üret.
+      ROL: Yeni Gün Akademi Nöral Tasarımcı ve Pedagoji Uzmanı.
+      GÖREV: "${plan.title}" için multimodal bir eğitim sunumu oluştur.
       
-      KRİTİK FORMAT KURALLARI:
-      1. Sadece saf JSON döndür. 
-      2. JSON alanlarının (title, content, speakerNotes, text vb.) içine asla "Şöyle düşündüm", "Lütfen şıkları düzenle" gibi meta-konuşmalar ekleme. 
-      3. Her alan sadece hedef bilgiyi içermeli.
-      4. Quiz soruları kısa, net ve akademik olmalı.
-      5. Slayt içerikleri (content) liste şeklinde olmalı.
-      6. Cevap şıklarında "A)", "B)" gibi harfler kullanma, sadece label içeriğini yaz.
+      KRİTİK GÖRSEL KURALLAR:
+      1. Her slayt için 'visualPrompt' oluştur. Bu prompt, bir yapay zeka resim üreticisinin (Midjourney/DALL-E) kullanabileceği kadar detaylı ve eğitimin konusunu soyut/somut anlatan bir betimleme olmalı.
+      2. 'elements' dizisi içinde slayt içeriğini yapılandır. Sadece düz metin değil, 'symbol' (ikon önerisi), 'image_prompt' (görsel yer tutucu) ve 'interactive_case' (vaka sorusu) kullan.
+      3. Dil: Akademik Türkçe.
     `;
 
     const responseSchema = {
@@ -63,13 +47,31 @@ export const armsService = {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+              type: { type: Type.STRING, enum: ['title', 'content', 'interactive', 'visual_split'] },
               title: { type: Type.STRING },
-              content: { type: Type.ARRAY, items: { type: Type.STRING } },
+              visualPrompt: { type: Type.STRING, description: "Bu slayt için AI görsel üretim promptu. Örn: 'A serene therapy room with soft lighting, minimalist style, 4k render'" },
               speakerNotes: { type: Type.STRING },
-              visualPrompt: { type: Type.STRING }
+              elements: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol', 'interactive_case'] },
+                    content: { 
+                        type: Type.OBJECT,
+                        properties: {
+                            label: { type: Type.STRING },
+                            icon: { type: Type.STRING },
+                            question: { type: Type.STRING },
+                            text: { type: Type.STRING } // For text type
+                        }
+                    }
+                  }
+                }
+              }
             },
-            required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+            required: ["id", "type", "title", "visualPrompt", "speakerNotes", "elements"]
           }
         },
         quiz: {
@@ -107,17 +109,27 @@ export const armsService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `MÜFREDAT TANIMI: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
+      contents: `MÜFREDAT: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))} | DOKU: ${config.tone}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: config.thinkingBudget > 0 ? config.thinkingBudget : 12000 },
-        temperature: 0.4, // Daha tutarlı çıktı için düşürüldü
+        temperature: 0.5,
         responseSchema
       }
     });
 
     const parsed = extractPureJSON(response.text);
+    
+    // Fallback normalization for older schema compatibility or strict type mapping
+    if (parsed && parsed.slides) {
+        parsed.slides = parsed.slides.map((s: any) => ({
+            ...s,
+            // Map simple content array to elements if needed, or normalize elements
+            content: s.elements ? s.elements.map((e: any) => e.content?.text || e.content?.label || JSON.stringify(e.content)) : []
+        }));
+    }
+
     if (!parsed || !parsed.slides || !parsed.quiz) {
        console.error("AI Output Format Mismatch:", response.text);
        throw new Error("AI_ENGINE_FORMAT_ERROR");
@@ -125,45 +137,13 @@ export const armsService = {
     return parsed;
   },
 
-  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
-      config: {
-        systemInstruction: "Yeni Gün Akademi. 5-7 slaytlık sunum üret. Sadece saf JSON döndür.",
-        responseMimeType: "application/json",
-        temperature: 0.4,
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            slides: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  type: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  speakerNotes: { type: Type.STRING },
-                  visualPrompt: { type: Type.STRING }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-    const parsed = extractPureJSON(response.text);
-    return parsed?.slides || [];
-  },
-
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
+    // Simplified for quick generation, keeping consistent with new Multimodal structure
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `CONFIG: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. Sadece saf JSON 'slides' döndür.",
+        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. Multimodal yapı (elements array) kullan. Sadece saf JSON 'slides' döndür.",
         responseMimeType: "application/json",
         temperature: 0.5,
         responseSchema: {
@@ -177,9 +157,18 @@ export const armsService = {
                   id: { type: Type.STRING },
                   type: { type: Type.STRING },
                   title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  visualPrompt: { type: Type.STRING },
                   speakerNotes: { type: Type.STRING },
-                  visualPrompt: { type: Type.STRING }
+                  elements: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol'] },
+                        content: { type: Type.OBJECT, properties: { text: { type: Type.STRING }, label: { type: Type.STRING }, icon: { type: Type.STRING } } }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -188,40 +177,24 @@ export const armsService = {
       }
     });
     const parsed = extractPureJSON(response.text);
+    
+    // Normalize content field for legacy components
+    if(parsed?.slides) {
+        parsed.slides.forEach((s:any) => {
+            s.content = s.elements?.map((e:any) => e.content.text || e.content.label) || [];
+        });
+    }
+    
     return parsed?.slides || [];
   },
 
+  // Legacy support for simple string arrays
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    return this.generateCustomPresentation({ topic: idp.focusArea, targetAudience: 'individual', tone: 'academic', depth: 'intermediate', slideCount: 5 });
+  },
+  
   async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `PLAN: ${JSON.stringify(plan)}`,
-      config: {
-        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Sadece saf JSON 'slides' döndür.",
-        responseMimeType: "application/json",
-        temperature: 0.4,
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            slides: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  type: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  speakerNotes: { type: Type.STRING },
-                  visualPrompt: { type: Type.STRING }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-    const parsed = extractPureJSON(response.text);
-    return parsed?.slides || [];
+      return this.generateCustomPresentation({ topic: plan.title, targetAudience: 'team', tone: 'academic', depth: 'advanced', slideCount: 8 });
   },
 
   async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
