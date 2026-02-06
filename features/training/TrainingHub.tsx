@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import PresentationStudio from './PresentationStudio'; // YENİ NESİL MODÜL REFERANSI
+import PresentationStudio from './PresentationStudio'; // YENİ NESİL MODÜL
 import CurriculumManager from './CurriculumManager';
 import MultimodalStudio from './MultimodalStudio';
 import { StaffMember, IDP, TrainingSlide, CustomTrainingPlan } from '../../types';
