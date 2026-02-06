@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { CustomTrainingPlan, TrainingModule, TrainingUnit, MultimodalElement, Branch, TrainingGenerationConfig } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { CustomTrainingPlan, TrainingModule, TrainingUnit, Branch, TrainingGenerationConfig, TrainingSlide } from '../../types';
 import { armsService } from '../../services/ai/armsService';
 
 interface MultimodalStudioProps {
@@ -15,7 +15,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
     title: 'Yeni Akademik Müfredat',
     category: 'CLINICAL',
     level: 'Intermediate',
-    description: 'Eğitim vizyonu ve metodolojik derinlik özeti.',
+    description: '',
     targetBranches: 'ALL',
     curriculum: [],
     createdBy: 'Sistem Yöneticisi',
@@ -32,36 +32,51 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
   });
 
   const [activeTab, setActiveTab] = useState<'config' | 'plan' | 'structure' | 'preview'>('config');
-  const [activeModuleIdx, setActiveModuleIdx] = useState<number | null>(null);
-  const [activeUnitIdx, setActiveUnitIdx] = useState<number | null>(null);
-  
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeSlideIdx, setActiveSlideIdx] = useState(0);
 
-  // --- DERIVED DATA ---
-  const activeModule = activeModuleIdx !== null ? plan.curriculum[activeModuleIdx] : null;
-
-  // --- HANDLERS: AI PRODUCTION ---
+  // --- HANDLERS ---
   const handleLaunchDeepProduction = async () => {
-    if (plan.curriculum.length === 0) {
-      alert("Lütfen önce en az bir modül/ünite taslağı oluşturun.");
+    if (!plan.title || !plan.description) {
+      alert("Lütfen önce müfredat başlığını ve vizyon açıklamasını giriniz.");
+      setActiveTab('plan');
       return;
     }
+    
     setIsAiProcessing(true);
     try {
       const result = await armsService.generateUniversalCurriculum(plan, config);
-      setPlan({ 
-        ...plan, 
+      setPlan(prev => ({ 
+        ...prev, 
         slides: result.slides, 
         finalQuiz: result.quiz,
         aiConfig: config 
-      });
+      }));
       setActiveTab('preview');
-      alert("Nöral Müfredat Başarıyla Sentezlendi.");
+      setActiveSlideIdx(0);
     } catch (e) {
-      alert("AI Üretim Hatası: Müfredat karmaşıklığı limitleri aştı.");
+      alert("AI Üretim Hatası: Parametreler çok kısıtlayıcı olabilir.");
     } finally {
       setIsAiProcessing(false);
+    }
+  };
+
+  const handleSaveToLMS = async () => {
+    if (!plan.slides) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/training?action=save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...plan, updatedAt: Date.now() })
+      });
+      if (res.ok) {
+        alert("Nöral Müfredat Kütüphaneye Mühürlendi.");
+        onClose();
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -75,40 +90,8 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
       units: []
     };
     setPlan({ ...plan, curriculum: [...plan.curriculum, newMod] });
-    setActiveModuleIdx(plan.curriculum.length);
   };
 
-  const addUnit = (mIdx: number) => {
-    const newUnit: TrainingUnit = {
-      id: `UNT-${Date.now()}`,
-      title: 'Yeni Eğitim Ünitesi',
-      type: 'reading',
-      content: 'Taslak içerik...',
-      durationMinutes: 45,
-      isCompleted: false,
-      status: 'pending'
-    };
-    const newC = [...plan.curriculum];
-    newC[mIdx].units.push(newUnit);
-    setPlan({ ...plan, curriculum: newC });
-    setActiveUnitIdx(newC[mIdx].units.length - 1);
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const res = await fetch('/api/training?action=save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...plan, updatedAt: Date.now() })
-      });
-      if (res.ok) alert("Müfredat Kütüphaneye Mühürlendi.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // --- UI COMPONENTS ---
   const ConfigPill = ({ label, field, options }: any) => (
     <div className="space-y-2">
       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{label}</label>
@@ -145,10 +128,10 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
          <div className="flex items-center gap-4">
             <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 mr-4">
                {[
-                 { id: 'config', l: 'STRATEJİ' },
-                 { id: 'plan', l: 'İÇERİK' },
-                 { id: 'structure', l: 'YAPI' },
-                 { id: 'preview', l: 'ÖNİZLEME' }
+                 { id: 'config', l: '1. STRATEJİ' },
+                 { id: 'plan', l: '2. İÇERİK' },
+                 { id: 'structure', l: '3. YAPI' },
+                 { id: 'preview', l: '4. ÖNİZLEME' }
                ].map(t => (
                   <button 
                     key={t.id} 
@@ -159,165 +142,253 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                   </button>
                ))}
             </div>
-            <button 
-               onClick={handleLaunchDeepProduction}
-               disabled={isAiProcessing}
-               className="px-10 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50"
-            >
-               {isAiProcessing ? 'NÖRAL SENTEZ...' : 'MÜFREDATI ÜRET'}
-            </button>
+            
+            {activeTab === 'preview' ? (
+              <button 
+                onClick={handleSaveToLMS}
+                disabled={isSaving || !plan.slides}
+                className="px-10 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
+              >
+                 {isSaving ? 'MÜHÜRLENİYOR...' : 'KÜTÜPHANEYE YAYINLA'}
+              </button>
+            ) : (
+              <button 
+                onClick={handleLaunchDeepProduction}
+                disabled={isAiProcessing}
+                className="px-10 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                 {isAiProcessing ? (
+                   <>
+                    <div className="w-3 h-3 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                    <span>SENTEZLENİYOR...</span>
+                   </>
+                 ) : 'NÖRAL ÜRETİMİ BAŞLAT'}
+              </button>
+            )}
          </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
          
-         {/* 2. LEFT SIDEBAR: HIYERARŞİ KONTROLÜ */}
-         <div className="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 no-scrollbar">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-               <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">TASLAK HİYERARŞİSİ</h4>
-               <button onClick={addModule} className="w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg font-black">+</button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-               {plan.curriculum.map((mod, mIdx) => (
-                  <div key={mod.id} className="space-y-1">
-                     <div 
-                        onClick={() => { setActiveModuleIdx(mIdx); setActiveTab('structure'); }}
-                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${activeModuleIdx === mIdx ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-50 text-slate-600 hover:border-orange-200'}`}
-                     >
-                        <span className="text-[11px] font-black uppercase truncate block">{mod.title}</span>
-                        <p className={`text-[8px] font-bold mt-1 uppercase ${activeModuleIdx === mIdx ? 'text-slate-400' : 'text-slate-300'}`}>{mod.units.length} Ünite Taslağı</p>
-                     </div>
-                     <div className="pl-6 space-y-1 border-l-2 border-slate-100 ml-4">
-                        {mod.units.map((unit, uIdx) => (
-                           <div key={unit.id} className="p-2.5 rounded-lg border text-[9px] font-bold text-slate-400 uppercase truncate bg-white">
-                              {uIdx + 1}. {unit.title}
-                           </div>
-                        ))}
-                        <button onClick={() => addUnit(mIdx)} className="w-full p-2 text-[9px] font-black text-slate-300 hover:text-orange-600 uppercase transition-all">+ Ünite Ekle</button>
-                     </div>
-                  </div>
-               ))}
-            </div>
-         </div>
-
-         {/* 3. MAIN WORKSPACE */}
-         <div className="flex-1 bg-[#FAFAFA] p-10 overflow-y-auto custom-scrollbar flex flex-col items-center relative">
+         {/* 2. MAIN WORKSPACE */}
+         <div className="flex-1 bg-[#FAFAFA] overflow-y-auto custom-scrollbar flex flex-col items-center relative p-10">
             
-            {/* TAB 1: AI STRATEGIC CONFIG */}
+            {/* TAB 1: STRATEGY CONFIG */}
             {activeTab === 'config' && (
                <div className="w-full max-w-4xl space-y-8 animate-scale-in">
                   <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-200">
-                     <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-12 border-l-8 border-orange-600 pl-8">AI Strateji Katmanı</h3>
+                     <div className="flex justify-between items-start mb-12">
+                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter border-l-8 border-orange-600 pl-8">AI Strateji Katmanı</h3>
+                        <div className="text-right">
+                           <span className="px-3 py-1 bg-slate-900 text-white rounded-lg text-[8px] font-black uppercase tracking-widest">Adım 1 / 4</span>
+                        </div>
+                     </div>
+                     
                      <div className="grid grid-cols-2 gap-10">
                         <div className="space-y-8">
-                           <ConfigPill label="PEDAGOJİK EKOL (BIAS)" field="pedagogicalBias" options={['ABA', 'FLOORTIME', 'ECSE', 'NEURAL', 'TRADITIONAL']} />
-                           <ConfigPill label="BİLİŞSEL YETERLİLİK" field="cognitiveLoad" options={['JUNIOR', 'PRO', 'SUPERVISOR']} />
-                           <ConfigPill label="İLETİŞİM TONU" field="tone" options={['academic', 'inspirational', 'warning']} />
+                           <ConfigPill label="PEDAGOJİK ODAK (BIAS)" field="pedagogicalBias" options={['ABA', 'FLOORTIME', 'ECSE', 'NEURAL']} />
+                           <ConfigPill label="BİLİŞSEL SEVİYE" field="cognitiveLoad" options={['JUNIOR', 'PRO', 'SUPERVISOR']} />
+                           <ConfigPill label="İLETİŞİM ÜSLUBU" field="tone" options={['academic', 'inspirational', 'warning']} />
                         </div>
                         <div className="space-y-8">
                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">AI CREATIVITY (TEMP)</label>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">YARATICILIK (TEMPERATURE)</label>
                               <input type="range" min="0" max="1" step="0.1" value={config.temperature} onChange={e => setConfig({...config, temperature: parseFloat(e.target.value)})} className="w-full accent-orange-600" />
-                              <div className="flex justify-between text-[8px] font-bold text-slate-400 uppercase"><span>Hatasız / Teknik</span><span>Yaratıcı / Esnek</span></div>
+                              <div className="flex justify-between text-[8px] font-bold text-slate-400 uppercase"><span>Teknik</span><span>Esnek</span></div>
                            </div>
                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">THINKING BUDGET (TOKENS)</label>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">MUHAKEME BÜTÇESİ (THINKING)</label>
                               <select className="w-full p-4 bg-slate-50 rounded-xl font-bold text-xs" value={config.thinkingBudget} onChange={e => setConfig({...config, thinkingBudget: parseInt(e.target.value)})}>
-                                 <option value={0}>Muhakeme Kapalı (Hızlı)</option>
-                                 <option value={12000}>Standart Muhakeme (12k)</option>
-                                 <option value={24576}>Derin Muhakeme (Max 24k)</option>
+                                 <option value={0}>Muhakeme Kapalı</option>
+                                 <option value={12000}>Standart (12k)</option>
+                                 <option value={24576}>Derin (Max 24k)</option>
                               </select>
                            </div>
                         </div>
                      </div>
-                     <div className="mt-12 p-8 bg-slate-950 rounded-[3rem] text-white">
-                        <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-4">CUSTOM SYSTEM PROMPT (OVERRIDE)</label>
-                        <textarea 
-                           className="w-full bg-transparent border-none outline-none font-mono text-xs text-slate-300 leading-relaxed min-h-[150px]"
-                           placeholder="MIA varsayılan talimatlarını ezmek için kendi sistem promptunuzu buraya girin..."
-                           value={config.customSystemPrompt}
-                           onChange={e => setConfig({...config, customSystemPrompt: e.target.value})}
-                        />
+
+                     <div className="mt-12 p-10 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center">
+                        <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-6">Strateji tamamlandıysa içeriği planlayın.</p>
+                        <button onClick={() => setActiveTab('plan')} className="px-12 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl">İÇERİK PLANLAMAYA GEÇ →</button>
                      </div>
                   </div>
                </div>
             )}
 
-            {/* TAB 2: CONTENT EDITOR */}
+            {/* TAB 2: IDENTITY & VISION */}
             {activeTab === 'plan' && (
                <div className="w-full max-w-4xl space-y-8 animate-slide-up">
                   <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-200">
-                     <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-8 border-l-8 border-orange-600 pl-8">Müfredat Kimliği</h3>
-                     <div className="space-y-6">
+                     <div className="flex justify-between items-start mb-12">
+                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter border-l-8 border-orange-600 pl-8">Müfredat Kimliği</h3>
+                        <span className="px-3 py-1 bg-slate-900 text-white rounded-lg text-[8px] font-black uppercase tracking-widest">Adım 2 / 4</span>
+                     </div>
+                     <div className="space-y-8">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Müfredat Başlığı</label>
-                           <input type="text" className="w-full p-6 bg-slate-50 rounded-3xl font-black text-2xl outline-none focus:border-orange-500 transition-all shadow-inner" value={plan.title} onChange={e => setPlan({...plan, title: e.target.value})} />
+                           <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Eğitim Başlığı</label>
+                           <input 
+                              type="text" 
+                              className="w-full p-6 bg-slate-50 rounded-3xl font-black text-2xl outline-none focus:border-orange-500 shadow-inner" 
+                              placeholder="Örn: İleri Düzey Otizmde Kriz Yönetimi"
+                              value={plan.title} 
+                              onChange={e => setPlan({...plan, title: e.target.value})} 
+                           />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Akademik Vizyon & Detaylar</label>
-                           <textarea className="w-full p-8 bg-slate-50 rounded-[3rem] font-medium text-lg text-slate-600 min-h-[250px] outline-none shadow-inner" value={plan.description} onChange={e => setPlan({...plan, description: e.target.value})} placeholder="Bu eğitim sonunda personelin hangi klinik bariyerleri aşmasını hedefliyorsunuz?" />
+                           <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Akademik Vizyon & Özet</label>
+                           <textarea 
+                              className="w-full p-8 bg-slate-50 rounded-[3rem] font-medium text-lg text-slate-600 min-h-[200px] outline-none shadow-inner" 
+                              placeholder="Bu eğitimin personelde hangi klinik dönüşümü yapmasını hedefliyorsunuz?"
+                              value={plan.description} 
+                              onChange={e => setPlan({...plan, description: e.target.value})} 
+                           />
+                        </div>
+                        <div className="flex justify-center pt-6">
+                           <button onClick={() => setActiveTab('structure')} className="px-12 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl">YAPIYI KURGULA →</button>
                         </div>
                      </div>
                   </div>
                </div>
             )}
 
-            {/* TAB 4: PREVIEW & PUBLISH */}
+            {/* TAB 3: MODULAR STRUCTURE */}
+            {activeTab === 'structure' && (
+               <div className="w-full max-w-4xl space-y-8 animate-slide-up">
+                  <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-200">
+                     <div className="flex justify-between items-center mb-12">
+                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter border-l-8 border-orange-600 pl-8">Modüler Yapı</h3>
+                        <button onClick={addModule} className="px-6 py-3 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase shadow-lg">+ MODÜL EKLE</button>
+                     </div>
+                     
+                     <div className="space-y-4">
+                        {plan.curriculum.length === 0 ? (
+                           <div className="py-20 text-center opacity-20 grayscale scale-75">
+                              <svg className="w-20 h-20 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                              <p className="text-xl font-black uppercase tracking-widest">Taslak Yapı Bulunmuyor</p>
+                           </div>
+                        ) : (
+                           plan.curriculum.map((mod, mIdx) => (
+                              <div key={mod.id} className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-200 flex justify-between items-center group">
+                                 <div className="flex items-center gap-6">
+                                    <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black">{mIdx + 1}</div>
+                                    <input 
+                                       type="text" 
+                                       className="bg-transparent font-black text-xl text-slate-800 outline-none border-b-2 border-transparent focus:border-orange-500" 
+                                       value={mod.title}
+                                       onChange={e => {
+                                          const newC = [...plan.curriculum];
+                                          newC[mIdx].title = e.target.value;
+                                          setPlan({...plan, curriculum: newC});
+                                       }}
+                                    />
+                                 </div>
+                                 <button onClick={() => {
+                                    const newC = [...plan.curriculum];
+                                    newC.splice(mIdx, 1);
+                                    setPlan({...plan, curriculum: newC});
+                                 }} className="p-3 text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" /></svg></button>
+                              </div>
+                           ))
+                        )}
+                     </div>
+
+                     <div className="mt-12 flex flex-col items-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-8">Tüm seçimler hazırsa nöral motoru ateşleyin</p>
+                        <button 
+                           onClick={handleLaunchDeepProduction}
+                           className="px-20 py-8 bg-slate-950 text-white rounded-[3rem] font-black text-lg uppercase tracking-[0.4em] shadow-3xl hover:bg-orange-600 transition-all animate-pulse"
+                        >
+                           ÜRETİMİ BAŞLAT
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {/* TAB 4: DEEP PREVIEW */}
             {activeTab === 'preview' && (
                <div className="w-full max-w-6xl space-y-12 animate-fade-in pb-20">
                   {plan.slides ? (
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {plan.slides.map((s, idx) => (
-                           <div key={idx} className="bg-white rounded-[3rem] aspect-video shadow-xl border border-slate-100 overflow-hidden flex flex-col group relative">
-                              <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
-                                 <h5 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-6 border-l-4 border-orange-600 pl-4">{s.title}</h5>
-                                 <ul className="space-y-4">
-                                    {s.content.map((c, i) => <li key={i} className="text-sm font-bold text-slate-500 leading-relaxed">• {c}</li>)}
+                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                        {/* Slide Selector */}
+                        <div className="lg:col-span-3 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                           {plan.slides.map((s, idx) => (
+                              <button 
+                                 key={s.id} 
+                                 onClick={() => setActiveSlideIdx(idx)}
+                                 className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${activeSlideIdx === idx ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-100 text-slate-500 hover:border-orange-200'}`}
+                              >
+                                 <span className="text-[8px] font-black uppercase opacity-50 block mb-1">SLAYT {idx + 1}</span>
+                                 <p className="text-[10px] font-bold truncate uppercase">{s.title}</p>
+                              </button>
+                           ))}
+                        </div>
+
+                        {/* Interactive Slide Viewer */}
+                        <div className="lg:col-span-9 space-y-6">
+                           <div className="bg-white rounded-[4rem] aspect-video shadow-2xl border border-slate-200 overflow-hidden flex flex-col relative">
+                              <div className="p-16 flex-1 overflow-y-auto custom-scrollbar">
+                                 <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter mb-10 border-l-[12px] border-orange-600 pl-8 leading-none">
+                                    {plan.slides[activeSlideIdx].title}
+                                 </h2>
+                                 <ul className="space-y-6">
+                                    {plan.slides[activeSlideIdx].content.map((c, i) => (
+                                       <li key={i} className="flex gap-4 items-start">
+                                          <div className="w-2.5 h-2.5 bg-orange-600 rounded-full mt-3 shrink-0 shadow-lg"></div>
+                                          <p className="text-2xl font-bold text-slate-600 leading-snug">{c}</p>
+                                       </li>
+                                    ))}
                                  </ul>
                               </div>
-                              <div className="p-4 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.4em] text-center opacity-0 group-hover:opacity-100 transition-opacity">SLAYT {idx + 1}</div>
-                              
-                              {/* Hover Tooltip: Speaker Notes */}
-                              <div className="absolute inset-0 bg-orange-600/95 p-10 opacity-0 group-hover:opacity-100 transition-all translate-y-10 group-hover:translate-y-0 flex flex-col justify-center">
-                                 <span className="text-[10px] font-black text-white/50 uppercase mb-4">Eğitmen Notları</span>
-                                 <p className="text-white text-sm font-bold italic leading-relaxed">"{s.speakerNotes}"</p>
+                              <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-between items-center shrink-0">
+                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">AKADEMİK SENTEZ MÜHÜRÜ</span>
+                                 <span className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black">{activeSlideIdx + 1} / {plan.slides.length}</span>
                               </div>
                            </div>
-                        ))}
+
+                           {/* Educator Metadata (Speaker Notes & Visual Prompt) */}
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-xl">
+                                 <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">EĞİTMEN NOTLARI (KLİNİK DERİNLİK)</h5>
+                                 <p className="text-sm font-medium text-slate-300 leading-relaxed italic">"{plan.slides[activeSlideIdx].speakerNotes}"</p>
+                              </div>
+                              <div className="bg-blue-600 p-10 rounded-[3rem] text-white shadow-xl">
+                                 <h5 className="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-4">AI GÖRSEL BETİMLEME (GEN-PROMPT)</h5>
+                                 <p className="text-sm font-black uppercase tracking-tight opacity-90">{plan.slides[activeSlideIdx].visualPrompt}</p>
+                              </div>
+                           </div>
+                        </div>
                      </div>
                   ) : (
-                     <div className="bg-white p-32 rounded-[5rem] border-4 border-dashed border-slate-100 text-center opacity-40">
-                        <h3 className="text-4xl font-black text-slate-300 uppercase tracking-[0.5em]">Görüntülenecek Veri Yok</h3>
+                     <div className="bg-white p-32 rounded-[5rem] border-4 border-dashed border-slate-100 text-center opacity-30 flex flex-col items-center">
+                        <svg className="w-32 h-32 mb-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86 .517l-.318.158a6 6 0 01-3.86 .517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                        <h3 className="text-4xl font-black text-slate-300 uppercase tracking-[0.5em]">Üretim Bekleniyor</h3>
+                        <p className="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Lütfen bir önceki adıma dönüp Üretimi Başlat'a tıklayın.</p>
                      </div>
                   )}
 
                   {plan.finalQuiz && (
-                     <div className="bg-slate-900 p-16 rounded-[5rem] text-white shadow-3xl">
-                        <h4 className="text-2xl font-black uppercase tracking-[0.4em] mb-12 text-orange-500">Kazanım Ölçme Sınavı (AI-Gen)</h4>
-                        <div className="space-y-10">
-                           {plan.finalQuiz.questions.map((q, i) => (
-                              <div key={i} className="space-y-4">
-                                 <p className="text-lg font-black italic">Q{i+1}: {q.text}</p>
-                                 <div className="grid grid-cols-2 gap-4">
-                                    {q.options.map((o, oi) => (
-                                       <div key={oi} className={`p-4 rounded-2xl border-2 ${o.isCorrect ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 bg-white/5'} text-[10px] font-bold uppercase`}>
-                                          {o.label}
-                                       </div>
-                                    ))}
+                     <div className="bg-slate-950 p-20 rounded-[5rem] text-white shadow-3xl relative overflow-hidden border border-white/5">
+                        <div className="relative z-10">
+                           <h4 className="text-2xl font-black uppercase tracking-[0.4em] mb-16 text-orange-500 border-b border-white/10 pb-8">Liyakat Mührü Sınavı</h4>
+                           <div className="grid grid-cols-1 gap-12">
+                              {plan.finalQuiz.questions.map((q, i) => (
+                                 <div key={i} className="space-y-6">
+                                    <p className="text-2xl font-black italic tracking-tight">Q{i+1}: {q.text}</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                       {q.options.map((o, oi) => (
+                                          <div key={oi} className={`p-6 rounded-[2rem] border-2 ${o.isCorrect ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/5 bg-white/5'} text-[11px] font-bold uppercase`}>
+                                             {o.label}
+                                          </div>
+                                       ))}
+                                    </div>
                                  </div>
-                              </div>
-                           ))}
+                              ))}
+                           </div>
                         </div>
+                        <div className="absolute -right-20 -bottom-20 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]"></div>
                      </div>
                   )}
-
-                  <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
-                     <div className="space-y-2">
-                        <h4 className="text-2xl font-black text-slate-900 uppercase">Müfredat Yayına Hazır</h4>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Kütüphaneye ekle ve personeline ata.</p>
-                     </div>
-                     <button onClick={handleSave} className="px-16 py-6 bg-slate-950 text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.3em] shadow-2xl hover:bg-emerald-600 transition-all">PUBLISH TO LMS HUB</button>
-                  </div>
                </div>
             )}
          </div>
@@ -327,14 +398,14 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
       <div className="h-10 bg-white border-t border-slate-200 px-8 flex items-center justify-between shrink-0 relative z-50">
          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-               <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">AI Engine: Online</span>
+               <div className={`w-2 h-2 rounded-full ${isAiProcessing ? 'bg-orange-500 animate-ping' : 'bg-emerald-500'}`}></div>
+               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">AI Engine: {isAiProcessing ? 'Synthesizing' : 'Online'}</span>
             </div>
             <div className="h-4 w-px bg-slate-200"></div>
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">MODEL: GEMINI-3-PRO (DEEP THINKING)</span>
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">MODEL: GEMINI-3-PRO-PREVIEW</span>
          </div>
          <div className="flex items-center gap-3">
-            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">PLAN ID: {plan.id}</span>
+            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">MIA-V4 CORE</span>
          </div>
       </div>
     </div>
