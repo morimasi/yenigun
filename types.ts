@@ -217,7 +217,6 @@ export interface AssessmentBattery {
   questions: AssessmentQuestion[];
 }
 
-// @fix: Added 'HIRED_CONTRACTED' to ArchiveCategory to resolve type mismatch errors in reported files.
 export type ArchiveCategory = 
   | 'CANDIDATE_POOL' 
   | 'DISQUALIFIED' 
@@ -227,7 +226,8 @@ export type ArchiveCategory =
   | 'PERFORMANCE_SNAPSHOT'
   | 'STRATEGIC_PLAN'
   | 'CLINICAL_CASE_STUDY'
-  | 'HIRED_CONTRACTED';
+  | 'HIRED_CONTRACTED'
+  | 'TALENT_POOL_ANALYTICS';
 
 export interface StaffMember {
   id: string;

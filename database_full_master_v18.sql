@@ -1,12 +1,31 @@
 
 -- ============================================================================
 -- YENİ GÜN AKADEMİ | KURUMSAL ERP & NÖRAL MÜFREDAT MASTER VERİTABANI
--- VERSİYON: 18.0 (UNIFIED VAULT EDITION)
+-- VERSİYON: 18.1 (RECOVERY & SANITIZATION EDITION)
 -- ============================================================================
 
 -- [Önceki tablo oluşturma mantıkları korunur...]
 
--- ARŞİV KATEGORİLERİ İÇİN GÜNCEL KONTROL (Kayıtların silinmek yerine kategorize edilmesi için)
+-- 1. VERİ SANİTİZASYONU (KRİTİK): 
+-- Yeni kısıtlama eklenmeden önce, mevcut satırlardaki geçersiz kategorileri temizliyoruz.
+-- Bu adım SQLSTATE 23514 hatasını engeller.
+UPDATE candidates 
+SET archive_category = 'DISQUALIFIED' 
+WHERE archive_category IS NOT NULL 
+AND archive_category NOT IN (
+    'CANDIDATE_POOL', 
+    'DISQUALIFIED', 
+    'BLACK_LIST', 
+    'STAFF_HISTORY', 
+    'TRAINING_LIBRARY', 
+    'PERFORMANCE_SNAPSHOT', 
+    'STRATEGIC_PLAN', 
+    'CLINICAL_CASE_STUDY',
+    'HIRED_CONTRACTED',
+    'TALENT_POOL_ANALYTICS'
+);
+
+-- 2. ARŞİV KATEGORİLERİ İÇİN GÜNCEL KONTROL
 ALTER TABLE candidates DROP CONSTRAINT IF EXISTS check_archive_cat;
 ALTER TABLE candidates ADD CONSTRAINT check_archive_cat CHECK (
     archive_category IN (
@@ -17,11 +36,13 @@ ALTER TABLE candidates ADD CONSTRAINT check_archive_cat CHECK (
         'TRAINING_LIBRARY', 
         'PERFORMANCE_SNAPSHOT', 
         'STRATEGIC_PLAN', 
-        'CLINICAL_CASE_STUDY'
+        'CLINICAL_CASE_STUDY',
+        'HIRED_CONTRACTED',
+        'TALENT_POOL_ANALYTICS'
     )
 );
 
--- PERSONEL İÇİN ARŞİVLEME DESTEĞİ
+-- 3. PERSONEL İÇİN ARŞİVLEME DESTEĞİ
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='archive_category') THEN
@@ -32,7 +53,7 @@ BEGIN
     END IF;
 END $$;
 
--- MÜFREDATLAR İÇİN ARŞİVLEME DURUMU
+-- 4. MÜFREDATLAR İÇİN ARŞİVLEME DURUMU
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='training_curricula' AND column_name='status') THEN
@@ -43,10 +64,10 @@ BEGIN
     END IF;
 END $$;
 
--- İSTATİSTİKLER İÇİN ARŞİV İNDEKSİ
+-- 5. İSTATİSTİKLER İÇİN ARŞİV İNDEKSİ
 CREATE INDEX IF NOT EXISTS idx_archive_search ON candidates(archive_category, status) WHERE status = 'archived';
 
--- SEED DATA UPDATE
+-- 6. SEED DATA UPDATE
 INSERT INTO system_notifications (type, severity, title, message)
-VALUES ('SYSTEM_ALERT', 'SUCCESS', 'Arşiv v2.0 Aktif', 'Kurumsal bellek kasası v18.0 şemasına başarıyla mühürlendi.')
+VALUES ('SYSTEM_ALERT', 'SUCCESS', 'Arşiv v2.1 Onarıldı', 'Kurumsal bellek kasası veri sanitizasyonu ile v18.1 şemasına başarıyla mühürlendi.')
 ON CONFLICT DO NOTHING;
