@@ -34,7 +34,7 @@ export const armsService = {
       
       KRİTİK GÖRSEL KURALLAR:
       1. Her slayt için 'visualPrompt' oluştur. Bu prompt, bir yapay zeka resim üreticisinin (Midjourney/DALL-E) kullanabileceği kadar detaylı ve eğitimin konusunu soyut/somut anlatan bir betimleme olmalı.
-      2. 'elements' dizisi içinde slayt içeriğini yapılandır. Sadece düz metin değil, 'symbol' (ikon önerisi), 'image_prompt' (görsel yer tutucu) ve 'interactive_case' (vaka sorusu) kullan.
+      2. 'elements' dizisi içinde slayt içeriğini yapılandır. Sadece düz metin değil, 'symbol' (ikon önerisi), 'image_prompt' (görsel yer tutucu), 'graph_logic' (istatistik/tablo önerisi) ve 'interactive_case' (vaka sorusu) kullan.
       3. Dil: Akademik Türkçe.
     `;
 
@@ -49,7 +49,7 @@ export const armsService = {
               id: { type: Type.STRING },
               type: { type: Type.STRING, enum: ['title', 'content', 'interactive', 'visual_split'] },
               title: { type: Type.STRING },
-              visualPrompt: { type: Type.STRING, description: "Bu slayt için AI görsel üretim promptu. Örn: 'A serene therapy room with soft lighting, minimalist style, 4k render'" },
+              visualPrompt: { type: Type.STRING },
               speakerNotes: { type: Type.STRING },
               elements: {
                 type: Type.ARRAY,
@@ -57,14 +57,14 @@ export const armsService = {
                   type: Type.OBJECT,
                   properties: {
                     id: { type: Type.STRING },
-                    type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol', 'interactive_case'] },
+                    type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol', 'graph_logic', 'interactive_case'] },
                     content: { 
                         type: Type.OBJECT,
                         properties: {
                             label: { type: Type.STRING },
                             icon: { type: Type.STRING },
                             question: { type: Type.STRING },
-                            text: { type: Type.STRING } // For text type
+                            text: { type: Type.STRING }
                         }
                     }
                   }
@@ -120,25 +120,11 @@ export const armsService = {
     });
 
     const parsed = extractPureJSON(response.text);
-    
-    // Fallback normalization for older schema compatibility or strict type mapping
-    if (parsed && parsed.slides) {
-        parsed.slides = parsed.slides.map((s: any) => ({
-            ...s,
-            // Map simple content array to elements if needed, or normalize elements
-            content: s.elements ? s.elements.map((e: any) => e.content?.text || e.content?.label || JSON.stringify(e.content)) : []
-        }));
-    }
-
-    if (!parsed || !parsed.slides || !parsed.quiz) {
-       console.error("AI Output Format Mismatch:", response.text);
-       throw new Error("AI_ENGINE_FORMAT_ERROR");
-    }
+    if (!parsed || !parsed.slides || !parsed.quiz) throw new Error("AI_ENGINE_FORMAT_ERROR");
     return parsed;
   },
 
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
-    // Simplified for quick generation, keeping consistent with new Multimodal structure
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `CONFIG: ${JSON.stringify(config)}`,
@@ -164,8 +150,8 @@ export const armsService = {
                     items: {
                       type: Type.OBJECT,
                       properties: {
-                        type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol'] },
-                        content: { type: Type.OBJECT, properties: { text: { type: Type.STRING }, label: { type: Type.STRING }, icon: { type: Type.STRING } } }
+                        type: { type: Type.STRING, enum: ['text', 'image_prompt', 'symbol', 'graph_logic', 'interactive_case'] },
+                        content: { type: Type.OBJECT, properties: { text: { type: Type.STRING }, label: { type: Type.STRING }, icon: { type: Type.STRING }, question: { type: Type.STRING } } }
                       }
                     }
                   }
@@ -177,18 +163,9 @@ export const armsService = {
       }
     });
     const parsed = extractPureJSON(response.text);
-    
-    // Normalize content field for legacy components
-    if(parsed?.slides) {
-        parsed.slides.forEach((s:any) => {
-            s.content = s.elements?.map((e:any) => e.content.text || e.content.label) || [];
-        });
-    }
-    
     return parsed?.slides || [];
   },
 
-  // Legacy support for simple string arrays
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     return this.generateCustomPresentation({ topic: idp.focusArea, targetAudience: 'individual', tone: 'academic', depth: 'intermediate', slideCount: 5 });
   },

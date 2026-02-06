@@ -52,7 +52,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       slide.addText(s.title, { x: 0.5, y: 0.5, w: '90%', fontSize: 32, bold: true, color: 'EA580C', align: 'left' });
       
       let yPos = 1.5;
-      s.content.forEach((line) => {
+      const contentArray = Array.isArray(s.content) ? s.content : [];
+      contentArray.forEach((line) => {
         slide.addText(`• ${line}`, { x: 0.7, y: yPos, w: '85%', fontSize: 18, color: 'CBD5E1' });
         yPos += 0.6;
       });
@@ -61,6 +62,23 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
     });
 
     pptx.writeFile({ fileName: `YG_Sunum_${customPlan.title}.pptx` });
+  };
+
+  // --- ARŞİVE MÜHÜRLE ---
+  const handleArchive = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/training?action=save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...customPlan, status: 'archived', updatedAt: Date.now() })
+      });
+      if (res.ok) alert("Eğitim kurumsal arşive başarıyla mühürlendi.");
+    } catch (e) {
+      alert("Arşivleme hatası.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // --- MULTIMODAL ELEMENT RENDERER ---
@@ -169,6 +187,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 <button onClick={handleDownloadPDF} disabled={isExporting} className="px-6 py-3 text-[10px] font-black text-white uppercase hover:bg-white/10 rounded-xl transition-all">PDF</button>
                 <button onClick={handleDownloadPPTX} className="px-6 py-3 text-[10px] font-black text-white uppercase hover:bg-white/10 rounded-xl transition-all">PPTX</button>
                 <button onClick={() => setShowAssignmentModal(true)} className="px-6 py-3 text-[10px] font-black text-orange-500 uppercase hover:bg-white/10 rounded-xl transition-all">ATA</button>
+                <button onClick={handleArchive} disabled={isSaving} className="px-6 py-3 text-[10px] font-black text-emerald-500 uppercase hover:bg-white/10 rounded-xl transition-all">ARŞİV</button>
              </div>
 
              <div className="flex gap-2">
@@ -205,7 +224,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                    {activeSlide?.elements ? (
                       activeSlide.elements.map((el: any, i: number) => <div key={i}>{renderElement(el)}</div>)
                    ) : (
-                      activeSlide?.content?.map((point: string, i: number) => (
+                      Array.isArray(activeSlide?.content) && activeSlide.content.map((point: string, i: number) => (
                          <div key={i} className="flex gap-8 items-start p-8 rounded-[3rem] hover:bg-slate-50 transition-colors group">
                             <div className="w-5 h-5 bg-orange-600 rounded-full mt-3.5 shrink-0 shadow-xl ring-8 ring-orange-50 group-hover:scale-125 transition-transform"></div>
                             <p className="text-3xl font-bold text-slate-700 leading-snug">{point}</p>
