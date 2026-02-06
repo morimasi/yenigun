@@ -21,12 +21,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
-  const slides = customPlan.slides || [];
-  const activeSlide = slides[activeSlideIdx];
+  // GÜVENLİ VERİ ÇEKİMİ: Slides her zaman dizi olmalı
+  const slides = Array.isArray(customPlan?.slides) ? customPlan.slides : [];
+  const activeSlide = slides.length > 0 ? slides[activeSlideIdx] : null;
 
-  // --- PDF EXPORT (v6.0 GHOST ENGINE) ---
+  // --- PDF EXPORT (v6.1 GHOST ENGINE) ---
   const handleDownloadPDF = async () => {
-    if (!slideRef.current) return;
+    if (!slideRef.current || slides.length === 0) return;
     setIsExporting(true);
     try {
       const canvas = await html2canvas(slideRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
@@ -35,7 +36,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
       pdf.save(`YG_Egitim_${customPlan.title.replace(/\s+/g, '_')}.pdf`);
     } catch (e) {
-      alert("PDF Motoru Hatası");
+      console.error("PDF Motoru Hatası:", e);
     } finally {
       setIsExporting(false);
     }
@@ -43,13 +44,14 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
 
   // --- PPTX EXPORT ---
   const handleDownloadPPTX = () => {
+    if (slides.length === 0) return;
     const pptx = new PptxGenJS();
     pptx.layout = 'LAYOUT_16x9';
 
     slides.forEach((s) => {
       const slide = pptx.addSlide();
       slide.background = { fill: '0F172A' };
-      slide.addText(s.title, { x: 0.5, y: 0.5, w: '90%', fontSize: 32, bold: true, color: 'EA580C', align: 'left' });
+      slide.addText(s.title || 'Başlıksız Slayt', { x: 0.5, y: 0.5, w: '90%', fontSize: 32, bold: true, color: 'EA580C', align: 'left' });
       
       let yPos = 1.5;
       const contentArray = Array.isArray(s.content) ? s.content : [];
@@ -83,42 +85,31 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
 
   // --- MULTIMODAL ELEMENT RENDERER ---
   const renderElement = (el: MultimodalElement) => {
+    if (!el || !el.content) return null;
     switch (el.type) {
       case 'text':
         return <p className="text-2xl font-medium text-slate-700 leading-relaxed mb-6 border-l-8 border-orange-600 pl-8">{el.content.text || el.content}</p>;
-      
       case 'image_prompt':
         return (
           <div className="bg-slate-100 rounded-[3rem] aspect-video flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 mb-8 relative overflow-hidden group">
-             <div className="absolute inset-0 bg-cover bg-center opacity-10 grayscale group-hover:grayscale-0 transition-all duration-700" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800)' }}></div>
-             <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl mb-6 relative z-10">
-                <span className="text-4xl">🖼️</span>
-             </div>
+             <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl mb-6 relative z-10 text-4xl">🖼️</div>
              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] text-center relative z-10 max-w-md">{el.content.label || "AI Görsel Üretim Alanı"}</p>
-             <div className="mt-4 px-4 py-1.5 bg-orange-600 text-white rounded-full text-[9px] font-black uppercase relative z-10 tracking-widest">Nöral Rekonstrüksiyon</div>
           </div>
         );
-
       case 'symbol':
         return (
-          <div className="flex items-center gap-8 p-10 bg-blue-50 rounded-[3.5rem] border border-blue-100 mb-8 shadow-inner transition-transform hover:scale-[1.01]">
-             <div className="w-28 h-28 bg-white rounded-3xl flex items-center justify-center text-6xl shadow-xl border border-blue-50 rotate-3">
-                {el.content.icon || '🧩'}
-             </div>
+          <div className="flex items-center gap-8 p-10 bg-blue-50 rounded-[3.5rem] border border-blue-100 mb-8 shadow-inner">
+             <div className="w-28 h-28 bg-white rounded-3xl flex items-center justify-center text-6xl shadow-xl rotate-3">{el.content.icon || '🧩'}</div>
              <div>
                 <h5 className="text-blue-900 font-black text-3xl uppercase tracking-tighter">{el.content.label || 'Kavramsal Sembol'}</h5>
-                <p className="text-blue-700 text-[11px] font-bold opacity-60 uppercase tracking-[0.3em] mt-2">Görsel Destekli Pedagoji Protokolü</p>
+                <p className="text-blue-700 text-[11px] font-bold opacity-60 uppercase tracking-[0.3em] mt-2">Görsel Destekli Pedagoji</p>
              </div>
           </div>
         );
-
       case 'graph_logic':
         const mockData = [ { n: 'A', v: 40 }, { n: 'B', v: 70 }, { n: 'C', v: 55 }, { n: 'D', v: 90 } ];
         return (
           <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 mb-8 h-64">
-             <div className="flex justify-between items-center mb-6">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{el.content.label || 'Veri Analitiği'}</span>
-             </div>
              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mockData}>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -129,18 +120,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </ResponsiveContainer>
           </div>
         );
-
       case 'interactive_case':
         return (
-          <div className="bg-orange-600 p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden group mb-8">
+          <div className="bg-orange-600 p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden mb-8">
              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                   <div className="w-1.5 h-6 bg-white rounded-full"></div>
-                   <span className="text-[11px] font-black text-orange-200 uppercase tracking-[0.4em]">Kritik Vaka Tartışması</span>
-                </div>
+                <span className="text-[11px] font-black text-orange-200 uppercase tracking-[0.4em] mb-6 block">Kritik Vaka Tartışması</span>
                 <p className="text-4xl font-black italic tracking-tighter leading-tight">"{el.content.question || el.content.text}"</p>
              </div>
-             <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-[100px] animate-pulse"></div>
           </div>
         );
       default: return null;
@@ -164,13 +150,21 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
     );
   }
 
+  if (slides.length === 0) {
+    return (
+      <div className="fixed inset-0 z-[4000] bg-slate-950 flex flex-col items-center justify-center text-white">
+        <p className="text-xs font-black uppercase tracking-widest opacity-40">Müfredat Verisi Alınamadı</p>
+        <button onClick={onClose} className="mt-8 px-8 py-3 bg-white/10 rounded-xl">Hub'a Dön</button>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[4000] bg-slate-950 flex flex-col overflow-hidden animate-fade-in no-print">
        {showAssignmentModal && (
            <AssignmentModal plan={customPlan} onClose={() => setShowAssignmentModal(false)} />
        )}
 
-       {/* CONTROL HEADER */}
        <div className="h-24 bg-slate-900 border-b border-white/5 flex items-center justify-between px-10 shrink-0 relative z-[4001]">
           <div className="flex items-center gap-8">
              <button onClick={onClose} className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all flex items-center justify-center">
@@ -202,59 +196,40 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
           </div>
        </div>
 
-       {/* THE CANVAS (STAGE) */}
        <div className="flex-1 relative flex items-center justify-center p-12 overflow-hidden bg-slate-950">
-          <div ref={slideRef} className="w-full max-w-[1400px] bg-white rounded-[4rem] aspect-video shadow-[0_60px_150px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col relative animate-scale-in">
+          <div ref={slideRef} className="w-full max-w-[1400px] bg-white rounded-[4rem] aspect-video shadow-3xl overflow-hidden flex flex-col relative animate-scale-in">
              <div className="p-20 flex-1 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-start mb-16 border-b border-slate-100 pb-10">
                     <h2 className="text-6xl font-black text-slate-900 uppercase tracking-tighter border-l-[16px] border-orange-600 pl-10 leading-none max-w-5xl">
                         {activeSlide?.title}
                     </h2>
-                    <div className="text-right">
-                        <span className="text-[11px] font-black text-slate-300 uppercase tracking-[0.5em] block mb-2">NEURAL STUDIO</span>
-                        <div className="flex justify-end gap-1.5">
-                            <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-                            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75"></div>
-                            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse delay-150"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-10">
-                   {activeSlide?.elements ? (
+                   {Array.isArray(activeSlide?.elements) ? (
                       activeSlide.elements.map((el: any, i: number) => <div key={i}>{renderElement(el)}</div>)
-                   ) : (
-                      Array.isArray(activeSlide?.content) && activeSlide.content.map((point: string, i: number) => (
+                   ) : Array.isArray(activeSlide?.content) ? (
+                      activeSlide.content.map((point: string, i: number) => (
                          <div key={i} className="flex gap-8 items-start p-8 rounded-[3rem] hover:bg-slate-50 transition-colors group">
-                            <div className="w-5 h-5 bg-orange-600 rounded-full mt-3.5 shrink-0 shadow-xl ring-8 ring-orange-50 group-hover:scale-125 transition-transform"></div>
+                            <div className="w-5 h-5 bg-orange-600 rounded-full mt-3.5 shrink-0 shadow-xl ring-8 ring-orange-50"></div>
                             <p className="text-3xl font-bold text-slate-700 leading-snug">{point}</p>
                          </div>
                       ))
+                   ) : (
+                      <p className="text-slate-400 italic">Slayt içeriği bulunamadı.</p>
                    )}
                 </div>
              </div>
              
-             {/* Slide Footer */}
              <div className="p-10 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.6em]">NÖRAL AKADEMİ EĞİTİM STANDARDI</span>
-                <div className="flex items-center gap-6">
-                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{activeSlide?.type || 'STANDARD'}</span>
-                    <span className="px-6 py-2.5 bg-slate-950 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.3em] shadow-xl">{activeSlideIdx + 1}</span>
-                </div>
+                <span className="px-6 py-2.5 bg-slate-950 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.3em]">{activeSlideIdx + 1}</span>
              </div>
           </div>
        </div>
 
-       {/* SPEAKER NOTES / AI PROMPTS */}
-       <div className="h-40 bg-slate-900 border-t border-white/5 px-16 py-8 overflow-y-auto custom-scrollbar shrink-0 no-print flex gap-12">
-          <div className="w-48 shrink-0">
-             <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] block mb-3">KLİNİK NOTLAR</span>
-             <div className="h-1.5 w-full bg-orange-600 rounded-full"></div>
-             <p className="text-[10px] font-bold text-slate-500 uppercase mt-4">Gemini 3 Pro Analizi</p>
-          </div>
-          <p className="text-slate-300 font-medium text-base leading-relaxed italic max-w-5xl">
-             {activeSlide?.speakerNotes || 'Bu slayt için nöral derinlik notu eklenmemiştir.'}
-          </p>
+       <div className="h-40 bg-slate-900 border-t border-white/5 px-16 py-8 overflow-y-auto custom-scrollbar shrink-0 no-print flex gap-12 text-slate-300 italic font-medium">
+          {activeSlide?.speakerNotes || 'Bu slayt için nöral derinlik notu eklenmemiştir.'}
        </div>
     </div>
   );
