@@ -38,25 +38,41 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
 
   // --- HANDLERS ---
   const handleLaunchDeepProduction = async () => {
+    // Validasyon Kontrolleri
     if (!plan.title || !plan.description) {
-      alert("Lütfen önce müfredat başlığını ve vizyon açıklamasını giriniz.");
+      alert("Lütfen önce 'İçerik' sekmesinden müfredat başlığını ve vizyon açıklamasını giriniz.");
       setActiveTab('plan');
+      return;
+    }
+
+    if (plan.curriculum.length === 0) {
+      alert("Lütfen önce 'Yapı' sekmesinden en az bir modül taslağı oluşturun.");
+      setActiveTab('structure');
       return;
     }
     
     setIsAiProcessing(true);
     try {
+      console.log("MIA: Sentezleme başlatılıyor...", { plan, config });
       const result = await armsService.generateUniversalCurriculum(plan, config);
+      
+      if (!result || !result.slides) {
+        throw new Error("AI yanıtı beklenen formatta değil.");
+      }
+
       setPlan(prev => ({ 
         ...prev, 
         slides: result.slides, 
         finalQuiz: result.quiz,
         aiConfig: config 
       }));
+      
       setActiveTab('preview');
       setActiveSlideIdx(0);
-    } catch (e) {
-      alert("AI Üretim Hatası: Parametreler çok kısıtlayıcı olabilir.");
+      console.log("MIA: Sentezleme tamamlandı.");
+    } catch (e: any) {
+      console.error("Production Error:", e);
+      alert(`AI Üretim Hatası: ${e.message || 'Parametreler çok kısıtlayıcı olabilir.'}`);
     } finally {
       setIsAiProcessing(false);
     }
@@ -112,6 +128,25 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
   return (
     <div className="fixed inset-0 z-[3000] bg-slate-50 flex flex-col animate-fade-in overflow-hidden font-sans">
       
+      {/* GLOBAL PRODUCTION OVERLAY */}
+      {isAiProcessing && (
+        <div className="fixed inset-0 z-[5000] bg-slate-950/90 backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center animate-fade-in">
+           <div className="relative mb-12">
+              <div className="w-56 h-56 border-[12px] border-white/5 border-t-orange-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-28 h-28 bg-slate-900 rounded-[3.5rem] shadow-2xl flex items-center justify-center border border-white/10">
+                    <svg className="w-12 h-12 text-orange-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                 </div>
+              </div>
+           </div>
+           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Nöral Sentezleme Aktif</h3>
+           <p className="text-orange-500 font-black text-xl uppercase tracking-[0.5em] animate-pulse">Akademik Müfredat İnşa Ediliyor...</p>
+           <p className="mt-8 text-slate-500 text-[10px] font-bold uppercase tracking-widest max-w-md">Lütfen pencereyi kapatmayın. Gemini 3 Flash motoru pedagojik yapıyı, sunum slaytlarını ve sınav sorularını mühürlüyor.</p>
+        </div>
+      )}
+
       {/* 1. TOP COMMAND BAR */}
       <div className="h-16 bg-slate-950 flex items-center justify-between px-8 shrink-0 shadow-2xl relative z-50">
          <div className="flex items-center gap-6">
@@ -120,8 +155,8 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
             </button>
             <div className="h-6 w-px bg-white/10"></div>
             <div>
-               <h2 className="text-white font-black text-sm uppercase tracking-widest leading-none">{plan.title}</h2>
-               <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.3em] mt-1.5">v4.0 Universal Design Studio</p>
+               <h2 className="text-white font-black text-sm uppercase tracking-widest leading-none">{plan.title || 'Müfredat Tasarımı'}</h2>
+               <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.3em] mt-1.5">v4.2 Universal Design Studio</p>
             </div>
          </div>
 
@@ -160,7 +195,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                  {isAiProcessing ? (
                    <>
                     <div className="w-3 h-3 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-                    <span>SENTEZLENİYOR...</span>
+                    <span>İŞLENİYOR...</span>
                    </>
                  ) : 'NÖRAL ÜRETİMİ BAŞLAT'}
               </button>
@@ -265,6 +300,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                            <div className="py-20 text-center opacity-20 grayscale scale-75">
                               <svg className="w-20 h-20 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                               <p className="text-xl font-black uppercase tracking-widest">Taslak Yapı Bulunmuyor</p>
+                              <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">AI Sunumu üretmek için en az bir modül başlığı eklemelisiniz.</p>
                            </div>
                         ) : (
                            plan.curriculum.map((mod, mIdx) => (
@@ -275,6 +311,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                                        type="text" 
                                        className="bg-transparent font-black text-xl text-slate-800 outline-none border-b-2 border-transparent focus:border-orange-500" 
                                        value={mod.title}
+                                       placeholder="Modül Başlığı Girin..."
                                        onChange={e => {
                                           const newC = [...plan.curriculum];
                                           newC[mIdx].title = e.target.value;
@@ -296,9 +333,10 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-8">Tüm seçimler hazırsa nöral motoru ateşleyin</p>
                         <button 
                            onClick={handleLaunchDeepProduction}
-                           className="px-20 py-8 bg-slate-950 text-white rounded-[3rem] font-black text-lg uppercase tracking-[0.4em] shadow-3xl hover:bg-orange-600 transition-all animate-pulse"
+                           disabled={isAiProcessing}
+                           className="px-20 py-8 bg-slate-950 text-white rounded-[3rem] font-black text-lg uppercase tracking-[0.4em] shadow-3xl hover:bg-orange-600 transition-all active:scale-95 disabled:opacity-20"
                         >
-                           ÜRETİMİ BAŞLAT
+                           {isAiProcessing ? 'İŞLENİYOR...' : 'ÜRETİMİ BAŞLAT'}
                         </button>
                      </div>
                   </div>
@@ -346,7 +384,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                               </div>
                            </div>
 
-                           {/* Educator Metadata (Speaker Notes & Visual Prompt) */}
+                           {/* Educator Metadata */}
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-xl">
                                  <h5 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">EĞİTMEN NOTLARI (KLİNİK DERİNLİK)</h5>
@@ -402,7 +440,7 @@ const MultimodalStudio: React.FC<MultimodalStudioProps> = ({ onClose, initialPla
                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">AI Engine: {isAiProcessing ? 'Synthesizing' : 'Online'}</span>
             </div>
             <div className="h-4 w-px bg-slate-200"></div>
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">MODEL: GEMINI-3-PRO-PREVIEW</span>
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">MODEL: GEMINI-3-FLASH-PREVIEW</span>
          </div>
          <div className="flex items-center gap-3">
             <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">MIA-V4 CORE</span>

@@ -5,6 +5,7 @@ import { StaffMember, IDP, TrainingSlide, PresentationConfig, TrainingModule, Ca
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const extractPureJSON = (text: string): any => {
+  if (!text) return null;
   try {
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const firstBrace = cleanText.indexOf('{');
@@ -12,23 +13,26 @@ const extractPureJSON = (text: string): any => {
     if (firstBrace === -1) return JSON.parse(cleanText);
     let jsonStr = cleanText.substring(firstBrace, lastBrace + 1);
     return JSON.parse(jsonStr);
-  } catch (e) { return null; }
+  } catch (e) { 
+    console.error("JSON Extraction Error:", e, text);
+    return null; 
+  }
 };
 
 export const armsService = {
-  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI ---
+  // --- KRİTİK: NÖRAL MÜFREDAT FABRİKASI (v4.2) ---
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz: TrainingQuiz }> {
     const systemInstruction = config.customSystemPrompt || `
       ROL: Yeni Gün Akademi Kıdemli Eğitim Teknoloğu ve Müfredat Mimarı.
-      HEDEF: "${plan.title}" konulu, ultra-profesyonel bir hizmet içi eğitim materyali tasarla.
-      PEDAGOJİK ODAK: ${config.pedagogicalBias} ekolü prensipleri %100 baskın olmalı.
-      BİLİŞSEL YÜK: ${config.cognitiveLoad} seviyesinde bir uzman kitlesi hedefleniyor.
+      HEDEF: "${plan.title}" konulu, profesyonel bir hizmet içi eğitim materyali tasarla.
+      PEDAGOJİK ODAK: ${config.pedagogicalBias} ekolü prensipleri baskın olmalı.
+      BİLİŞSEL YÜK: ${config.cognitiveLoad} seviyesi.
       ÜSLUP: ${config.tone} ve akademik.
       
       FORMAT KURALLARI:
-      1. Slaytlar sadece metin değil, "Speaker Notes" (Eğitmen için derin klinik bilgiler) içermeli.
-      2. Her slayt için "Visual Prompt" (AI görsel üretim komutu) üret.
-      3. Sonunda en az 5 soruluk, bu eğitimi ölçen bir "Liyakat Sınavı" oluştur.
+      1. Slaytlar "Speaker Notes" (Eğitmen notları) içermeli.
+      2. Her slayt için "Visual Prompt" üret.
+      3. Sonunda 5 soruluk bir "Liyakat Sınavı" oluştur.
       FORMAT: Kesinlikle JSON.
     `;
 
@@ -43,18 +47,9 @@ export const armsService = {
               id: { type: Type.STRING },
               type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
               title: { type: Type.STRING },
-              subtitle: { type: Type.STRING },
               content: { type: Type.ARRAY, items: { type: Type.STRING } },
               speakerNotes: { type: Type.STRING },
-              visualPrompt: { type: Type.STRING },
-              interactiveElement: {
-                type: Type.OBJECT,
-                properties: {
-                  question: { type: Type.STRING },
-                  expectedAnswer: { type: Type.STRING },
-                  misconception: { type: Type.STRING }
-                }
-              }
+              visualPrompt: { type: Type.STRING }
             },
             required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
           }
@@ -90,12 +85,12 @@ export const armsService = {
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Muhakeme için Pro model
-      contents: `MÜFREDAT TANIMI: ${plan.description} | HEDEF BRANŞLAR: ${JSON.stringify(plan.targetBranches)} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
+      model: 'gemini-3-flash-preview', // Daha hızlı ve kararlı üretim
+      contents: `MÜFREDAT TANIMI: ${plan.description} | MODÜLLER: ${JSON.stringify(plan.curriculum.map(m => m.title))}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: config.thinkingBudget },
+        thinkingConfig: { thinkingBudget: config.thinkingBudget > 0 ? config.thinkingBudget : 12000 },
         temperature: config.temperature,
         responseSchema
       }
@@ -106,13 +101,12 @@ export const armsService = {
     return parsed;
   },
 
-  // @fix: Implemented generateTrainingSlides to resolve error in DecisionSupportView.tsx
   async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `IDP: ${JSON.stringify(idp)} | BRANCH: ${branch}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Eğitim Geliştirme. Verilen IDP'ye göre personelin gelişimi için 5-7 slaytlık profesyonel bir eğitim sunumu hazırla. JSON formatında 'slides' dizisi döndür.",
+        systemInstruction: "Yeni Gün Akademi Eğitim Geliştirme. 5-7 slaytlık sunum üret. JSON döndür.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -123,17 +117,15 @@ export const armsService = {
                 type: Type.OBJECT,
                 properties: {
                   id: { type: Type.STRING },
-                  type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+                  type: { type: Type.STRING },
                   title: { type: Type.STRING },
                   content: { type: Type.ARRAY, items: { type: Type.STRING } },
                   speakerNotes: { type: Type.STRING },
                   visualPrompt: { type: Type.STRING }
-                },
-                required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+                }
               }
             }
-          },
-          required: ["slides"]
+          }
         }
       }
     });
@@ -141,13 +133,12 @@ export const armsService = {
     return parsed?.slides || [];
   },
 
-  // @fix: Implemented generateCustomPresentation to resolve error in PresentationStudio.tsx
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `CONFIG: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. Verilen konfigürasyona uygun profesyonel bir sunum taslağı hazırla. JSON formatında 'slides' dizisi döndür.",
+        systemInstruction: "Yeni Gün Akademi Sunum Stüdyosu. JSON formatında 'slides' döndür.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -158,17 +149,15 @@ export const armsService = {
                 type: Type.OBJECT,
                 properties: {
                   id: { type: Type.STRING },
-                  type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+                  type: { type: Type.STRING },
                   title: { type: Type.STRING },
                   content: { type: Type.ARRAY, items: { type: Type.STRING } },
                   speakerNotes: { type: Type.STRING },
                   visualPrompt: { type: Type.STRING }
-                },
-                required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+                }
               }
             }
-          },
-          required: ["slides"]
+          }
         }
       }
     });
@@ -176,13 +165,12 @@ export const armsService = {
     return parsed?.slides || [];
   },
 
-  // @fix: Implemented generateCurriculumTraining to resolve error in CurriculumManager.tsx
   async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `PLAN: ${JSON.stringify(plan)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Verilen eğitim planına uygun olarak personelin klinik derinliğini artıracak detaylı bir sunum hazırla. JSON formatında 'slides' dizisi döndür.",
+        systemInstruction: "Yeni Gün Akademi Müfredat Fabrikası. Sunum slaytları üret. JSON formatında 'slides' döndür.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -193,17 +181,15 @@ export const armsService = {
                 type: Type.OBJECT,
                 properties: {
                   id: { type: Type.STRING },
-                  type: { type: Type.STRING, enum: ['title', 'content', 'interactive'] },
+                  type: { type: Type.STRING },
                   title: { type: Type.STRING },
                   content: { type: Type.ARRAY, items: { type: Type.STRING } },
                   speakerNotes: { type: Type.STRING },
                   visualPrompt: { type: Type.STRING }
-                },
-                required: ["id", "type", "title", "content", "speakerNotes", "visualPrompt"]
+                }
               }
             }
-          },
-          required: ["slides"]
+          }
         }
       }
     });
@@ -214,8 +200,7 @@ export const armsService = {
   async generateIDP(entity: StaffMember | Candidate, assessmentHistory: any[] = []): Promise<IDP> {
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Gelişim Stratejisti.
-      GÖREV: Personelin mevcut yetkinlik setini ve hata geçmişini analiz ederek 90 günlük bir Bireysel Gelişim Planı (IDP) ve Müfredat oluştur.
-      MODEL: Gemini 3 Flash Thinking.
+      GÖREV: Personelin mevcut yetkinlik setini analiz ederek 90 günlük IDP oluştur.
       FORMAT: Sadece JSON.
     `;
 
@@ -239,8 +224,7 @@ export const armsService = {
                 shortTerm: { type: Type.STRING },
                 midTerm: { type: Type.STRING },
                 longTerm: { type: Type.STRING }
-              },
-              required: ["shortTerm", "midTerm", "longTerm"]
+              }
             },
             curriculum: {
               type: Type.ARRAY,
@@ -271,8 +255,7 @@ export const armsService = {
                 }
               }
             }
-          },
-          required: ["id", "focusArea", "roadmap", "curriculum"]
+          }
         }
       }
     });
