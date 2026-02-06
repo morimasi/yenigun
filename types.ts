@@ -1,37 +1,24 @@
 
-export type NotificationType = 'NEW_CANDIDATE' | 'INTERVIEW_DUE' | 'CONFIG_CHANGE' | 'SYSTEM_ALERT' | 'STAFF_ACTION';
-export type NotificationSeverity = 'INFO' | 'SUCCESS' | 'WARNING' | 'CRITICAL';
+export type TrainingTheme = 'ACADEMIC_COLD' | 'CREATIVE_WARM' | 'MINIMAL_TECH' | 'OFFICIAL_MEB';
+export type TargetAudience = 'STAFF_JUNIOR' | 'STAFF_SENIOR' | 'PARENTS' | 'ACADEMIC_BOARD';
 
-export interface SystemNotification {
-  id: string;
-  type: NotificationType;
-  severity: NotificationSeverity;
-  title: string;
-  message: string;
-  isRead: boolean;
-  metadata?: any;
-  createdAt: number;
-}
-
-export interface MultimodalElement {
-  id: string;
-  type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case' | 'quiz_block';
-  content: any;
-}
-
-export interface TrainingQuiz {
-  questions: {
-    id: string;
-    text: string;
-    options: { label: string; isCorrect: boolean; feedback: string }[];
-  }[];
+export interface AcademicSealConfig {
+  institutionName: string;
+  headerAntet: boolean;
+  signatureTitles: string[]; // ["Klinik Direktör", "Kurucu", "Psikolog"]
+  footerNote: string;
+  showWatermark: boolean;
 }
 
 export interface TrainingGenerationConfig {
-  pedagogicalBias: 'ABA' | 'FLOORTIME' | 'ECSE' | 'NEURAL' | 'TRADITIONAL';
+  pedagogicalBias: 'ABA' | 'FLOORTIME' | 'ECSE' | 'NEURAL' | 'TRADITIONAL' | 'MONTESSORI';
   cognitiveLoad: 'JUNIOR' | 'PRO' | 'SUPERVISOR';
-  tone: 'academic' | 'inspirational' | 'warning';
-  customSystemPrompt?: string;
+  audience: TargetAudience;
+  theme: TrainingTheme;
+  slideCount: number;
+  includeVisuals: boolean;
+  tone: 'academic' | 'inspirational' | 'warning' | 'analytical';
+  academicConfig: AcademicSealConfig;
   temperature: number;
   thinkingBudget: number;
 }
@@ -52,6 +39,25 @@ export interface CustomTrainingPlan {
   updatedAt?: number;
 }
 
+export interface MultimodalElement {
+  id: string;
+  type: 'text' | 'image_prompt' | 'symbol' | 'graph_logic' | 'interactive_case' | 'quiz_block';
+  content: any;
+}
+
+export interface TrainingSlide {
+  id: string;
+  type: 'title' | 'content' | 'interactive' | 'visual_split' | 'signature_page';
+  title: string;
+  content: string[];
+  elements?: MultimodalElement[];
+  speakerNotes: string;
+  visualPrompt: string;
+  // Added missing property used in PresentationStudio
+  interactiveElement?: { question: string };
+}
+
+// @fix: Converted Branch to enum to fix 'Branch' only refers to a type errors.
 export enum Branch {
   OzelEgitim = 'Özel Eğitim',
   DilKonusma = 'Dil ve Konuşma Terapisi',
@@ -65,94 +71,47 @@ export enum Branch {
   OyunTerapisi = 'Oyun Terapisi'
 }
 
-export enum StaffRole {
-  Admin = 'admin',
-  Staff = 'staff',
-  Mentor = 'mentor'
-}
-
+export enum StaffRole { Admin = 'admin', Staff = 'staff', Mentor = 'mentor' }
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
 
-export interface Question {
-  id: string;
-  category: string;
-  type: 'radio' | 'text' | 'checkbox';
-  text: string;
-  requiredBranch?: Branch[];
-  weightedOptions?: {
-    label: string;
-    weights: Record<string, number>;
-    analysisInsight: string;
-    branchOverrides?: Record<string, Record<string, number>>;
-  }[];
-  options?: string[];
-}
-
-// @fix: Added AssessmentOption for staff performance tracking.
-export interface AssessmentOption {
-  label: string;
-  clinicalValue: number;
-  aiTag: string;
-}
-
-// @fix: Added AssessmentQuestion for ARMS modular batteries.
-export interface AssessmentQuestion {
-  id: string;
-  text: string;
-  options: AssessmentOption[];
-}
-
-// @fix: Added AssessmentBattery to support the MethodologyInventory module.
-export interface AssessmentBattery {
+export interface TrainingModule {
   id: string;
   title: string;
-  description: string;
-  icon: string;
-  category: string;
-  questions: AssessmentQuestion[];
+  focusArea: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  status: 'active' | 'archived';
+  units: TrainingUnit[];
 }
 
-export interface AIReport {
-  score: number;
-  integrityIndex: number;
-  socialMaskingScore: number;
-  summary: string;
-  detailedAnalysisNarrative: string;
-  recommendation: string;
-  predictiveMetrics?: {
-    retentionProbability: number;
-    burnoutRisk: number;
-    learningVelocity: number;
-    leadershipPotential: number;
-    evolutionPath: string;
-    trajectory?: any[];
+export interface TrainingQuiz {
+  questions: {
+    id: string;
+    text: string;
+    options: { label: string; isCorrect: boolean; feedback: string }[];
+  }[];
+}
+
+export interface IDP {
+  id: string;
+  staffId?: string;
+  focusArea: string;
+  curriculum: TrainingModule[];
+  updatedAt?: number;
+  // Added missing property used in DecisionSupportView
+  roadmap?: {
+    shortTerm: string;
+    midTerm: string;
+    longTerm: string;
   };
-  deepAnalysis: Record<string, {
-    score: number;
-    status: string;
-    reasoning: string;
-    behavioralIndicators: string[];
-    institutionalImpact: string;
-    pros: string[];
-    cons: string[];
-    risks: string[];
-    clinicalNuances?: string;
-    teamImpact?: string;
-    literatureReference?: string;
-  }>;
-  swot?: {
-    strengths: string[];
-    weaknesses: string[];
-    opportunities: string[];
-    threats: string[];
-  };
-  interviewGuidance?: {
-    strategicQuestions?: string[];
-    criticalObservations?: string[];
-    simulationTasks?: string[];
-    phases?: { questions: { text: string }[] }[];
-  };
+}
+
+export interface PresentationConfig {
+  topic: string;
+  targetAudience: 'team' | 'individual' | 'parents';
+  tone: 'academic' | 'inspirational' | 'warning';
+  depth: 'beginner' | 'intermediate' | 'advanced';
+  slideCount: number;
 }
 
 export interface Candidate {
@@ -160,29 +119,31 @@ export interface Candidate {
   name: string;
   email: string;
   phone: string;
-  age: number;
-  gender: Gender;
-  maritalStatus: MaritalStatus;
-  branch: Branch;
+  branch: string;
+  experienceYears: number;
   university: string;
   department: string;
-  experienceYears: number;
-  previousInstitutions: string;
-  allTrainings: string[];
-  cvData?: {
-    base64: string;
-    mimeType: string;
-    fileName: string;
-  };
-  answers: Record<string, string | string[]>;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'hired' | 'withdrawn' | 'archived';
   report?: AIReport;
   algoReport?: AlgorithmicReport;
   timestamp: number;
+  answers: any;
   archiveCategory?: ArchiveCategory;
   archiveNote?: string;
-  admin_notes?: string;
-  interviewSchedule?: { date: string; time: string };
+  // @fix: Added missing properties used across the app
+  age?: number;
+  gender?: Gender;
+  maritalStatus?: MaritalStatus;
+  previousInstitutions?: string;
+  allTrainings?: string[];
+  cvData?: { base64: string; mimeType: string; fileName: string };
+  adminNotes?: string;
+  reminderNote?: string;
+  interviewSchedule?: {
+    date: string;
+    time: string;
+    location?: string;
+  };
 }
 
 export interface GlobalConfig {
@@ -217,87 +178,15 @@ export interface GlobalConfig {
   };
 }
 
-export type ArchiveCategory = 
-  | 'CANDIDATE_POOL' 
-  | 'DISQUALIFIED' 
-  | 'BLACK_LIST' 
-  | 'STAFF_HISTORY' 
-  | 'TRAINING_LIBRARY'
-  | 'PERFORMANCE_SNAPSHOT'
-  | 'STRATEGIC_PLAN'
-  | 'CLINICAL_CASE_STUDY'
-  | 'HIRED_CONTRACTED'
-  | 'TALENT_POOL_ANALYTICS';
-
-export interface StaffMember {
-  id: string;
-  name: string;
-  email: string;
-  role: StaffRole;
-  branch: Branch;
-  experience_years: number;
-  university?: string;
-  department?: string;
-  onboarding_complete?: boolean;
-  status?: string;
-  phone?: string;
-  report?: any;
-  last_score?: number;
-}
-
-export interface Certification {
-  id: string;
-  label: string;
-  description: string;
-  category: string;
-  verificationQuestions: Question[];
-}
-
-export interface ExportConfig {
-  title: string;
-  showWatermark: boolean;
-  signatureRequired: boolean;
-  theme: 'corporate' | 'modern' | 'minimal';
-  sections: {
-    cover: boolean;
-    executiveSummary: boolean;
-    competencyMatrix: boolean;
-    behavioralDNA: boolean;
-    swotAnalysis: boolean;
-    futureProjection: boolean;
-    interviewGuide: boolean;
-    clinicalSimulation: boolean;
-  };
-}
-
-export interface AlgorithmicReport {
-  overallScore: number;
-  reliabilityIndex: number;
-  ethicsScore: number;
-  experienceWeight: number;
-  retentionScore: number;
-  burnoutResistance: number;
-  fitScore: number;
-  riskFlags: string[];
-  branchComplianceScore: number;
-}
-
 export interface UniversalExportData {
   type: string;
   entityName: string;
   referenceId: string;
   payload: any;
-  config?: {
-    title?: string;
-  };
+  config?: { title?: string };
 }
 
-export enum ClinicalTestType {
-  DMP_STRESS = 'DMP_STRESS_V4',
-  ETHICAL_CONFLICT = 'ETHICAL_CONFLICT',
-  PARENT_MANIPULATION = 'PARENT_MANIPULATION',
-  CLINICAL_SKEPTICISM = 'CLINICAL_SKEPTICISM'
-}
+export enum ClinicalTestType { DMP_STRESS = 'DMP_STRESS_V4' }
 
 export interface SimulationResult {
   scenario: string;
@@ -325,66 +214,182 @@ export interface SimulationResult {
   };
 }
 
-export interface IDP {
-  id: string;
-  staffId?: string;
-  focusArea: string;
-  identifiedGaps?: string[];
-  roadmap: {
-    shortTerm: string;
-    midTerm: string;
-    longTerm: string;
-  };
-  curriculum: TrainingModule[];
-  updatedAt?: number;
-}
-
-export interface TrainingModule {
-  id: string;
-  title: string;
-  focusArea: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  status: 'active' | 'archived';
-  units: TrainingUnit[];
-}
-
 export interface TrainingUnit {
   id: string;
   title: string;
-  type: 'video' | 'reading' | 'simulation' | 'assignment' | 'supervision' | 'workshop' | 'quiz_v2';
+  type: string;
   content: string;
   durationMinutes: number;
   isCompleted: boolean;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: string;
   aiRationale?: string;
-  successCriteria?: string;
 }
 
-export interface TrainingSlide {
+export interface FormStep { id: string; title: string; description: string; }
+
+export interface SystemNotification {
   id: string;
-  type: 'title' | 'content' | 'interactive' | 'visual_split';
+  type: string;
+  severity: string;
   title: string;
-  content: string[];
-  elements?: MultimodalElement[];
-  speakerNotes: string;
-  visualPrompt: string;
-  interactiveElement?: {
-    question: string;
-    expectedAnswer: string;
-    misconception: string;
+  message: string;
+  isRead: boolean;
+  createdAt: number;
+}
+
+// @fix: Added missing AIReport interface
+export interface AIReport {
+  score: number;
+  integrityIndex: number;
+  socialMaskingScore: number;
+  summary: string;
+  detailedAnalysisNarrative: string;
+  recommendation: string;
+  predictiveMetrics: {
+    retentionProbability: number;
+    burnoutRisk: number;
+    learningVelocity: number;
+    leadershipPotential: number;
+    evolutionPath: string;
+    trajectory?: { month: string; meritScore: number }[];
+  };
+  deepAnalysis: Record<string, {
+    score: number;
+    status: string;
+    reasoning: string;
+    clinicalNuances: string;
+    literatureReference: string;
+    teamImpact: string;
+    pros: string[];
+    risks: string[];
+    behavioralIndicators: string[];
+    institutionalImpact?: string;
+    label?: string;
+  }>;
+  swot?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  interviewGuidance?: {
+    strategicQuestions: string[];
+    criticalObservations: string[];
+    simulationTasks: string[];
+    phases?: { questions: { text: string }[] }[];
   };
 }
 
-export interface PresentationConfig {
-  topic: string;
-  targetAudience: 'team' | 'individual' | 'parents';
-  tone: 'academic' | 'inspirational' | 'warning';
-  depth: 'beginner' | 'intermediate' | 'advanced';
-  slideCount: number;
+// @fix: Added missing ExportConfig interface
+export interface ExportConfig {
+  title: string;
+  showWatermark: boolean;
+  signatureRequired: boolean;
+  theme: 'corporate' | 'creative' | 'minimal';
+  sections: {
+    cover: boolean;
+    executiveSummary: boolean;
+    competencyMatrix: boolean;
+    behavioralDNA: boolean;
+    swotAnalysis: boolean;
+    futureProjection: boolean;
+    interviewGuide: boolean;
+    clinicalSimulation: boolean;
+  };
 }
 
-export type CommChannel = 'email' | 'whatsapp' | 'sms';
+// @fix: Added missing AlgorithmicReport interface
+export interface AlgorithmicReport {
+  overallScore: number;
+  reliabilityIndex: number;
+  ethicsScore: number;
+  experienceWeight: number;
+  retentionScore: number;
+  burnoutResistance: number;
+  fitScore: number;
+  riskFlags: string[];
+  branchComplianceScore: number;
+}
 
+// @fix: Added missing ArchiveCategory type
+export type ArchiveCategory = 
+  | 'CANDIDATE_POOL' 
+  | 'HIRED_CONTRACTED' 
+  | 'DISQUALIFIED' 
+  | 'BLACK_LIST' 
+  | 'STAFF_HISTORY' 
+  | 'TALENT_POOL_ANALYTICS' 
+  | 'TRAINING_LIBRARY' 
+  | 'PERFORMANCE_SNAPSHOT' 
+  | 'STRATEGIC_PLAN' 
+  | 'CLINICAL_CASE_STUDY';
+
+// @fix: Added missing Question interface
+export interface Question {
+  id: string;
+  category: string;
+  type: 'radio' | 'textarea';
+  text: string;
+  options?: string[];
+  weightedOptions?: {
+    label: string;
+    weights: Record<string, number>;
+    analysisInsight: string;
+    branchOverrides?: Record<string, Record<string, number>>;
+  }[];
+  requiredBranch?: Branch[];
+}
+
+// @fix: Added missing Certification interface
+export interface Certification {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+  verificationQuestions: Question[];
+}
+
+// @fix: Added missing AssessmentBattery interface
+export interface AssessmentBattery {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+  questions: AssessmentQuestion[];
+}
+
+// @fix: Added missing AssessmentQuestion interface
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+  options: {
+    label: string;
+    clinicalValue: number;
+    aiTag: string;
+  }[];
+}
+
+// @fix: Added missing StaffMember interface
+export interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  role: StaffRole;
+  branch: Branch;
+  experience_years: number;
+  status: 'active' | 'archived';
+  phone?: string;
+  university?: string;
+  department?: string;
+  report?: AIReport;
+  last_score?: number;
+  last_activity_date?: string;
+  onboarding_complete?: boolean;
+}
+
+// @fix: Added missing Communication Center types
+export type CommChannel = 'email' | 'whatsapp' | 'sms';
 export interface CommTemplate {
   id: string;
   name: string;
@@ -392,7 +397,6 @@ export interface CommTemplate {
   body: string;
   channels: CommChannel[];
 }
-
 export interface NotificationLog {
   id: string;
   targetId: string;
@@ -401,11 +405,4 @@ export interface NotificationLog {
   status: 'sent' | 'failed' | 'pending';
   timestamp: number;
   errorMessage?: string;
-}
-
-export interface FormStep {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
 }

@@ -26,7 +26,7 @@ export interface TrainingPlan {
   modules: CurriculumModule[];
 }
 
-// YARDIMCI: Kategori bazlı 20'şer adet derinlemesine plan
+// @fix: Updated Branch usage as values (from enum).
 export const GLOBAL_CURRICULA: TrainingPlan[] = [
   // --- 1. ORYANTASYON (20 İÇERİK) ---
   { id: 'ory_01', title: 'Kurumsal DNA ve Vizyon', category: 'ORIENTATION', targetBranches: 'ALL', level: 'Beginner', badge: 'MÜHÜR-01', description: 'Kurumun liyakat esasları ve profesyonel kimlik inşası.', modules: [] },

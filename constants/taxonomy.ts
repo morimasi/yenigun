@@ -15,6 +15,7 @@ export const CERTIFICATION_CATEGORIES = [
  * Branş Bazlı Kategori Ağırlık Çarpanları
  * Her branşın kendi "Kritik Yetkinlik" alanını belirler.
  */
+// @fix: Updated Branch usage as values (from enum).
 export const BRANCH_CATEGORY_MULTIPLIERS: Record<string, Record<string, number>> = {
   [Branch.OzelEgitim]: { clinical: 1.2, ethics: 1.1, sustainability: 1.1, pedagogicalAnalysis: 1.2 },
   [Branch.DilKonusma]: { clinical: 1.3, technicalExpertise: 1.2, pedagogicalAnalysis: 1.1, ethics: 1.0 },
@@ -22,7 +23,6 @@ export const BRANCH_CATEGORY_MULTIPLIERS: Record<string, Record<string, number>>
   [Branch.Ergoterapi]: { clinical: 1.1, sustainability: 1.4, technicalExpertise: 1.3, empathy: 1.1 },
   [Branch.Fizyoterapi]: { clinical: 1.0, sustainability: 1.5, technicalExpertise: 1.4, ethics: 0.8 },
   [Branch.PDR]: { ethics: 1.3, empathy: 1.4, pedagogicalAnalysis: 1.3, institutionalLoyalty: 1.2 },
-  // YENİ EKLENEN BRANŞLAR İÇİN AI KATSAYILARI
   [Branch.OkulOncesi]: { pedagogicalAnalysis: 1.4, sustainability: 1.2, empathy: 1.3, technicalExpertise: 0.9 },
   [Branch.SinifOgretmenligi]: { pedagogicalAnalysis: 1.3, academicSkills: 1.4, institutionalLoyalty: 1.1, clinical: 0.8 },
   [Branch.Odyoloji]: { technicalExpertise: 1.4, clinical: 1.3, empathy: 1.0, pedagogicalAnalysis: 0.8 },
