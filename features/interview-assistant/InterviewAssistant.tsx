@@ -1,5 +1,5 @@
-
-import { useState, useRef } from 'react';
+// @fix: Added React import to resolve "Cannot find namespace 'React'" error.
+import React, { useState, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { Candidate } from '../../types';
 
