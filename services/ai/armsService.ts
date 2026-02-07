@@ -5,22 +5,59 @@ import {
   TrainingGenerationConfig, TrainingQuiz, Branch, PresentationConfig
 } from "../../types";
 
+/**
+ * MIA Nöral JSON Ayrıştırma Motoru v3.0 (JS-Safe Edition)
+ * JavaScript RegExp motoru özyinelemeli (recursive) yapıları desteklemez.
+ * Bu fonksiyon, metin içindeki en geniş JSON bloğunu güvenli sınır tespitiyle ayıklar.
+ */
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
-    // Markdown bloklarını temizle
+    // 1. Markdown bloklarını temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    // JSON başlangıç ve bitişini bul (Hata toleransı için)
+    // 2. Başlangıç sınırını bul (İlk { veya [)
     const firstBrace = cleanText.indexOf('{');
+    const firstBracket = cleanText.indexOf('[');
+    let startIdx = -1;
+    
+    if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+      startIdx = firstBrace;
+    } else if (firstBracket !== -1) {
+      startIdx = firstBracket;
+    }
+
+    if (startIdx === -1) return null;
+
+    // 3. Bitiş sınırını bul (Son } veya ])
     const lastBrace = cleanText.lastIndexOf('}');
+    const lastBracket = cleanText.lastIndexOf(']');
+    let endIdx = -1;
+
+    if (lastBrace !== -1 && (lastBracket === -1 || lastBrace > lastBracket)) {
+      endIdx = lastBrace;
+    } else if (lastBracket !== -1) {
+      endIdx = lastBracket;
+    }
+
+    if (endIdx === -1 || endIdx <= startIdx) return null;
+
+    // 4. Bloğu kes ve parse et
+    const jsonString = cleanText.substring(startIdx, endIdx + 1);
     
-    if (firstBrace === -1 || lastBrace === -1) return null;
-    
-    const jsonString = cleanText.substring(firstBrace, lastBrace + 1);
-    return JSON.parse(jsonString);
+    // Görünmez karakterleri ve trailing virgülleri temizle (Hata payını azaltır)
+    const sanitizedJson = jsonString
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, "") 
+      .replace(/,\s*([}\]])/g, '$1'); 
+
+    return JSON.parse(sanitizedJson);
   } catch (e) { 
-    console.error("MIA ARMS JSON Engine Error:", e);
+    console.error("MIA ARMS Nöral Parse Hatası:", e);
+    // Son çare: Regex ile kaba ayıklama (JS uyumlu)
+    try {
+        const fallbackMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/);
+        if (fallbackMatch) return JSON.parse(fallbackMatch[0]);
+    } catch(innerE) { return null; }
     return null; 
   }
 };
@@ -32,22 +69,16 @@ export const armsService = {
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı.
       GÖREV: "${plan.title}" konusu üzerine yüksek lisans seviyesinde AKADEMİK sunum üret.
-      
-      KRİTİK TALİMATLAR:
-      1. Her slayt (content) en az 5 madde içermeli. Her madde "Açıklayıcı, Teknik ve Klinik" olmalı. Sığ başlıklardan kaçın.
-      2. Speaker Notes: Eğitmen için en az 150 kelimelik profesyonel anlatım rehberi.
-      3. Elements: Slayta mutlaka bir 'symbol' veya 'interactive_case' ekle.
-      4. HIZ: JSON yapısını bozmadan hızlıca yanıtla.
+      KRİTİK: Her slayt en az 5 teknik madde içermeli.
     `;
 
-    // Multimodal elementler için basitleştirilmiş nesne yapısı
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `EĞİTİM PLANI: ${JSON.stringify(plan)} | KONFİGÜRASYON: ${JSON.stringify(config)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 12000 }, // Hız için düşünme bütçesi optimize edildi
+        thinkingConfig: { thinkingBudget: 12000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -67,15 +98,7 @@ export const armsService = {
                       properties: {
                         id: { type: Type.STRING },
                         type: { type: Type.STRING, enum: ["symbol", "interactive_case", "graph_logic"] },
-                        content: { 
-                          type: Type.OBJECT,
-                          properties: {
-                            icon: { type: Type.STRING },
-                            label: { type: Type.STRING },
-                            scenario: { type: Type.STRING },
-                            resolution: { type: Type.STRING }
-                          }
-                        }
+                        content: { type: Type.OBJECT }
                       }
                     }
                   }
@@ -96,29 +119,48 @@ export const armsService = {
 
   async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Katalog Konusu: ${plan.title}. Lütfen bu konuda en az 8 slaytlık, her slaytı akademik derinliğe sahip bir eğitim üret.`,
+      contents: `KONU: ${plan.title}. Lütfen bu katalog konusu üzerine en az 8 slaytlık, her slaytı 5+ madde içeren, eğitmen notlu profesyonel bir sunum üret.`,
       config: {
-        systemInstruction: "Akademi Robotu. Sadece saf JSON döndür. Slaytlar: title, content (array), speakerNotes alanlarını içermelidir.",
+        systemInstruction: "Akademi Robotu. Sadece saf JSON döndür. Slaytlar hiyerarşisi bozulmamalıdır.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 8000 }
+        thinkingConfig: { thinkingBudget: 12000 },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            slides: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  speakerNotes: { type: Type.STRING }
+                },
+                required: ["id", "title", "content", "speakerNotes"]
+              }
+            }
+          },
+          required: ["slides"]
+        }
       }
     });
+
     const res = extractPureJSON(response.text);
     return Array.isArray(res?.slides) ? res.slides : [];
   },
 
-  // @fix: Updated signature to accept optional history argument to resolve the argument mismatch error in DevelopmentRouteView.tsx (line 34).
   async generateIDP(entity: any, history?: any[]): Promise<IDP> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // @fix: Wrap entity and history in a context object if history is provided
     const context = history ? { entity, history } : entity;
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `UZMAN: ${JSON.stringify(context)}`,
+      contents: `UZMAN VERİLERİ: ${JSON.stringify(context)}`,
       config: {
-        systemInstruction: "90 günlük gelişim planı (IDP) üreticisi. JSON formatında 'focusArea', 'roadmap' (shortTerm, midTerm, longTerm) ve 'curriculum' (modules) alanlarını doldur.",
+        systemInstruction: "90 günlük gelişim planı (IDP) üreticisi. JSON formatında 'focusArea', 'roadmap' ve 'curriculum' (modules) alanlarını doldur.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 15000 }
       }
