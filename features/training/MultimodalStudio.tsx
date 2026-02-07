@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   CustomTrainingPlan, 
@@ -54,7 +53,8 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleFinalSeal = async (slides: TrainingSlide[], quiz?: TrainingQuiz) => {
     setStatusMsg('Kurumsal Arşive Mühürleniyor...');
-    const finalPayload = {
+    // @fix: Explicitly typing finalPayload to CustomTrainingPlan to ensure 'status' is recognized as a specific literal union.
+    const finalPayload: CustomTrainingPlan = {
       ...plan,
       slides: Array.isArray(slides) ? slides : [],
       finalQuiz: quiz,
@@ -69,9 +69,11 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalPayload)
       });
+      // @fix: Using the typed finalPayload to avoid status type mismatch.
       setPlan(finalPayload);
       setActiveStep(4);
     } catch (e) {
+      // @fix: Using the typed finalPayload to avoid status type mismatch.
       setPlan(finalPayload);
       setActiveStep(4);
     }

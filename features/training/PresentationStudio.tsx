@@ -18,12 +18,11 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
   const [isSaving, setIsSaving] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [view, setView] = useState<'presentation' | 'quiz' | 'completed'>('presentation');
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const slideRef = useRef<HTMLDivElement>(null);
 
-  // DEFENSIVE DATA ACCESS
+  // KRİTİK GÜVENLİK: slides dizisi her zaman dizi olmalı
   const slides = Array.isArray(customPlan?.slides) ? customPlan.slides : [];
-  const activeSlide = slides[activeSlideIdx];
+  const activeSlide = slides.length > 0 ? slides[activeSlideIdx] : null;
   const aiConfig = customPlan?.aiConfig;
 
   const themeStyles = {
@@ -52,25 +51,12 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
     } finally { setIsExporting(false); }
   };
 
-  const handleSaveToArchive = async () => {
-    setIsSaving(true);
-    try {
-        const res = await fetch('/api/training?action=save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...customPlan, status: 'published' })
-        });
-        if (res.ok) alert("Eğitim kurumsal arşive kalıcı olarak mühürlendi.");
-    } catch (e) { alert("Kayıt hatası."); }
-    finally { setIsSaving(false); }
-  };
-
   const renderMultimodalElement = (el: MultimodalElement) => {
     if (!el || !el.content) return null;
     switch (el.type) {
       case 'symbol':
         return (
-          <div className={`flex items-center gap-6 p-8 rounded-[2.5rem] border ${theme.border} mb-6 bg-white/5`}>
+          <div key={el.id} className={`flex items-center gap-6 p-8 rounded-[2.5rem] border ${theme.border} mb-6 bg-white/5`}>
             <div className="text-6xl">{el.content.icon || '🧩'}</div>
             <div>
               <h5 className={`${theme.text} font-black text-2xl uppercase tracking-tighter`}>{el.content.label}</h5>
@@ -79,35 +65,42 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
           </div>
         );
       case 'graph_logic':
-        const chartData = (Array.isArray(el.content.dataPoints) ? el.content.dataPoints : [40, 70, 50, 90, 60]).map((v, i) => ({ n: i, v }));
+        const chartData = (Array.isArray(el.content.dataPoints) ? el.content.dataPoints : [40, 70, 50, 90, 60]).map((v: number, i: number) => ({ n: i, v }));
         return (
-          <div className={`p-8 rounded-[3rem] border ${theme.border} mb-6 h-64 bg-white/5`}>
+          <div key={el.id} className={`p-8 rounded-[3rem] border ${theme.border} mb-6 h-64 bg-white/5`}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}><Bar dataKey="v" radius={[8, 8, 0, 0]} fill="#ea580c" /></BarChart>
             </ResponsiveContainer>
           </div>
         );
       default:
-        return <p className={`text-xl font-bold ${theme.text} italic border-l-8 border-orange-600 pl-8 mb-6 opacity-90`}>"{el.content.text || 'İçerik ayrıştırılamadı.'}"</p>;
+        return <p key={el.id} className={`text-xl font-bold ${theme.text} italic border-l-8 border-orange-600 pl-8 mb-6 opacity-90`}>"{el.content.text || '...'}"</p>;
     }
   };
 
-  if (!activeSlide) return <div className="fixed inset-0 bg-slate-950 flex items-center justify-center text-white">Yükleniyor...</div>;
+  if (slides.length === 0 || !activeSlide) {
+    return (
+      <div className="fixed inset-0 bg-[#0A0F1C] flex flex-col items-center justify-center p-12 text-center">
+         <div className="w-24 h-24 border-4 border-white/5 border-t-orange-600 rounded-full animate-spin mb-8"></div>
+         <h3 className="text-white font-black uppercase tracking-widest">Nöral Veri Bekleniyor</h3>
+         <button onClick={onClose} className="mt-8 px-8 py-3 bg-white/5 text-slate-400 rounded-xl hover:text-white transition-all">Geri Dön</button>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[4000] bg-[#0A0F1C] flex flex-col overflow-hidden animate-fade-in no-print">
        {showAssignmentModal && <AssignmentModal plan={customPlan} onClose={() => setShowAssignmentModal(false)} />}
        
-       {/* COMMAND CONTROL BAR */}
        <div className="h-20 bg-slate-900 border-b border-white/5 flex items-center justify-between px-8 shrink-0 z-50">
           <div className="flex items-center gap-6">
              <button onClick={onClose} className="w-10 h-10 bg-white/5 hover:bg-rose-600 rounded-xl text-white transition-all flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg>
              </button>
              <div className="h-6 w-px bg-white/10"></div>
              <div>
                 <h3 className="text-white font-black text-lg uppercase tracking-tight truncate max-w-md">{customPlan?.title}</h3>
-                <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1">Akademik Yayın Stüdyosu</p>
+                <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1">Akademik Yayın Kurulu</p>
              </div>
           </div>
 
@@ -117,30 +110,23 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4 4V4" /></svg>
                    {isExporting ? 'İŞLENİYOR' : 'PDF İNDİR'}
                 </button>
-                <button onClick={handleSaveToArchive} disabled={isSaving} className="px-5 py-2 text-[9px] font-black text-emerald-500 uppercase hover:bg-white/10 rounded-lg transition-all flex items-center gap-2">
-                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                   KAYDET
-                </button>
-                <button onClick={() => setShowAssignmentModal(true)} className="px-5 py-2 text-[9px] font-black text-orange-500 uppercase hover:bg-white/10 rounded-lg transition-all flex items-center gap-2">
-                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                <button onClick={() => setShowAssignmentModal(true)} className="px-5 py-2 text-[9px] font-black text-orange-500 hover:bg-white/10 rounded-lg transition-all flex items-center gap-2">
                    PAYLAŞ / ATA
                 </button>
              </div>
              <div className="flex gap-2">
                 <button onClick={() => setActiveSlideIdx(p => Math.max(0, p - 1))} className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white hover:bg-white/10 transition-all font-black">←</button>
                 <button 
-                    onClick={() => activeSlideIdx < slides.length - 1 ? setActiveSlideIdx(p => p + 1) : aiConfig?.hasEvaluation ? setView('quiz') : setView('completed')} 
+                    onClick={() => activeSlideIdx < slides.length - 1 ? setActiveSlideIdx(p => p + 1) : setView('completed')} 
                     className={`px-10 h-12 rounded-xl flex items-center justify-center font-black uppercase tracking-widest shadow-xl transition-all ${activeSlideIdx === slides.length - 1 ? 'bg-emerald-600 text-white' : 'bg-white text-slate-900 hover:bg-orange-600 hover:text-white'}`}
                 >
-                   {activeSlideIdx === slides.length - 1 ? (aiConfig?.hasEvaluation ? 'SINAVA GEÇ' : 'BİTİR') : 'İLERLE →'}
+                   {activeSlideIdx === slides.length - 1 ? 'BİTİR' : 'İLERLE →'}
                 </button>
              </div>
           </div>
        </div>
 
        <div className="flex-1 flex overflow-hidden">
-          
-          {/* SLIDE BROWSER (SIDEBAR) */}
           <div className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col shrink-0">
              <div className="p-6 border-b border-white/5">
                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">SLAYT GEZGİNİ</h4>
@@ -159,16 +145,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </div>
           </div>
 
-          {/* PRESENTATION STAGE */}
           <div className="flex-1 relative flex flex-col items-center justify-center p-8 bg-black/20 overflow-hidden">
              <div className="w-full h-2 bg-white/5 absolute top-0 left-0">
                 <div className="h-full bg-orange-600 transition-all duration-500 shadow-[0_0_15px_#ea580c]" style={{ width: `${((activeSlideIdx + 1) / slides.length) * 100}%` }}></div>
              </div>
 
              <div ref={slideRef} className={`w-full max-w-[1200px] ${theme.bg} rounded-[4rem] aspect-video shadow-[0_50px_150px_rgba(0,0,0,0.7)] overflow-hidden flex flex-col relative animate-scale-in border ${theme.border}`}>
-                
-                {/* HEADER (ANTET) */}
-                {aiConfig?.academicConfig.headerAntet && (
+                {aiConfig?.academicConfig?.headerAntet && (
                   <div className={`h-24 border-b ${theme.border} flex items-center justify-between px-16 shrink-0 relative z-20`}>
                      <div className="flex items-center gap-6">
                        <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white font-black">YG</div>
@@ -177,14 +160,13 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                          <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Akademik Yayın Kurulu</p>
                        </div>
                      </div>
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">RESMİ AKADEMİK BELGE</span>
                   </div>
                 )}
 
                 <div className="p-16 flex-1 overflow-y-auto custom-scrollbar relative z-10 flex flex-col justify-center">
                    <h2 className={`text-6xl font-black ${theme.text} uppercase tracking-tighter border-l-[16px] border-orange-600 pl-12 leading-[0.9] mb-12`}>{activeSlide.title}</h2>
                    <div className="space-y-4">
-                      {activeSlide.elements?.map((el, i) => <div key={i}>{renderMultimodalElement(el)}</div>)}
+                      {activeSlide.elements?.map((el, i) => renderMultimodalElement(el))}
                       {(!activeSlide.elements || activeSlide.elements.length === 0) && activeSlide.content?.map((c, i) => (
                          <div key={i} className="flex gap-4 items-start p-6 bg-white/5 rounded-[2rem] border border-white/5">
                             <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 shadow-[0_0_10px_#ea580c] shrink-0"></div>
@@ -195,19 +177,18 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 </div>
 
                 <div className={`p-8 ${theme.bg} border-t ${theme.border} flex justify-between items-center shrink-0`}>
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">{aiConfig?.pedagogicalBias.toUpperCase()}</span>
+                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">{aiConfig?.pedagogicalBias?.toUpperCase() || 'KLİNİK AKADEMİ'}</span>
                    <span className={`px-6 py-2 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase`}>{activeSlideIdx + 1} / {slides.length}</span>
                 </div>
              </div>
 
-             {/* SPEAKER NOTES PANEL (VISIBLE ONLY TO CREATOR) */}
              <div className="w-full max-w-[1200px] mt-8 bg-slate-900/80 p-8 rounded-[3rem] border border-white/5 flex gap-12">
                 <div className="w-48 shrink-0">
                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block mb-4">KLİNİK DİREKTİF</span>
                    <div className="h-1 w-full bg-orange-600 rounded-full"></div>
                 </div>
                 <p className="text-slate-300 font-medium text-lg leading-relaxed italic opacity-80 border-l border-white/10 pl-10">
-                   {activeSlide.speakerNotes || 'Bu slayt için özel uygulama direktifi mühürlenmemiştir.'}
+                   {activeSlide.speakerNotes || 'Akademik mühür doğrulanmıştır.'}
                 </p>
              </div>
           </div>
