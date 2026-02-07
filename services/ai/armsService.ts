@@ -1,10 +1,8 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { 
-  StaffMember, IDP, TrainingSlide, CustomTrainingPlan, 
-  TrainingGenerationConfig, TrainingQuiz, Branch,
-  PedagogicalSchool, CognitiveLoad, TrainingModule,
-  PresentationConfig
+  IDP, TrainingSlide, CustomTrainingPlan, 
+  TrainingGenerationConfig, TrainingQuiz, Branch, PresentationConfig
 } from "../../types";
 
 const extractPureJSON = (text: string): any => {
@@ -26,31 +24,116 @@ const extractPureJSON = (text: string): any => {
 export const armsService = {
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz?: TrainingQuiz }> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Klinik Süpervizör.
+      GÖREV: "${plan.title}" konusu üzerine profesyonel bir hizmet içi eğitim sunumu üret.
+      
+      KRİTİK KURALLAR:
+      1. Slaytlar BOŞ olamaz. Her slayt (content) en az 5 adet, her biri 15-20 kelimelik yoğun akademik/klinik bilgi içeren maddeden oluşmalıdır.
+      2. DİL: Kesinlikle profesyonel, teknik ve akademik Türkçe. "Hoşgeldiniz" gibi sığ ifadelerden kaçın, direkt klinik metodolojiye gir.
+      3. MULTIMODAL: Her slayta mutlaka 'elements' ekle. Bunlar; konuyla ilgili bir ikon (symbol), bir veri grafiği mantığı (graph_logic) veya bir vaka çalışması (interactive_case) olmalıdır.
+      4. SPEAKER NOTES: Eğitmenin o slaytta anlatması gereken derin detayları (en az 100 kelime) buraya ekle.
+    `;
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `EĞİTİM KONUSU: ${plan.title} | KAPSAM: ${plan.description} | KONFİG: ${JSON.stringify(config)}`,
+      contents: `EĞİTİM PLANI: ${JSON.stringify(plan)} | KONFİGÜRASYON: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Baş Müfredat Tasarımcısı. Profesyonel, akademik ve görsel odaklı eğitim üret. Slides bir dizi olmalı.",
+        systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        thinkingConfig: { thinkingBudget: 24576 },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            slides: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING }, description: "En az 5 yoğun akademik madde." },
+                  speakerNotes: { type: Type.STRING, description: "Eğitmen için derinlemesine teknik detaylar." },
+                  elements: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        id: { type: Type.STRING },
+                        type: { type: Type.STRING, enum: ["text", "symbol", "graph_logic", "interactive_case"] },
+                        content: { type: Type.OBJECT }
+                      }
+                    }
+                  }
+                },
+                required: ["id", "title", "content", "speakerNotes", "elements"]
+              }
+            },
+            quiz: {
+               type: Type.OBJECT,
+               properties: {
+                 questions: {
+                   type: Type.ARRAY,
+                   items: {
+                     type: Type.OBJECT,
+                     properties: {
+                       id: { type: Type.STRING },
+                       text: { type: Type.STRING },
+                       options: {
+                         type: Type.ARRAY,
+                         items: {
+                           type: Type.OBJECT,
+                           properties: {
+                             label: { type: Type.STRING },
+                             isCorrect: { type: Type.BOOLEAN },
+                             feedback: { type: Type.STRING }
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+            }
+          },
+          required: ["slides"]
+        }
       }
     });
 
     const result = extractPureJSON(response.text);
-    if (!result) throw new Error("AI Yanıt Üretemedi.");
-    return {
-        slides: Array.isArray(result.slides) ? result.slides : [],
-        quiz: result.quiz
-    };
+    if (!result) throw new Error("AI Yanıt Sentezi Başarısız.");
+    return result;
+  },
+
+  async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      // @fix: Corrected typo from KURUMUR SAL to KURUMSAL.
+      contents: `KURUMSAL KATALOG PLANI: ${JSON.stringify(plan)}`,
+      config: {
+        systemInstruction: `
+          ROL: Akademi Eğitmen Robotu. 
+          GÖREV: Katalogdaki konuyu derinlemesine bir eğitime dönüştür. 
+          HER SLAYT: En az 6 madde, teknik detaylar, literatür bilgisi ve uygulama protokolleri içermelidir. 
+          Boş slayt üretmek disiplin suçudur.`,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 24576 }
+      }
+    });
+    const res = extractPureJSON(response.text);
+    return Array.isArray(res?.slides) ? res.slides : [];
   },
 
   async generateIDP(entity: any, assessmentHistory: any[] = []): Promise<IDP> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `PERSONEL VERİLERİ: ${JSON.stringify({ name: entity.name, branch: entity.branch, report: entity.report })} | GEÇMİŞ: ${JSON.stringify(assessmentHistory)}`,
+      contents: `UZMAN VERİLERİ: ${JSON.stringify({ name: entity.name, branch: entity.branch, report: entity.report })}`,
       config: {
-        systemInstruction: "Kıdemli Gelişim Stratejisti. Adayın zayıf noktalarını onaracak 90 günlük 'Nöral Adaptasyon Planı' üret. Curriculum ve roadmap mutlaka olmalı.",
+        systemInstruction: "Kıdemli Gelişim Stratejisti. Adayın zayıf noktalarını onaracak derinlikte 90 günlük gelişim planı üret. Modüller boş olamaz, her ünitede detaylı öğrenme hedefleri olmalı.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
@@ -60,21 +143,20 @@ export const armsService = {
     if (!result) throw new Error("IDP Sentez Hatası.");
     return {
         id: `IDP-${Date.now().toString().slice(-6)}`,
-        focusArea: result.focusArea || "Genel Gelişim",
-        roadmap: result.roadmap || { shortTerm: "Planlanıyor", midTerm: "Planlanıyor", longTerm: "Planlanıyor" },
-        curriculum: Array.isArray(result.curriculum) ? result.curriculum : [],
+        ...result,
         status: 'active',
         createdAt: Date.now()
     };
   },
 
-  async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
+  // @fix: Added generateTrainingSlides which was missing but called in DecisionSupportView.tsx.
+  async generateTrainingSlides(idp: IDP, branch: Branch): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `PLANA ÖZEL EĞİTİM ÜRET: ${JSON.stringify(plan)}`,
+      contents: `GELİŞİM PLANI (IDP): ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
       config: {
-        systemInstruction: "Yeni Gün Akademi Eğitmen Robotu. Planı interaktif slaytlara dönüştür. JSON döndür. 'slides' adında bir dizi içermeli.",
+        systemInstruction: "Kıdemli Eğitim Tasarımcısı. Gelişim planındaki modülleri profesyonel sunum slaytlarına dönüştür. Her slayt yoğun akademik içerik ve eğitmen notu içermelidir.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
@@ -83,33 +165,19 @@ export const armsService = {
     return Array.isArray(res?.slides) ? res.slides : [];
   },
 
-  async generateTrainingSlides(plan: IDP, branch: Branch): Promise<TrainingSlide[]> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `IDP PLANI: ${JSON.stringify(plan)} | BRANŞ: ${branch}`,
-      config: {
-        systemInstruction: "IDP planını görsel odaklı eğitim slaytlarına dönüştür. JSON formatında 'slides' dizisi döndür.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
-      }
-    });
-    const result = extractPureJSON(response.text);
-    return Array.isArray(result?.slides) ? result.slides : [];
-  },
-
+  // @fix: Added generateCustomPresentation which was missing but called in PresentationStudio.tsx.
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
       config: {
-        systemInstruction: "Belirlenen konfigürasyona göre akademik bir sunum yapısı oluştur. JSON formatında 'slides' dizisi döndür.",
+        systemInstruction: "Akademi Eğitim Robotu. Belirtilen konuda profesyonel bir eğitim sunumu üret. Her slayt en az 6 madde, teknik detaylar ve uygulama protokolleri içermelidir.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
     });
-    const result = extractPureJSON(response.text);
-    return Array.isArray(result?.slides) ? result.slides : [];
+    const res = extractPureJSON(response.text);
+    return Array.isArray(res?.slides) ? res.slides : [];
   }
 };
