@@ -29,11 +29,12 @@ export const armsService = {
       ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Klinik Süpervizör.
       GÖREV: "${plan.title}" konusu üzerine profesyonel bir hizmet içi eğitim sunumu üret.
       
-      KRİTİK KURALLAR:
-      1. Slaytlar BOŞ olamaz. Her slayt (content) en az 5 adet, her biri 15-20 kelimelik yoğun akademik/klinik bilgi içeren maddeden oluşmalıdır.
-      2. DİL: Kesinlikle profesyonel, teknik ve akademik Türkçe. "Hoşgeldiniz" gibi sığ ifadelerden kaçın, direkt klinik metodolojiye gir.
-      3. MULTIMODAL: Her slayta mutlaka 'elements' ekle. Bunlar; konuyla ilgili bir ikon (symbol), bir veri grafiği mantığı (graph_logic) veya bir vaka çalışması (interactive_case) olmalıdır.
-      4. SPEAKER NOTES: Eğitmenin o slaytta anlatması gereken derin detayları (en az 100 kelime) buraya ekle.
+      KRİTİK İÇERİK KURALLARI (İHLAL EDİLEMEZ):
+      1. SLAYT İÇERİĞİ (content): Her slayt mutlaka en az 5 adet, her biri en az 15 kelimelik YOĞUN AKADEMİK BİLGİ içeren maddeden oluşmalıdır. Sadece başlık atmak disiplin suçudur.
+      2. TEKNİK DERİNLİK: İçerik "Hoşgeldiniz", "Eğitimin Amacı" gibi sığ ifadeler yerine; direkt klinik metodoloji, uygulama protokolleri, risk analizleri ve literatür referansları içermelidir.
+      3. MULTIMODAL ELEMENTS: Her slayta mutlaka o konuyla ilgili bir ikon (symbol), bir veri grafiği mantığı (graph_logic) veya bir vaka çalışması (interactive_case) ekle.
+      4. SPEAKER NOTES: Eğitmenin o slaytta anlatması gereken derin detayları (en az 150 kelime) buraya ekle.
+      5. DİL: Kesinlikle profesyonel, keskin ve akademik Türkçe.
     `;
 
     const response = await ai.models.generateContent({
@@ -53,8 +54,8 @@ export const armsService = {
                 properties: {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING }, description: "En az 5 yoğun akademik madde." },
-                  speakerNotes: { type: Type.STRING, description: "Eğitmen için derinlemesine teknik detaylar." },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING }, description: "En az 5 adet 15+ kelimelik teknik madde." },
+                  speakerNotes: { type: Type.STRING, description: "Eğitmen için 150+ kelimelik derinlemesine teknik anlatım rehberi." },
                   elements: {
                     type: Type.ARRAY,
                     items: {
@@ -111,14 +112,13 @@ export const armsService = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      // @fix: Corrected typo from KURUMUR SAL to KURUMSAL.
       contents: `KURUMSAL KATALOG PLANI: ${JSON.stringify(plan)}`,
       config: {
         systemInstruction: `
           ROL: Akademi Eğitmen Robotu. 
           GÖREV: Katalogdaki konuyu derinlemesine bir eğitime dönüştür. 
           HER SLAYT: En az 6 madde, teknik detaylar, literatür bilgisi ve uygulama protokolleri içermelidir. 
-          Boş slayt üretmek disiplin suçudur.`,
+          Boş slayt üretmek kurumsal bir hatadır. Maddeler açıklayıcı ve uzun olmalıdır.`,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
@@ -133,7 +133,7 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `UZMAN VERİLERİ: ${JSON.stringify({ name: entity.name, branch: entity.branch, report: entity.report })}`,
       config: {
-        systemInstruction: "Kıdemli Gelişim Stratejisti. Adayın zayıf noktalarını onaracak derinlikte 90 günlük gelişim planı üret. Modüller boş olamaz, her ünitede detaylı öğrenme hedefleri olmalı.",
+        systemInstruction: "Kıdemli Gelişim Stratejisti. Adayın zayıf noktalarını onaracak derinlikte 90 günlük gelişim planı üret. Her modül zengin bir içerik havuzuna sahip olmalı.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
@@ -149,14 +149,13 @@ export const armsService = {
     };
   },
 
-  // @fix: Added generateTrainingSlides which was missing but called in DecisionSupportView.tsx.
   async generateTrainingSlides(idp: IDP, branch: Branch): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `GELİŞİM PLANI (IDP): ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
       config: {
-        systemInstruction: "Kıdemli Eğitim Tasarımcısı. Gelişim planındaki modülleri profesyonel sunum slaytlarına dönüştür. Her slayt yoğun akademik içerik ve eğitmen notu içermelidir.",
+        systemInstruction: "Kıdemli Eğitim Tasarımcısı. IDP modüllerini profesyonel sunum slaytlarına dönüştür. Her slayt yoğun akademik içerik, maddeleme ve detaylı eğitmen notu içermelidir.",
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 24576 }
       }
@@ -165,7 +164,6 @@ export const armsService = {
     return Array.isArray(res?.slides) ? res.slides : [];
   },
 
-  // @fix: Added generateCustomPresentation which was missing but called in PresentationStudio.tsx.
   async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
