@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { TrainingSlide, CustomTrainingPlan, MultimodalElement } from '../../types';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AssignmentModal from './AssignmentModal';
 
 interface PresentationStudioProps {
@@ -15,6 +15,7 @@ interface PresentationStudioProps {
 const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, customPlan, assignmentId }) => {
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +47,30 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       }
       pdf.save(`YG_AKADEMI_${(customPlan?.title || 'EGITIM').replace(/\s+/g, '_').toUpperCase()}.pdf`);
     } finally { setIsExporting(false); }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleArchive = async () => {
+    if (!confirm("Bu eğitim müfredatı kurumsal arşive taşınacaktır. Yayın listesinden kaldırılacaktır. Onaylıyor musunuz?")) return;
+    setIsArchiving(true);
+    try {
+      const res = await fetch('/api/training?action=save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...customPlan, status: 'archived', updatedAt: Date.now() })
+      });
+      if (res.ok) {
+        alert("Eğitim başarıyla arşivlendi.");
+        onClose();
+      }
+    } catch (e) {
+      alert("Arşivleme hatası.");
+    } finally {
+      setIsArchiving(false);
+    }
   };
 
   const renderMultimodalElement = (el: MultimodalElement) => {
@@ -115,17 +140,23 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </button>
              <div>
                 <h3 className="text-white font-black text-xl uppercase tracking-tighter truncate max-w-xl leading-none">{customPlan?.title}</h3>
-                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.4em] mt-2">AKADEMİK YAYIN KURULU v30.0</p>
+                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.4em] mt-2">AKADEMİK YAYIN KURULU v32.0</p>
              </div>
           </div>
 
           <div className="flex items-center gap-4">
              <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
-                <button onClick={handleDownloadPDF} disabled={isExporting} className="px-6 py-2.5 text-[10px] font-black text-slate-300 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-3">
-                   {isExporting ? 'İŞLENİYOR' : 'PDF ARŞİVLE'}
+                <button onClick={handlePrint} className="px-5 py-2.5 text-[10px] font-black text-slate-300 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-3">
+                   YAZDIR
                 </button>
-                <button onClick={() => setShowAssignmentModal(true)} className="px-6 py-2.5 text-[10px] font-black text-orange-500 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3">
+                <button onClick={handleDownloadPDF} disabled={isExporting} className="px-5 py-2.5 text-[10px] font-black text-slate-300 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
+                   {isExporting ? 'İŞLENİYOR' : 'PDF İNDİR'}
+                </button>
+                <button onClick={() => setShowAssignmentModal(true)} className="px-6 py-2.5 text-[10px] font-black text-orange-500 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
                    PERSONELE ATA
+                </button>
+                <button onClick={handleArchive} disabled={isArchiving} className="px-5 py-2.5 text-[10px] font-black text-rose-400 hover:bg-rose-900/30 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
+                   {isArchiving ? '...' : 'ARŞİVLE'}
                 </button>
              </div>
              <div className="flex gap-2 ml-4">
@@ -243,6 +274,15 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </div>
           </div>
        </div>
+       
+       <style>{`
+         @media print {
+            body { background: white !important; margin: 0 !important; }
+            #print-stage { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+            #slide-print-area { display: block !important; }
+         }
+       `}</style>
     </div>
   );
 };

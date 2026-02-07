@@ -146,7 +146,7 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6" /></svg>
           </button>
           <div className="h-10 w-px bg-white/10"></div>
-          <h2 className="text-white font-black text-xl uppercase tracking-[0.3em]">MIA Studio <span className="text-orange-500">v5.0</span></h2>
+          <h2 className="text-white font-black text-xl uppercase tracking-[0.3em]">MIA Studio <span className="text-orange-500">v6.0</span></h2>
         </div>
 
         <div className="flex bg-black/40 p-1.5 rounded-[1.5rem] border border-white/10 shadow-inner">

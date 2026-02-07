@@ -2,7 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { GLOBAL_CURRICULA, TrainingPlan } from './curriculumData';
 import { armsService } from '../../services/ai/armsService';
-import { TrainingSlide } from '../../types';
+import { TrainingSlide, CustomTrainingPlan } from '../../types';
+import AssignmentModal from './AssignmentModal';
 
 interface CurriculumManagerProps {
   onLaunchStudio: (slides: TrainingSlide[], plan: TrainingPlan) => void;
@@ -13,6 +14,7 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
   const [activeTab, setActiveTab] = useState<'ALL' | 'ORIENTATION' | 'CLINICAL' | 'ETHICS' | 'MANAGEMENT'>('ALL');
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   const filteredPlans = useMemo(() => {
     return GLOBAL_CURRICULA.filter(p => {
@@ -64,6 +66,12 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] animate-fade-in overflow-hidden">
+      {showAssignModal && selectedPlan && (
+        <AssignmentModal 
+          plan={{ ...selectedPlan, curriculum: [] } as any} 
+          onClose={() => setShowAssignModal(false)} 
+        />
+      )}
       
       {/* 1. COMPACT CONTROL HEADER */}
       <div className="bg-white border-b border-slate-200 px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0 z-20">
@@ -150,7 +158,10 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
                         >
                            EĞİTİME BAŞLA
                         </button>
-                        <button className="w-full py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/20 hover:bg-white/20 transition-all">
+                        <button 
+                           onClick={(e) => { e.stopPropagation(); setSelectedPlan(plan); setShowAssignModal(true); }}
+                           className="w-full py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/20 hover:bg-white/20 transition-all"
+                        >
                            PERSONELE ATA
                         </button>
                      </div>
@@ -161,7 +172,7 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
       </div>
 
       {/* 3. MODERN DETAIL SLIDE-OVER / MODAL */}
-      {selectedPlan && (
+      {selectedPlan && !showAssignModal && (
          <div className="fixed inset-0 z-[1500] flex items-center justify-end p-4 animate-fade-in no-print">
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedPlan(null)}></div>
             <div className="w-full max-w-2xl bg-white h-full rounded-[3rem] shadow-2xl border border-white/20 flex flex-col overflow-hidden relative animate-slide-right">
@@ -174,7 +185,6 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
                      <div>
                         <span className={`px-3 py-1 ${getCategoryTheme(selectedPlan.category).bg} ${getCategoryTheme(selectedPlan.category).color} rounded-lg text-[9px] font-black uppercase tracking-widest mb-2 inline-block`}>
                            {selectedPlan.category}
-                        {/* @fix: Changed incorrectly closed div to span on line 235 */}
                         </span>
                         <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedPlan.title}</h3>
                      </div>
@@ -222,10 +232,10 @@ const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio })
                      AI SUNUMU BAŞLAT
                   </button>
                   <button 
-                     onClick={() => alert("Arşivleme ünitesi yakında aktif edilecek.")}
-                     className="px-10 py-6 bg-slate-100 text-slate-400 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                     onClick={() => setShowAssignModal(true)}
+                     className="px-10 py-6 bg-slate-100 text-slate-600 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
                   >
-                     ARŞİVE EKLE
+                     PERSONELE ATA
                   </button>
                </div>
             </div>
