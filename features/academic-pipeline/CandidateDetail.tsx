@@ -132,12 +132,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                                 <div className="bg-blue-50/50 p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-blue-100">
-                                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-2">KLİNİK NÜANS</span>
-                                   <p className="text-xs md:text-[11px] font-bold text-blue-900 leading-relaxed italic">"{data.clinicalNuances}"</p>
+                                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-2">DAVRANIŞSAL GÖSTERGELER</span>
+                                   <ul className="space-y-1">
+                                      {Array.isArray(data.behavioralIndicators) && data.behavioralIndicators.map((item: string, i: number) => (
+                                          <li key={i} className="text-[10px] font-bold text-blue-900 leading-tight flex gap-2"><span>•</span> {item}</li>
+                                      ))}
+                                   </ul>
                                 </div>
                                 <div className="bg-emerald-50/50 p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-emerald-100">
-                                   <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest block mb-2">LİTERATÜR ATFI</span>
-                                   <p className="text-xs md:text-[11px] font-black text-emerald-900 leading-relaxed">"{data.literatureReference}"</p>
+                                   <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest block mb-2">POZİTİF KANITLAR</span>
+                                   <ul className="space-y-1">
+                                      {Array.isArray(data.pros) && data.pros.map((item: string, i: number) => (
+                                          <li key={i} className="text-[10px] font-bold text-emerald-900 leading-tight flex gap-2"><span>+</span> {item}</li>
+                                      ))}
+                                   </ul>
                                 </div>
                             </div>
                         </div>
@@ -248,7 +256,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                )}
                {activeTab === 'strategy' && (
                   <div className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[4rem] border border-slate-200 shadow-md space-y-4">
-                     {candidate.report?.interviewGuidance?.strategicQuestions?.map((q, i) => (
+                     {Array.isArray(candidate.report?.interviewGuidance?.strategicQuestions) && candidate.report.interviewGuidance.strategicQuestions.map((q, i) => (
                         <div key={i} className="flex gap-4 md:gap-8 items-start p-4 md:p-8 hover:bg-slate-50 rounded-2xl transition-all border-b border-slate-50 last:border-0">
                            <div className="w-10 h-10 md:w-14 md:h-14 bg-slate-950 text-white rounded-xl md:rounded-[1.5rem] flex items-center justify-center font-black text-sm md:text-xl shrink-0 shadow-lg">{i + 1}</div>
                            <p className="text-base md:text-xl font-bold text-slate-800 leading-tight italic">"{q}"</p>

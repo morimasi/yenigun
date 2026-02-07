@@ -15,7 +15,6 @@ interface PresentationStudioProps {
 const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, customPlan, assignmentId }) => {
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [view, setView] = useState<'presentation' | 'quiz' | 'completed'>('presentation');
   const slideRef = useRef<HTMLDivElement>(null);
@@ -65,7 +64,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
           </div>
         );
       case 'graph_logic':
-        const chartData = (Array.isArray(el.content.dataPoints) ? el.content.dataPoints : [40, 70, 50, 90, 60]).map((v: number, i: number) => ({ n: i, v }));
+        const rawPoints = Array.isArray(el.content.dataPoints) ? el.content.dataPoints : [40, 70, 50, 90, 60];
+        const chartData = rawPoints.map((v: number, i: number) => ({ n: i, v }));
         return (
           <div key={el.id} className={`p-8 rounded-[3rem] border ${theme.border} mb-6 h-64 bg-white/5`}>
             <ResponsiveContainer width="100%" height="100%">
@@ -166,8 +166,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 <div className="p-16 flex-1 overflow-y-auto custom-scrollbar relative z-10 flex flex-col justify-center">
                    <h2 className={`text-6xl font-black ${theme.text} uppercase tracking-tighter border-l-[16px] border-orange-600 pl-12 leading-[0.9] mb-12`}>{activeSlide.title}</h2>
                    <div className="space-y-4">
-                      {activeSlide.elements?.map((el, i) => renderMultimodalElement(el))}
-                      {(!activeSlide.elements || activeSlide.elements.length === 0) && activeSlide.content?.map((c, i) => (
+                      {Array.isArray(activeSlide.elements) && activeSlide.elements.map((el, i) => renderMultimodalElement(el))}
+                      {(!Array.isArray(activeSlide.elements) || activeSlide.elements.length === 0) && Array.isArray(activeSlide.content) && activeSlide.content.map((c, i) => (
                          <div key={i} className="flex gap-4 items-start p-6 bg-white/5 rounded-[2rem] border border-white/5">
                             <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 shadow-[0_0_10px_#ea580c] shrink-0"></div>
                             <p className="text-2xl font-bold text-slate-300 leading-tight italic">"{c}"</p>

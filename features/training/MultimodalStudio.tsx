@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   CustomTrainingPlan, 
@@ -53,7 +54,6 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleFinalSeal = async (slides: TrainingSlide[], quiz?: TrainingQuiz) => {
     setStatusMsg('Kurumsal Arşive Mühürleniyor...');
-    // @fix: Explicitly typing finalPayload to CustomTrainingPlan to ensure 'status' is recognized as a specific literal union.
     const finalPayload: CustomTrainingPlan = {
       ...plan,
       slides: Array.isArray(slides) ? slides : [],
@@ -64,16 +64,14 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     };
 
     try {
-      const res = await fetch('/api/training?action=save', {
+      await fetch('/api/training?action=save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalPayload)
       });
-      // @fix: Using the typed finalPayload to avoid status type mismatch.
       setPlan(finalPayload);
       setActiveStep(4);
     } catch (e) {
-      // @fix: Using the typed finalPayload to avoid status type mismatch.
       setPlan(finalPayload);
       setActiveStep(4);
     }
@@ -110,7 +108,13 @@ const MultimodalStudio: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     { id: 'official', label: '4. RESMİ MÜHÜR', icon: '🏛️' }
   ];
 
-  const enumValues = (obj: any) => Object.keys(obj).map(key => obj[key]);
+  const enumValues = (obj: any): any[] => {
+    if (!obj) return [];
+    // String enumları için filtreleme (Reverse mapping'i temizler)
+    return Object.keys(obj)
+      .filter(key => isNaN(Number(key)))
+      .map(key => obj[key]);
+  };
 
   const NavigationButtons = () => (
     <div className="flex justify-between items-center mt-12 pt-8 border-t border-white/5 no-print">
