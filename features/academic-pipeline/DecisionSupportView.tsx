@@ -66,7 +66,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
         setComparisonReport(res);
       }
     } catch (e) {
-      alert("AI Sentez Hatası: " + (e as Error).message);
+      alert("AI Muhakeme Hatası: Lütfen tekrar deneyiniz.");
     } finally {
       setIsAnalysing(false);
     }
@@ -107,7 +107,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
         setSelectedIds([]);
       }
     } catch (e) {
-      alert("Hiring işlemi sırasında bir hata oluştu.");
+      alert("Hiring işlemi sırasında sistem hatası oluştu.");
     } finally {
       setIsHiring(false);
     }
@@ -131,7 +131,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
             onClose={() => setIsExportOpen(false)}
             data={{
                type: 'STRATEGIC_DECISION',
-               entityName: selectedCandidates.length > 1 ? `${selectedCandidates[0].name} vs ${selectedCandidates[1].name}` : selectedCandidates[0].name,
+               entityName: selectedCandidates.length > 1 ? `${selectedCandidates[0].name} VS ${selectedCandidates[1].name}` : selectedCandidates[0].name,
                referenceId: `DEC-${Date.now().toString().slice(-6)}`,
                payload: { candidates: selectedCandidates, report: comparisonReport, onboarding: onboardingPlan }
             }}
@@ -147,8 +147,8 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             </div>
             <div>
-               <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">Karar Destek Stüdyosu</h2>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mt-3">Neural Decision Engine v26.0</p>
+               <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">Karar Destek Sistemi</h2>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mt-3">MIA Strategic Engine v27.0</p>
             </div>
          </div>
 
@@ -177,7 +177,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
 
       <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
          
-         {/* LEFT DRAWER: SELECTION */}
+         {/* LEFT SELECTION PANEL */}
          <div className="col-span-12 lg:col-span-3 flex flex-col bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
                <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">AKTİF DOSYALAR</h4>
@@ -216,7 +216,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
             </div>
          </div>
 
-         {/* RIGHT PANEL: ANALYSIS CANVAS */}
+         {/* MAIN CANVAS */}
          <div className="col-span-12 lg:col-span-9 flex flex-col gap-6 overflow-hidden">
             {selectedCandidates.length === 0 ? (
                <div className="flex-1 bg-white border-4 border-dashed border-slate-100 rounded-[4rem] flex flex-col items-center justify-center opacity-30 grayscale p-24 text-center">
@@ -224,12 +224,12 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                      <svg className="w-20 h-20 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <h3 className="text-4xl font-black text-slate-900 uppercase tracking-[0.5em] mb-6">Analiz Sahnesi</h3>
-                  <p className="text-[12px] font-bold uppercase tracking-widest text-slate-400 max-w-lg leading-relaxed">Kıyaslamak, ekip uyumunu ölçmek veya oryantasyon planı hazırlamak istediğiniz dosyaları seçin.</p>
+                  <p className="text-[12px] font-bold uppercase tracking-widest text-slate-400 max-w-lg leading-relaxed">Kıyaslamak veya adaptasyon rotası hazırlamak istediğiniz dosyaları seçin.</p>
                </div>
             ) : (
                <div className="flex-1 flex flex-col gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-2 pb-20">
                   
-                  {/* WORKSPACE: H2H COMPARISON */}
+                  {/* H2H COMPARISON WORKSPACE */}
                   {activeTab === 'h2h' && (
                      <div className="space-y-6 animate-slide-up">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[450px]">
@@ -288,7 +288,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                                  {comparisonReport ? (
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-fade-in">
                                        <div className="space-y-6">
-                                          <p className="text-2xl font-bold text-slate-300 leading-relaxed italic text-justify">"{comparisonReport.summary}"</p>
+                                          <p className="text-2xl font-bold text-slate-300 leading-relaxed italic">"{comparisonReport.summary}"</p>
                                           <div className="p-8 bg-white/5 rounded-3xl border border-white/10">
                                              <h6 className="text-[10px] font-black text-orange-500 uppercase mb-4 tracking-widest">STRATEJİK ÜSTÜNLÜK</h6>
                                              <p className="text-base font-bold">{comparisonReport.winnerAdvantage}</p>
@@ -318,7 +318,7 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                      </div>
                   )}
 
-                  {/* WORKSPACE: TEAM FIT */}
+                  {/* TEAM FIT WORKSPACE */}
                   {activeTab === 'team_fit' && (
                      <div className="space-y-8 animate-slide-up">
                         <div className="bg-white p-12 rounded-[5rem] border border-slate-200 shadow-sm space-y-12">
@@ -360,22 +360,12 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
                                     </div>
                                  </div>
                               ))}
-                              <div className="p-12 bg-slate-950 rounded-[4.5rem] text-white flex flex-col items-center justify-center text-center space-y-8 shadow-2xl relative overflow-hidden">
-                                 <div className="relative z-10">
-                                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
-                                       <span className="text-3xl">🏢</span>
-                                    </div>
-                                    <p className="text-[12px] font-black uppercase tracking-[0.4em] text-orange-500 mb-4">KURUMSAL EKSİK</p>
-                                    <p className="text-[14px] font-bold text-slate-400 uppercase leading-snug tracking-tight">Mevcut kadrodaki "Metodik Denetim" ihtiyacını bu profillerden hangisi tam karşılar?</p>
-                                 </div>
-                                 <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-transparent opacity-40"></div>
-                              </div>
                            </div>
                         </div>
                      </div>
                   )}
 
-                  {/* WORKSPACE: ADAPTATION */}
+                  {/* ADAPTATION WORKSPACE */}
                   {activeTab === 'adaptation' && (
                      <div className="space-y-8 animate-slide-up">
                         <div className="bg-white p-12 rounded-[5rem] border border-slate-200 shadow-sm">
