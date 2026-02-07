@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { Candidate } from '../../types';
 
@@ -7,14 +7,23 @@ interface InterviewAssistantProps {
   candidates: Candidate[];
 }
 
+// @fix: Implemented manual encoding function to avoid stack limit issues with String.fromCharCode(...).
+function encode(bytes: Uint8Array) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 export const InterviewAssistant: React.FC<InterviewAssistantProps> = ({ candidates }) => {
   const [activeCandidateId, setActiveCandidateId] = useState<string>(candidates[0]?.id || '');
   const [isConnected, setIsConnected] = useState(false);
   const [transcript, setTranscript] = useState<{role: string, text: string}[]>([]);
-  const [isListening, setIsListening] = useState(false);
   
   const audioContextRef = useRef<AudioContext | null>(null);
-  const sessionRef = useRef<any>(null);
+  const sessionPromiseRef = useRef<Promise<any> | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const activeSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
@@ -41,11 +50,13 @@ export const InterviewAssistant: React.FC<InterviewAssistantProps> = ({ candidat
   const startSession = async () => {
     if (!activeCandidate) return;
     
+    // @fix: Initialize GoogleGenAI right before the call to ensure fresh API key.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     const outputNode = audioContextRef.current.createGain();
     outputNode.connect(audioContextRef.current.destination);
 
+    // @fix: Captured session promise to manage asynchronous input streaming safely.
     const sessionPromise = ai.live.connect({
       model: 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: {
@@ -62,9 +73,34 @@ export const InterviewAssistant: React.FC<InterviewAssistantProps> = ({ candidat
         inputAudioTranscription: {}
       },
       callbacks: {
-        onopen: () => {
+        onopen: async () => {
           setIsConnected(true);
           setTranscript([{ role: 'system', text: 'Sistem Bağlantısı Kuruldu. Nöral İletişim Aktif.' }]);
+          
+          // @fix: Initiated microphone stream only after the session is established to prevent early data drops.
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const inputCtx = new AudioContext({ sampleRate: 16000 });
+          const source = inputCtx.createMediaStreamSource(stream);
+          const processor = inputCtx.createScriptProcessor(4096, 1, 1);
+          
+          processor.onaudioprocess = (e) => {
+            const inputData = e.inputBuffer.getChannelData(0);
+            const int16 = new Int16Array(inputData.length);
+            for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
+            
+            const pcmData = new Uint8Array(int16.buffer);
+            const base64 = encode(pcmData);
+            
+            // @fix: Solely rely on sessionPromise resolution to send realtime input as per guidelines.
+            sessionPromise.then(session => {
+              session.sendRealtimeInput({
+                media: { data: base64, mimeType: 'audio/pcm;rate=16000' }
+              });
+            });
+          };
+
+          source.connect(processor);
+          processor.connect(inputCtx.destination);
         },
         onmessage: async (message: LiveServerMessage) => {
           if (message.serverContent?.outputTranscription) {
@@ -97,34 +133,12 @@ export const InterviewAssistant: React.FC<InterviewAssistantProps> = ({ candidat
       }
     });
 
-    sessionRef.current = await sessionPromise;
-    
-    // Mikrofon Yayını
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const inputCtx = new AudioContext({ sampleRate: 16000 });
-    const source = inputCtx.createMediaStreamSource(stream);
-    const processor = inputCtx.createScriptProcessor(4096, 1, 1);
-    
-    processor.onaudioprocess = (e) => {
-      const inputData = e.inputBuffer.getChannelData(0);
-      const int16 = new Int16Array(inputData.length);
-      for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
-      
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
-      sessionRef.current.sendRealtimeInput({
-        media: { data: base64, mimeType: 'audio/pcm;rate=16000' }
-      });
-    };
-
-    source.connect(processor);
-    processor.connect(inputCtx.destination);
-    setIsListening(true);
+    sessionPromiseRef.current = sessionPromise;
   };
 
   const stopSession = () => {
-    sessionRef.current?.close();
+    sessionPromiseRef.current?.then(session => session.close());
     setIsConnected(false);
-    setIsListening(false);
     setTranscript([]);
   };
 

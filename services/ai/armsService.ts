@@ -6,8 +6,6 @@ import {
   PedagogicalSchool, CognitiveLoad
 } from "../../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
@@ -25,6 +23,8 @@ const extractPureJSON = (text: string): any => {
 
 export const armsService = {
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz?: TrainingQuiz }> {
+    // @fix: Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Klinik Psikolog.
       GÖREV: "${plan.title}" konusu üzerine ${config.slideCount} slaytlık ultra-profesyonel bir eğitim üret.
@@ -60,6 +60,8 @@ export const armsService = {
   },
 
   async generateIDP(entity: StaffMember | any, assessmentHistory: any[] = []): Promise<IDP> {
+    // @fix: Create a new GoogleGenAI instance right before making an API call.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `PERSONEL: ${JSON.stringify(entity)}`,

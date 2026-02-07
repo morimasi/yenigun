@@ -1,7 +1,6 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig, ClinicalTestType, SimulationResult } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const cleanAndParseJSON = (rawText: string) => {
   try {
@@ -30,6 +29,8 @@ const SEGMENT_SCHEMA = {
 
 export const aiService = {
   async analyzeCandidate(candidate: Candidate, config: GlobalConfig): Promise<AIReport> {
+    // @fix: Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = `
       ROL: Yeni Gün Akademi Kıdemli Klinik Karar Destek Uzmanı.
       GÖREV: Adayın liyakat matrisini "Açıklamalı ve Nedensel Analiz" yöntemiyle işle.
@@ -116,6 +117,8 @@ export const aiService = {
   },
 
   async simulateCrisis(candidate: Candidate, testType: ClinicalTestType): Promise<SimulationResult> {
+    // @fix: Create a new GoogleGenAI instance right before making an API call.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `ADAY: ${JSON.stringify({ name: candidate.name, branch: candidate.branch, answers: candidate.answers, testType })}`,

@@ -2,9 +2,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, ClinicalTestType, SimulationResult } from "../../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const simulateCrisis = async (candidate: Candidate, testType: ClinicalTestType): Promise<SimulationResult> => {
+  // @fix: Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const candidateSnapshot = {
     personal: { name: candidate.name, branch: candidate.branch },
     coreAnswers: candidate.answers

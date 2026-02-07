@@ -2,8 +2,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, AIReport, GlobalConfig } from "../../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const extractPureJSON = (text: string): any => {
   try {
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -20,6 +18,8 @@ const extractPureJSON = (text: string): any => {
 };
 
 export const analyzeCandidate = async (candidate: Candidate, config: GlobalConfig): Promise<AIReport> => {
+  // @fix: Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   // PARAMETRİK PERSONA ENJEKSİYONU
   const persona = config.aiPersona || { skepticismLevel: 50, innovationBias: 50, detailedReporting: true };
   // @fix: Provided a complete default weightMatrix object to resolve TypeScript "property does not exist" error on line 36.
