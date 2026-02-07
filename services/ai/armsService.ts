@@ -8,13 +8,17 @@ import {
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
+    // Markdown bloklarını temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const firstBrace = cleanText.search(/[{\[]/);
-    const lastBrace = Math.max(cleanText.lastIndexOf('}'), cleanText.lastIndexOf(']'));
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) return null;
+    
+    // JSON başlangıç ve bitişini bul (Hata toleransı için)
+    const firstBrace = cleanText.indexOf('{');
+    const lastBrace = cleanText.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1) return null;
+    
     const jsonString = cleanText.substring(firstBrace, lastBrace + 1);
-    const sanitizedString = jsonString.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
-    return JSON.parse(sanitizedString);
+    return JSON.parse(jsonString);
   } catch (e) { 
     console.error("MIA ARMS JSON Engine Error:", e);
     return null; 
@@ -26,24 +30,24 @@ export const armsService = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const systemInstruction = `
-      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı ve Klinik Süpervizör.
-      GÖREV: "${plan.title}" konusu üzerine profesyonel bir hizmet içi eğitim sunumu üret.
+      ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı.
+      GÖREV: "${plan.title}" konusu üzerine yüksek lisans seviyesinde AKADEMİK sunum üret.
       
-      KRİTİK İÇERİK KURALLARI (İHLAL EDİLEMEZ):
-      1. SLAYT İÇERİĞİ (content): Her slayt mutlaka en az 5 adet, her biri en az 15 kelimelik YOĞUN AKADEMİK BİLGİ içeren maddeden oluşmalıdır. Sadece başlık atmak disiplin suçudur.
-      2. TEKNİK DERİNLİK: İçerik "Hoşgeldiniz", "Eğitimin Amacı" gibi sığ ifadeler yerine; direkt klinik metodoloji, uygulama protokolleri, risk analizleri ve literatür referansları içermelidir.
-      3. MULTIMODAL ELEMENTS: Her slayta mutlaka o konuyla ilgili bir ikon (symbol), bir veri grafiği mantığı (graph_logic) veya bir vaka çalışması (interactive_case) ekle.
-      4. SPEAKER NOTES: Eğitmenin o slaytta anlatması gereken derin detayları (en az 150 kelime) buraya ekle.
-      5. DİL: Kesinlikle profesyonel, keskin ve akademik Türkçe.
+      KRİTİK TALİMATLAR:
+      1. Her slayt (content) en az 5 madde içermeli. Her madde "Açıklayıcı, Teknik ve Klinik" olmalı. Sığ başlıklardan kaçın.
+      2. Speaker Notes: Eğitmen için en az 150 kelimelik profesyonel anlatım rehberi.
+      3. Elements: Slayta mutlaka bir 'symbol' veya 'interactive_case' ekle.
+      4. HIZ: JSON yapısını bozmadan hızlıca yanıtla.
     `;
 
+    // Multimodal elementler için basitleştirilmiş nesne yapısı
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `EĞİTİM PLANI: ${JSON.stringify(plan)} | KONFİGÜRASYON: ${JSON.stringify(config)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: 12000 }, // Hız için düşünme bütçesi optimize edildi
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -54,48 +58,30 @@ export const armsService = {
                 properties: {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING }, description: "En az 5 adet 15+ kelimelik teknik madde." },
-                  speakerNotes: { type: Type.STRING, description: "Eğitmen için 150+ kelimelik derinlemesine teknik anlatım rehberi." },
+                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  speakerNotes: { type: Type.STRING },
                   elements: {
                     type: Type.ARRAY,
                     items: {
                       type: Type.OBJECT,
                       properties: {
                         id: { type: Type.STRING },
-                        type: { type: Type.STRING, enum: ["text", "symbol", "graph_logic", "interactive_case"] },
-                        content: { type: Type.OBJECT }
+                        type: { type: Type.STRING, enum: ["symbol", "interactive_case", "graph_logic"] },
+                        content: { 
+                          type: Type.OBJECT,
+                          properties: {
+                            icon: { type: Type.STRING },
+                            label: { type: Type.STRING },
+                            scenario: { type: Type.STRING },
+                            resolution: { type: Type.STRING }
+                          }
+                        }
                       }
                     }
                   }
                 },
-                required: ["id", "title", "content", "speakerNotes", "elements"]
+                required: ["id", "title", "content", "speakerNotes"]
               }
-            },
-            quiz: {
-               type: Type.OBJECT,
-               properties: {
-                 questions: {
-                   type: Type.ARRAY,
-                   items: {
-                     type: Type.OBJECT,
-                     properties: {
-                       id: { type: Type.STRING },
-                       text: { type: Type.STRING },
-                       options: {
-                         type: Type.ARRAY,
-                         items: {
-                           type: Type.OBJECT,
-                           properties: {
-                             label: { type: Type.STRING },
-                             isCorrect: { type: Type.BOOLEAN },
-                             feedback: { type: Type.STRING }
-                           }
-                         }
-                       }
-                     }
-                   }
-                 }
-               }
             }
           },
           required: ["slides"]
@@ -104,7 +90,7 @@ export const armsService = {
     });
 
     const result = extractPureJSON(response.text);
-    if (!result) throw new Error("AI Yanıt Sentezi Başarısız.");
+    if (!result || !result.slides) throw new Error("AI_DATA_VOID");
     return result;
   },
 
@@ -112,52 +98,43 @@ export const armsService = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `KURUMSAL KATALOG PLANI: ${JSON.stringify(plan)}`,
+      contents: `Katalog Konusu: ${plan.title}. Lütfen bu konuda en az 8 slaytlık, her slaytı akademik derinliğe sahip bir eğitim üret.`,
       config: {
-        systemInstruction: `
-          ROL: Akademi Eğitmen Robotu. 
-          GÖREV: Katalogdaki konuyu derinlemesine bir eğitime dönüştür. 
-          HER SLAYT: En az 6 madde, teknik detaylar, literatür bilgisi ve uygulama protokolleri içermelidir. 
-          Boş slayt üretmek kurumsal bir hatadır. Maddeler açıklayıcı ve uzun olmalıdır.`,
+        systemInstruction: "Akademi Robotu. Sadece saf JSON döndür. Slaytlar: title, content (array), speakerNotes alanlarını içermelidir.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        thinkingConfig: { thinkingBudget: 8000 }
       }
     });
     const res = extractPureJSON(response.text);
     return Array.isArray(res?.slides) ? res.slides : [];
   },
 
-  async generateIDP(entity: any, assessmentHistory: any[] = []): Promise<IDP> {
+  // @fix: Updated signature to accept optional history argument to resolve the argument mismatch error in DevelopmentRouteView.tsx (line 34).
+  async generateIDP(entity: any, history?: any[]): Promise<IDP> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // @fix: Wrap entity and history in a context object if history is provided
+    const context = history ? { entity, history } : entity;
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `UZMAN VERİLERİ: ${JSON.stringify({ name: entity.name, branch: entity.branch, report: entity.report })}`,
+      contents: `UZMAN: ${JSON.stringify(context)}`,
       config: {
-        systemInstruction: "Kıdemli Gelişim Stratejisti. Adayın zayıf noktalarını onaracak derinlikte 90 günlük gelişim planı üret. Her modül zengin bir içerik havuzuna sahip olmalı.",
+        systemInstruction: "90 günlük gelişim planı (IDP) üreticisi. JSON formatında 'focusArea', 'roadmap' (shortTerm, midTerm, longTerm) ve 'curriculum' (modules) alanlarını doldur.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        thinkingConfig: { thinkingBudget: 15000 }
       }
     });
-
     const result = extractPureJSON(response.text);
-    if (!result) throw new Error("IDP Sentez Hatası.");
-    return {
-        id: `IDP-${Date.now().toString().slice(-6)}`,
-        ...result,
-        status: 'active',
-        createdAt: Date.now()
-    };
+    return { id: `IDP-${Date.now()}`, ...result, status: 'active', createdAt: Date.now() };
   },
 
   async generateTrainingSlides(idp: IDP, branch: Branch): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `GELİŞİM PLANI (IDP): ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
+      contents: `IDP Verisi: ${JSON.stringify(idp)}`,
       config: {
-        systemInstruction: "Kıdemli Eğitim Tasarımcısı. IDP modüllerini profesyonel sunum slaytlarına dönüştür. Her slayt yoğun akademik içerik, maddeleme ve detaylı eğitmen notu içermelidir.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        systemInstruction: "Sunum Tasarımcısı. IDP'yi eğitim slaytlarına dönüştür. JSON döndür.",
+        responseMimeType: "application/json"
       }
     });
     const res = extractPureJSON(response.text);
@@ -168,11 +145,10 @@ export const armsService = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `SUNUM KONFİGÜRASYONU: ${JSON.stringify(config)}`,
+      contents: `KONU: ${config.topic}`,
       config: {
-        systemInstruction: "Akademi Eğitim Robotu. Belirtilen konuda profesyonel bir eğitim sunumu üret. Her slayt en az 6 madde, teknik detaylar ve uygulama protokolleri içermelidir.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 24576 }
+        systemInstruction: "Akademi Eğitmeni. Profesyonel sunum üret. JSON döndür.",
+        responseMimeType: "application/json"
       }
     });
     const res = extractPureJSON(response.text);
