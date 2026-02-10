@@ -27,7 +27,7 @@ export interface AcademicSealConfig {
   signatureTitles: string[];
   footerNote: string;
   showWatermark: boolean;
-  officialSeal: boolean; // Resmi Mühür
+  officialSeal: boolean;
 }
 
 export interface TrainingGenerationConfig {
@@ -37,11 +37,12 @@ export interface TrainingGenerationConfig {
   theme: TrainingTheme;
   slideCount: number;
   includeVisuals: boolean;
-  hasEvaluation: boolean; // Eğitim sonu sınavı
+  hasEvaluation: boolean;
   tone: 'academic' | 'inspirational' | 'warning' | 'analytical' | 'formal';
   academicConfig: AcademicSealConfig;
   temperature: number;
   thinkingBudget: number;
+  customDirectives?: string; // Kullanıcının ek direktifleri
 }
 
 export interface CustomTrainingPlan {
@@ -74,7 +75,7 @@ export interface TrainingSlide {
   content: string[];
   elements?: MultimodalElement[];
   speakerNotes: string;
-  visualPrompt: string;
+  visualPrompt?: string;
   interactiveElement?: {
     question: string;
   };
@@ -97,7 +98,6 @@ export enum StaffRole { Admin = 'admin', Staff = 'staff', Mentor = 'mentor' }
 export type Gender = 'Erkek' | 'Kadın' | 'Belirtilmemiş';
 export type MaritalStatus = 'Bekar' | 'Evli' | 'Diğer';
 
-// @fix: Added TrainingUnit interface which was missing and used in StaffProfileView.tsx and DevelopmentRouteView.tsx.
 export interface TrainingUnit {
   id: string;
   title: string;
@@ -126,7 +126,6 @@ export interface TrainingQuiz {
   }[];
 }
 
-// @fix: Enhanced IDP interface with missing fields used in DevelopmentRouteView.tsx.
 export interface IDP {
   id: string;
   staffId?: string;
@@ -142,7 +141,6 @@ export interface IDP {
   };
 }
 
-// @fix: Refined StaffMember to use AIReport type and added onboarding_complete field.
 export interface StaffMember {
   id: string;
   name: string;
@@ -159,7 +157,6 @@ export interface StaffMember {
   onboarding_complete?: boolean;
 }
 
-// @fix: Added Candidate interface used extensively for recruitment and initial intake.
 export interface Candidate {
   id: string;
   name: string;
@@ -187,7 +184,6 @@ export interface Candidate {
   maritalStatus?: MaritalStatus;
 }
 
-// @fix: Added Question interface for the modular question bank system.
 export interface Question {
   id: string;
   category: string;
@@ -204,7 +200,6 @@ export interface Question {
   verificationQuestions?: Question[];
 }
 
-// @fix: Added Certification interface for methodological accreditation tracking.
 export interface Certification {
   id: string;
   label: string;
@@ -213,7 +208,6 @@ export interface Certification {
   verificationQuestions: Question[];
 }
 
-// @fix: Added AIReport interface for the output of the Gemini analysis engine.
 export interface AIReport {
   score: number;
   integrityIndex: number;
@@ -257,7 +251,6 @@ export interface AIReport {
   };
 }
 
-// @fix: Added ExportConfig interface for the PDF/Print export customization.
 export interface ExportConfig {
   title: string;
   showWatermark: boolean;
@@ -275,7 +268,6 @@ export interface ExportConfig {
   };
 }
 
-// @fix: Added GlobalConfig interface for system-wide calibration and risk engine settings.
 export interface GlobalConfig {
   institutionName: string;
   lastUpdated: number;
@@ -308,7 +300,6 @@ export interface GlobalConfig {
   };
 }
 
-// @fix: Added AlgorithmicReport interface for raw data processing results.
 export interface AlgorithmicReport {
   overallScore: number;
   reliabilityIndex: number;
@@ -321,7 +312,6 @@ export interface AlgorithmicReport {
   branchComplianceScore: number;
 }
 
-// @fix: Added ArchiveCategory type for digital vault classification.
 export type ArchiveCategory = 
   | 'CANDIDATE_POOL' 
   | 'HIRED_CONTRACTED' 
@@ -334,7 +324,6 @@ export type ArchiveCategory =
   | 'STRATEGIC_PLAN' 
   | 'CLINICAL_CASE_STUDY';
 
-// @fix: Added UniversalExportData interface for the multi-module export studio.
 export interface UniversalExportData {
   type: string;
   entityName: string;
@@ -343,7 +332,6 @@ export interface UniversalExportData {
   config?: { title: string };
 }
 
-// @fix: Added SimulationResult interface for the Clinical Lab stress test output.
 export interface SimulationResult {
   scenario: string;
   parentPersona: string;
@@ -370,7 +358,6 @@ export interface SimulationResult {
   };
 }
 
-// @fix: Added ClinicalTestType enum for the lab simulation protocols.
 export enum ClinicalTestType {
   DMP_STRESS = 'DMP_STRESS',
   BOUNDARY_VIOLATION = 'BOUNDARY_VIOLATION',
@@ -378,7 +365,6 @@ export enum ClinicalTestType {
   ETHICAL_DILEMMA = 'ETHICAL_DILEMMA'
 }
 
-// @fix: Added AssessmentBattery interface for staff competence testing.
 export interface AssessmentBattery {
   id: string;
   title: string;
@@ -388,7 +374,6 @@ export interface AssessmentBattery {
   questions: AssessmentQuestion[];
 }
 
-// @fix: Added AssessmentQuestion interface for staff batteries.
 export interface AssessmentQuestion {
   id: string;
   text: string;
@@ -399,7 +384,6 @@ export interface AssessmentQuestion {
   }[];
 }
 
-// @fix: Added PresentationConfig interface for the AI-driven slide generator.
 export interface PresentationConfig {
   topic: string;
   targetAudience: string;
@@ -408,7 +392,6 @@ export interface PresentationConfig {
   slideCount: number;
 }
 
-// @fix: Added communication-related types (CommChannel, CommTemplate, NotificationLog).
 export type CommChannel = 'email' | 'whatsapp' | 'sms';
 
 export interface CommTemplate {
@@ -429,14 +412,12 @@ export interface NotificationLog {
   errorMessage?: string;
 }
 
-// @fix: Added FormStep interface for intake flow management.
 export interface FormStep {
   id: string;
   title: string;
   description: string;
 }
 
-// @fix: Added SystemNotification interface for the admin signaling center.
 export interface SystemNotification {
   id: string;
   type: string;
