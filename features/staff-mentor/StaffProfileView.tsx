@@ -13,6 +13,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   const [data, setData] = useState<{ profile: StaffMember; assessments: any[]; activeIDP: IDP | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [isSavingIDP, setIsSavingIDP] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState<string>('');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'idp' | 'analytics' | 'history'>('overview');
@@ -41,7 +42,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
     const phases = [
       "Tarihsel Veri Seti Okunuyor...",
       "Bilişsel Çelişki Katsayıları Modelleniyor...",
-      "Delta Analizi (Initial vs Current) Başlatıldı...",
+      "Delta Analizi Başlatıldı...",
       "Nöro-Pedagojik İyileştirme Sentezi Yapılıyor...",
       "Güncel Liyakat Mühürü Hazırlanıyor..."
     ];
@@ -53,7 +54,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
     }, 2500);
 
     try {
-      const deepSnapshot: Partial<Candidate> = {
+      const deepSnapshot = {
         id: data.profile.id,
         name: data.profile.name,
         branch: data.profile.branch,
@@ -65,14 +66,6 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
         status: 'hired'
       };
 
-      // @ts-ignore
-      deepSnapshot.assessmentHistory = (data.assessments || []).map(a => ({
-        score: a.score,
-        timestamp: a.timestamp,
-        battery: a.battery_id,
-        tags: a.ai_tags
-      }));
-      
       const aiReport = await generateCandidateAnalysis(deepSnapshot as any, {} as any);
       
       const saveRes = await fetch('/api/staff?action=save_analysis', {
@@ -87,7 +80,7 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
         alert("Nöral Analiz ve Gelişim Rotası Başarıyla Yenilendi."); 
       }
     } catch (e) { 
-      alert("Analiz Motoru Bağlantı Hatası: Sistem yoğun olabilir, lütfen tekrar deneyiniz."); 
+      alert("Analiz Motoru Bağlantı Hatası."); 
     } finally { 
       clearInterval(phaseInterval);
       setAnalysisPhase('');
@@ -96,20 +89,31 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   };
 
   const handleIDPSave = async (newIDP: IDP) => {
+      setIsSavingIDP(true);
       try {
         const res = await fetch('/api/staff?action=save_idp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ staffId, data: newIDP })
         });
+        
         if (res.ok) {
-           setData(prev => prev ? ({ ...prev, activeIDP: newIDP }) : null);
+           const result = await res.json();
+           if (result.success) {
+             setData(prev => prev ? ({ ...prev, activeIDP: newIDP }) : null);
+             console.log("MIA: IDP Veritabanına mühürlendi.");
+           } else {
+             throw new Error(result.details || "API Success False");
+           }
         } else {
-           throw new Error("Save failed");
+           const errData = await res.json();
+           throw new Error(errData.details || "HTTP Error");
         }
-      } catch (e) {
-          console.error("Save error", e);
-          throw e;
+      } catch (e: any) {
+          console.error("MIA Critical IDP Save Error:", e);
+          alert(`Kritik Sistem Hatası: Gelişim planı mühürlenemedi. Detay: ${e.message}`);
+      } finally {
+          setIsSavingIDP(false);
       }
   };
 
@@ -121,15 +125,6 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
       value: (v as any)?.score || 0,
       fullMark: 100
     }));
-  }, [data]);
-
-  const learningCurve = useMemo(() => {
-     if (!data?.assessments || !Array.isArray(data.assessments)) return [];
-     return [...data.assessments].reverse().map((a, i) => ({ 
-        name: `Test ${i+1}`, 
-        score: a.score || 0, 
-        date: new Date(a.timestamp).toLocaleDateString('tr-TR', {month:'short', day:'numeric'}) 
-     }));
   }, [data]);
 
   if (isLoading) return (
@@ -161,8 +156,8 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-20 relative">
       
-      {/* ANALİZ YÜKLENİYOR OVERLAY */}
-      {isAnalysing && (
+      {/* İŞLEM ÜST KATMANI */}
+      {(isAnalysing || isSavingIDP) && (
         <div className="fixed inset-0 z-[2000] bg-slate-900/90 backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center">
            <div className="relative mb-12">
               <div className="w-56 h-56 border-[12px] border-white/5 border-t-orange-600 rounded-full animate-spin"></div>
@@ -174,8 +169,12 @@ const StaffProfileView: React.FC<{ staffId: string; onUpdate?: () => void }> = (
                  </div>
               </div>
            </div>
-           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 animate-fade-in">Analiz Derinleştiriliyor</h3>
-           <p className="text-orange-500 font-black text-xl uppercase tracking-[0.5em] h-8 transition-all duration-500">{analysisPhase}</p>
+           <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 animate-fade-in">
+             {isSavingIDP ? 'Gelişim Planı Mühürleniyor' : 'Analiz Derinleştiriliyor'}
+           </h3>
+           <p className="text-orange-500 font-black text-xl uppercase tracking-[0.5em] h-8 transition-all duration-500">
+             {isSavingIDP ? 'Veritabanı Entegrasyonu Aktif...' : analysisPhase}
+           </p>
         </div>
       )}
 
