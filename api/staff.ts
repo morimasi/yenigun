@@ -7,7 +7,6 @@ export const config = { runtime: 'edge' };
 async function ensureIDPSchema() {
   try {
     // 1. Temel tablo yapısını kontrol et
-    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
     await sql`
       CREATE TABLE IF NOT EXISTS staff_idp (
         id TEXT PRIMARY KEY,
@@ -21,7 +20,6 @@ async function ensureIDPSchema() {
     `;
     
     // 2. Eksik sütun kontrolü ve Migration (Kritik Onarım)
-    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
     await sql`
       DO $$ 
       BEGIN
@@ -110,7 +108,7 @@ export default async function handler(request: Request) {
       // Eski aktif planları arşivle
       await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active'`;
 
-      // Yeni planı mühürle (Sütunların varlığı ensureIDPSchema ile garanti edildi)
+      // Yeni planı mühürle
       await sql`
         INSERT INTO staff_idp (id, staff_id, data, focus_area, status, updated_at)
         VALUES (${idpId}, ${staffId}, ${JSON.stringify(data)}, ${focusArea}, 'active', CURRENT_TIMESTAMP)

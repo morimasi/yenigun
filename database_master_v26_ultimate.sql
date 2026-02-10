@@ -1,14 +1,16 @@
 
 -- ============================================================================
 -- YENİ GÜN AKADEMİ | ULTIMATE UNIFIED ENTERPRISE DATABASE SCHEMA
--- VERSİYON: 26.1 (RECOVERY & STABILITY PATCH)
+-- VERSİYON: 26.2 (VIEW RECOVERY PATCH)
 -- ============================================================================
 
--- 0. İNİSİYALİZASYON
+-- 0. İNİSİYALİZASYON VE TEMİZLİK
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- KRİTİK: Görünüm imzası değişimlerinde hatayı önlemek için önce temizliyoruz
+DROP VIEW IF EXISTS view_staff_performance_matrix CASCADE;
+
 -- Tetikleyici Fonksiyonu: Ultra-Defensive Version
--- Sütun eksik olsa bile hata vermez, sessizce devam eder.
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -125,7 +127,7 @@ CREATE TABLE IF NOT EXISTS training_assignments (
 );
 
 -- ============================================================================
--- 2. TETİKLEYİCİLER (EKSİKSİZ LİSTE)
+-- 2. TETİKLEYİCİLER
 -- ============================================================================
 
 DROP TRIGGER IF EXISTS trg_candidates_modtime ON candidates;
@@ -144,7 +146,9 @@ CREATE TRIGGER trg_idp_modtime BEFORE UPDATE ON staff_idp FOR EACH ROW EXECUTE P
 -- 3. ANALİTİK GÖRÜNÜMLER
 -- ============================================================================
 
-CREATE OR REPLACE VIEW view_staff_performance_matrix AS
+-- Önce silip sonra oluşturarak sütun uyumsuzluğu hatasını engelliyoruz
+DROP VIEW IF EXISTS view_staff_performance_matrix;
+CREATE VIEW view_staff_performance_matrix AS
 SELECT 
     s.id, s.name, s.branch, s.report,
     (SELECT ROUND(AVG(score)) FROM staff_assessments WHERE staff_id = s.id) as avg_exam_score,
@@ -163,5 +167,5 @@ VALUES ('STF-ROOT', 'Sistem Yöneticisi', 'admin@yenigun.com', 'admin123', 'admi
 ON CONFLICT (email) DO NOTHING;
 
 -- ============================================================================
--- SON: MASTER SCHEMA v26.1 KURULUMU TAMAMLANDI.
+-- SON: MASTER SCHEMA v26.2 KURULUMU TAMAMLANDI.
 -- ============================================================================
