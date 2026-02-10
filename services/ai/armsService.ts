@@ -6,42 +6,70 @@ import {
 } from "../../types";
 
 /**
- * MIA Nöral JSON Ayrıştırma Motoru v3.0 (JS-Safe Edition)
+ * MIA Nöral JSON Ayrıştırma ve Onarım Motoru v4.0 (Self-Healing Edition)
+ * Yarım kalmış veya kesilmiş JSON çıktılarını kurtarmak için tasarlandı.
  */
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
+  
+  let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  
+  // 1. Başlangıç noktasını bul
+  const firstBrace = cleanText.indexOf('{');
+  const firstBracket = cleanText.indexOf('[');
+  let startIdx = -1;
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) startIdx = firstBrace;
+  else if (firstBracket !== -1) startIdx = firstBracket;
+  if (startIdx === -1) return null;
+
+  // 2. Truncation (Kesilme) Tespiti ve Onarımı
+  let jsonPart = cleanText.substring(startIdx);
+  
+  // Basit bir parantez sayma algoritması ile eksikleri tamamla
+  let openBraces = 0;
+  let openBrackets = 0;
+  let inString = false;
+  let escaped = false;
+  let lastGoodIdx = 0;
+
+  for (let i = 0; i < jsonPart.length; i++) {
+    const char = jsonPart[i];
+    if (char === '"' && !escaped) inString = !inString;
+    if (!inString) {
+      if (char === '{') openBraces++;
+      else if (char === '}') openBraces--;
+      else if (char === '[') openBrackets++;
+      else if (char === ']') openBrackets--;
+      
+      if (openBraces === 0 && openBrackets === 0 && i > 0) {
+        lastGoodIdx = i;
+        break;
+      }
+    }
+    escaped = (char === '\\' && !escaped);
+  }
+
+  // Eğer JSON tam kapanmamışsa (kesilmişse)
+  if (openBraces > 0 || openBrackets > 0 || inString) {
+    console.warn("MIA AI: Kesilmiş JSON tespit edildi, onarılıyor...");
+    if (inString) jsonPart += '"';
+    while (openBraces > 0) { jsonPart += '}'; openBraces--; }
+    while (openBrackets > 0) { jsonPart += ']'; openBrackets--; }
+  } else if (lastGoodIdx > 0) {
+    jsonPart = jsonPart.substring(0, lastGoodIdx + 1);
+  }
+
   try {
-    let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const firstBrace = cleanText.indexOf('{');
-    const firstBracket = cleanText.indexOf('[');
-    let startIdx = -1;
-    
-    if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
-      startIdx = firstBrace;
-    } else if (firstBracket !== -1) {
-      startIdx = firstBracket;
-    }
-
-    if (startIdx === -1) return null;
-
-    const lastBrace = cleanText.lastIndexOf('}');
-    const lastBracket = cleanText.lastIndexOf(']');
-    let endIdx = -1;
-
-    if (lastBrace !== -1 && (lastBracket === -1 || lastBrace > lastBracket)) {
-      endIdx = lastBrace;
-    } else if (lastBracket !== -1) {
-      endIdx = lastBracket;
-    }
-
-    if (endIdx === -1 || endIdx <= startIdx) return null;
-    const jsonString = cleanText.substring(startIdx, endIdx + 1);
-    const sanitizedJson = jsonString.replace(/[\x00-\x1F\x7F-\x9F]/g, "").replace(/,\s*([}\]])/g, '$1'); 
-
-    return JSON.parse(sanitizedJson);
+    // Görünmez karakterleri ve tehlikeli boşlukları temizle
+    const sanitized = jsonPart.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+    return JSON.parse(sanitized);
   } catch (e) { 
-    console.error("MIA ARMS Nöral Parse Hatası:", e);
-    return null; 
+    console.error("MIA ARMS Kritik Parse Hatası:", e);
+    // Manuel kurtarma denemesi (Çok ağır kesilmeler için)
+    try {
+        const fallback = jsonPart.substring(0, jsonPart.lastIndexOf('}')) + '}]}';
+        return JSON.parse(fallback);
+    } catch { return null; }
   }
 };
 
@@ -49,20 +77,24 @@ export const armsService = {
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz?: TrainingQuiz }> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
+    // Slide sayısını sınırla (92KB hatasını önlemek için)
+    const safeSlideCount = Math.min(config.slideCount || 10, 15);
+
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı.
-      GÖREV: "${plan.title}" konusu üzerine yüksek lisans seviyesinde AKADEMİK sunum üret.
-      KRİTİK: Her slayt en az 5 teknik madde içermeli. 
-      ELEMENTS: Sunumun zenginleşmesi için her slayda uygun 'symbol', 'graph_logic' veya 'interactive_case' tiplerinden birini ekle.
+      GÖREV: "${plan.title}" üzerine yüksek lisans seviyesinde, AKADEMİK ve ÖZ (Concise) bir sunum üret.
+      KRİTİK: JSON boyutu sınırı nedeniyle metinleri çok uzun tutma. Nokta atışı teknik bilgi ver.
+      SLAYT SAYISI: Kesinlikle ${safeSlideCount} adet.
+      ŞEMA: Her slaytta tam olarak 1 adet multimodal element olmalı.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `EĞİTİM PLANI: ${JSON.stringify(plan)} | KONFİGÜRASYON: ${JSON.stringify(config)}`,
+      contents: `EĞİTİM PLANI: ${plan.title} | KAPSAM: ${plan.description.substring(0, 500)}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 12000 },
+        thinkingConfig: { thinkingBudget: 8000 }, // Thinking bütçesini düşürerek output için alan açıyoruz
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -84,14 +116,13 @@ export const armsService = {
                         type: { type: Type.STRING, enum: ["symbol", "interactive_case", "graph_logic"] },
                         content: { 
                           type: Type.OBJECT,
-                          description: "Element içeriği. Tipine göre uygun alanları doldur.",
                           properties: {
-                            icon: { type: Type.STRING, description: "Sembol için emoji." },
-                            label: { type: Type.STRING, description: "Sembol etiketi." },
-                            title: { type: Type.STRING, description: "Grafik başlığı." },
-                            dataPoints: { type: Type.ARRAY, items: { type: Type.NUMBER }, description: "Grafik için 5 adet sayısal veri noktası." },
-                            scenario: { type: Type.STRING, description: "Vaka senaryosu metni." },
-                            resolution: { type: Type.STRING, description: "Vaka çözüm önerisi." }
+                            icon: { type: Type.STRING },
+                            label: { type: Type.STRING },
+                            title: { type: Type.STRING },
+                            dataPoints: { type: Type.ARRAY, items: { type: Type.NUMBER } },
+                            scenario: { type: Type.STRING },
+                            resolution: { type: Type.STRING }
                           }
                         }
                       },
@@ -109,7 +140,9 @@ export const armsService = {
     });
 
     const result = extractPureJSON(response.text);
-    if (!result || !result.slides) throw new Error("AI_DATA_VOID");
+    if (!result || !result.slides || result.slides.length === 0) {
+        throw new Error("AI_DATA_VOID: Onarım başarısız veya veri gelmedi.");
+    }
     return result;
   },
 
@@ -118,11 +151,11 @@ export const armsService = {
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `KONU: ${plan.title}. Lütfen bu katalog konusu üzerine en az 8 slaytlık, her slaytı 5+ madde içeren, eğitmen notlu profesyonel bir sunum üret.`,
+      contents: `KONU: ${plan.title}. Kısa ve öz 8 slaytlık JSON üret.`,
       config: {
-        systemInstruction: "Akademi Robotu. Sadece saf JSON döndür. Slaytlar hiyerarşisi bozulmamalıdır.",
+        systemInstruction: "Akademi Robotu. Sadece saf JSON döndür.",
         responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 12000 },
+        thinkingConfig: { thinkingBudget: 4000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -151,14 +184,12 @@ export const armsService = {
 
   async generateIDP(entity: any, history?: any[]): Promise<IDP> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const context = history ? { entity, history } : entity;
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `UZMAN VERİLERİ: ${JSON.stringify(context)}`,
+      contents: `UZMAN: ${entity.name}`,
       config: {
-        systemInstruction: "90 günlük gelişim planı (IDP) üreticisi. JSON formatında 'focusArea', 'roadmap' ve 'curriculum' (modules) alanlarını doldur.",
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 15000 }
+        systemInstruction: "90 günlük gelişim planı üret. JSON döndür.",
+        responseMimeType: "application/json"
       }
     });
     const result = extractPureJSON(response.text);
@@ -169,9 +200,9 @@ export const armsService = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `IDP Verisi: ${JSON.stringify(idp)}`,
+      contents: `IDP: ${idp.focusArea}`,
       config: {
-        systemInstruction: "Sunum Tasarımcısı. IDP'yi eğitim slaytlarına dönüştür. JSON döndür.",
+        systemInstruction: "IDP'yi eğitim slaytlarına dönüştür. JSON döndür.",
         responseMimeType: "application/json"
       }
     });
@@ -185,7 +216,7 @@ export const armsService = {
       model: 'gemini-3-flash-preview',
       contents: `KONU: ${config.topic}`,
       config: {
-        systemInstruction: "Akademi Eğitmeni. Profesyonel sunum üret. JSON döndür.",
+        systemInstruction: "Akademi Eğitmeni. Sunum üret. JSON döndür.",
         responseMimeType: "application/json"
       }
     });
