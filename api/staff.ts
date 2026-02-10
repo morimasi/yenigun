@@ -6,7 +6,9 @@ export const config = { runtime: 'edge' };
 // Şema Tahkimatı: staff_idp tablosunu ve sütunlarını garanti altına alır
 async function ensureIDPSchema() {
   try {
-    await sql.query(`
+    // 1. Temel tablo yapısını kontrol et
+    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
+    await sql`
       CREATE TABLE IF NOT EXISTS staff_idp (
         id TEXT PRIMARY KEY,
         staff_id TEXT REFERENCES staff(id) ON DELETE CASCADE,
@@ -16,10 +18,11 @@ async function ensureIDPSchema() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
     
-    // Eksik sütun kontrolü (Migration bypass)
-    await sql.query(`
+    // 2. Eksik sütun kontrolü ve Migration (Kritik Onarım)
+    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
+    await sql`
       DO $$ 
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='focus_area') THEN
@@ -28,8 +31,14 @@ async function ensureIDPSchema() {
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='status') THEN
           ALTER TABLE staff_idp ADD COLUMN status TEXT DEFAULT 'active';
         END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='created_at') THEN
+          ALTER TABLE staff_idp ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='updated_at') THEN
+          ALTER TABLE staff_idp ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        END IF;
       END $$;
-    `);
+    `;
   } catch (e) {
     console.error("MIA IDP Schema Repair Error:", e);
   }
@@ -101,7 +110,7 @@ export default async function handler(request: Request) {
       // Eski aktif planları arşivle
       await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active'`;
 
-      // Yeni planı mühürle
+      // Yeni planı mühürle (Sütunların varlığı ensureIDPSchema ile garanti edildi)
       await sql`
         INSERT INTO staff_idp (id, staff_id, data, focus_area, status, updated_at)
         VALUES (${idpId}, ${staffId}, ${JSON.stringify(data)}, ${focusArea}, 'active', CURRENT_TIMESTAMP)

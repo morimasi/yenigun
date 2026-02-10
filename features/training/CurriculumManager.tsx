@@ -9,7 +9,12 @@ import {
 import AssignmentModal from './AssignmentModal';
 import PresentationStudio from './PresentationStudio';
 
-const CurriculumManager: React.FC = () => {
+// @fix: Defined props interface to support onLaunchStudio callback from TrainingHub.
+interface CurriculumManagerProps {
+  onLaunchStudio?: (slides: TrainingSlide[], plan: TrainingPlan) => void;
+}
+
+const CurriculumManager: React.FC<CurriculumManagerProps> = ({ onLaunchStudio }) => {
   const [selectedKatalogPlan, setSelectedKatalogPlan] = useState<TrainingPlan | null>(null);
   const [activeTab, setActiveTab] = useState<'ALL' | 'ORIENTATION' | 'CLINICAL' | 'ETHICS' | 'MANAGEMENT'>('ALL');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -78,12 +83,19 @@ const CurriculumManager: React.FC = () => {
        };
 
        const result = await armsService.generateUniversalCurriculum(planPayload, config);
-       setActiveStudioPlan({
-          ...planPayload,
-          slides: result.slides,
-          finalQuiz: result.quiz,
-          aiConfig: config
-       });
+       
+       // @fix: If onLaunchStudio is provided via props, notify parent with generated slides.
+       // Otherwise fallback to local state management for rendering the studio.
+       if (onLaunchStudio) {
+         onLaunchStudio(result.slides, selectedKatalogPlan);
+       } else {
+         setActiveStudioPlan({
+            ...planPayload,
+            slides: result.slides,
+            finalQuiz: result.quiz,
+            aiConfig: config
+         });
+       }
     } catch (e) {
        alert("AI Sentez Hatası. Lütfen direktifleri kısaltıp tekrar deneyiniz.");
     } finally {

@@ -13,7 +13,8 @@ async function ensureSchema() {
   try {
     // 1. Ana Tabloyu (Eğer yoksa) TAM SÜTUNLARLA oluştur.
     // Bu, "ALTER" komutlarına olan bağımlılığı azaltır ve ilk kurulumu sağlamlaştırır.
-    await sql.query(`
+    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
+    await sql`
       CREATE TABLE IF NOT EXISTS candidates (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -41,11 +42,12 @@ async function ensureSchema() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
     // 2. Mevcut tablolar için "Schema Migration" (Eksik sütunları ekle)
     // Bu blok, tablo önceden varsa ve yeni sütunlar eklenmişse çalışır.
-    await sql.query(`
+    // @fix: Changed sql.query to tagged template literal sql`...` to fix 'query' property missing error on VercelPool.
+    await sql`
       DO $$ 
       BEGIN
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS phone TEXT;
@@ -70,7 +72,7 @@ async function ensureSchema() {
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_schedule JSONB;
         ALTER TABLE candidates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
       END $$;
-    `);
+    `;
   } catch (e) {
     console.error("Schema Sync Error:", e);
     throw new Error("Veritabanı şema senkronizasyonu başarısız oldu.");
