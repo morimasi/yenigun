@@ -42,7 +42,7 @@ export interface TrainingGenerationConfig {
   academicConfig: AcademicSealConfig;
   temperature: number;
   thinkingBudget: number;
-  customDirectives?: string; // Kullanıcının ek direktifleri
+  customDirectives?: string;
 }
 
 export interface CustomTrainingPlan {
@@ -60,6 +60,20 @@ export interface CustomTrainingPlan {
   createdAt: number;
   updatedAt?: number;
   status: 'active' | 'archived' | 'published';
+}
+
+export interface TrainingAssignment {
+  id: string;
+  planId: string;
+  staffId: string;
+  planTitle: string;
+  category: string;
+  status: 'assigned' | 'in_progress' | 'completed';
+  progress: number;
+  assignedAt: number;
+  completedAt?: number;
+  score?: number;
+  planData?: CustomTrainingPlan;
 }
 
 export interface MultimodalElement {

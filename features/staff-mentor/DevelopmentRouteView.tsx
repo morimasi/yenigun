@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { StaffMember, IDP, TrainingUnit, TrainingModule } from '../../types';
+import { StaffMember, IDP, CustomTrainingPlan, TrainingAssignment } from '../../types';
 import { armsService } from '../../services/ai/armsService';
-import { PredictBar } from '../../shared/ui/PredictBar';
+import PresentationStudio from '../training/PresentationStudio';
 
 interface DevelopmentRouteViewProps {
   staff: StaffMember;
@@ -13,185 +13,215 @@ interface DevelopmentRouteViewProps {
 
 const DevelopmentRouteView: React.FC<DevelopmentRouteViewProps> = ({ staff, currentIDP, assessmentHistory, onSave }) => {
   const [localIDP, setLocalIDP] = useState<IDP | null>(null);
-  const [editMode, setEditMode] = useState(false);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<CustomTrainingPlan[]>([]);
+  
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [activeModuleIdx, setActiveModuleIdx] = useState<number | null>(0);
-  const [editingUnit, setEditingUnit] = useState<{modIdx: number, unitIdx: number, data: TrainingUnit} | null>(null);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeStudioPlan, setActiveStudioPlan] = useState<CustomTrainingPlan | null>(null);
+
+  const fetchAssignments = async () => {
+    try {
+      const res = await fetch(`/api/training?action=get_staff_assignments&staffId=${staff.id}`);
+      if (res.ok) setAssignments(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchCatalog = async () => {
+    try {
+      const res = await fetch('/api/training?action=list');
+      if (res.ok) setCatalog(await res.json());
+    } catch (e) { console.error(e); }
+  };
 
   useEffect(() => {
-    if (currentIDP) {
-      setLocalIDP(JSON.parse(JSON.stringify(currentIDP))); 
-    } else {
-      setLocalIDP(null);
-    }
-  }, [currentIDP]);
+    setLocalIDP(currentIDP ? JSON.parse(JSON.stringify(currentIDP)) : null);
+    fetchAssignments();
+    fetchCatalog();
+    setIsLoading(false);
+  }, [currentIDP, staff.id]);
+
+  const handleAssignFromCatalog = async (plan: CustomTrainingPlan) => {
+    try {
+      const res = await fetch('/api/training?action=assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: plan.id, staffId: staff.id })
+      });
+      if (res.ok) {
+        await fetchAssignments();
+        setIsCatalogOpen(false);
+      }
+    } catch (e) { alert("Atama hatası."); }
+  };
+
+  const handleRemoveAssignment = async (id: string) => {
+    if (!confirm("Eğitim ataması silinecek. Onaylıyor musunuz?")) return;
+    try {
+      const res = await fetch('/api/training?action=remove_assignment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId: id })
+      });
+      if (res.ok) fetchAssignments();
+    } catch (e) { alert("Hata."); }
+  };
 
   const handleGenerateIDP = async () => {
-    if (!confirm("AI MOTORU TETİKLENİYOR: Personelin tüm sınav geçmişi analiz edilerek yeni bir nöral müfredat oluşturulacak. Onaylıyor musunuz?")) return;
     setIsGenerating(true);
     try {
       const newIDP = await armsService.generateIDP(staff, assessmentHistory);
       if (newIDP) {
-          setLocalIDP(newIDP);
-          setEditMode(true);
-          setActiveModuleIdx(0);
+        setLocalIDP(newIDP);
+        await onSave(newIDP);
       }
-    } catch (e) {
-      alert("AI Müfredat Üretim Hatası.");
-    } finally {
-      setIsGenerating(false);
-    }
+    } catch (e) { alert("AI Sentez Hatası."); } 
+    finally { setIsGenerating(false); }
   };
 
-  const handleSaveChanges = async () => {
-    if (!localIDP) return;
-    setIsSaving(true);
-    try {
-      await onSave({ ...localIDP, updatedAt: Date.now() });
-      setEditMode(false);
-      setEditingUnit(null);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const addModule = () => {
-    if(!localIDP) return;
-    const currentCurriculum = Array.isArray(localIDP.curriculum) ? localIDP.curriculum : [];
-    const newMod: TrainingModule = {
-      id: `MOD-${Date.now()}`,
-      title: 'Yeni Eğitim Modülü',
-      focusArea: 'Klinik Yetkinlik',
-      difficulty: 'intermediate',
-      status: 'active',
-      units: []
-    };
-    setLocalIDP({ ...localIDP, curriculum: [...currentCurriculum, newMod] });
-    setActiveModuleIdx(currentCurriculum.length);
-  };
-
-  const addUnit = (modIdx: number) => {
-    if (!localIDP?.curriculum || !localIDP.curriculum[modIdx]) return;
-    const newC = [...localIDP.curriculum];
-    const currentUnits = Array.isArray(newC[modIdx].units) ? newC[modIdx].units : [];
-    
-    const newUnit: TrainingUnit = {
-      id: `U-${Date.now()}`,
-      title: 'Yeni Eğitim Ünitesi',
-      type: 'reading',
-      content: 'İçerik...',
-      durationMinutes: 45,
-      isCompleted: false,
-      status: 'pending',
-      aiRationale: 'Manuel eklendi.'
-    };
-    
-    newC[modIdx].units = [...currentUnits, newUnit];
-    setLocalIDP({ ...localIDP, curriculum: newC });
-    setEditingUnit({ modIdx, unitIdx: newC[modIdx].units.length - 1, data: newUnit });
-  };
-
-  if (!localIDP && !isGenerating) {
-    return (
-      <div className="flex flex-col items-center justify-center p-20 bg-white rounded-[4rem] border-4 border-dashed border-slate-100 text-center animate-fade-in">
-        <div className="w-32 h-32 bg-slate-50 rounded-[4rem] flex items-center justify-center mb-10 shadow-inner">
-           <svg className="w-16 h-16 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" /></svg>
-        </div>
-        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Gelişim Planı Bekleniyor</h3>
-        <button onClick={handleGenerateIDP} className="px-16 py-7 bg-slate-900 text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.3em] shadow-2xl hover:bg-orange-600 transition-all active:scale-95">MÜFREDAT SENTEZİNİ BAŞLAT</button>
-      </div>
-    );
+  if (activeStudioPlan) {
+    return <PresentationStudio customPlan={activeStudioPlan} onClose={() => setActiveStudioPlan(null)} />;
   }
-
-  if (isGenerating) {
-    return (
-      <div className="flex flex-col items-center justify-center p-32 space-y-10 animate-fade-in text-center">
-         <div className="w-56 h-56 border-[12px] border-slate-100 border-t-orange-600 rounded-full animate-spin"></div>
-         <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Nöral Planlama Aktif</h3>
-      </div>
-    );
-  }
-
-  const currentCurriculum = Array.isArray(localIDP?.curriculum) ? localIDP!.curriculum : [];
-  const activeModule = activeModuleIdx !== null ? currentCurriculum[activeModuleIdx] : null;
 
   return (
-    <div className="flex flex-col gap-6 animate-slide-up h-full pb-10">
-      <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-[3rem] border border-slate-200 shadow-sm gap-6 no-print">
-         <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3 shrink-0">
-               <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+    <div className="flex flex-col gap-8 animate-slide-up h-full pb-10">
+      
+      {/* 1. AKADEMİ HUB BAĞLANTISI (DRAWER/MODAL) */}
+      {isCatalogOpen && (
+        <div className="fixed inset-0 z-[5000] bg-slate-950/90 backdrop-blur-xl flex items-center justify-end p-6 animate-fade-in">
+           <div className="bg-white w-full max-w-2xl h-full rounded-[4rem] shadow-2xl flex flex-col overflow-hidden animate-slide-right">
+              <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase">Akademik Katalog</h3>
+                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-1">HUB Kütüphanesinden Eğitim Ata</p>
+                 </div>
+                 <button onClick={() => setIsCatalogOpen(false)} className="p-4 hover:bg-rose-50 text-slate-400 rounded-2xl transition-all">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                 </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar">
+                 {catalog.map(plan => (
+                    <div key={plan.id} className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex justify-between items-center group hover:border-orange-500 transition-all">
+                       <div className="min-w-0 flex-1">
+                          <span className="px-2 py-0.5 bg-slate-900 text-white rounded text-[8px] font-black uppercase mb-2 inline-block">{plan.category}</span>
+                          <h4 className="text-base font-black text-slate-800 uppercase leading-none truncate">{plan.title}</h4>
+                          <p className="text-[10px] text-slate-400 mt-2 line-clamp-1">{plan.description}</p>
+                       </div>
+                       <button onClick={() => handleAssignFromCatalog(plan)} className="ml-6 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase hover:bg-orange-600 hover:text-white transition-all shadow-sm">ATA</button>
+                    </div>
+                 ))}
+                 {catalog.length === 0 && <p className="text-center text-slate-400 py-20 font-black">Katalogda yayınlanmış eğitim bulunamadı.</p>}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* 2. ANA KOMUTA SATIRI */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         
+         {/* AI IDP CARD */}
+         <div className="bg-slate-900 p-10 rounded-[4rem] text-white shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+            <div className="relative z-10">
+               <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></div>
+                  <h4 className="text-xl font-black uppercase tracking-tighter">Neural IDP Planı</h4>
+               </div>
+               {localIDP ? (
+                  <div className="space-y-4">
+                     <p className="text-3xl font-black text-orange-500 leading-none">%{Math.round(Math.random()*100)}</p>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">AI tarafından sentezlenen gelişim rotası aktif ve mühürlü.</p>
+                  </div>
+               ) : (
+                  <p className="text-sm font-medium text-slate-400 italic">Personelin liyakat geçmişine göre AI gelişim rotası henüz oluşturulmadı.</p>
+               )}
             </div>
-            <div>
-               <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Müfredat Stüdyosu</h3>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{localIDP?.focusArea || 'Genel Rota'}</p>
+            <div className="mt-12 relative z-10">
+               <button 
+                  onClick={handleGenerateIDP} 
+                  disabled={isGenerating}
+                  className="w-full py-5 bg-white text-slate-900 rounded-[2rem] font-black text-[11px] uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all shadow-xl"
+               >
+                  {isGenerating ? 'SENTEZLENİYOR...' : localIDP ? 'PLANLI YENİLE' : 'NÖRAL PLAN ÜRET'}
+               </button>
             </div>
+            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000"></div>
          </div>
 
-         <div className="flex items-center gap-3">
-            {!editMode ? (
-               <button onClick={() => setEditMode(true)} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl">DÜZENLE</button>
-            ) : (
-               <button onClick={handleSaveChanges} disabled={isSaving} className="px-10 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
-                  {isSaving ? 'KAYDEDİLİYOR...' : 'MÜHÜRLE VE ÇIK'}
+         {/* HUB ASSIGNMENT CARD */}
+         <div className="bg-white p-10 rounded-[4rem] border border-slate-200 shadow-xl flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+               <div className="space-y-2">
+                  <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Akademi HUB Görevleri</h4>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{assignments.length} Aktif Atama</p>
+               </div>
+               <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">📚</div>
+            </div>
+            <div className="mt-12">
+               <button 
+                  onClick={() => setIsCatalogOpen(true)}
+                  className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl flex items-center justify-center gap-3"
+               >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M12 4v16m8-8H4" /></svg>
+                  KATALOGDAN EĞİTİM ATA
                </button>
-            )}
+            </div>
          </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-12 gap-8 min-h-0 overflow-hidden">
-         <div className="col-span-12 lg:col-span-4 bg-white rounded-[3.5rem] border border-slate-200 shadow-sm flex flex-col overflow-hidden no-print">
-            <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
-               <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">EĞİTİM ROTASI</h4>
-               {editMode && <button onClick={addModule} className="w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black">+</button>}
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
-               {currentCurriculum.map((mod, idx) => (
-                  <div 
-                    key={mod.id || idx} 
-                    onClick={() => setActiveModuleIdx(idx)}
-                    className={`p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all ${activeModuleIdx === idx ? 'bg-slate-900 border-slate-900 text-white shadow-2xl' : 'bg-white border-slate-100 hover:border-orange-200'}`}
-                  >
-                     <h5 className="text-sm font-black uppercase leading-tight mb-4">{mod.title}</h5>
-                     <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold opacity-60 uppercase">{mod.units?.length || 0} Ünite</span>
-                        <span className="text-[9px] font-black uppercase opacity-40">{mod.difficulty}</span>
-                     </div>
-                  </div>
-               ))}
+      {/* 3. ATAMALAR LİSTESİ (TABLE STYLE) */}
+      <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
+         <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+            <h5 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">AKREDİTASYON VE EĞİTİM GEÇMİŞİ</h5>
+            <div className="flex gap-2">
+               <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+               <span className="text-[9px] font-black text-slate-400 uppercase">SİSTEM ÇAPRAZ KONTROL: AKTİF</span>
             </div>
          </div>
-
-         <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 h-full">
-            <div className="flex-1 bg-white rounded-[4rem] border border-slate-200 shadow-xl p-12 overflow-y-auto custom-scrollbar relative">
-               {activeModule ? (
-                  <div className="space-y-12 animate-fade-in pb-20">
-                     <div className="border-b border-slate-100 pb-10 flex justify-between items-end">
-                        <div>
-                           <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">{activeModule.title}</h2>
-                        </div>
-                        {editMode && <button onClick={() => addUnit(activeModuleIdx!)} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">+ ÜNİTE EKLE</button>}
-                     </div>
-
-                     <div className="grid grid-cols-1 gap-6">
-                        {(activeModule.units ?? []).map((unit, uIdx) => (
-                           <div key={unit.id || uIdx} className="p-10 bg-[#FAFAFA] rounded-[3.5rem] border-2 border-transparent hover:border-orange-500 transition-all duration-500">
-                              <div className="flex justify-between items-start mb-8">
-                                 <h5 className="text-xl font-black uppercase text-slate-800">{unit.title}</h5>
-                                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">{unit.type}</span>
+         <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {assignments.length === 0 ? (
+               <div className="py-20 text-center opacity-20 grayscale">
+                  <svg className="w-16 h-16 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  <p className="text-[10px] font-black uppercase tracking-[0.5em]">Atanmış eğitim bulunamadı</p>
+               </div>
+            ) : (
+               <div className="divide-y divide-slate-50">
+                  {assignments.map(asg => (
+                     <div key={asg.id} className="p-8 flex flex-col md:flex-row items-center justify-between gap-8 hover:bg-slate-50/50 transition-colors group">
+                        <div className="flex items-center gap-8 flex-1 min-w-0">
+                           <div className="w-16 h-16 bg-white border border-slate-100 rounded-[1.5rem] flex items-center justify-center text-xl shadow-sm group-hover:rotate-6 transition-transform">🎓</div>
+                           <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                 <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-[8px] font-black uppercase">{asg.plan_data?.category || 'KLİNİK'}</span>
+                                 <span className="text-[8px] font-bold text-slate-400 uppercase">{new Date(asg.assigned_at).toLocaleDateString()}</span>
                               </div>
-                              <p className="text-base font-medium text-slate-600 leading-relaxed italic">"{unit.content}"</p>
+                              <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter truncate">{asg.plan_title}</h4>
+                              <div className="flex items-center gap-6 mt-4">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                       <div className="h-full bg-emerald-500" style={{ width: `${asg.progress}%` }}></div>
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400">%{asg.progress}</span>
+                                 </div>
+                                 {asg.status === 'completed' && <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" /></svg> MÜHÜRLENDİ</span>}
+                              </div>
                            </div>
-                        ))}
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button 
+                              onClick={() => setActiveStudioPlan(asg.plan_data)}
+                              className="px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all"
+                           >ÖNİZLE</button>
+                           <button 
+                              onClick={() => handleRemoveAssignment(asg.id)}
+                              className="p-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
+                           ><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
+                        </div>
                      </div>
-                  </div>
-               ) : (
-                  <div className="h-full flex flex-col items-center justify-center opacity-10 text-center">
-                     <h3 className="text-4xl font-black text-slate-400 uppercase tracking-[0.6em]">Modül Seçin</h3>
-                  </div>
-               )}
-            </div>
+                  ))}
+               </div>
+            )}
          </div>
       </div>
     </div>

@@ -12,27 +12,14 @@ export default async function handler(request: Request) {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Cache-Control': 'no-store'
   };
 
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    // ŞEMA TAHKİMATI
-    await sql`
-      CREATE TABLE IF NOT EXISTS training_curricula (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        category TEXT NOT NULL,
-        data JSONB NOT NULL,
-        status TEXT DEFAULT 'active',
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    // 1. KAYDET / YAYINLA / ARŞİVLE
+    // 1. KAYDET / YAYINLA
     if (method === 'POST' && action === 'save') {
       const body = await request.json();
       await sql`
@@ -48,28 +35,46 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
-    // 2. LİSTELE (Sadece Aktifler)
+    // 2. TÜM KATALOĞU LİSTELE
     if (method === 'GET' && action === 'list') {
       const { rows } = await sql`
         SELECT data FROM training_curricula 
-        WHERE status != 'archived' 
+        WHERE status = 'published' 
         ORDER BY updated_at DESC
       `;
       return new Response(JSON.stringify(rows.map(r => r.data)), { status: 200, headers });
     }
 
-    // 3. ATAMA YAP
-    if (method === 'POST' && action === 'assign') {
-      const { planId, staffIds } = await request.json();
-      for (const sid of staffIds) {
-        const id = `ASN-${Date.now()}-${sid}`;
-        await sql`
-          INSERT INTO training_assignments (id, plan_id, staff_id)
-          VALUES (${id}, ${planId}, ${sid})
-          ON CONFLICT DO NOTHING;
+    // 3. PERSONEL ATAMALARI LİSTELE
+    if (method === 'GET' && action === 'get_staff_assignments') {
+        const staffId = searchParams.get('staffId');
+        const { rows } = await sql`
+            SELECT ta.*, tc.data as plan_data, tc.title as plan_title
+            FROM training_assignments ta
+            JOIN training_curricula tc ON ta.plan_id = tc.id
+            WHERE ta.staff_id = ${staffId}
+            ORDER BY ta.assigned_at DESC
         `;
-      }
+        return new Response(JSON.stringify(rows), { status: 200, headers });
+    }
+
+    // 4. TEKİL ATAMA YAP
+    if (method === 'POST' && action === 'assign') {
+      const { planId, staffId } = await request.json();
+      const id = `ASN-${Date.now()}-${staffId}`;
+      await sql`
+        INSERT INTO training_assignments (id, plan_id, staff_id, status, progress, assigned_at)
+        VALUES (${id}, ${planId}, ${staffId}, 'assigned', 0, CURRENT_TIMESTAMP)
+        ON CONFLICT (plan_id, staff_id) DO NOTHING;
+      `;
       return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+    }
+
+    // 5. ATAMA SİL
+    if (method === 'POST' && action === 'remove_assignment') {
+        const { assignmentId } = await request.json();
+        await sql`DELETE FROM training_assignments WHERE id = ${assignmentId}`;
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers });
     }
 
   } catch (e: any) {
