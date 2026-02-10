@@ -15,7 +15,6 @@ interface PresentationStudioProps {
 const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, customPlan, assignmentId }) => {
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
@@ -34,6 +33,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
 
   const theme = themeStyles[aiConfig?.theme as keyof typeof themeStyles] || themeStyles.ACADEMIC_COLD;
 
+  // 1. PDF OLARAK İNDİRME (Tüm Slaytları Kapsar)
   const handleDownloadPDF = async () => {
     if (!slideRef.current || slides.length === 0) return;
     setIsExporting(true);
@@ -41,16 +41,27 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       for (let i = 0; i < slides.length; i++) {
         setActiveSlideIdx(i);
-        await new Promise(r => setTimeout(r, 600)); 
-        const canvas = await html2canvas(slideRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        // Render beklemesi
+        await new Promise(r => setTimeout(r, 800)); 
+        const canvas = await html2canvas(slideRef.current, { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: aiConfig?.theme === 'GOLDEN_ACADEMY' ? '#0A0F1C' : '#ffffff' 
+        });
         if (i > 0) pdf.addPage();
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
       }
-      pdf.save(`YG_AKADEMI_${(customPlan?.title || 'EGITIM').replace(/\s+/g, '_').toUpperCase()}.pdf`);
-    } finally { setIsExporting(false); }
+      pdf.save(`YG_AKADEMI_MURED_DAT_${(customPlan?.title || 'EGITIM').replace(/\s+/g, '_').toUpperCase()}.pdf`);
+    } catch (e) {
+      alert("PDF Motoru Hatası: Lütfen tekrar deneyiniz.");
+    } finally { 
+      setIsExporting(false); 
+    }
   };
 
+  // 2. KATALOGDA YAYINLAMA (Veritabanına Mühürler)
   const handlePublish = async () => {
+    if(!confirm("Bu eğitim kurumsal katalogda TÜM PERSONEL için yayınlanacak. Onaylıyor musunuz?")) return;
     setIsPublishing(true);
     try {
       const res = await fetch('/api/training?action=save', {
@@ -58,8 +69,16 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...customPlan, status: 'published', updatedAt: Date.now() })
       });
-      if (res.ok) alert("Müfredat kurumsal katalogda başarıyla yayınlandı.");
-    } finally { setIsPublishing(false); }
+      if (res.ok) alert("Eğitim başarıyla yayınlandı ve personel portalına eklendi.");
+      else alert("Yayınlama başarısız oldu.");
+    } finally { 
+      setIsPublishing(false); 
+    }
+  };
+
+  // 3. YAZDIRMA (Tarayıcı Yazdırma Diyaloğu)
+  const handlePrint = () => {
+    window.print();
   };
 
   const renderMultimodalElement = (el: MultimodalElement) => {
@@ -111,46 +130,58 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
   if (slides.length === 0 || !activeSlide) return null;
 
   return (
-    <div className="fixed inset-0 z-[4000] bg-[#0A0F1C] flex flex-col overflow-hidden animate-fade-in no-print">
+    <div className="fixed inset-0 z-[4000] bg-[#0A0F1C] flex flex-col overflow-hidden animate-fade-in">
        {showAssignmentModal && <AssignmentModal plan={customPlan} onClose={() => setShowAssignmentModal(false)} />}
        
-       {/* COMMAND BAR */}
-       <div className="h-24 bg-slate-950 border-b border-white/5 flex items-center justify-between px-12 shrink-0 z-50 shadow-2xl">
+       {/* 🚀 ÜST KOMUTA BARI - PUBLISHING SUITE */}
+       <div className="h-24 bg-slate-950 border-b border-white/5 flex items-center justify-between px-12 shrink-0 z-50 shadow-2xl no-print">
           <div className="flex items-center gap-10">
-             <button onClick={onClose} className="w-14 h-14 bg-white/5 hover:bg-rose-600 rounded-2xl text-white transition-all flex items-center justify-center shadow-lg">
+             <button onClick={onClose} className="w-14 h-14 bg-white/5 hover:bg-rose-600 rounded-2xl text-white transition-all flex items-center justify-center shadow-lg active:scale-90">
                 <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
              </button>
-             <div>
+             <div className="hidden md:block">
                 <h3 className="text-white font-black text-2xl uppercase tracking-tighter truncate max-w-xl leading-none">{customPlan?.title}</h3>
                 <p className="text-[11px] font-bold text-orange-500 uppercase tracking-[0.5em] mt-3">AKADEMİK YAYIN MODÜLÜ</p>
              </div>
           </div>
 
           <div className="flex items-center gap-6">
+             {/* ACTIONS GROUP */}
              <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 shadow-inner">
-                <button onClick={handleDownloadPDF} disabled={isExporting} className="px-8 py-3 text-[10px] font-black text-slate-300 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-3">
-                   {isExporting ? 'PAKETLENİYOR' : 'PDF İNDİR'}
+                <button onClick={handlePrint} className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-2">
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                   YAZDIR
                 </button>
-                <button onClick={handlePublish} disabled={isPublishing} className="px-8 py-3 text-[10px] font-black text-emerald-400 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/5">
-                   {isPublishing ? 'MÜHÜRLENİYOR' : 'KATALOGDA YAYINLA'}
+                <button onClick={handleDownloadPDF} disabled={isExporting} className="px-8 py-3 text-[10px] font-black text-slate-200 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-2 border-l border-white/5 disabled:opacity-30">
+                   {isExporting ? 'İŞLENİYOR...' : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4 4V4" /></svg>
+                        PDF İNDİR
+                      </>
+                   )}
                 </button>
-                <button onClick={() => setShowAssignmentModal(true)} className="px-8 py-3 text-[10px] font-black text-orange-500 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/5">
-                   PERSONELE ATA
+                <button onClick={handlePublish} disabled={isPublishing} className="px-8 py-3 text-[10px] font-black text-emerald-400 hover:bg-white/10 rounded-xl transition-all flex items-center gap-2 border-l border-white/5 disabled:opacity-30">
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                   {isPublishing ? 'MÜHÜRLENİYOR...' : 'YAYINLA'}
                 </button>
              </div>
+             
+             {/* NAVIGATION GROUP */}
              <div className="flex gap-3 ml-4">
-                <button onClick={() => setActiveSlideIdx(p => Math.max(0, p - 1))} className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white hover:bg-white/10 transition-all font-black text-2xl">←</button>
+                <button onClick={() => setActiveSlideIdx(p => Math.max(0, p - 1))} className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-white hover:bg-white/10 transition-all font-black text-xl active:scale-90">←</button>
                 <button 
                     onClick={() => setActiveSlideIdx(p => Math.min(slides.length - 1, p + 1))} 
-                    className="px-14 h-16 rounded-2xl flex items-center justify-center font-black uppercase tracking-widest shadow-2xl transition-all bg-white text-slate-950 hover:bg-orange-600 hover:text-white"
+                    className="px-12 h-14 rounded-2xl flex items-center justify-center font-black uppercase tracking-widest shadow-2xl transition-all bg-white text-slate-950 hover:bg-orange-600 hover:text-white active:scale-95"
                 >
-                   {activeSlideIdx === slides.length - 1 ? 'SUNUMU BİTİR' : 'SIRADAKİ SAYFA →'}
+                   {activeSlideIdx === slides.length - 1 ? 'SON SAYFA' : 'SIRADAKİ →'}
                 </button>
              </div>
           </div>
        </div>
 
+       {/* 🖼️ ANA SUNUM ALANI */}
        <div className="flex-1 flex overflow-hidden">
+          {/* SLAYT LİSTESİ (NAV) */}
           <div className="w-72 bg-slate-950 border-r border-white/5 flex flex-col shrink-0 no-print shadow-2xl">
              <div className="p-8 border-b border-white/5 bg-slate-900/50">
                 <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em]">SLAYT ENDEKSİ</h4>
@@ -169,12 +200,15 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </div>
           </div>
 
+          {/* AKTİF SLAYT KANVASI */}
           <div className="flex-1 relative flex flex-col items-center justify-start p-12 bg-black/50 overflow-y-auto custom-scrollbar">
-             <div className="w-full max-w-[1200px] h-2 bg-white/5 rounded-full overflow-hidden mb-10 shrink-0">
+             {/* Progress bar */}
+             <div className="w-full max-w-[1200px] h-2 bg-white/5 rounded-full overflow-hidden mb-10 shrink-0 no-print">
                 <div className="h-full bg-orange-600 transition-all duration-700 ease-out shadow-[0_0_30px_#ea580c]" style={{ width: `${((activeSlideIdx + 1) / slides.length) * 100}%` }}></div>
              </div>
 
-             <div ref={slideRef} className={`w-full max-w-[1200px] ${theme.bg} rounded-[5rem] aspect-video shadow-[0_80px_180px_rgba(0,0,0,1)] overflow-hidden flex flex-col relative animate-scale-in border ${theme.border} shrink-0`}>
+             {/* RENDER TARGET (PDF/PRINT BU ELEMENTİ HEDEF ALIR) */}
+             <div id="slide-stage" ref={slideRef} className={`w-full max-w-[1200px] ${theme.bg} rounded-[5rem] aspect-video shadow-[0_80px_180px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative border ${theme.border} shrink-0 print:m-0 print:shadow-none print:rounded-none`}>
                 <div className={`h-28 border-b ${theme.border} flex items-center justify-between px-20 shrink-0 relative z-20 bg-black/5`}>
                    <div className="flex items-center gap-8">
                      <div className="w-16 h-16 bg-orange-600 rounded-[2rem] flex items-center justify-center text-white font-black text-2xl shadow-xl">YG</div>
@@ -184,7 +218,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                      </div>
                    </div>
                    <div className="text-right">
-                      <span className={`px-6 py-2.5 ${theme.accent} text-white rounded-xl text-[10px] font-black uppercase tracking-widest`}>SLAYT {activeSlideIdx + 1} / {slides.length}</span>
+                      <span className={`px-6 py-2.5 ${theme.accent} text-white rounded-xl text-[10px] font-black uppercase tracking-widest`}>SAYFA {activeSlideIdx + 1} / {slides.length}</span>
                    </div>
                 </div>
 
@@ -214,7 +248,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 </div>
 
                 <div className={`p-10 ${theme.bg} border-t ${theme.border} flex justify-between items-center shrink-0 bg-black/5`}>
-                   <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em]">MÜHÜRLÜ DÖKÜMAN • KOPYALANAMAZ</span>
+                   <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em]">KOPYALANAMAZ • MÜHÜRLÜ DÖKÜMAN</span>
                    <div className="flex gap-8">
                       <div className="flex items-center gap-3">
                          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -224,6 +258,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 </div>
              </div>
 
+             {/* EĞİTMEN NOTLARI (Sunumda Gizli, PDF/Yazdırmada İsteğe Bağlı) */}
              <div className="w-full max-w-[1200px] mt-12 bg-slate-900/95 backdrop-blur-2xl p-12 rounded-[4rem] border border-white/10 flex gap-16 shadow-3xl mb-32 relative overflow-hidden group no-print">
                 <div className="w-64 shrink-0 relative z-10">
                    <div className="flex items-center gap-4 mb-6">
@@ -233,7 +268,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                       <h5 className="text-sm font-black text-orange-500 uppercase tracking-[0.3em]">EĞİTMEN DİREKTİFİ</h5>
                    </div>
                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed opacity-70">
-                      Bu alan sadece sunum yapan uzmana özel klinik hatırlatıcıları içerir.
+                      Bu alan sadece sunum yapan uzmana özel hatırlatıcıları içerir.
                    </p>
                 </div>
                 <div className="flex-1 border-l border-white/5 pl-16 relative z-10">
@@ -245,6 +280,18 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </div>
           </div>
        </div>
+
+       {/* PDF EXPORT OVERLAY */}
+       {isExporting && (
+          <div className="fixed inset-0 z-[5000] bg-slate-900/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-10">
+             <div className="w-24 h-24 border-8 border-white/5 border-t-orange-600 rounded-full animate-spin mb-8"></div>
+             <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-4">Slaytlar Paketleniyor</h3>
+             <p className="text-slate-400 font-bold uppercase tracking-widest">Temaya uygun yüksek çözünürlüklü PDF üretiliyor. Lütfen bekleyin...</p>
+             <div className="w-64 h-1.5 bg-white/10 rounded-full overflow-hidden mt-10">
+                <div className="h-full bg-orange-600 animate-pulse" style={{ width: '100%' }}></div>
+             </div>
+          </div>
+       )}
     </div>
   );
 };
