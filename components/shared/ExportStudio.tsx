@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react';
-import { UniversalExportData, ExportConfig, CustomTrainingPlan } from '../../types';
+import { UniversalExportData, ExportConfig, CustomTrainingPlan, Candidate, StaffMember, Question } from '../../types';
 import { UniversalPdfService } from '../../services/export/UniversalPdfService';
-import CandidateReport from '../CandidateReport';
-import PptxGenJS from 'pptxgenjs';
 
 interface ExportStudioProps {
   data: UniversalExportData;
@@ -48,7 +46,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
     try {
       await UniversalPdfService.generateHighResPdf('print-stage', data);
       await logExportAction('PDF');
-      setStatusMessage('PDF Hazırlandı');
+      setStatusMessage('PDF Hazırlandı ve İndirildi');
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (e: any) {
       alert(`PDF Üretim Hatası: ${e.message}`);
@@ -56,7 +54,7 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
   };
 
   const handlePrint = () => {
-    setStatusMessage('Yazıcı Hazırlanıyor...');
+    setStatusMessage('Yazıcı Sürücüsü Hazırlanıyor...');
     logExportAction('PRINT');
     setTimeout(() => {
       window.print();
@@ -68,8 +66,9 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
     if (!confirm("İçerik kurumsal arşive mühürlenecek. Onaylıyor musunuz?")) return;
     setIsProcessing(true);
     try {
+      // Yayınlama API'si simülasyonu
       await logExportAction('PUBLISH');
-      alert("Yayınlama başarılı. Döküman kurumun resmi dijital hafızasına eklendi.");
+      alert("Yayınlama başarılı. Döküman kurumun resmi dijital hafızasına mühürlendi.");
       onClose();
     } finally { setIsProcessing(false); }
   };
@@ -145,14 +144,16 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
                     </div>
                  </div>
 
+                 {/* Dinamik İçerik Blokları (Tip'e göre değişir) */}
                  <div className="space-y-10">
                     <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
-                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">ÖZET VE GEREKÇE</h5>
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">DÖKÜMAN GEREKÇESİ</h5>
                        <p className="text-sm font-medium text-slate-700 leading-relaxed italic">
-                         "Bu belge, Yeni Gün Akademi MIA (Modular Intelligence Architecture) tarafından üretilen verilerin resmi dökümantasyonudur. İçerik kurum içi liyakat, eğitim veya denetim süreçleri için bağlayıcıdır."
+                         "Bu belge, Yeni Gün Akademi MIA (Modular Intelligence Architecture) tarafından üretilen verilerin resmi dökümantasyonudur. Belge içeriği kurum içi liyakat, eğitim veya denetim süreçleri için bağlayıcı nitelik taşımaktadır."
                        </p>
                     </div>
                     
+                    {/* Placeholder for Data Rendering */}
                     <div className="py-20 text-center opacity-20 grayscale border-4 border-dashed border-slate-100 rounded-[4rem]">
                        <p className="text-xl font-black uppercase tracking-[0.5em]">{data.type} VERİ SETİ</p>
                     </div>

@@ -30,7 +30,8 @@ BEGIN
     END IF;
 END $$;
 
--- 3. ANALİTİK DENETİM GÖRÜNÜMÜ
+-- 3. ANALİTİK DENETİM GÖRÜNÜMÜ (ERROR FIX: DROP BEFORE CREATE)
+DROP VIEW IF EXISTS view_export_audit_log;
 CREATE OR REPLACE VIEW view_export_audit_log AS
 SELECT 
     el.created_at as "Tarih",

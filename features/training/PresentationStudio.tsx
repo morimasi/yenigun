@@ -28,7 +28,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
          <ExportStudio 
             onClose={() => setIsExportOpen(false)}
             data={{
-              type: 'TRAINING',
+              type: 'TRAINING_MODULE',
               entityName: customPlan.title,
               referenceId: customPlan.id,
               payload: customPlan,
@@ -37,6 +37,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
          />
        )}
 
+       {/* ÜST KOMUTA BARI */}
        <div className="h-24 bg-slate-950 border-b border-white/5 flex items-center justify-between px-12 shrink-0 z-50 no-print">
           <div className="flex items-center gap-10">
              <button onClick={onClose} className="w-14 h-14 bg-white/5 hover:bg-rose-600 rounded-2xl text-white transition-all flex items-center justify-center shadow-lg">
@@ -63,6 +64,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
           </div>
        </div>
 
+       {/* SLAYT KANVASI */}
        <div className="flex-1 relative flex flex-col items-center justify-start p-12 bg-black/50 overflow-y-auto custom-scrollbar">
           <div className="w-full max-w-[1100px] bg-white rounded-[5rem] aspect-video shadow-3xl overflow-hidden flex flex-col relative shrink-0">
              <div className="p-24 flex-1 flex flex-col justify-center">

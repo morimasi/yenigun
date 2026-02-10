@@ -39,7 +39,7 @@ const ArchiveView: React.FC<ArchiveViewProps> = ({ candidates, onUpdateCandidate
         <ExportStudio 
           onClose={() => setIsExportOpen(false)}
           data={{
-            type: 'ARCHIVE',
+            type: 'ARCHIVE_RECORD',
             entityName: selectedItem.name,
             referenceId: selectedItem.id,
             payload: selectedItem,

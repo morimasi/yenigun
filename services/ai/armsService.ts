@@ -40,19 +40,6 @@ const extractPureJSON = (text: string): any => {
 };
 
 export const armsService = {
-  /**
-   * Kullanıcının girdiği basit direktifleri akademik bir dev prompta dönüştürür.
-   */
-  async enhancePresentationPrompt(topic: string, currentDirectives: string): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `KONU: ${topic} | KULLANICI DİREKTİFİ: ${currentDirectives}. Bu direktifleri yüksek lisans seviyesinde, akademik terminoloji ve klinik vaka derinliği içerecek şekilde genişlet. Sadece genişletilmiş metni döndür.`,
-      config: { systemInstruction: "Akademik Prompt Mühendisi." }
-    });
-    return response.text || currentDirectives;
-  },
-
   async generateUniversalCurriculum(plan: CustomTrainingPlan, config: TrainingGenerationConfig): Promise<{ slides: TrainingSlide[], quiz?: TrainingQuiz }> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const safeSlideCount = Math.min(config.slideCount || 10, 20);
@@ -63,8 +50,6 @@ export const armsService = {
       EKOL: ${config.pedagogicalBias}
       ZORLUK: ${config.cognitiveLoad}
       ÜSLUP: ${config.tone}
-      EK DİREKTİFLER: ${config.customDirectives || 'Yok.'}
-      KRİTİK: Her slaytta tam olarak 1 adet multimodal element (symbol, interactive_case veya graph_logic) olmalı.
       FORMAT: JSON.
     `;
 
@@ -86,29 +71,7 @@ export const armsService = {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
                   content: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  speakerNotes: { type: Type.STRING },
-                  elements: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        id: { type: Type.STRING },
-                        type: { type: Type.STRING, enum: ["symbol", "interactive_case", "graph_logic"] },
-                        content: { 
-                          type: Type.OBJECT,
-                          properties: {
-                            icon: { type: Type.STRING },
-                            label: { type: Type.STRING },
-                            title: { type: Type.STRING },
-                            dataPoints: { type: Type.ARRAY, items: { type: Type.NUMBER } },
-                            scenario: { type: Type.STRING },
-                            resolution: { type: Type.STRING }
-                          }
-                        }
-                      },
-                      required: ["id", "type", "content"]
-                    }
-                  }
+                  speakerNotes: { type: Type.STRING }
                 },
                 required: ["id", "title", "content", "speakerNotes"]
               }
@@ -124,65 +87,76 @@ export const armsService = {
     return result;
   },
 
-  async generateCurriculumTraining(plan: any): Promise<TrainingSlide[]> {
-      // Geriye dönük uyumluluk için basitleştirilmiş üretim
-      return this.generateUniversalCurriculum(plan, {
-          slideCount: 8, theme: 'ACADEMIC_COLD', tone: 'academic'
-      } as any).then(res => res.slides);
-  },
-
-  // @fix: Added generateTrainingSlides to fix property missing error in components/admin/DecisionSupportView.tsx.
-  async generateTrainingSlides(idp: any, branch?: string): Promise<TrainingSlide[]> {
-      return this.generateCurriculumTraining(idp);
-  },
-
-  // @fix: Added generateCustomPresentation to fix property missing error in features/staff-mentor/PresentationStudio.tsx.
-  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
+  async generateIDP(entity: any, history?: any[]): Promise<IDP> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const systemInstruction = `ROL: Akademi Eğitmen Asistanı. KONU: ${config.topic}. ÜSLUP: ${config.tone}. DERİNLİK: ${config.depth}.`;
+    const systemInstruction = `
+      ROL: Yeni Gün Akademi Baş Mentor ve Klinik Süpervizör.
+      GÖREV: Adayın/Personelin liyakat profilini analiz et ve 90 günlük "Klinik Onarım ve Adaptasyon" planı üret.
+      KRİTER: Zayıf olan klinik kasları güçlendirmeye odaklan.
+      FORMAT: JSON döndür. Alanlar: focusArea, roadmap (shortTerm, midTerm, longTerm), curriculum (Modüller ve Üniteler).
+    `;
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Gündem: ${config.topic} için ${config.slideCount} slaytlık akademik sunum planı üret.`,
+      contents: `KİŞİ: ${entity.name}. BRANŞ: ${entity.branch}. ANALİZ VERİSİ: ${JSON.stringify(entity.report || {})}. GEÇMİŞ: ${JSON.stringify(history || [])}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            slides: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  content: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  speakerNotes: { type: Type.STRING }
-                },
-                required: ["id", "title", "content", "speakerNotes"]
-              }
-            }
-          },
-          required: ["slides"]
-        }
+        thinkingConfig: { thinkingBudget: 24576 }
+      }
+    });
+
+    const result = extractPureJSON(response.text);
+    return { 
+      id: `IDP-${Date.now()}`, 
+      ...result, 
+      status: 'active', 
+      createdAt: Date.now() 
+    };
+  },
+
+  // @fix: Added missing generateTrainingSlides method required by DecisionSupportView.
+  async generateTrainingSlides(idp: IDP, branch: string): Promise<TrainingSlide[]> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `IDP PLANI: ${JSON.stringify(idp)} | BRANŞ: ${branch}`,
+      config: {
+        systemInstruction: "Verilen IDP planı ve branş detaylarına göre profesyonel eğitim slaytları oluştur. Yanıtı sadece JSON formatında 'slides' anahtarı altında döndür.",
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 12000 }
       }
     });
     const result = extractPureJSON(response.text);
     return result?.slides || [];
   },
 
-  // @fix: Updated generateIDP signature to accept two arguments (entity and history) to fix argument count error in features/staff-mentor/DevelopmentRouteView.tsx.
-  async generateIDP(entity: any, history?: any[]): Promise<IDP> {
+  // @fix: Added missing generateCustomPresentation method required by PresentationStudio.
+  async generateCustomPresentation(config: PresentationConfig): Promise<TrainingSlide[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `UZMAN: ${entity.name}. ANALİZ GEÇMİŞİ: ${JSON.stringify(history || [])}`,
+      contents: `SUNUM KONUSU: ${config.topic} | HEDEF: ${config.targetAudience} | DERİNLİK: ${config.depth} | SAYFA: ${config.slideCount}`,
       config: {
-        systemInstruction: "90 günlük gelişim planı üret. JSON formatında 'focusArea', 'roadmap' ve 'curriculum' alanlarını doldur.",
-        responseMimeType: "application/json"
+        systemInstruction: "Belirtilen parametreler doğrultusunda akademik bir eğitim sunumu tasarla. Yanıtı sadece JSON formatında 'slides' anahtarı altında döndür.",
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 12000 }
       }
     });
     const result = extractPureJSON(response.text);
-    return { id: `IDP-${Date.now()}`, ...result, status: 'active', createdAt: Date.now() };
+    return result?.slides || [];
+  },
+
+  // @fix: Added missing enhancePresentationPrompt method required by CurriculumManager.
+  async enhancePresentationPrompt(title: string, currentDirectives: string): Promise<string> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `EĞİTİM BAŞLIĞI: ${title} | MEVCUT DİREKTİF: ${currentDirectives}`,
+      config: {
+        systemInstruction: "Mevcut eğitim direktifini daha teknik, literatür odaklı ve kapsamlı hale getir. Sadece iyileştirilmiş direktif metnini döndür.",
+      }
+    });
+    return response.text || currentDirectives;
   }
 };

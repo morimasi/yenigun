@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Candidate, GlobalConfig } from "../../types";
 
@@ -24,15 +25,17 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
     masking: c.report?.socialMaskingScore || 0,
     integrity: c.report?.integrityIndex || 0,
     experience: c.experienceYears,
-    name: c.name
+    name: c.name,
+    strengths: c.report?.swot?.strengths || []
   })) : [];
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `KURUMSAL HAVUZ VERİSİ: ${JSON.stringify(poolSnapshot)}`,
     config: {
-      systemInstruction: `ROL: Yeni Gün Akademi Stratejik İK Müdürü. 
-      GÖREV: Mevcut aday havuzunu kurum vizyonuyla (Klinik Mükemmeliyet, Yenilikçilik) kıyasla. 
+      systemInstruction: `ROL: Yeni Gün Akademi Stratejik İK ve Kurumsal DNA Uzmanı. 
+      GÖREV: Seçilen adayların ekip içindeki "Sinerji veya Toksisite" potansiyelini analiz et. 
+      KRİTERLER: Klinik derinlik, etik sınır sadakati ve uzun vadeli sürdürülebilirlik.
       FORMAT: JSON. Alanlar: executiveSummary, criticalRiskArea, recommendedAction.`,
       responseMimeType: "application/json",
       thinkingConfig: { thinkingBudget: 24576 }
@@ -45,8 +48,22 @@ export const analyzeTalentPool = async (candidates: Candidate[], config: GlobalC
 export const compareTwoCandidates = async (c1: Candidate, c2: Candidate, config: GlobalConfig) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const payload = {
-    candidate1: { name: c1.name, branch: c1.branch, report: c1.report, experience: c1.experienceYears, university: c1.university },
-    candidate2: { name: c2.name, branch: c2.branch, report: c2.report, experience: c2.experienceYears, university: c2.university },
+    candidate1: { 
+      name: c1.name, 
+      branch: c1.branch, 
+      report: c1.report, 
+      experience: c1.experienceYears, 
+      university: c1.university,
+      personality: c1.report?.deepAnalysis?.personality?.reasoning
+    },
+    candidate2: { 
+      name: c2.name, 
+      branch: c2.branch, 
+      report: c2.report, 
+      experience: c2.experienceYears, 
+      university: c2.university,
+      personality: c2.report?.deepAnalysis?.personality?.reasoning
+    },
     weights: config.weightMatrix
   };
 
@@ -54,8 +71,9 @@ export const compareTwoCandidates = async (c1: Candidate, c2: Candidate, config:
     model: 'gemini-3-flash-preview',
     contents: `DELTA ANALİZİ (H2H): ${JSON.stringify(payload)}`,
     config: {
-      systemInstruction: `ROL: Yeni Gün Akademi Baş Stratejisti. 
-      GÖREV: İki aday arasındaki klinik, etik ve nöral farkları "Delta Analizi" yöntemiyle karşılaştır. 
+      systemInstruction: `ROL: Yeni Gün Akademi Baş Stratejisti ve Klinik Kurul Başkanı. 
+      GÖREV: İki aday arasındaki görünmez klinik, etik ve nöral farkları "Delta Analizi" yöntemiyle karşılaştır. 
+      KRİTİK: Bir kazanan belirleme; her ikisinin kuruma katacağı farklı liyakat değerlerini ve yaratacakları farklı riskleri analiz et.
       FORMAT: Sadece JSON döndür.`,
       responseMimeType: "application/json",
       thinkingConfig: { thinkingBudget: 24576 },
