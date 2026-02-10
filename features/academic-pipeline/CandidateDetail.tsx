@@ -5,9 +5,11 @@ import { generateCandidateAnalysis } from '../../geminiService';
 import { calculateAlgorithmicAnalysis } from '../../analysisUtils';
 import { PredictBar } from '../../shared/ui/PredictBar';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import ExportStudio from '../../components/shared/ExportStudio';
 
 const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, onUpdate: (c: Candidate) => void, onDelete: () => void }> = ({ candidate, config, onUpdate, onDelete }) => {
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'matrix' | 'dna' | 'predictions' | 'strategy'>('matrix');
   const [selectedMatrixId, setSelectedMatrixId] = useState<string>('technicalExpertise');
 
@@ -53,7 +55,7 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 animate-fade-in h-full">
             <div className="lg:col-span-4 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-2 h-full min-h-[400px]">
                 {matrixSegments.map(s => (
-                   <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300 text-slate-600'}`}>
+                   <button key={s.id} onClick={() => setSelectedMatrixId(s.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${selectedMatrixId === s.id ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-100 hover:border-orange-300 text-slate-600'}`}>
                       <div className="flex items-center gap-3">
                          <span className="text-xl">{s.icon}</span>
                          <span className={`text-[10px] font-black uppercase tracking-widest ${selectedMatrixId === s.id ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
@@ -100,6 +102,20 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC]">
+      {/* 🚀 MERKEZİ YAYIN MODÜLÜ (EXPORT STUDIO) */}
+      {isExportOpen && candidate.report && (
+        <ExportStudio 
+           onClose={() => setIsExportOpen(false)}
+           data={{
+             type: 'CANDIDATE_MERIT_REPORT',
+             entityName: candidate.name,
+             referenceId: candidate.id,
+             payload: candidate,
+             config: { title: 'RESMİ AKADEMİK LİYAKAT RAPORU' }
+           }}
+        />
+      )}
+
       <div className="bg-white border-b border-slate-200 flex items-center justify-between px-6 h-16 shrink-0 shadow-sm z-10">
          <div className="flex items-center gap-4">
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{candidate.name}</h2>
@@ -113,8 +129,17 @@ const CandidateDetail: React.FC<{ candidate: Candidate, config: GlobalConfig, on
                  </button>
                ))}
             </div>
-            <button onClick={handleRunAnalysis} disabled={isAnalysing} className="px-6 py-2 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase hover:bg-orange-600 transition-all">
-               {isAnalysing ? 'İŞLENİYOR...' : 'ANALİZ ET'}
+            
+            <button 
+                onClick={() => setIsExportOpen(true)}
+                disabled={!candidate.report}
+                className="px-5 py-2 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase hover:bg-slate-950 transition-all shadow-lg disabled:opacity-30"
+            >
+               YAYINLA & İNDİR
+            </button>
+
+            <button onClick={handleRunAnalysis} disabled={isAnalysing} className="px-5 py-2 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase hover:bg-orange-600 transition-all">
+               {isAnalysing ? 'İŞLENİYOR...' : 'YENİDEN ANALİZ'}
             </button>
          </div>
       </div>

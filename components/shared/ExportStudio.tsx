@@ -30,20 +30,23 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
   const handleDownloadPDF = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
-    setStatusMessage('PDF Render Ediliyor...');
+    setStatusMessage('Döküman Paketleniyor...');
     try {
+      // PDF motorunu tetikle (print-stage id'li div'i yakalar)
       await UniversalPdfService.generateHighResPdf('print-stage', data);
-      setStatusMessage('İndirme Başarılı');
+      setStatusMessage('İndirme Başlatıldı');
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (e: any) {
-      alert(`PDF Hatası: ${e.message}`);
+      alert(`PDF Motor Hatası: ${e.message}`);
     } finally { setIsProcessing(false); }
   };
 
   const handleDownloadPPTX = async () => {
-    if (data.type !== 'TRAINING_LIBRARY') return alert("PPTX sadece eğitim sunumları için mevcuttur.");
+    if (data.type !== 'TRAINING_LIBRARY' && data.type !== 'MULTIMODAL_PRESENTATION') {
+      return alert("PPTX (Düzenlenebilir Slayt) sadece akademik sunumlar için mevcuttur.");
+    }
     setIsProcessing(true);
-    setStatusMessage('PowerPoint Üretiliyor...');
+    setStatusMessage('PowerPoint Sentezleniyor...');
     try {
       const plan = data.payload as CustomTrainingPlan;
       const pptx = new PptxGenJS();
@@ -54,121 +57,157 @@ const ExportStudio: React.FC<ExportStudioProps> = ({ data, onClose, children }) 
         s.background = { color: '0A0F1C' };
         s.addText(slide.title.toUpperCase(), { x: 0.5, y: 0.5, w: '90%', fontSize: 32, bold: true, color: 'EA580C', fontFace: 'Arial' });
         s.addText(slide.content.join('\n\n'), { x: 0.5, y: 1.5, w: '90%', h: '60%', fontSize: 18, color: 'FFFFFF', bullet: true });
-        s.addText("YENİ GÜN AKADEMİ - RESMİ YAYIN", { x: 0.5, y: 5.1, fontSize: 10, color: '475569' });
+        s.addText("YENİ GÜN AKADEMİ - KURUMSAL ARŞİV", { x: 0.5, y: 5.1, fontSize: 10, color: '475569' });
       });
 
       await pptx.writeFile({ fileName: `YG_AKADEMI_${plan.title.replace(/\s+/g, '_')}.pptx` });
       setStatusMessage('PPTX Hazır');
     } catch (e) {
-      alert("PPTX Motor Hatası");
+      alert("PPTX Üretim Hatası");
     } finally { setIsProcessing(false); }
   };
 
   const handlePublish = async () => {
-    if (!confirm("Eğitim kurumsal kataloğa mühürlenecek ve tüm personelin portalına eklenecek. Onaylıyor musunuz?")) return;
+    const confirmMsg = data.type === 'TRAINING_LIBRARY' 
+      ? "Bu eğitim tüm personel portalında 'Zorunlu Eğitim' olarak yayınlanacak. Onaylıyor musunuz?"
+      : "Bu aday analizi resmi arşive 'Mühürlü Dosya' olarak kaydedilecek. Onaylıyor musunuz?";
+      
+    if (!confirm(confirmMsg)) return;
+
     setIsProcessing(true);
-    setStatusMessage('Akademik Katalog Güncelleniyor...');
+    setStatusMessage('Kurumsal Belleğe Yazılıyor...');
     try {
-      const res = await fetch('/api/training?action=save', {
+      const endpoint = data.type === 'TRAINING_LIBRARY' ? '/api/training?action=save' : '/api/candidates';
+      const body = data.type === 'TRAINING_LIBRARY' 
+        ? { ...data.payload, status: 'published', updatedAt: Date.now() }
+        : { ...data.payload, status: 'archived', archiveCategory: 'TALENT_POOL_ANALYTICS', updatedAt: Date.now() };
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data.payload, status: 'published', updatedAt: Date.now() })
+        body: JSON.stringify(body)
       });
+
       if (res.ok) {
-        // Bildirim Gönder
         await fetch('/api/admin-notifications?action=create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'SYSTEM_ALERT',
             severity: 'SUCCESS',
-            title: 'Yeni Müfredat Yayınlandı',
-            message: `"${data.entityName}" eğitimi tüm personel için erişime açıldı.`
+            title: 'Yayın İşlemi Tamamlandı',
+            message: `"${data.entityName}" başarıyla mühürlendi ve kataloğa eklendi.`
           })
         });
-        alert("Yayınlama işlemi tamamlandı.");
+        alert("Yayınlama başarılı.");
         onClose();
       }
     } finally { setIsProcessing(false); }
   };
 
   return (
-    <div className="fixed inset-0 z-[5000] bg-slate-950/95 backdrop-blur-xl flex flex-col md:flex-row overflow-hidden animate-fade-in no-print">
+    <div className="fixed inset-0 z-[5000] bg-slate-950/98 backdrop-blur-3xl flex flex-col md:flex-row overflow-hidden animate-fade-in no-print">
       
-      {/* SOL KONTROL PANELİ */}
-      <div className="w-full md:w-[450px] bg-white border-r border-slate-200 flex flex-col shrink-0 z-50 shadow-2xl">
-         <div className="p-10 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-               <div className="w-14 h-14 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center font-black text-2xl shadow-xl">Y</div>
+      {/* SOL: UNIFIED CONTROL SIDEBAR */}
+      <div className="w-full md:w-[480px] bg-white border-r border-slate-200 flex flex-col shrink-0 z-50 shadow-2xl relative">
+         <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div className="flex items-center gap-5">
+               <div className="w-16 h-16 bg-slate-950 text-orange-500 rounded-[2rem] flex items-center justify-center font-black text-3xl shadow-2xl">M</div>
                <div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase leading-none">Yayın Stüdyosu</h3>
-                  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-2">v7.0 Unified Engine</p>
+                  <h3 className="text-2xl font-black text-slate-900 uppercase leading-none tracking-tighter">Publish Studio</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2">MIA Unified Export v8.0</p>
                </div>
             </div>
-            <button onClick={onClose} className="p-3 hover:bg-rose-50 text-slate-400 rounded-xl transition-all">
-               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg>
+            <button onClick={onClose} className="p-4 hover:bg-rose-50 text-slate-400 rounded-2xl transition-all">
+               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
          </div>
 
-         <div className="flex-1 p-10 space-y-10 overflow-y-auto custom-scrollbar">
-            <div className="space-y-4">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block border-l-4 border-orange-600 pl-3">DIŞA AKTARMA FORMATLARI</label>
+         <div className="flex-1 p-10 space-y-12 overflow-y-auto custom-scrollbar">
+            {/* FORMATLAR */}
+            <div className="space-y-6">
+               <label className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] block border-l-4 border-orange-600 pl-4">DOSYA FORMATLARI</label>
                <div className="grid grid-cols-2 gap-4">
-                  <button onClick={handleDownloadPDF} className="p-6 bg-slate-900 text-white rounded-[2rem] hover:bg-orange-600 transition-all shadow-lg flex flex-col items-center gap-2">
-                     <span className="text-2xl">📄</span>
-                     <span className="text-[10px] font-black uppercase">PDF (Mühürlü)</span>
+                  <button onClick={handleDownloadPDF} className="p-8 bg-slate-900 text-white rounded-[2.5rem] hover:bg-orange-600 transition-all shadow-xl flex flex-col items-center gap-3 group">
+                     <span className="text-3xl group-hover:scale-110 transition-transform">📄</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest">PDF (MÜHÜRLÜ)</span>
                   </button>
-                  <button onClick={handleDownloadPPTX} className="p-6 bg-slate-50 text-slate-900 rounded-[2rem] border border-slate-200 hover:border-blue-600 transition-all flex flex-col items-center gap-2">
-                     <span className="text-2xl">📊</span>
-                     <span className="text-[10px] font-black uppercase">PPTX (Düzenle)</span>
+                  <button 
+                    onClick={handleDownloadPPTX} 
+                    className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 group ${data.type.includes('TRAINING') || data.type.includes('PRESENTATION') ? 'bg-white border-slate-200 hover:border-blue-500 text-slate-900' : 'bg-slate-50 border-slate-100 text-slate-300 grayscale opacity-50'}`}
+                  >
+                     <span className="text-3xl group-hover:scale-110 transition-transform">📊</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest">PPTX (SLAYT)</span>
                   </button>
                </div>
             </div>
 
-            <div className="space-y-4">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block border-l-4 border-slate-900 pl-3">YAYIN AYARLARI</label>
-               <button onClick={() => setConfig({...config, showWatermark: !config.showWatermark})} className={`w-full p-5 rounded-2xl border-2 flex justify-between items-center transition-all ${config.showWatermark ? 'border-orange-500 bg-orange-50' : 'border-slate-100'}`}>
-                  <span className="text-xs font-black uppercase text-slate-700">Akademik Filigran</span>
-                  <div className={`w-5 h-5 rounded-full border-2 ${config.showWatermark ? 'bg-orange-500 border-orange-500' : 'border-slate-300'}`}></div>
-               </button>
+            {/* DÖKÜMAN AYARLARI */}
+            <div className="space-y-6">
+               <label className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] block border-l-4 border-slate-900 pl-4">YAYIN PARAMETRELERİ</label>
+               <div className="space-y-3">
+                  <button onClick={() => setConfig({...config, showWatermark: !config.showWatermark})} className={`w-full p-5 rounded-2xl border-2 flex justify-between items-center transition-all ${config.showWatermark ? 'border-orange-500 bg-orange-50 text-orange-900' : 'border-slate-100 text-slate-500'}`}>
+                     <span className="text-[11px] font-black uppercase">Resmi Akademik Filigran</span>
+                     <div className={`w-6 h-6 rounded-full border-4 ${config.showWatermark ? 'bg-orange-500 border-orange-200' : 'bg-slate-100 border-white'}`}></div>
+                  </button>
+                  <button onClick={() => setConfig({...config, signatureRequired: !config.signatureRequired})} className={`w-full p-5 rounded-2xl border-2 flex justify-between items-center transition-all ${config.signatureRequired ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-100 text-slate-500'}`}>
+                     <span className="text-[11px] font-black uppercase">Dijital Mühür & İmza</span>
+                     <div className={`w-6 h-6 rounded-full border-4 ${config.signatureRequired ? 'bg-emerald-500 border-emerald-200' : 'bg-slate-100 border-white'}`}></div>
+                  </button>
+               </div>
+            </div>
+
+            {/* BİLGİ NOTU */}
+            <div className="p-8 bg-blue-50 rounded-[2.5rem] border border-blue-100">
+               <p className="text-[10px] font-bold text-blue-600 leading-relaxed uppercase">
+                  * "Katalogda Yayınla" butonuna bastığınızda, bu içerik kurumsal arşive mühürlenir ve yetkili personelin erişimine açılır.
+               </p>
             </div>
          </div>
 
-         <div className="p-10 border-t border-slate-100 bg-white space-y-4">
+         {/* AKSİYON BUTONU */}
+         <div className="p-10 border-t border-slate-100 bg-white">
             <button 
               onClick={handlePublish}
               disabled={isProcessing}
-              className="w-full py-6 bg-slate-950 text-white rounded-[2.5rem] font-black uppercase tracking-[0.3em] shadow-3xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-4"
+              className="w-full py-8 bg-slate-950 text-white rounded-[3rem] font-black uppercase tracking-[0.4em] shadow-3xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
             >
                {isProcessing ? 'İŞLENİYOR...' : 'KATALOGDA YAYINLA'}
             </button>
-            <p className="text-[9px] font-bold text-slate-400 text-center uppercase leading-relaxed">
-              * Yayınlanan içerikler tüm personel portalında anında görünür ve sistem mühürü ile korunur.
-            </p>
          </div>
       </div>
 
-      {/* SAĞ ÖNİZLEME ALANI */}
-      <div className="flex-1 overflow-y-auto p-12 md:p-20 flex flex-col items-center custom-scrollbar">
-         <div id="print-stage" className="bg-white shadow-[0_100px_200px_rgba(0,0,0,0.4)] relative">
-            {children ? children : data.type === 'TRAINING_LIBRARY' ? (
-              <div className="w-[1000px] aspect-video bg-[#0A0F1C] p-20 flex flex-col justify-center">
-                 <h1 className="text-5xl font-black text-orange-600 uppercase mb-10">{(data.payload as CustomTrainingPlan).title}</h1>
-                 <p className="text-2xl text-white font-medium italic opacity-60">"{(data.payload as CustomTrainingPlan).description}"</p>
-                 <div className="mt-20 border-t border-white/10 pt-10 flex justify-between items-end">
+      {/* SAĞ: LİVE RENDER PREVIEW (GHOST STAGE) */}
+      <div className="flex-1 overflow-y-auto p-12 md:p-24 flex flex-col items-center custom-scrollbar bg-slate-200/50">
+         <div className="mb-10 text-center">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[1em]">DÖKÜMAN ÖNİZLEME</span>
+         </div>
+         
+         <div id="print-stage" className="bg-white shadow-[0_100px_200px_rgba(0,0,0,0.3)] relative transition-transform duration-500 hover:scale-[1.01]">
+            {children ? children : data.type.includes('TRAINING') || data.type.includes('PRESENTATION') ? (
+              <div className="w-[1000px] aspect-video bg-[#0A0F1C] p-24 flex flex-col justify-center relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-96 h-96 bg-orange-600/10 rounded-full blur-[120px]"></div>
+                 <h1 className="text-6xl font-black text-orange-600 uppercase mb-12 tracking-tighter leading-none">{(data.payload as CustomTrainingPlan).title}</h1>
+                 <p className="text-3xl text-white font-medium italic opacity-70 border-l-8 border-white/20 pl-12 leading-relaxed">"{(data.payload as CustomTrainingPlan).description}"</p>
+                 <div className="mt-24 border-t border-white/10 pt-12 flex justify-between items-end">
                     <div>
-                       <p className="text-[10px] font-black text-slate-500 uppercase">AKADEMİK YAYIN</p>
-                       <p className="text-xl text-white font-black">YENİ GÜN AKADEMİ</p>
+                       <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">RESMİ AKADEMİK YAYIN</p>
+                       <p className="text-2xl text-white font-black uppercase mt-2">YENİ GÜN AKADEMİ</p>
                     </div>
-                    <div className="w-24 h-24 bg-white/5 rounded-3xl"></div>
+                    <div className="w-32 h-32 bg-white/5 rounded-[3rem] flex items-center justify-center border border-white/10 text-white font-black text-2xl tracking-widest shadow-2xl">YG</div>
                  </div>
               </div>
-            ) : (
+            ) : data.type === 'CANDIDATE_MERIT_REPORT' ? (
               <CandidateReport candidate={data.payload} report={data.payload.report} options={config} />
+            ) : (
+              <div className="w-[210mm] min-h-[297mm] p-20 bg-white flex items-center justify-center">
+                 <p className="text-slate-300 font-black uppercase tracking-widest">Önizleme Oluşturulamadı</p>
+              </div>
             )}
          </div>
+
          {statusMessage && (
-           <div className="mt-10 px-8 py-4 bg-orange-600 text-white rounded-full font-black text-xs uppercase tracking-widest animate-pulse">
+           <div className="fixed bottom-12 right-12 px-10 py-5 bg-orange-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest animate-slide-up shadow-3xl">
               {statusMessage}
            </div>
          )}
