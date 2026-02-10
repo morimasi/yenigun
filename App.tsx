@@ -1,54 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CandidateForm from './features/candidate-intake/CandidateForm';
 import DashboardLayout from './components/admin/DashboardLayout';
 import StaffAssessmentPortal from './features/staff-mentor/StaffAssessmentPortal';
 import { GlobalConfig, Candidate } from './types';
 import { useAcademicEngine } from './hooks/useAcademicEngine';
 import { storageService } from './services/storageService';
+import { SmartBackButton } from './components/shared/SmartBackButton';
 
 const DEFAULT_CONFIG: GlobalConfig = {
   institutionName: 'Yeni Gün Akademi',
   lastUpdated: Date.now(),
-  
-  // MODÜL 1: AĞIRLIK MATRİSİ
-  weightMatrix: {
-    clinicalExpertise: 30,
-    ethicalIntegrity: 30,
-    emotionalResilience: 15,
-    institutionalLoyalty: 10,
-    learningAgility: 10,
-    academicPedagogy: 5
-  },
-
-  // MODÜL 2: RİSK MOTORU
-  riskEngine: {
-    criticalEthicalViolationPenalty: 40,
-    inconsistentAnswerPenalty: 20,
-    lowExperienceDiscountFactor: 0.85,
-    jobHoppingPenalty: 15
-  },
-
-  // MODÜL 3: AI PERSONALITY
-  aiPersona: { 
-    skepticismLevel: 50, 
-    innovationBias: 50, 
-    stressTestIntensity: 50, 
-    detailedReporting: true 
-  },
-
-  // MODÜL 4: SİSTEM AYARLARI
-  systemSettings: {
-    minHiringScore: 70,
-    highPotentialCutoff: 85,
-    interviewDurationMinutes: 45,
-    autoRejectBelowScore: 40,
-    defaultMeetingLink: 'https://meet.google.com/new'
-  }
+  weightMatrix: { clinicalExpertise: 30, ethicalIntegrity: 30, emotionalResilience: 15, institutionalLoyalty: 10, learningAgility: 10, academicPedagogy: 5 },
+  riskEngine: { criticalEthicalViolationPenalty: 40, inconsistentAnswerPenalty: 20, lowExperienceDiscountFactor: 0.85, jobHoppingPenalty: 15 },
+  aiPersona: { skepticismLevel: 50, innovationBias: 50, stressTestIntensity: 50, detailedReporting: true },
+  systemSettings: { minHiringScore: 70, highPotentialCutoff: 85, interviewDurationMinutes: 45, autoRejectBelowScore: 40, defaultMeetingLink: 'https://meet.google.com/new' }
 };
 
 const App: React.FC = () => {
   const [view, setView] = useState<'candidate' | 'admin' | 'staff'>('candidate');
+  const [viewHistory, setViewHistory] = useState<('candidate' | 'admin' | 'staff')[]>([]);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -58,6 +29,21 @@ const App: React.FC = () => {
     candidates, config, isProcessing, isLoading, isLoggedIn,
     setIsLoggedIn, loadData, submitCandidate, analyzeCandidate, logout
   } = useAcademicEngine(DEFAULT_CONFIG);
+
+  const navigateTo = (nextView: 'candidate' | 'admin' | 'staff') => {
+    if (view !== nextView) {
+      setViewHistory(prev => [...prev, view]);
+      setView(nextView);
+    }
+  };
+
+  const handleBack = () => {
+    if (viewHistory.length > 0) {
+      const prevView = viewHistory[viewHistory.length - 1];
+      setViewHistory(prev => prev.slice(0, -1));
+      setView(prevView);
+    }
+  };
 
   useEffect(() => {
     if (view === 'admin' && isLoggedIn) {
@@ -96,7 +82,7 @@ const App: React.FC = () => {
         setTimeout(() => {
           setShowSuccessModal(false);
           setResetTrigger(prev => prev + 1);
-          setView('candidate');
+          navigateTo('candidate');
         }, 6000);
       } else {
         alert(`Hata: ${res.error}`);
@@ -117,7 +103,6 @@ const App: React.FC = () => {
     return result;
   };
 
-  // ADMIN LOGIN SCREEN
   if (view === 'admin' && !isLoggedIn) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
@@ -131,13 +116,12 @@ const App: React.FC = () => {
                 {isProcessing ? 'GİRİLİYOR...' : 'GÜVENLİ GİRİŞ'}
               </button>
            </form>
-           <button onClick={() => setView('candidate')} className="w-full mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600">Başvuru Ekranına Dön</button>
+           <button onClick={() => navigateTo('candidate')} className="w-full mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600">Başvuru Ekranına Dön</button>
         </div>
       </div>
     );
   }
 
-  // PUBLIC/STAFF NAVIGATION (Simple Header)
   if (view === 'candidate' || view === 'staff') {
     return (
       <div className="min-h-screen bg-[#F1F5F9]">
@@ -155,14 +139,17 @@ const App: React.FC = () => {
 
         <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center">
           <div className="w-full max-w-5xl mx-auto px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('candidate')}>
-              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xs">YG</div>
-              <span className="text-xs font-black tracking-widest uppercase text-slate-900">YENİ GÜN AKADEMİ</span>
+            <div className="flex items-center gap-4">
+              <SmartBackButton onClick={handleBack} isVisible={viewHistory.length > 0} className="scale-90" />
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('candidate')}>
+                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xs">YG</div>
+                <span className="text-xs font-black tracking-widest uppercase text-slate-900 hidden sm:inline">YENİ GÜN AKADEMİ</span>
+              </div>
             </div>
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-              <button onClick={() => setView('candidate')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
-              <button onClick={() => setView('staff')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Personel</button>
-              <button onClick={() => setView('admin')} className="px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all text-slate-400">Yönetim</button>
+              <button onClick={() => navigateTo('candidate')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'candidate' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Başvuru</button>
+              <button onClick={() => navigateTo('staff')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${view === 'staff' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-400'}`}>Personel</button>
+              <button onClick={() => navigateTo('admin')} className="px-4 py-1.5 rounded-md text-[10px] font-black uppercase transition-all text-slate-400">Yönetim</button>
             </div>
           </div>
         </nav>
@@ -178,7 +165,6 @@ const App: React.FC = () => {
     );
   }
 
-  // ADMIN DASHBOARD MODE (Full Screen)
   return (
     <DashboardLayout 
       candidates={candidates} 
@@ -190,6 +176,7 @@ const App: React.FC = () => {
       onDeleteCandidate={async (id) => await storageService.deleteCandidate(id)}
       onUpdateConfig={async (conf) => await storageService.saveConfig(conf)}
       onRefresh={() => loadData(true)}
+      onExit={() => navigateTo('candidate')}
     />
   );
 };

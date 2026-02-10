@@ -7,12 +7,15 @@ import ExportStudio from '../shared/ExportStudio';
 import CandidateReport from '../CandidateReport';
 import { armsService } from '../../services/ai/armsService';
 
+// @fix: Added onRefresh to DecisionSupportViewProps to match DashboardLayout expectations.
 interface DecisionSupportViewProps {
   candidates: Candidate[];
   config: GlobalConfig;
+  onRefresh: () => void;
 }
 
-const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, config }) => {
+// @fix: Destructured onRefresh from props.
+const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, config, onRefresh }) => {
   // --- STATE MANAGEMENT ---
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<'comparison' | 'team_fit' | 'onboarding' | 'presentation'>('comparison');
@@ -107,7 +110,6 @@ const DecisionSupportView: React.FC<DecisionSupportViewProps> = ({ candidates, c
     <div className="flex flex-col h-[calc(100vh-6rem)] gap-4 animate-fade-in no-print">
       
       {/* EXPORT OVERLAY */}
-      {/* @fix: Updated isExportOpen to isExportStudioOpen to resolve undefined variable error. */}
       {isExportStudioOpen && selectedCandidates.length > 0 && (
          <ExportStudio 
             onClose={() => setIsExportStudioOpen(false)}

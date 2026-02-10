@@ -5,6 +5,9 @@ import { AssessmentBattery, Branch, AssessmentQuestion, StaffMember } from '../.
 import { TURKISH_UNIVERSITIES, TURKISH_DEPARTMENTS } from '../../constants';
 import { SearchableSelect } from '../../shared/ui/SearchableSelect';
 import PresentationStudio from '../training/PresentationStudio';
+import { SmartBackButton } from '../../components/shared/SmartBackButton';
+
+type PortalStep = 'auth' | 'onboarding' | 'dashboard' | 'exam' | 'training_player';
 
 const shuffleQuestions = (questions: AssessmentQuestion[]): AssessmentQuestion[] => {
   return questions.map(q => ({
@@ -14,7 +17,8 @@ const shuffleQuestions = (questions: AssessmentQuestion[]): AssessmentQuestion[]
 };
 
 const StaffAssessmentPortal: React.FC = () => {
-  const [step, setStep] = useState<'auth' | 'onboarding' | 'dashboard' | 'exam' | 'training_player'>('auth');
+  const [step, setStep] = useState<PortalStep>('auth');
+  const [stepHistory, setStepHistory] = useState<PortalStep[]>([]);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [staff, setStaff] = useState<any>(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -30,6 +34,28 @@ const StaffAssessmentPortal: React.FC = () => {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({ name: '', branch: Branch.OzelEgitim, university: '', department: '', experienceYears: 0 });
+
+  const navigateToStep = (nextStep: PortalStep) => {
+    if (step !== nextStep) {
+      setStepHistory(prev => [...prev, step]);
+      setStep(nextStep);
+    }
+  };
+
+  const handleBack = () => {
+    if (step === 'exam') {
+        if(!confirm("Sınavdan çıkmak istiyor musunuz? İlerlemeniz silinebilir.")) return;
+    }
+    if (stepHistory.length > 0) {
+      const prevStep = stepHistory[stepHistory.length - 1];
+      setStepHistory(prev => prev.slice(0, -1));
+      setStep(prevStep);
+      if (prevStep === 'dashboard') {
+        setActiveModule(null);
+        setActiveTraining(null);
+      }
+    }
+  };
 
   const fetchAssignments = useCallback(async (sid: string) => {
     try {
@@ -62,7 +88,7 @@ const StaffAssessmentPortal: React.FC = () => {
           department: data.staff.department || '',
           experienceYears: data.staff.experience_years || 0
         });
-        setStep(data.staff.onboarding_complete ? 'dashboard' : 'onboarding');
+        navigateToStep(data.staff.onboarding_complete ? 'dashboard' : 'onboarding');
       } else alert(data.message);
     } catch (e) { alert("Hata."); }
     finally { setIsSaving(false); }
@@ -93,7 +119,7 @@ const StaffAssessmentPortal: React.FC = () => {
       });
       if (res.ok) {
         setStaff(prev => ({ ...prev, ...profileData }));
-        setStep('dashboard');
+        navigateToStep('dashboard');
         setIsEditingProfile(false);
       }
     } finally { setIsSaving(false); }
@@ -110,36 +136,22 @@ const StaffAssessmentPortal: React.FC = () => {
         body: JSON.stringify({ staffId: staff.id, batteryId: activeModule!.id, answers, score, aiTags: [] })
       });
       setCompletedBatteries(prev => [...prev, activeModule!.id]);
-      setStep('dashboard');
+      navigateToStep('dashboard');
       setActiveModule(null);
     } finally { setIsSaving(false); }
-  };
-
-  const cancelExam = () => {
-     if(confirm("Sınavdan çıkmak istediğinize emin misiniz? Kaydedilmemiş veriler silinecektir.")) {
-        setStep('dashboard');
-        setActiveModule(null);
-        setAnswers({});
-     }
   };
 
   if (step === 'training_player' && activeTraining) {
      return (
        <div className="h-screen flex flex-col">
          <div className="bg-slate-900 px-8 py-4 flex items-center justify-between no-print">
-            <button 
-              onClick={() => { setStep('dashboard'); setActiveTraining(null); }}
-              className="flex items-center gap-2 text-white text-[10px] font-black uppercase tracking-widest hover:text-orange-500 transition-colors"
-            >
-               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M15 19l-7-7 7-7" /></svg>
-               Eğitimi Kapat ve Panele Dön
-            </button>
+            <SmartBackButton onClick={handleBack} label="EĞİTİMİ KAPAT" className="bg-white/10 hover:bg-orange-600" />
             <span className="text-orange-500 font-black text-xs uppercase tracking-widest">{activeTraining.plan_title}</span>
          </div>
          <PresentationStudio 
               assignmentId={activeTraining.id} 
               customPlan={activeTraining.plan_data} 
-              onClose={() => { setStep('dashboard'); setActiveTraining(null); }} 
+              onClose={handleBack} 
             />
        </div>
      );
@@ -180,7 +192,11 @@ const StaffAssessmentPortal: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 h-full">
+    <div className="max-w-7xl mx-auto px-6 py-4 space-y-12 h-full">
+       <div className="flex justify-start">
+         <SmartBackButton onClick={handleBack} isVisible={stepHistory.length > 0} label="Geri Dön" />
+       </div>
+
        {/* DASHBOARD HEADER */}
        <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row justify-between items-end">
           <div className="relative z-10">
@@ -236,7 +252,7 @@ const StaffAssessmentPortal: React.FC = () => {
                 {assignedTrainings.map(t => (
                    <button 
                      key={t.id} 
-                     onClick={() => { setActiveTraining(t); setStep('training_player'); }}
+                     onClick={() => { setActiveTraining(t); navigateToStep('training_player'); }}
                      className="bg-white p-8 rounded-[2.5rem] border border-slate-200 text-left hover:border-orange-500 hover:shadow-xl transition-all flex flex-col justify-between h-full group"
                    >
                       <div>
@@ -265,7 +281,7 @@ const StaffAssessmentPortal: React.FC = () => {
              {MODULAR_BATTERIES.map(module => {
                const isCompleted = completedBatteries.includes(module.id);
                return (
-                 <button key={module.id} onClick={() => { if(!isCompleted) { setActiveModule(module); setShuffledQuestions(shuffleQuestions(module.questions)); setStep('exam'); } }} className={`p-8 rounded-[3rem] border-2 text-left transition-all group ${isCompleted ? 'bg-slate-50 opacity-50 cursor-default border-slate-100' : 'bg-white hover:border-orange-500 hover:shadow-xl hover:-translate-y-1'}`}>
+                 <button key={module.id} onClick={() => { if(!isCompleted) { setActiveModule(module); setShuffledQuestions(shuffleQuestions(module.questions)); navigateToStep('exam'); } }} className={`p-8 rounded-[3rem] border-2 text-left transition-all group ${isCompleted ? 'bg-slate-50 opacity-50 cursor-default border-slate-100' : 'bg-white hover:border-orange-500 hover:shadow-xl hover:-translate-y-1'}`}>
                     <span className="text-4xl block mb-6 grayscale group-hover:grayscale-0 transition-all">{module.icon}</span>
                     <h4 className="text-xl font-black text-slate-900 uppercase mb-2 leading-none">{module.title}</h4>
                     <p className="text-[10px] font-bold text-slate-400 uppercase leading-relaxed">{module.description}</p>
@@ -286,7 +302,7 @@ const StaffAssessmentPortal: React.FC = () => {
              {/* Exam Nav */}
              <div className="bg-slate-950 px-10 py-6 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-6">
-                   <button onClick={cancelExam} className="p-3 bg-white/5 hover:bg-rose-600 rounded-xl text-white transition-all"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
+                   <SmartBackButton onClick={handleBack} label="SINAVDAN ÇIK" className="bg-white/10 hover:bg-rose-600" />
                    <div>
                       <h3 className="text-white font-black text-xl uppercase tracking-widest">{activeModule.title}</h3>
                       <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.4em]">Akademik Yetkinlik Bataryası</p>
