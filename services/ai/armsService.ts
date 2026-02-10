@@ -7,16 +7,11 @@ import {
 
 /**
  * MIA Nöral JSON Ayrıştırma Motoru v3.0 (JS-Safe Edition)
- * JavaScript RegExp motoru özyinelemeli (recursive) yapıları desteklemez.
- * Bu fonksiyon, metin içindeki en geniş JSON bloğunu güvenli sınır tespitiyle ayıklar.
  */
 const extractPureJSON = (text: string): any => {
   if (!text) return null;
   try {
-    // 1. Markdown bloklarını temizle
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    // 2. Başlangıç sınırını bul (İlk { veya [)
     const firstBrace = cleanText.indexOf('{');
     const firstBracket = cleanText.indexOf('[');
     let startIdx = -1;
@@ -29,7 +24,6 @@ const extractPureJSON = (text: string): any => {
 
     if (startIdx === -1) return null;
 
-    // 3. Bitiş sınırını bul (Son } veya ])
     const lastBrace = cleanText.lastIndexOf('}');
     const lastBracket = cleanText.lastIndexOf(']');
     let endIdx = -1;
@@ -41,23 +35,12 @@ const extractPureJSON = (text: string): any => {
     }
 
     if (endIdx === -1 || endIdx <= startIdx) return null;
-
-    // 4. Bloğu kes ve parse et
     const jsonString = cleanText.substring(startIdx, endIdx + 1);
-    
-    // Görünmez karakterleri ve trailing virgülleri temizle (Hata payını azaltır)
-    const sanitizedJson = jsonString
-      .replace(/[\x00-\x1F\x7F-\x9F]/g, "") 
-      .replace(/,\s*([}\]])/g, '$1'); 
+    const sanitizedJson = jsonString.replace(/[\x00-\x1F\x7F-\x9F]/g, "").replace(/,\s*([}\]])/g, '$1'); 
 
     return JSON.parse(sanitizedJson);
   } catch (e) { 
     console.error("MIA ARMS Nöral Parse Hatası:", e);
-    // Son çare: Regex ile kaba ayıklama (JS uyumlu)
-    try {
-        const fallbackMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/);
-        if (fallbackMatch) return JSON.parse(fallbackMatch[0]);
-    } catch(innerE) { return null; }
     return null; 
   }
 };
@@ -69,7 +52,8 @@ export const armsService = {
     const systemInstruction = `
       ROL: Yeni Gün Akademi Baş Müfredat Tasarımcısı.
       GÖREV: "${plan.title}" konusu üzerine yüksek lisans seviyesinde AKADEMİK sunum üret.
-      KRİTİK: Her slayt en az 5 teknik madde içermeli.
+      KRİTİK: Her slayt en az 5 teknik madde içermeli. 
+      ELEMENTS: Sunumun zenginleşmesi için her slayda uygun 'symbol', 'graph_logic' veya 'interactive_case' tiplerinden birini ekle.
     `;
 
     const response = await ai.models.generateContent({
@@ -98,8 +82,20 @@ export const armsService = {
                       properties: {
                         id: { type: Type.STRING },
                         type: { type: Type.STRING, enum: ["symbol", "interactive_case", "graph_logic"] },
-                        content: { type: Type.OBJECT }
-                      }
+                        content: { 
+                          type: Type.OBJECT,
+                          description: "Element içeriği. Tipine göre uygun alanları doldur.",
+                          properties: {
+                            icon: { type: Type.STRING, description: "Sembol için emoji." },
+                            label: { type: Type.STRING, description: "Sembol etiketi." },
+                            title: { type: Type.STRING, description: "Grafik başlığı." },
+                            dataPoints: { type: Type.ARRAY, items: { type: Type.NUMBER }, description: "Grafik için 5 adet sayısal veri noktası." },
+                            scenario: { type: Type.STRING, description: "Vaka senaryosu metni." },
+                            resolution: { type: Type.STRING, description: "Vaka çözüm önerisi." }
+                          }
+                        }
+                      },
+                      required: ["id", "type", "content"]
                     }
                   }
                 },
