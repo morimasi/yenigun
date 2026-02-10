@@ -37,24 +37,54 @@ const TrainingHub: React.FC = () => {
     </button>
   );
 
+  // Akıllı Geri Dönüş Barı
+  const SubNav = () => (
+    <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-3 flex items-center gap-4 shrink-0 sticky top-0 z-[100] no-print">
+       <button 
+         onClick={() => { setActiveView('dashboard'); setActivePlan(null); }}
+         className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg active:scale-95"
+       >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M15 19l-7-7 7-7" /></svg>
+          HUB PANOYA DÖN
+       </button>
+       <div className="h-4 w-px bg-slate-200"></div>
+       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AKTİF MODÜL: {activeView.replace('_', ' ')}</span>
+    </div>
+  );
+
   if (activeView === 'generated_studio' && activePlan) {
-     return <PresentationStudio customPlan={activePlan} onClose={() => setActiveView('dashboard')} />;
+     return (
+       <div className="h-full flex flex-col overflow-hidden">
+         <SubNav />
+         <PresentationStudio customPlan={activePlan} onClose={() => setActiveView('dashboard')} />
+       </div>
+     );
   }
 
   if (activeView === 'multimodal_studio') {
-      return <MultimodalStudio onClose={() => setActiveView('dashboard')} />;
+      return (
+        <div className="h-full flex flex-col overflow-hidden">
+          <SubNav />
+          <MultimodalStudio onClose={() => setActiveView('dashboard')} />
+        </div>
+      );
   }
 
   if (activeView === 'curriculum') {
-      return <CurriculumManager onLaunchStudio={(slides, plan) => {
-         const studioPlan: CustomTrainingPlan = {
-            id: plan.id, title: plan.title, category: plan.category, level: plan.level as any, 
-            description: plan.description, targetBranches: plan.targetBranches as any, 
-            curriculum: [], slides: slides, createdBy: 'Sistem', createdAt: Date.now(), status: 'published'
-         };
-         setActivePlan(studioPlan);
-         setActiveView('generated_studio');
-      }} />;
+      return (
+        <div className="h-full flex flex-col overflow-hidden">
+          <SubNav />
+          <CurriculumManager onLaunchStudio={(slides, plan) => {
+             const studioPlan: CustomTrainingPlan = {
+                id: plan.id, title: plan.title, category: plan.category, level: plan.level as any, 
+                description: plan.description, targetBranches: plan.targetBranches as any, 
+                curriculum: [], slides: slides, createdBy: 'Sistem', createdAt: Date.now(), status: 'published'
+             };
+             setActivePlan(studioPlan);
+             setActiveView('generated_studio');
+          }} />
+        </div>
+      );
   }
 
   return (

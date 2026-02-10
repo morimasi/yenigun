@@ -53,7 +53,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
       'Nöral Profil Haritalanıyor...',
       'Klinik Senaryo Oluşturuluyor...',
       'Stres Vektörleri Enjekte Ediliyor...',
-      'Bilişsel Çelişki Katsayısı Hesaplanıyor...',
+      'Bilişsel Çelişki Katsayıları Hesaplanıyor...',
       'Veri Paketi Mühürleniyor...'
     ];
 
@@ -98,11 +98,17 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
     setActiveView('current');
   };
 
+  const resetLab = () => {
+     setCurrentResult(null);
+     setActiveView('current');
+     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // --- UI COMPONENTS ---
   const MetricCard = ({ label, value, color, icon }: any) => (
     <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all relative overflow-hidden">
        <div className="flex justify-between items-start mb-4 relative z-10">
-          <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-orange-600 transition-colors">
+          <div className={`w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-orange-600 transition-colors`}>
             {icon}
           </div>
           <span className={`text-3xl font-black ${color}`}>%{value}</span>
@@ -142,7 +148,6 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                 </div>
               </div>
             </div>
-            {/* PDF Çıktısına özel grafikler ve metrikler buraya gelecek */}
           </div>
         </ExportStudio>
       )}
@@ -164,9 +169,14 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                <button onClick={() => setActiveView('archive')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'archive' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Klinik Arşiv</button>
             </div>
             {currentResult && (
-               <button onClick={() => setIsExportOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg">
-                  RAPORU YAYINLA
-               </button>
+               <div className="flex gap-2">
+                 <button onClick={resetLab} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+                    YENİ TEST BAŞLAT
+                 </button>
+                 <button onClick={() => setIsExportOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg">
+                    RAPORU YAYINLA
+                 </button>
+               </div>
             )}
          </div>
       </div>
@@ -185,14 +195,13 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                       onChange={e => setActiveCandidateId(e.target.value)}
                       disabled={isSimulating}
                     >
-                      {candidates.map(c => <option key={c.id as React.Key} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
+                      {candidates.map(c => <option key={c.id} value={c.id} className="text-slate-900">{c.name.toUpperCase()}</option>)}
                     </select>
                  </div>
 
                  <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">TEST PROTOKOLÜ</label>
                     <div className="flex flex-col gap-2">
-                       {/* @fix: Cast Object.values(ClinicalTestType) to ClinicalTestType[] to fix unknown mapping error. */}
                        {(Object.values(ClinicalTestType) as ClinicalTestType[]).map(t => (
                           <button
                             key={t}
@@ -252,7 +261,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
         </div>
 
         {/* PANEL 2: ANA SAHNE (MIDDLE/RIGHT) */}
-        <div className="col-span-12 lg:col-span-9 flex flex-col gap-6 h-full overflow-y-auto custom-scrollbar pr-2 pb-20">
+        <div className="col-span-12 lg:col-span-9 h-full overflow-y-auto custom-scrollbar pr-2 pb-20">
            
            {activeView === 'archive' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-scale-in">
@@ -403,7 +412,7 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                              ].map((m, i) => (
                                 <div key={i} className="flex gap-6 items-start group/micro">
                                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover/micro:text-orange-600 transition-all shadow-inner shrink-0">
-                                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={m.icon} /></svg>
+                                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="Mm.icon} /></svg>
                                    </div>
                                    <div>
                                       <h6 className="text-[10px] font-black uppercase text-slate-900 mb-1">{m.t}</h6>
@@ -414,64 +423,6 @@ const ClinicalLabView: React.FC<{ candidates: Candidate[] }> = ({ candidates }) 
                           </div>
                        </div>
                     </div>
-                 </div>
-
-                 {/* EXPANDABLE NÖRAL İZ LAYER */}
-                 <div className="bg-white p-12 rounded-[5rem] border border-slate-200 shadow-2xl relative overflow-hidden group">
-                    <div className="flex justify-between items-center mb-10">
-                       <div className="flex items-center gap-6">
-                          <div className="w-14 h-14 bg-slate-900 rounded-[2rem] flex items-center justify-center text-orange-600 shadow-xl border border-slate-700">
-                             <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/></svg>
-                          </div>
-                          <div>
-                             <h4 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Nöral İz Analizi (Deep Trace)</h4>
-                             <p className="text-[11px] font-black text-orange-600 uppercase tracking-widest mt-2">Bilinçdışı Karar Mekanizmaları ve Mikro-Davranış Projeksiyonu</p>
-                          </div>
-                       </div>
-                       <button 
-                         onClick={() => setIsTraceExpanded(!isTraceExpanded)}
-                         className="px-10 py-5 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all shadow-md"
-                       >
-                          {isTraceExpanded ? 'İZİ GİZLE' : 'TÜM İZİ SORGULA'}
-                       </button>
-                    </div>
-
-                    {isTraceExpanded && (
-                       <div className="space-y-12 animate-slide-up">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                             <div className="space-y-4">
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest block ml-4">NÖRAL KARAR YOLU (DİNAMİK)</span>
-                                <div className="bg-slate-50 p-12 rounded-[4rem] border border-slate-100 shadow-inner">
-                                   <p className="text-2xl font-black text-slate-800 leading-tight uppercase italic text-center">
-                                      "{currentResult.aiEvaluation.neuralDivergence.decisionPath}"
-                                   </p>
-                                </div>
-                             </div>
-                             <div className="space-y-4">
-                                <span className="text-[11px] font-black text-orange-600 uppercase tracking-widest block ml-4">GÖLGE SENARYO (SHADOW OUTCOME)</span>
-                                <div className="bg-orange-600 p-12 rounded-[4rem] text-white shadow-2xl relative group/shadow overflow-hidden">
-                                   <p className="text-2xl font-black leading-tight uppercase italic text-center relative z-10">
-                                      "{currentResult.aiEvaluation.neuralDivergence.alternativeOutcome}"
-                                   </p>
-                                   <div className="absolute inset-0 bg-black/10 group-hover/shadow:bg-black/0 transition-all"></div>
-                                </div>
-                             </div>
-                          </div>
-                          
-                          <div className="bg-slate-900 p-16 rounded-[5rem] flex flex-col md:flex-row items-center gap-12 text-white relative overflow-hidden">
-                             <div className="flex-1 text-center md:text-left space-y-6 relative z-10">
-                                <h5 className="text-[13px] font-black text-orange-500 uppercase tracking-[0.5em] leading-none">STRATEJİK MÜDAHALE ROTASI</h5>
-                                <p className="text-xl font-bold text-slate-300 leading-relaxed italic">
-                                   "Bu aday, kriz anında <strong>{currentResult.aiEvaluation.neuralDivergence.dominantEmotion}</strong> refleksini baskılayabilmek için yoğun bir kognitif yük harcamaktadır. Kurum içi adaptasyon sürecinde <strong>{currentResult.aiEvaluation.clinicalTruths[0]}</strong> odaklı bir mentorluk, nöral stabilizasyonunu artıracaktır."
-                                </p>
-                             </div>
-                             <div className="w-full md:w-auto relative z-10">
-                                <button className="w-full px-16 py-7 bg-white text-slate-900 rounded-[2.5rem] text-[12px] font-black uppercase tracking-widest shadow-2xl hover:bg-orange-600 hover:text-white transition-all">Müdahale Planını Mühürle</button>
-                             </div>
-                             <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-white/5 rounded-full blur-[120px]"></div>
-                          </div>
-                       </div>
-                    )}
                  </div>
               </div>
            )}

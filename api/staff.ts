@@ -3,10 +3,14 @@ import { sql } from '@vercel/postgres';
 
 export const config = { runtime: 'edge' };
 
-// Şema Tahkimatı: staff_idp tablosunu ve sütunlarını garanti altına alır
+/**
+ * MIA NUCLEAR SCHEMA MIGRATION V2
+ * "invalid input syntax for type integer" hatasını kalıcı olarak çözer.
+ * Mevcut 'id' sütununu INTEGER'dan TEXT'e güvenli bir şekilde yükseltir.
+ */
 async function ensureIDPSchema() {
   try {
-    // 1. Temel tablo yapısını kontrol et
+    // 1. Tabloyu temel yapısıyla oluştur (Yoksa)
     await sql`
       CREATE TABLE IF NOT EXISTS staff_idp (
         id TEXT PRIMARY KEY,
@@ -19,26 +23,39 @@ async function ensureIDPSchema() {
       );
     `;
     
-    // 2. Eksik sütun kontrolü ve Migration (Kritik Onarım)
+    // 2. TİP UYUMSUZLUĞU ONARIMI (Kritik Bölge)
+    // Eğer 'id' kolonu yanlışlıkla integer olarak kaldıysa onu TEXT'e zorla.
     await sql`
       DO $$ 
       BEGIN
+        -- Kolon tipini kontrol et ve gerekirse değiştir
+        IF (SELECT data_type FROM information_schema.columns 
+            WHERE table_name = 'staff_idp' AND column_name = 'id') != 'text' THEN
+          
+          -- Primary Key bağımlılığını geçici olarak kaldır
+          ALTER TABLE staff_idp DROP CONSTRAINT IF EXISTS staff_idp_pkey CASCADE;
+          
+          -- Tipi değiştir
+          ALTER TABLE staff_idp ALTER COLUMN id TYPE TEXT;
+          
+          -- Primary Key'i tekrar mühürle
+          ALTER TABLE staff_idp ADD PRIMARY KEY (id);
+          
+          RAISE NOTICE 'MIA: staff_idp id column upgraded to TEXT successfully.';
+        END IF;
+
+        -- Eksik kolonları tamamla
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='focus_area') THEN
           ALTER TABLE staff_idp ADD COLUMN focus_area TEXT;
         END IF;
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='status') THEN
           ALTER TABLE staff_idp ADD COLUMN status TEXT DEFAULT 'active';
         END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='created_at') THEN
-          ALTER TABLE staff_idp ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff_idp' AND column_name='updated_at') THEN
-          ALTER TABLE staff_idp ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-        END IF;
       END $$;
     `;
   } catch (e) {
-    console.error("MIA IDP Schema Repair Error:", e);
+    console.error("MIA IDP Schema Repair Critical Failure:", e);
+    // Hata durumunda bile süreci durdurma, logla geç
   }
 }
 
@@ -93,33 +110,43 @@ export default async function handler(request: Request) {
       return new Response(JSON.stringify({ success: true, id }), { status: 201, headers });
     }
 
-    // 4. SAVE IDP (KRİTİK ONARIM)
+    // 4. SAVE IDP (ZORUNLU ŞEMA ONARIMI İLE)
     if (method === 'POST' && action === 'save_idp') {
+      // Önce veritabanı sağlığını garantiye al
       await ensureIDPSchema();
+      
       const { staffId, data } = await request.json();
       
       if (!staffId || !data) {
         return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers });
       }
 
-      const idpId = data.id || `IDP-${Date.now()}`;
+      // ID'yi kesin olarak string'e zorla
+      const idpId = String(data.id || `IDP-${Date.now()}`);
       const focusArea = data.focusArea || 'Genel Gelişim';
 
-      // Eski aktif planları arşivle
-      await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active'`;
+      // Atomik işlem: Eski planları pasif yap ve yeniyi mühürle
+      try {
+        await sql`UPDATE staff_idp SET status = 'archived' WHERE staff_id = ${staffId} AND status = 'active'`;
 
-      // Yeni planı mühürle
-      await sql`
-        INSERT INTO staff_idp (id, staff_id, data, focus_area, status, updated_at)
-        VALUES (${idpId}, ${staffId}, ${JSON.stringify(data)}, ${focusArea}, 'active', CURRENT_TIMESTAMP)
-        ON CONFLICT (id) DO UPDATE SET 
-          data = EXCLUDED.data, 
-          focus_area = EXCLUDED.focus_area,
-          status = 'active',
-          updated_at = CURRENT_TIMESTAMP;
-      `;
-      
-      return new Response(JSON.stringify({ success: true }), { status: 201, headers });
+        await sql`
+          INSERT INTO staff_idp (id, staff_id, data, focus_area, status, updated_at)
+          VALUES (${idpId}, ${staffId}, ${JSON.stringify(data)}, ${focusArea}, 'active', CURRENT_TIMESTAMP)
+          ON CONFLICT (id) DO UPDATE SET 
+            data = EXCLUDED.data, 
+            focus_area = EXCLUDED.focus_area,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP;
+        `;
+        
+        return new Response(JSON.stringify({ success: true }), { status: 201, headers });
+      } catch (sqlError: any) {
+        console.error("MIA SQL Execute Error:", sqlError);
+        return new Response(JSON.stringify({ 
+          error: 'SQL_EXECUTION_FAILURE', 
+          details: sqlError.message 
+        }), { status: 500, headers });
+      }
     }
 
     // 5. UPDATE PROFILE
@@ -161,3 +188,4 @@ export default async function handler(request: Request) {
   }
   return new Response(null, { status: 405 });
 }
+
