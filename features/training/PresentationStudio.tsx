@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TrainingSlide, CustomTrainingPlan, MultimodalElement } from '../../types';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -16,6 +16,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +24,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
   const activeSlide = slides.length > 0 ? slides[activeSlideIdx] : null;
   const aiConfig = customPlan?.aiConfig;
 
+  // Tema Konfigürasyonu
   const themeStyles = {
     ACADEMIC_COLD: { bg: 'bg-white', text: 'text-slate-900', accent: 'bg-slate-900', border: 'border-slate-200', point: 'bg-slate-900' },
     GOLDEN_ACADEMY: { bg: 'bg-[#0A0F1C]', text: 'text-white', accent: 'bg-orange-600', border: 'border-white/10', point: 'bg-orange-500' },
@@ -33,6 +35,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
 
   const theme = themeStyles[aiConfig?.theme as keyof typeof themeStyles] || themeStyles.ACADEMIC_COLD;
 
+  // 1. PDF İndirme (Yüksek Çözünürlüklü)
   const handleDownloadPDF = async () => {
     if (!slideRef.current || slides.length === 0) return;
     setIsExporting(true);
@@ -41,18 +44,27 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       for (let i = 0; i < slides.length; i++) {
         if (i > 0) pdf.addPage();
         setActiveSlideIdx(i);
-        await new Promise(r => setTimeout(r, 600)); 
-        const canvas = await html2canvas(slideRef.current, { scale: 2, useCORS: true, logging: false });
+        await new Promise(r => setTimeout(r, 800)); // Render bekletmesi
+        const canvas = await html2canvas(slideRef.current, { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
       }
       pdf.save(`YG_AKADEMI_${(customPlan?.title || 'EGITIM').replace(/\s+/g, '_').toUpperCase()}.pdf`);
+    } catch (e) {
+        alert("İndirme sırasında bir hata oluştu.");
     } finally { setIsExporting(false); }
   };
 
+  // 2. Yazdırma
   const handlePrint = () => {
     window.print();
   };
 
+  // 3. Arşivleme (Kalıcı Durum Değişikliği)
   const handleArchive = async () => {
     if (!confirm("Bu eğitim müfredatı kurumsal arşive taşınacaktır. Yayın listesinden kaldırılacaktır. Onaylıyor musunuz?")) return;
     setIsArchiving(true);
@@ -63,13 +75,32 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
         body: JSON.stringify({ ...customPlan, status: 'archived', updatedAt: Date.now() })
       });
       if (res.ok) {
-        alert("Eğitim başarıyla arşivlendi.");
+        alert("Eğitim başarıyla mühürlendi ve arşive kaldırıldı.");
         onClose();
       }
     } catch (e) {
       alert("Arşivleme hatası.");
     } finally {
       setIsArchiving(false);
+    }
+  };
+
+  // 4. Yayınlama ve Kaydetme
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      const res = await fetch('/api/training?action=save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...customPlan, status: 'published', updatedAt: Date.now() })
+      });
+      if (res.ok) {
+        alert("Eğitim kurumsal katalogda başarıyla yayınlandı.");
+      }
+    } catch (e) {
+      alert("Yayınlama hatası.");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -123,7 +154,6 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
       <div className="fixed inset-0 bg-[#0A0F1C] flex flex-col items-center justify-center p-12 text-center">
          <div className="w-20 h-20 border-8 border-white/5 border-t-orange-600 rounded-full animate-spin mb-8"></div>
          <h3 className="text-white font-black text-2xl uppercase tracking-[0.4em]">Nöral Paket Çözümleniyor</h3>
-         <p className="text-slate-500 font-bold uppercase tracking-widest mt-4">Klinik içerik derleniyor, lütfen bekleyiniz...</p>
       </div>
     );
   }
@@ -132,7 +162,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
     <div className="fixed inset-0 z-[4000] bg-[#0A0F1C] flex flex-col overflow-hidden animate-fade-in no-print">
        {showAssignmentModal && <AssignmentModal plan={customPlan} onClose={() => setShowAssignmentModal(false)} />}
        
-       {/* HEADER BAR */}
+       {/* COMMAND BAR */}
        <div className="h-20 bg-slate-900 border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-50 shadow-2xl">
           <div className="flex items-center gap-8">
              <button onClick={onClose} className="w-12 h-12 bg-white/5 hover:bg-rose-600 rounded-2xl text-white transition-all flex items-center justify-center shadow-lg group">
@@ -140,7 +170,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </button>
              <div>
                 <h3 className="text-white font-black text-xl uppercase tracking-tighter truncate max-w-xl leading-none">{customPlan?.title}</h3>
-                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.4em] mt-2">AKADEMİK YAYIN KURULU v32.0</p>
+                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.4em] mt-2">MIA AKADEMİK YAYIN KURULU</p>
              </div>
           </div>
 
@@ -151,6 +181,9 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 </button>
                 <button onClick={handleDownloadPDF} disabled={isExporting} className="px-5 py-2.5 text-[10px] font-black text-slate-300 uppercase hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
                    {isExporting ? 'İŞLENİYOR' : 'PDF İNDİR'}
+                </button>
+                <button onClick={handlePublish} disabled={isPublishing} className="px-5 py-2.5 text-[10px] font-black text-emerald-500 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
+                   {isPublishing ? '...' : 'YAYINLA / KAYDET'}
                 </button>
                 <button onClick={() => setShowAssignmentModal(true)} className="px-6 py-2.5 text-[10px] font-black text-orange-500 hover:bg-white/10 rounded-xl transition-all flex items-center gap-3 border-l border-white/10">
                    PERSONELE ATA
@@ -172,7 +205,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
        </div>
 
        <div className="flex-1 flex overflow-hidden">
-          {/* SLIDE NAVIGATOR (SIDEBAR) */}
+          {/* SLIDE NAVIGATOR */}
           <div className="w-64 bg-slate-950 border-r border-white/5 flex flex-col shrink-0 no-print shadow-2xl">
              <div className="p-8 border-b border-white/5 bg-slate-900/50">
                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">İÇERİK ENDEKSİ</h4>
@@ -191,21 +224,20 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
              </div>
           </div>
 
-          {/* MAIN RENDER STAGE */}
+          {/* RENDER KANVASI */}
           <div className="flex-1 relative flex flex-col items-center justify-start p-10 bg-black/40 overflow-y-auto custom-scrollbar">
-             {/* PROGRESS LINE */}
              <div className="w-full max-w-[1100px] h-1.5 bg-white/5 rounded-full overflow-hidden mb-8 shrink-0">
                 <div className="h-full bg-orange-600 transition-all duration-700 ease-out shadow-[0_0_20px_#ea580c]" style={{ width: `${((activeSlideIdx + 1) / slides.length) * 100}%` }}></div>
              </div>
 
-             <div ref={slideRef} className={`w-full max-w-[1100px] ${theme.bg} rounded-[4rem] aspect-video shadow-[0_60px_150px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative animate-scale-in border ${theme.border} shrink-0`}>
-                {/* ACADEMIC ANTET */}
+             <div ref={slideRef} id="slide-render-area" className={`w-full max-w-[1100px] ${theme.bg} rounded-[4rem] aspect-video shadow-[0_60px_150px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative animate-scale-in border ${theme.border} shrink-0`}>
+                {/* AKADEMİK ANTET */}
                 <div className={`h-24 border-b ${theme.border} flex items-center justify-between px-16 shrink-0 relative z-20 bg-black/5`}>
                    <div className="flex items-center gap-6">
                      <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-xl">YG</div>
                      <div>
                        <h4 className={`text-base font-black uppercase tracking-[0.2em] ${theme.text}`}>{aiConfig?.academicConfig?.institutionName || 'YENİ GÜN AKADEMİ'}</h4>
-                       <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-0.5">HİZMET İÇİ KLİNİK EĞİTİM MODÜLÜ</p>
+                       <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-0.5">RESMİ AKADEMİK KAYIT</p>
                      </div>
                    </div>
                    <div className="text-right">
@@ -219,7 +251,6 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                    </h2>
                    
                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                      {/* SOL: YOĞUN AKADEMİK İÇERİK */}
                       <div className={`${activeSlide.elements?.length ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6`}>
                          {(activeSlide.content || []).map((c, i) => (
                             <div key={i} className="flex gap-5 items-start animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
@@ -231,9 +262,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                          ))}
                       </div>
 
-                      {/* SAĞ: MULTIMODAL ELEMENTLER */}
                       {activeSlide.elements && activeSlide.elements.length > 0 && (
-                        <div className="lg:col-span-5 flex flex-col gap-6 animate-slide-up">
+                        <div className="lg:col-span-5 flex flex-col gap-6 animate-slide-up no-print">
                            {activeSlide.elements.map(el => renderMultimodalElement(el))}
                         </div>
                       )}
@@ -252,8 +282,8 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                 </div>
              </div>
 
-             {/* INSTRUCTOR NOTES (NO-PRINT) */}
-             <div className="w-full max-w-[1100px] mt-8 bg-slate-900/90 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 flex gap-12 shadow-3xl mb-20 relative overflow-hidden group">
+             {/* EĞİTMEN NOTLARI */}
+             <div className="w-full max-w-[1100px] mt-8 bg-slate-900/90 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 flex gap-12 shadow-3xl mb-20 relative overflow-hidden group no-print">
                 <div className="w-56 shrink-0 relative z-10">
                    <div className="flex items-center gap-3 mb-4">
                       <div className="w-9 h-9 bg-orange-600 rounded-lg flex items-center justify-center text-white">
@@ -262,7 +292,7 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
                       <h5 className="text-xs font-black text-orange-500 uppercase tracking-[0.2em]">EĞİTMEN REHBERİ</h5>
                    </div>
                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
-                      Bu derin direktifler sadece eğitmen panelinde görüntülenir. PDF çıktısına dahil edilmez.
+                      Bu derin direktifler sadece eğitmen panelinde görüntülenir.
                    </p>
                 </div>
                 <div className="flex-1 border-l border-white/5 pl-12 relative z-10">
@@ -278,9 +308,19 @@ const PresentationStudio: React.FC<PresentationStudioProps> = ({ onClose, custom
        <style>{`
          @media print {
             body { background: white !important; margin: 0 !important; }
-            #print-stage { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            #root { display: block !important; }
             .no-print { display: none !important; }
-            #slide-print-area { display: block !important; }
+            #slide-render-area { 
+               position: fixed !important; 
+               top: 0 !important; 
+               left: 0 !important; 
+               width: 297mm !important; 
+               height: 210mm !important; 
+               box-shadow: none !important;
+               border: none !important;
+               margin: 0 !important;
+               page-break-after: always !important;
+            }
          }
        `}</style>
     </div>
